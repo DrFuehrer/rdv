@@ -104,7 +104,6 @@
 	<!-- Run the RBNB Data Viewer -->
 	<target name="run" depends="compile" description="Run application">
 		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
- 			<jvmarg value="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog"/>
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>			

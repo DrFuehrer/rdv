@@ -1,9 +1,5 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
@@ -641,7 +637,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		ChannelMap getmap = null;
 
 		try {
-			getmap = sink.Fetch(5000);
+			getmap = sink.Fetch(500);
 		} catch (SAPIException e) {
  			log.error("Failed to fetch data: " + e.getMessage() + ".");
 			changeStateSafe(STATE_STOPPED);
