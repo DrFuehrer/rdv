@@ -426,6 +426,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	}
 	
 	private void setTimeAxis() {
+		if (chart == null) {
+			log.warn("Chart object is null. This shouldn't happen.");
+			return;
+		}
+		
 		XYPlot xyPlot = (XYPlot)chart.getPlot();
 		DateAxis dateAxis = (DateAxis)xyPlot.getDomainAxis();
 		dateAxis.setRange((time-domain)*1000, time*1000);
