@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -47,7 +46,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	private JScrollBar timeScaleScrollBar;
 
  	private double timeScales[] = {1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
- 	private int defaultTimeScaleIndex = 18;
 
 	private double startTime;
 	private double endTime;
@@ -69,8 +67,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		startTime = -1;
 		endTime = -1;
 		location = -1;
-		playbackRate = 1;
-		timeScale = 1;
+		playbackRate = rbnbController.getPlaybackRate();
+		
+		timeScale = rbnbController.getTimeScale();
 		
 		initPanel();
 		
@@ -232,8 +231,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		container.add(timeScaleLabel, c);			
-		
-		timeScaleScrollBar = new JScrollBar(Adjustable.HORIZONTAL, defaultTimeScaleIndex, 1, 0, timeScales.length);
+
+		int timeScaleIndex = getTimeScaleIndex(timeScale);
+		timeScaleScrollBar = new JScrollBar(Adjustable.HORIZONTAL, timeScaleIndex, 1, 0, timeScales.length);
  		timeScaleScrollBar.addAdjustmentListener(this);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
@@ -262,7 +262,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;
 		container.add(playbackRateLabel, c);		
 		
- 		playbackRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, -9, 10);
+		int playbackRateIndex = getPlaybackRateIndex(playbackRate);
+ 		playbackRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, playbackRateIndex, 1, -9, 10);
 		playbackRateScrollBar.addAdjustmentListener(this);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
@@ -412,6 +413,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 	}
 	
+	private int getPlaybackRateIndex(double playbackRate) {
+		int index = -1;
+		
+		return index;
+	}
+	
 	private void playbackRateChange() {
 		double oldPlaybackRate = playbackRate;
 		
@@ -454,13 +461,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			locationScrollBar.addAdjustmentListener(this);
 		}
 	}
-	
-	/* public double getTimeScale() {
-		return timeScale;
-	}
-	
-	public double setTimeScale(double timeScale) {
-		double oldTimeScale = this.timeScale;
+
+	private int getTimeScaleIndex(double timeScale) {
 		int index = -1;
 		if (timeScale < timeScales[0]) {
 			this.timeScale = timeScales[0];
@@ -483,18 +485,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				}
 			}
 		}
-		
-		if (this.timeScale != oldTimeScale && index != -1) {
-			log.info("Setting time scale to " + this.timeScale);
-			timeScaleScrollBar.setValue(index);
-			fireTimeScaleChanged(this.timeScale);
-		} else if (index == -1) {
-			log.error("Did not set proper time scale.");
-		}
-		
-		return this.timeScale;
-	} */
 
+		return index;
+	}
+	
 	private void timeScaleChange() {
 		double oldTimeScale = timeScale;
 	
@@ -515,6 +509,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	public void postTime(double time) {
 		setSliderLocation(time);
 	}
+
 	
 	// Player State Methods
 

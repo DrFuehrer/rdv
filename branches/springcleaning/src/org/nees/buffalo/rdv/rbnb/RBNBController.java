@@ -52,8 +52,8 @@ public class RBNBController implements Player {
 	
 	//FIXME should be -1, but breaks stuff
 	private double location = System.currentTimeMillis()/1000d;
-	private double playbackRate = 1;
-	private double timeScale = 1;
+	private double playbackRate;
+	private double timeScale;
 	
 	private int STATE_RECONNECT = 100;
 	
@@ -66,7 +66,7 @@ public class RBNBController implements Player {
 	
 	static final double PLAYBACK_REFRESH_RATE = 0.05;
 	
-	public RBNBController() {
+	public RBNBController(double playbackRate, double timeScale) {
 		//initial state is disconnected
 		state = STATE_DISCONNECTED;
 		
@@ -76,6 +76,9 @@ public class RBNBController implements Player {
 		requestIsMonitor = false;
 		
 		dropData = true;
+		
+		this.playbackRate = playbackRate;
+		this.timeScale = timeScale;
 		
 		channelManager = new ChannelManager(); 
 		

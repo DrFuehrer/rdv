@@ -28,17 +28,29 @@ public class DataViewer {
 	private RBNBController rbnb;
 	private DataPanelManager dataPanelManager;
 	private ApplicationFrame applicationFrame;
+
+	private double playbackRate;
+	private double timeScale;
 	
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
 	
 	public DataViewer() {
-		rbnb = new RBNBController();
-		dataPanelManager = new DataPanelManager(rbnb);
-		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager);
+		playbackRate = 1;
+		timeScale = 1;
 	}		
+	
+	public void setPlaybackRate(double playbackRate) {
+		this.playbackRate = playbackRate;
+	}
 		
 	public void setTimeScale(double timeScale) {
-		/* rbnb.setTimeScale(timeScale); */
+		this.timeScale = timeScale;
+	}
+	
+	public void initialize() {
+		rbnb = new RBNBController(playbackRate, timeScale);
+		dataPanelManager = new DataPanelManager(rbnb);
+		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager);		
 	}
 
 	public void exit() {
@@ -138,6 +150,11 @@ public class DataViewer {
 											 .withDescription("Channels to subscribe to")
 											 .withLongOpt("channels")
 											 .create('c');
+		Option playbackRateOption = OptionBuilder.withArgName("playback rate")
+											 .hasArg()
+											 .withDescription("The playback rate")
+											 .withLongOpt("playback-rate")
+											 .create('r');
 		Option timeScaleOption = OptionBuilder.withArgName("time scale")
 											  .hasArg()
 											  .withDescription("The time scale in seconds")
@@ -153,6 +170,7 @@ public class DataViewer {
 		options.addOption(hostNameOption);
 		options.addOption(portNumberOption);
 		options.addOption(channelsOption);
+		options.addOption(playbackRateOption);
 		options.addOption(timeScaleOption);
 		options.addOption(playOption);
 		options.addOption(realTimeOption);			
@@ -161,6 +179,7 @@ public class DataViewer {
 		String hostName = null;
 		int portNumber = -1;
 		String[] channels = null;
+		double playbackRate = -1;
 		double timeScale = -1;
 		boolean play = false;
 		boolean realTime = false;
@@ -191,6 +210,11 @@ public class DataViewer {
 	    		channels = line.getOptionValues('c');
 	    	}
 	    	
+	    	if (line.hasOption('r')) {
+	    		String value = line.getOptionValue('r');
+	    		playbackRate = Double.parseDouble(value);
+	    	}
+	    	
 	    	if (line.hasOption('s')) {
 	    		String value = line.getOptionValue('s');
 	    		timeScale = Double.parseDouble(value);
@@ -209,9 +233,15 @@ public class DataViewer {
 		log.info("Starting data viewer in disconnected state.");
 		DataViewer dataViewer = new DataViewer();
 		
+		if (playbackRate != -1) {
+			dataViewer.setPlaybackRate(playbackRate);
+		}
+		
 		if (timeScale != -1) {
 			dataViewer.setTimeScale(timeScale);
 		}
+		
+		dataViewer.initialize();
 		
 		RBNBController rbnbController = dataViewer.getRBNBController();
 				

@@ -118,6 +118,16 @@
 		</java>
 	</target>
 
+	<!-- Run the RDV (connect to localhost) -->
+	<target name="runLocalhost" depends="compile" description="Run application connecting to localhost">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+ 			<jvmarg value="-Xms64M"/>
+ 			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Dsun.java2d.ddscale=true"/>
+			<arg line="--host localhost --playback-rate 5 --time-scale 10"/>
+		</java>
+	</target>
+		
 	<!-- Run the RDV (connect to rbnb.nees.buffalo.edu) -->
 	<target name="runBuffalo" depends="compile" description="Run application connecting to Buffalo server">
 		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
