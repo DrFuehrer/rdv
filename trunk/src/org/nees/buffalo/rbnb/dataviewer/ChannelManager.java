@@ -101,7 +101,12 @@ public class ChannelManager {
 		PlayerChannelListener listener;
 		for (int i=0; i < playerChannelListeners.size(); i++) {
 			listener = (PlayerChannelListener)playerChannelListeners.get(i);
-			listener.postData(channelMap);
+			try {
+				listener.postData(channelMap);
+			} catch (Exception e) {
+				log.error("Failed to post time to " + listener + ".");
+				e.printStackTrace();
+			}
 		}
 	}
 }
