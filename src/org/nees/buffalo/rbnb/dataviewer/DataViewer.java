@@ -73,6 +73,7 @@ public class DataViewer extends JFrame implements DomainListener {
  	private Action fileAction;
  	private Action connectAction;
  	private Action disconnectAction;
+ 	private Action importAction;
  	private Action exitAction;
  	
  	private Action controlAction;
@@ -226,6 +227,12 @@ public class DataViewer extends JFrame implements DomainListener {
  				channelListPanel.disconnect();
  			}			
  		};
+ 		
+ 		importAction = new DataViewerAction("Import", "Import local data to RBNB server", KeyEvent.VK_I) {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				new RBNBImportDialog(frame);
+ 			}			
+ 		}; 		
  
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
@@ -426,6 +433,11 @@ public class DataViewer extends JFrame implements DomainListener {
  		fileMenu.add(menuItem);
  		
  		fileMenu.addSeparator();	
+ 		
+ 		menuItem = new JMenuItem(importAction);
+ 		fileMenu.add(menuItem);
+ 		
+ 		fileMenu.addSeparator();
  		
  		menuItem = new JMenuItem(exitAction);
   		fileMenu.add(menuItem);
