@@ -36,8 +36,6 @@ public class DataPanelContainer extends JPanel {
 		layoutDataPanels();
 		
 		log.info("Added data panel to container (total=" + dataPanels.size() + ").");
-		
-		fireDataPanelAdded(dataPanel);
 	}
 
 	public void removeDataPanel(DataPanel dataPanel) {
@@ -46,8 +44,6 @@ public class DataPanelContainer extends JPanel {
 		layoutDataPanels();
 		
 		log.info("Removed data panel container (total=" + dataPanels.size() + ").");
-		
-		fireDataPanelRemoved(dataPanel);
 	}
 	
 	public void setLayout(int layout) {
@@ -81,29 +77,4 @@ public class DataPanelContainer extends JPanel {
 		validate();
 		repaint();
 	}
-		
-	public void addDataPanelContainerListener(DataPanelContainerListener listener) {
-		listeners.add(listener);
-	}
-
-	public void removeDataPanelContainerListener(DataPanelContainerListener listener) {
-		listeners.remove(listener);
-	}
-
-	private void fireDataPanelAdded(DataPanel dataPanel) {
-		DataPanelContainerListener listener;
-		for (int i=0; i<listeners.size(); i++) {
-			listener = (DataPanelContainerListener)listeners.get(i);
-			listener.dataPanelAdded(dataPanel);
-		}
-	}
-	
-	private void fireDataPanelRemoved(DataPanel dataPanel) {
-		DataPanelContainerListener listener;
-		for (int i=0; i<listeners.size(); i++) {
-			listener = (DataPanelContainerListener)listeners.get(i);
-			listener.dataPanelRemoved(dataPanel);
-		}		
-	}
-	
 }
