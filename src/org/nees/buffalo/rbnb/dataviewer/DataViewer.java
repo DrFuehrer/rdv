@@ -280,8 +280,16 @@ public class DataViewer extends JFrame implements DomainListener {
  		showChannelListAction = new DataViewerAction("Show Channel List", "", KeyEvent.VK_L) {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
- 				channelListPanel.setVisible(menuItem.isSelected());
- 				splitPane.resetToPreferredSizes();				
+ 				boolean selected = menuItem.isSelected();
+ 				if (selected) {
+ 					int dividerLocation = splitPane.getLastDividerLocation();
+ 					if (dividerLocation <= 1) {
+ 						dividerLocation = 150;
+ 					}
+ 					splitPane.setDividerLocation(dividerLocation);
+ 				} else {
+ 					splitPane.setDividerLocation(0);
+ 				} 				
  			}			
  		};
  
