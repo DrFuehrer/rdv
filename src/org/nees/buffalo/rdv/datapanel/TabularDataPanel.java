@@ -36,9 +36,6 @@ public class TabularDataPanel extends AbstractDataPanel {
 		tabularDataPanel = new JPanel();
 		gridLayout = new GridLayout(1, 1);
 		tabularDataPanel.setLayout(gridLayout);
-		
-		/* TabularDataRow headerRow = new TabularDataRow("Channel Name", "Value");
-		tabularDataPanel.add(headerRow); */
 	}
 
 	void clearData() {
