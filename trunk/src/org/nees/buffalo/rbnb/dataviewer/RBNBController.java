@@ -384,7 +384,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			return false;
 		}
 		
-		if (!requestData(location-domain, domain)) {
+		double requestDomain;
+		if (isVideo(metaDataChannelMap, channelName)) {
+			requestDomain = 0;
+		} else {
+			requestDomain = domain;
+		}
+		if (!requestData(location-requestDomain, requestDomain)) {
 			requestedChannels = realRequestedChannels;
 			return false;
 		}
@@ -400,9 +406,51 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 	
 	private void loadAllData() {
-		requestData(location-domain, domain);
-		updateDataMonitoring();
-		updateTimeListeners(location);
+		ChannelMap realRequestedChannels = requestedChannels;
+		
+		String[] allSubscribedChannels = requestedChannels.GetChannelList();
+		
+		ChannelMap imageChannels = new ChannelMap();
+		ChannelMap otherChannels = new ChannelMap();
+		
+		for (int i=0; i<allSubscribedChannels.length; i++) {
+			String channelName = allSubscribedChannels[i];
+			try {
+				if (isVideo(metaDataChannelMap, channelName)) {
+					log.info("Getting video for channel " + channelName + ".");
+					imageChannels.Add(channelName);
+				} else {
+					log.info("Getting data for channel " + channelName + ".");
+					otherChannels.Add(channelName);
+				}
+			} catch (SAPIException e) {
+				log.error("Failed to add channel " + channelName + ".");
+				e.printStackTrace();
+			}			
+		}
+		
+		if (imageChannels.NumberOfChannels() > 0) {
+			requestedChannels = imageChannels;
+			double smallDomain = 0;
+			if (!requestData(location-smallDomain, smallDomain)) {
+				requestedChannels = realRequestedChannels;
+				return;
+			}
+			updateDataMonitoring();
+			updateTimeListeners(location);
+		}
+		
+		if (otherChannels.NumberOfChannels() > 0) {
+			requestedChannels = otherChannels;
+			if (!requestData(location-domain, domain)) {
+				requestedChannels = realRequestedChannels;
+				return;
+			}
+			updateDataMonitoring();
+			updateTimeListeners(location);
+		}
+		
+		requestedChannels = realRequestedChannels;
 		changeStateSafe(STATE_STOPPED);
 		
 		log.info("Loaded " + DataViewer.formatSeconds(domain) + " of data for all channels at " + DataViewer.formatDate(location) + ".");
@@ -799,6 +847,31 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	
 	
 	// Utility (Static) Methods
+
+	private static boolean isVideo(ChannelMap channelMap, String channelName) {
+		if (channelName == null) {
+			log.error("Channel name is null for. Can't determine if is video.");
+			return false;
+		} else if (channelMap == null) {
+			log.warn("Haven't received metadata yet, can't determine channel type.");
+			return false;
+		}
+		
+		int channelIndex = channelMap.GetIndex(channelName);
+		if (channelIndex == -1) {
+			log.error("Unable to find channel in metadata.");
+			return false;
+		} else {
+			String mime = channelMap.GetMime(channelIndex);
+			if (mime != null && mime.equals("image/jpeg")) {
+				return true;
+			} else if (channelName.endsWith(".jpg")){
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}	
 	
 	private static double getLastTime(ChannelMap channelMap) {
 		double lastTime = -1;
