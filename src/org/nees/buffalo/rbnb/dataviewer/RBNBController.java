@@ -95,7 +95,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 				case STATE_LOADING:
 					requestData(location-domain, domain);
 					updateDataMonitoring();
-					updateTimeListeners(location);					
+					updateTimeListeners(location);
 					changeStateSafe(STATE_STOPPED);
 					break;
 				case STATE_PLAYING:
@@ -156,7 +156,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			updateTimeScale = -1;
 		}
 		
-		if (updateState != -1) {
+		if (updateState != -1 && state != STATE_LOADING) {
 			if (updateState == STATE_RECONNECT) {
 				changeStateSafe(STATE_DISCONNECTED);
 				changeStateSafe(STATE_STOPPED);
@@ -595,7 +595,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 				
 			} else {
 				log.error("Failed to fetch data.");
-				changeState(STATE_STOPPED);
+				changeStateSafe(STATE_STOPPED);
 				return;
 			}
 		}
