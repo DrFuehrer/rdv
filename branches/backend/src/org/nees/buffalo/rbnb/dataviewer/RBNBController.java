@@ -56,7 +56,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		
 		requestIsMonitor = false;
 		
-		dropData = false;
+		dropData = true;
 		
 		channelManager = new ChannelManager(); 
 		
@@ -96,6 +96,8 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 				updateDataPlaying();
 			} else if (state == STATE_MONITORING) {
 				updateDataMonitoring();
+			} else if (state == STATE_REALTIME) {
+				updateDataRealTime();
 			} else if (state == STATE_STOPPED) {
 				initRBNB();
 			}
@@ -171,10 +173,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}
 		
 		switch (newState) {
-			case STATE_MONITORING:		    
-				state = newState;
-				monitorData();
-				break;
 			case STATE_LOADING:
 				state = newState;
 				break;
@@ -185,6 +183,15 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 				
 				state = newState;
 				break;
+			case STATE_MONITORING:		    
+				state = newState;
+				monitorData();
+				break;
+			case STATE_REALTIME:
+				if (oldState == STATE_MONITORING || oldState == STATE_STOPPED) {
+					preFetchData(-1, -1);
+				}
+				state = newState;
 			case STATE_STOPPED:
 				state = newState;
 				break;
@@ -441,7 +448,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			double timeDifference = (playbackRefreshRate*(i+1)) - ((System.currentTimeMillis() - playbackStartTime)/1000d);
  			if (dropData && timeDifference < -playbackRefreshRate) {
 				int stepsToSkip = (int)((timeDifference*-1) / playbackRefreshRate);
- 				log.debug("Skipping " + (long)(timeDifference*-1000) + " ms of data.");
+ 				//log.debug("Skipping " + (long)(timeDifference*-1000) + " ms of data.");
 				i += stepsToSkip;
  			} else if (timeDifference > playbackRefreshRate) {
 				//log.debug("Sleeping for " + ((long)(timeDifference*1000)) + " ms.");
@@ -469,11 +476,19 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		
 		new Thread(new Runnable() {
 			public void run() {
-				if (requestData(location, duration)) {
+				boolean requestStatus = false;
+				if (state == STATE_PLAYING) {
+					requestStatus = requestData(location, duration);
+				} else if (state == STATE_REALTIME) {
+					requestStatus = requestDataRealTime();
+				}
+				
+				if (requestStatus) {
 					try {
 						preFetchChannelMap = sink.Fetch(5000);
 					} catch (Exception e) {
- 						log.error("Failed to fetch data: " + e.getMessage() + ".");
+ 						log.error("Failed to fetch data.");
+ 						e.printStackTrace();
 						changeStateSafe(STATE_STOPPED);
 						return;
 					}
@@ -496,7 +511,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	private ChannelMap getPreFetchChannelMap(long timeOut) {
 		synchronized(preFetchLock) {
 			if (!preFetchDone) {
-				log.warn("Waiting for channel map.");
+				//log.warn("Waiting for channel map.");
 				try {
 					if (timeOut == -1) {
 						preFetchLock.wait();
@@ -504,9 +519,10 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 						preFetchLock.wait(timeOut);
 					}
  				} catch (Exception e) {
- 					log.error("Failed to wit for channel map: " + e.getMessage() + ".");
+ 					log.error("Failed to wait for channel map.");
+ 					e.printStackTrace();
  				}
- 				log.debug("Done waiting for channel map.");
+ 				//log.debug("Done waiting for channel map.");
 			}
 		}
 		
@@ -580,6 +596,104 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 
 		//post data to listeners
 		channelManager.postData(getmap);
+	}
+	
+	
+	// Real Time Methods
+	
+	private boolean requestDataRealTime() {
+		if (requestedChannels.NumberOfChannels() == 0) {
+			return false;
+		}
+		
+		if (requestIsMonitor) {
+			reInitRBNB();
+			requestIsMonitor = false;
+		}
+	
+		try {
+			sink.Request(requestedChannels, PLAYBACK_REFRESH_RATE, PLAYBACK_REFRESH_RATE, "newest");
+		} catch (SAPIException e) {
+ 			log.error("Failed to request channels (RT) at " + DataViewer.formatDate(location) + ".");
+ 			e.printStackTrace();
+			return false;
+		}			
+		
+		return true;
+	}
+	
+	private void updateDataRealTime() {	
+		//stop monitoring if no channels selected
+		//TODO see if this should be posible or indicates an error in the program
+		if (requestedChannels.NumberOfChannels() == 0) {
+			log.debug("No channels subscribed to monitor.");
+			changeStateSafe(STATE_STOPPED);
+			return;
+		}
+		
+		ChannelMap getmap = null;
+		
+		getmap = getPreFetchChannelMap(5000);
+		if (getmap == null) {
+			log.error("Failed to get pre-fetched data.");
+			changeStateSafe(STATE_STOPPED);
+			return;
+		} else if (getmap.GetIfFetchTimedOut()) {
+			log.error("Fetch timed out.");
+			changeStateSafe(STATE_STOPPED);
+			return;
+		}
+		
+		preFetchData(-1, -1);
+
+		String[] channelList = getmap.GetChannelList();
+		
+		//received no data
+		if (channelList.length == 0) {
+			return;			
+		}
+		
+		//save previous location
+		double time = location;
+
+		//update current location
+		location = getLastTime(getmap);
+		updateTimeListeners(location);
+
+		//post data to listeners
+		channelManager.postData(getmap);
+		
+		long sleepTime = 0;
+		
+		//find min and max times
+		double minTime = Double.MAX_VALUE;
+		double maxTime = 0;
+		for (int j=0; j<channelList.length; j++) {
+			String channelName = channelList[j];
+			int channelIndex = getmap.GetIndex(channelName);
+			double[] times = getmap.GetTimes(channelIndex);
+			for (int k=0; k<times.length; k++) {
+				minTime = Math.min(times[k], minTime);
+				maxTime = Math.max(times[k], maxTime);
+			}
+		}
+		
+		//figure out how much time to sleep
+		double offset = (time==-1 || minTime == Double.MAX_VALUE) ? 0.005 : time - minTime;
+		if (offset > 0) {
+			sleepTime += offset*1000/4;
+		} else if (offset == 0) {
+			sleepTime -= 5;
+		} else if (sleepTime > -1*offset*1000){
+			sleepTime += offset*1000;
+		} else {
+			sleepTime = 0;
+		}
+		
+		if (sleepTime >= 5) {
+			//log.debug("Sleeping " + sleepTime + " ms. Offset is " + ((long)(offset*1000)) + " (" + DataViewer.formatDate(time) + " , " + DataViewer.formatDate(minTime) +").");
+			try { Thread.sleep(sleepTime); } catch (Exception e) {}
+		}
 	}
 	
 	
@@ -659,6 +773,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 
  	public void monitor() {
 		changeState(STATE_MONITORING);
+ 		//changeState(STATE_REALTIME);
 	}
 	
 	public void play() {
@@ -707,7 +822,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 
 	public boolean unsubscribeAll(PlayerChannelListener channelListener) {
 		// FIXME make me thread safe
-		return unsubscribeAll(channelListener);
+		return unsubscribeAllSafe(channelListener);
 	}
 	
 	public boolean isSubscribed(String channelName) {
@@ -787,14 +902,17 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		String stateString;
 		
 		switch (state) {
-			case STATE_MONITORING:
-				stateString = "monitoring";
-				break;
 			case STATE_LOADING:
 				stateString = "loading";
 				break;
 			case STATE_PLAYING:
 				stateString = "playing";
+				break;
+			case STATE_MONITORING:
+				stateString = "monitoring";
+				break;
+			case STATE_REALTIME:
+				stateString = "real time";
 				break;
 			case STATE_STOPPED:
 				stateString = "stopped";

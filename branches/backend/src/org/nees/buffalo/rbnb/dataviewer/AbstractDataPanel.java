@@ -226,6 +226,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		switch (newState) {
 			case Player.STATE_LOADING:
 			case Player.STATE_MONITORING:
+			case Player.STATE_REALTIME:
 				clearData();
 				break;
 		}

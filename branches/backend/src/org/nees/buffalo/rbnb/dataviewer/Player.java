@@ -10,6 +10,7 @@ public interface Player {
 	public static final int STATE_PLAYING = 3;
 	public static final int STATE_EXITING = 4;
 	public static final int STATE_DISCONNECTED = 5;
+	public static final int STATE_REALTIME = 6;
 
 	public void monitor();
 	public void play();
