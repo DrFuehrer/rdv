@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="lib/jfreechart-0.9.21.jar"/>
 	<classpathentry kind="lib" path="lib/jcommon-0.9.7.jar"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jnt.FFT.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
