@@ -422,6 +422,8 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 				if (addToContainer) {
 					dataPanelContainer.addDataPanel(this);
 				}
+				
+				break;
 			}
 		}
 	}	
