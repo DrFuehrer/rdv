@@ -58,7 +58,7 @@ public class AboutDialog extends JDialog implements KeyEventDispatcher {
 		container.add(new JLabel(" "));
 		container.add(new JLabel("Version: " + Version.major + "." + Version.minor + "." + Version.release));
 		container.add(new JLabel(" "));
-		container.add(new JLabel("Copyright \251 2004 University at Buffalo"));
+		container.add(new JLabel("Copyright \251 2005 University at Buffalo"));
 		container.add(new JLabel("Visit http://nees.buffalo.edu/"));
 		container.add(new JLabel(" "));
 		container.add(new JLabel("This work is supported in part by the"));
