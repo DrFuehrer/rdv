@@ -1,4 +1,4 @@
-RBNB Data Viewer
+RDV - Realtime Data Viewer
 by Jason P. Hanley <jphanley@buffalo.edu>
 
 
@@ -11,7 +11,7 @@ Date: ?
 Introduction
 ------------
 
-RBNB Data Viewer is a software package used to view time synchronized,
+RDV is a software package used to view time synchronized,
 streaming data, in live or archived form, over the internet from a
 Data Turbine server. It is capable of displaying any time series data,
 whether numeric, image, or video, in an integrated application for

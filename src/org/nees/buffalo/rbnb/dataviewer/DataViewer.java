@@ -34,7 +34,6 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
@@ -159,7 +158,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		
 			frame.getContentPane().setLayout(new BorderLayout());
 	
-			frame.setTitle("RBNB Data Viewer");
+			frame.setTitle("RDV");
 		}
 		
 		c = new GridBagConstraints();
@@ -224,7 +223,7 @@ public class DataViewer extends JFrame implements DomainListener {
  			}			
  		};
  
- 		exitAction = new DataViewerAction("Exit", "Exit RBNB Data Viewer", KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)) {
+ 		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				exit();
  			}			
@@ -367,7 +366,7 @@ public class DataViewer extends JFrame implements DomainListener {
  		
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
  
- 		aboutAction = new DataViewerAction("About RBNB Data Viewer", "", KeyEvent.VK_A) {
+ 		aboutAction = new DataViewerAction("About RDV", "", KeyEvent.VK_A) {
  			public void actionPerformed(ActionEvent ae) {
  				if (aboutDialog == null) {
  					aboutDialog = new AboutDialog(frame);

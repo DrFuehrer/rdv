@@ -32,7 +32,7 @@ public class AboutDialog extends JDialog implements KeyEventDispatcher {
 			}
 		});
 
-		setTitle("About RBNB Data Viewer");
+		setTitle("About RDV");
 		
 		getContentPane().setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -53,7 +53,7 @@ public class AboutDialog extends JDialog implements KeyEventDispatcher {
 		
 		container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 		
-		container.add(new JLabel("RBNB Data Viewer"));
+		container.add(new JLabel("RDV - Realtime Data Viewer"));
 		container.add(new JLabel("by Jason P. Hanley <jphanley@buffalo.edu>"));
 		container.add(new JLabel(" "));
 		container.add(new JLabel("Version: " + Version.major + "." + Version.minor + "." + Version.release));
