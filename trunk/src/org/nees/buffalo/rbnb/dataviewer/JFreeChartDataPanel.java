@@ -89,22 +89,27 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		return true;
 	}
 	
-	public void addChannel(Channel channel) {
-		super.addChannel(channel);
-		
+	public boolean addChannel(Channel channel) {
 		String channelName = channel.getName();
 		String unit = channel.getUnit();
-
+		
+		if (xyMode && !channels.contains(channelName) && channels.size() == 2) {
+			log.error("We don't support more than 2 channels");
+			return false;			
+		}
+		
+		if (!super.addChannel(channel)) {
+			return false;
+		}
+		
 		String seriesName = getSeriesName(channelName);
 		
-		log.debug("Adding channel: " + seriesName + ".");
+		log.info("Adding channel: " + seriesName + ".");
 
 		if (xyMode) {
 			if (channels.size() == 1) {
 				XYSeries data = new XYSeries(seriesName, false, true);
 				((XYSeriesCollection)dataCollection).addSeries(data);
-			} else if (channels.size() > 2) {
-				return;
 			}
 		} else {
 			TimeSeries data = new TimeSeries(seriesName, FixedMillisecond.class);
@@ -113,14 +118,18 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		}
 		
 		setAxisName();
+		
+		return true;
 	}
 	
-	public void removeChannel(String channelName) {
+	public boolean removeChannel(String channelName) {
 		String seriesName = getSeriesName(channelName);
 		
-		super.removeChannel(channelName);
+		if (!super.removeChannel(channelName)) {
+			return false;
+		}
 		
-		log.debug("Removing channel: " + channelName + ".");
+		log.info("Removing channel: " + channelName + ".");
 		
 		if (xyMode) {
 			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
@@ -130,6 +139,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			TimeSeries data = dataCollection.getSeries(seriesName);
 			dataCollection.removeSeries(data);
 		}
+		
+		return true;
 	}
 	
 	String getTitle() {
@@ -435,7 +446,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			}
 		}
 		
-		log.debug("Cleared data display.");
+		log.info("Cleared data display.");
 	}
 	
 	public String toString() {

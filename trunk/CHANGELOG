@@ -43,6 +43,8 @@
 -Put icons in jar file for applet and jnlp to load
 -Fixed bug in channel list when sources are added/removed
 -Remove uneeded connections to server when removing a channel for viewing
+-Added warnings when try to add channels when the viewer doesn't support them (or that many)
+-Fixed JFreeChart panel behaviour when adding the same channel
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons
