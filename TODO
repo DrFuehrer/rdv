@@ -5,3 +5,4 @@
 -export selected channels to file on disk
 -export selected channels to repository
 -stop at end of stream (or find a good way to get the end of stream)
+-make UI more responsive when connecting

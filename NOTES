@@ -1,0 +1,13 @@
+Rework of RBNB backend
+-Change monitor to use Request("newest") with a sleepy loop.
+-Change postData to only send channel map and have applications
+ display data when the time is posted.
+-Cleanup thread issues. Put all changes to the controller in a
+ thread safe list and check this on each iteration after
+ displaying data. Keep the interupt flag for certain operations
+ on the controller (stop, set location, etc...)
+-Check to see why the channel list is refreshing so much and
+ repetively changing the location bar
+ 
+UI
+-Make the location bar more stable in where the time is

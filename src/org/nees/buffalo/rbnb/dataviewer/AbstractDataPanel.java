@@ -521,13 +521,13 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 			
 			g.setColor(Color.BLACK);
 			g.fillRect(0, 0, componentWidth, 16);
+			g.setColor(Color.WHITE);
+			g.drawString(getTitle(), 36, 12);
 			g.drawImage(windowPinImage, 0, 0, null);
 			g.drawImage(windowSnapshotImage, 16, 0, null);
 			g.drawImage(windowDetachImage, componentWidth-48, 0, null);
 			g.drawImage(windowMaximizeImage, componentWidth-32, 0, null);
 			g.drawImage(windowCloseImage, componentWidth-16, 0, null);
-			g.setColor(Color.WHITE);
-			g.drawString(getTitle(), 36, 12);
 		}
 	}
 }
