@@ -3,35 +3,15 @@ package org.nees.buffalo.rbnb.dataviewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.DisplayMode;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.VolatileImage;
-import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JWindow;
-import javax.swing.border.EtchedBorder;
-import javax.swing.event.MouseInputAdapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -136,7 +116,8 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	}	
 
 	void clearData() {
-		// TODO maybe implement this
+		//TODO should we clear here?
+		//image.clear();
 	}
 	
 	class JPEGPanel extends JComponent {
@@ -227,6 +208,11 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		public void update(String imageFileName) {
 			Image newImage = new ImageIcon(imageFileName).getImage();
 			showImage(newImage);		
+		}
+		
+		public void clear() {
+			image = null;
+			repaint();
 		}
 		
 		private void showImage(Image newImage) {
