@@ -22,7 +22,7 @@
 		<jar href="jcommon-0.9.7.jar"/>
 		<jar href="jfreechart-0.9.21.jar"/>
 	</resources>
-	<application-desc main-class="org.nees.buffalo.rbnb.dataviewer.DataViewer">
+	<application-desc main-class="org.nees.buffalo.rdv.DataViewer">
 		<property name="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.NoOpLog"/>
 		<argument>--host</argument>
 		<argument>rbnb.nees.buffalo.edu</argument>

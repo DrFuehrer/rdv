@@ -75,7 +75,7 @@
 		<jar jarfile="${build.lib}/${package.name}.jar" basedir="${build.classes}">
 			<manifest>
 				<attribute name="Class-Path" value="lib/${package.name}-icons.jar lib/commons-cli-1.0.jar lib/commons-logging.jar lib/jcommon-0.9.7.jar lib/jfreechart-0.9.21.jar lib/rbnb.jar"/>
-				<attribute name="Main-Class" value="org.nees.buffalo.rbnb.dataviewer.DataViewer"/>
+				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
 			</manifest>
 		</jar>
 		<jar jarfile="${build.lib}/${package.name}-icons.jar" basedir="." includes="icons/*.gif"/>
@@ -104,14 +104,14 @@
 		
 	<target name="javadoc" description="Build documentation">
 		<mkdir dir="${doc.dir}/api"/>  
-		<javadoc packagenames="org.nees.buffalo.rbnb.dataviewer*" sourcepath="${src.dir}" defaultexcludes="yes" destdir="${doc.dir}/api" author="true" version="true" use="true" windowtitle="RDV API">
+		<javadoc packagenames="org.nees.buffalo.rdv*" sourcepath="${src.dir}" defaultexcludes="yes" destdir="${doc.dir}/api" author="true" version="true" use="true" windowtitle="RDV API">
 			<link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
 		</javadoc>
 	</target>
 	
 	<!-- Run the RDV -->
 	<target name="run" depends="compile" description="Run application">
-		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>			
@@ -120,7 +120,7 @@
 
 	<!-- Run the RDV (connect to rbnb.nees.buffalo.edu) -->
 	<target name="runBuffalo" depends="compile" description="Run application connecting to Buffalo server">
-		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>
@@ -130,7 +130,7 @@
 	
 	<!-- Run the RDV (connect to neestpm.sdsc.edu) -->
 	<target name="runNEESit" depends="compile" description="Run application connecting to Buffalo server">
-		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>
@@ -140,7 +140,7 @@
 	
 	
 	<target name="help" depends="compile" description="Show usage">
-		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
 			<arg line="--help"/>
 		</java>
 	</target>
