@@ -1,6 +1,7 @@
 1.1.1 - April 2005
 -add command line options for location, time scale, and domain
 -add tabular data panel
+-sort channel list in a human readable format
 
 1.2 - August 2005
 -create a basic 3d viewer so we can feed it data from our Krypton

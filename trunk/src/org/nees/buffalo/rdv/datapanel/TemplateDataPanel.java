@@ -15,14 +15,23 @@ import javax.swing.JComponent;
  */
 public class TemplateDataPanel extends AbstractDataPanel {
 
+	/**
+	 * The UI component to display the data in
+	 */
 	JComponent dataComponent;
 	
+	/**
+	 * Initialize the object and UI
+	 */
 	public TemplateDataPanel() {
 		super();
 
 		initDataComponent();
 	}
 	
+	/**
+	 * Initialize the UI component and pass it too the abstract class.
+	 */
 	private void initDataComponent() {
 		// TODO create data component
 		

@@ -13,3 +13,5 @@ indicate this.
 Location bar is still jumpy
 
 The data panels still refresh data when they don't need too.
+
+Can view channels of incorrect data type in certain viewers.
