@@ -50,7 +50,7 @@ import com.rbnb.sapi.ChannelMap;
 /**
  * @author Jason P. Hanley
  */
-public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelListener, PlayerTimeListener, PlayerStateListener, DropTargetListener {
+public abstract class AbstractDataPanel implements DataPanel, PlayerChannelListener, PlayerTimeListener, PlayerStateListener, DropTargetListener {
 
 	static Log log = LogFactory.getLog(AbstractDataPanel.class.getName());
 	

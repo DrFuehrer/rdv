@@ -7,7 +7,7 @@ import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.datapanel.DataPanel2;
+import org.nees.buffalo.rdv.datapanel.DataPanel;
 
 /**
  * @author Jason P. Hanley
@@ -31,7 +31,7 @@ public class DataPanelContainer extends JPanel {
 		layout = HORIZONTAL_LAYOUT;
 	}
 	
-	public void addDataPanel(DataPanel2 dataPanel) {
+	public void addDataPanel(DataPanel dataPanel) {
 		dataPanels.add(dataPanel);
 		layoutDataPanels();
 		
@@ -40,7 +40,7 @@ public class DataPanelContainer extends JPanel {
 		fireDataPanelAdded(dataPanel);
 	}
 
-	public void removeDataPanel(DataPanel2 dataPanel) {
+	public void removeDataPanel(DataPanel dataPanel) {
 		remove(dataPanel.getComponent());
 		dataPanels.remove(dataPanel);
 		layoutDataPanels();
@@ -68,10 +68,10 @@ public class DataPanelContainer extends JPanel {
 			
 			setLayout(new GridLayout(rows, columns));
 			
-			DataPanel2 dataPanel;
+			DataPanel dataPanel;
 			int channelIndex = 0;
 			for (int i=0; i<numberOfDataPanels; i++) {
-				dataPanel = (DataPanel2)dataPanels.get(i);
+				dataPanel = (DataPanel)dataPanels.get(i);
 				remove(dataPanel.getComponent());
 				add(dataPanel.getComponent());			
 				channelIndex++;			
@@ -90,7 +90,7 @@ public class DataPanelContainer extends JPanel {
 		listeners.remove(listener);
 	}
 
-	private void fireDataPanelAdded(DataPanel2 dataPanel) {
+	private void fireDataPanelAdded(DataPanel dataPanel) {
 		DataPanelContainerListener listener;
 		for (int i=0; i<listeners.size(); i++) {
 			listener = (DataPanelContainerListener)listeners.get(i);
@@ -98,7 +98,7 @@ public class DataPanelContainer extends JPanel {
 		}
 	}
 	
-	private void fireDataPanelRemoved(DataPanel2 dataPanel) {
+	private void fireDataPanelRemoved(DataPanel dataPanel) {
 		DataPanelContainerListener listener;
 		for (int i=0; i<listeners.size(); i++) {
 			listener = (DataPanelContainerListener)listeners.get(i);

@@ -14,7 +14,7 @@ import org.nees.buffalo.rdv.rbnb.Channel;
  * @see     AbstractDataPanel
  * @since   1.0
  */
-public interface DataPanel2 {
+public interface DataPanel {
 	/**
 	 * Get the UI component that will display the data
 	 * 

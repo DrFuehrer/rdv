@@ -40,7 +40,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.datapanel.DataPanel2;
+import org.nees.buffalo.rdv.datapanel.DataPanel;
 import org.nees.buffalo.rdv.datapanel.JFreeChartDataPanel;
 import org.nees.buffalo.rdv.datapanel.JPEGDataPanel;
 import org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel;
@@ -667,7 +667,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		
 		log.info("Cretaing data panel for channel " + channelName + ".");
 		
-		DataPanel2 panel = null;
+		DataPanel panel = null;
 		if (mime == null) {
 			log.warn("Unknown data type for channel " + channelName + ".");
 			if (channelName.endsWith(".jpg")) {
@@ -697,24 +697,24 @@ public class DataViewer extends JFrame implements DomainListener {
 		addDataPanel(panel);
 	}
 	
-	private void addDataPanel(DataPanel2 dataPanel) {
+	private void addDataPanel(DataPanel dataPanel) {
 		dataPanel.setDomain(controlPanel.getDomain());
 		dataPanelContainer.addDataPanel(dataPanel);
 		dataPanels.add(dataPanel);
 	}
 	
 	public void closeAllDataPanels() {
-		DataPanel2 dataPanel;
+		DataPanel dataPanel;
 		for (int i=0; i<dataPanels.size(); i++) {
-			dataPanel = (DataPanel2)dataPanels.get(i);
+			dataPanel = (DataPanel)dataPanels.get(i);
 			dataPanel.closePanel();
 		}
 	}
 	
 	public void domainChanged(double domain) {
-		DataPanel2 dataPanel;
+		DataPanel dataPanel;
 		for (int i=0; i<dataPanels.size(); i++) {
-			dataPanel = (DataPanel2)dataPanels.get(i);
+			dataPanel = (DataPanel)dataPanels.get(i);
 			dataPanel.setDomain(domain);
 		}		
 	}
