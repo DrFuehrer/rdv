@@ -417,10 +417,8 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			String channelName = allSubscribedChannels[i];
 			try {
 				if (isVideo(metaDataChannelMap, channelName)) {
-					log.info("Getting video for channel " + channelName + ".");
 					imageChannels.Add(channelName);
 				} else {
-					log.info("Getting data for channel " + channelName + ".");
 					otherChannels.Add(channelName);
 				}
 			} catch (SAPIException e) {
