@@ -3,7 +3,7 @@
   codebase="http://nees.buffalo.edu/software/RBNBDataViewer/jnlp"
   href="RBNBDataViewer.jnlp">
 	<information>
-		<title>RBNB Data Viewer</title>
+		<title>RDV</title>
 		<vendor>University of Buffalo</vendor>
 		<homepage href="http://nees.buffalo.edu/software/RBNBDataViewer/" />
 		<description>A tool to view synchronzied, streaming data from a RBNB server.</description>
