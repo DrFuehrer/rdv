@@ -171,14 +171,20 @@ public class DataViewer extends JFrame implements DomainListener {
 		initSplitPane();
 		
 		rbnb.addSubscriptionListener(channelListPanel);
+		rbnb.addSubscriptionListener(controlPanel);
+		
 		rbnb.addTimeListener(controlPanel);
 		rbnb.addTimeListener(statusPanel);
+		
 		rbnb.addStateListener(statusPanel);
 		rbnb.addStateListener(controlPanel);
+		
 		channelListPanel.addChannelListListener(rbnb);
 		channelListPanel.addChannelListListener(controlPanel);
+		
 		controlPanel.addTimeScaleListener(rbnb);
 		controlPanel.addTimeScaleListener(statusPanel);
+		
 		controlPanel.addDomainListener(rbnb);
   		controlPanel.addDomainListener(statusPanel);
   		controlPanel.addDomainListener(this);
@@ -200,7 +206,7 @@ public class DataViewer extends JFrame implements DomainListener {
  		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				if (rbnbConnectionDialog == null) {
- 					rbnbConnectionDialog = new RBNBConnectionDialog(frame, rbnb, channelListPanel);
+ 					rbnbConnectionDialog = new RBNBConnectionDialog((DataViewer)frame, rbnb, channelListPanel);
  				} else {
  					rbnbConnectionDialog.setVisible(true);
  				}			
@@ -338,8 +344,11 @@ public class DataViewer extends JFrame implements DomainListener {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  		        if (menuItem.isSelected()) {
- 		        	enterFullScreenMode();
- 		        	menuItem.setSelected(true);
+ 		        	if (enterFullScreenMode()) {
+ 		        		menuItem.setSelected(true);
+ 		        	} else {
+ 		        		menuItem.setSelected(false);
+ 		        	}
  		        } else {
  		        	leaveFullScreenMode();
  		        	menuItem.setSelected(false);
@@ -555,7 +564,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		channelListPanel = new ChannelListPanel(this);
 		channelListPanel.setMinimumSize(new Dimension(0, 0));
 		
-		log.debug("Created channel tree with initial channel list.");
+		log.info("Created channel tree with initial channel list.");
 	}
 	
 	private void initRightPanel() {
@@ -579,7 +588,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(controlPanel, c);
 		
-		log.debug("Added control panel.");
+		log.info("Added control panel.");
 	}
 	
 	private void initDataPanelContainer() {
@@ -597,7 +606,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(dataPanelContainer, c);
 		
-		log.debug("Added data panel container.");
+		log.info("Added data panel container.");
 	}
 	
 	private void initStatus() {
@@ -615,7 +624,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(statusPanel, c);
 		
-		log.debug("Added status panel.");		
+		log.info("Added status panel.");		
 	}
 	
 	private void initSplitPane() {
@@ -631,7 +640,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		String channelName = channel.getName();
 		String mime = channel.getMimeType();
 		
-		log.debug("Cretaing data panel for channel " + channelName + ".");
+		log.info("Cretaing data panel for channel " + channelName + ".");
 		
 		DataPanel2 panel = null;
 		if (mime == null) {
@@ -665,7 +674,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		dataPanels.add(dataPanel);
 	}
 	
-	private void closeAllDataPanels() {
+	protected void closeAllDataPanels() {
 		DataPanel2 dataPanel;
 		for (int i=0; i<dataPanels.size(); i++) {
 			dataPanel = (DataPanel2)dataPanels.get(i);
@@ -685,44 +694,60 @@ public class DataViewer extends JFrame implements DomainListener {
 		if (rbnb != null) {
 			rbnb.exit();
 		}
-		log.debug("Exiting.");
+		log.info("Exiting.");
 		if (!applet) System.exit(0);		
 	}
 
- 	private void enterFullScreenMode() {
+ 	private boolean enterFullScreenMode() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
-		if (devices[0].isFullScreenSupported() && devices[0].getFullScreenWindow() == null) {
-			log.debug("Switching to full screen mode.");
-	
-			setVisible(false);
-	
-			try {
-				devices[0].setFullScreenWindow(this);
-			} catch (InternalError e) {
-				log.error("Failed to switch to full screen mode: " + e.getMessage() + ".");
+		for (int i=0; i<devices.length; i++) {
+			GraphicsDevice device = devices[i];
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == null) {
+				log.info("Switching to full screen mode.");
+		
+				setVisible(false);
+		
+				try {
+					device.setFullScreenWindow(this);
+				} catch (InternalError e) {
+					log.error("Failed to switch to full screen exclusive mode.");
+					e.printStackTrace();
+					
+					setVisible(true);
+					return false;
+				}
+		
+				dispose();
+				setUndecorated(true);
 				setVisible(true);
-				return;
+				requestFocus();
+				
+				return true;
 			}
-	
-			dispose();
-			setUndecorated(true);
-			setVisible(true);
-			requestFocus();
 		}
+		
+		log.warn("No screens available or full screen exclusive mode is unsupported on your platform.");
+		
+		return false;
  	}
  	
  	private void leaveFullScreenMode() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
-		if (devices[0].isFullScreenSupported() && devices[0].getFullScreenWindow() != null) {
-			log.debug("Leaving full screen mode.");
-
-			setVisible(false);
-			devices[0].setFullScreenWindow(null);
-			dispose();
-			setUndecorated(false);
-			setVisible(true);
+		for (int i=0; i<devices.length; i++) {
+			GraphicsDevice device = devices[i];
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == this) {
+				log.info("Leaving full screen mode.");
+	
+				setVisible(false);
+				device.setFullScreenWindow(null);
+				dispose();
+				setUndecorated(false);
+				setVisible(true);
+				
+				break;
+			}
 		}
 	}
 

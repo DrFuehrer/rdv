@@ -1,4 +1,4 @@
-1.0.2
+1.1.0
 -Expanded domain slider to include usecond and day time values
 -Improved channel list to keep expansion and selection state on refresh
 -Added ability to hide channel list, control panel, and status panel
@@ -37,6 +37,9 @@
 -Set autoscaling to always include 0
 -Fixed time axis to always be duration with (even without enough data)
 -Created base data panel class with common control bar for all data panels
+-Complete redesign of data backend. Completely thread safe and better performance.
+-Fix retry connection logic
+-Fix full screen mode and add support for platforms that don't support it
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

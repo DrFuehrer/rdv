@@ -49,7 +49,8 @@ public class TemplateDataPanel extends AbstractDataPanel {
 		return false;
 	}
 
-	public void postData(ChannelMap channelMap, Time time) {
+	//FIXME to new interface (change to postTime)
+	/* public void postData(ChannelMap channelMap, Time time) {
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -61,5 +62,5 @@ public class TemplateDataPanel extends AbstractDataPanel {
 				// TODO display the data in your data component
 			}
 		}
-	}
+	} */
 }
