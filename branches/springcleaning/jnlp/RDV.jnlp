@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+"
+  codebase="http://nees.buffalo.edu/software/RDV/jnlp"
+  href="RDV.jnlp">
+	<information>
+		<title>RDV</title>
+		<vendor>University at Buffalo</vendor>
+		<homepage href="http://nees.buffalo.edu/software/RDV/" />
+		<description>A tool to view synchronzied, streaming data from a RBNB server.</description>
+		<offline-allowed/>
+	</information>
+	<security>
+		<all-permissions/>
+	</security>
+	<resources>
+		<j2se version="1.4+" initial-heap-size="64m" max-heap-size="256m"/>
+		<jar href="RBNBDataViewer.jar" main="true"/>
+		<jar href="RBNBDataViewer-icons.jar"/>		
+		<jar href="rbnb.jar"/>
+		<jar href="commons-cli-1.0.jar"/>
+		<jar href="commons-logging.jar"/>
+		<jar href="jcommon-0.9.7.jar"/>
+		<jar href="jfreechart-0.9.21.jar"/>
+	</resources>
+	<application-desc main-class="org.nees.buffalo.rbnb.dataviewer.DataViewer">
+		<property name="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.NoOpLog"/>
+		<argument>--host</argument>
+		<argument>rbnb.nees.buffalo.edu</argument>
+	</application-desc>
+</jnlp>

@@ -1,0 +1,9 @@
+1.1.1 - April 2005
+-add command line options for location, time scale, and domain
+-add tabular data panel
+
+1.2 - August 2005
+-create a basic 3d viewer so we can feed it data from our Krypton
+-export selected channels to file
+-export selected channels to repository
+-load/save current state of viewer
