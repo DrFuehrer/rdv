@@ -124,11 +124,25 @@ public class StringDataPanel implements DataPanel2, PlayerChannelListener, DropT
 
 
 	
-	public void postData(ChannelMap channelMap, int channelIndex, String channelName) {
-		postData(channelMap, channelIndex, channelName, -1, -1);
+	public void postData(ChannelMap channelMap) {
+		postData(channelMap, -1, -1);
+	}
+	
+	public void postData(ChannelMap channelMap, double startTime, double duration) {
+		//loop over all channels and see if there is data for them
+		for (int i=0; i<channels.size(); i++) {
+			String channelName = (String)channels.get(i);
+			int channelIndex = channelMap.GetIndex(channelName);
+			
+			//if there is data for channel, post it
+			if (channelIndex != -1) {
+				postData(channelMap, channelName, channelIndex, startTime, duration);
+			}
+		}
 	}
 
-	public void postData(ChannelMap channelMap, int channelIndex, String channelName, double location, double duration) {
+	private void postData(ChannelMap channelMap, String channelName, int channelIndex, double startTime, double duration) {
+		//FIXME this doesn't look at the startTime and duration
 		JLabel dataLabel = (JLabel)labels.get(channels.indexOf(channelName));
 		String[] data = channelMap.GetDataAsString(channelIndex);
 		StringBuffer text = new StringBuffer(channelName + ": ");
