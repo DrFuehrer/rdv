@@ -17,10 +17,10 @@
 		<jar href="RBNBDataViewer.jar" main="true"/>
 		<jar href="RBNBDataViewer-icons.jar"/>		
 		<jar href="rbnb.jar"/>
+		<jar href="commons-cli-1.0.jar"/>
 		<jar href="commons-logging.jar"/>
 		<jar href="jcommon-0.9.7.jar"/>
 		<jar href="jfreechart-0.9.21.jar"/>
-		<jar href="log4j-1.2.8.jar"/>
 	</resources>
 	<application-desc main-class="org.nees.buffalo.rbnb.dataviewer.DataViewer">
 		<property name="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.NoOpLog"/>

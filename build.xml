@@ -14,6 +14,9 @@
 	<!-- src dir -->
 	<property name="src.dir" value="src"/>
 	
+	<!-- lib dir -->
+	<property name="lib.dir" value="lib"/>
+	
 	<!-- Documentation directory -->
 	<property name ="doc.dir" value="docs"/>
 	
@@ -32,7 +35,7 @@
 	<path id="classpath">
 		<pathelement location="${build.classes}"/>
 		<pathelement location="."/>
-		<fileset dir="lib">
+		<fileset dir="${lib.dir}">
 			<include name="*.jar"/>
 		</fileset>
 		<fileset dir="${rbnb.home}/bin">
@@ -71,7 +74,7 @@
 	<target name="jar" depends="compile" description="Build jar">
 		<jar jarfile="${build.lib}/${package.name}.jar" basedir="${build.classes}">
 			<manifest>
-				<attribute name="Class-Path" value="lib/${package.name}-icons.jar lib/commons-logging.jar lib/jcommon-0.9.7.jar lib/jfreechart-0.9.21.jar lib/log4j-1.2.8.jar lib/rbnb.jar"/>
+				<attribute name="Class-Path" value="lib/${package.name}-icons.jar lib/commons-cli-1.0.jar lib/commons-logging.jar lib/jcommon-0.9.7.jar lib/jfreechart-0.9.21.jar lib/rbnb.jar"/>
 				<attribute name="Main-Class" value="org.nees.buffalo.rbnb.dataviewer.DataViewer"/>
 			</manifest>
 		</jar>
@@ -83,7 +86,7 @@
 		<zip destfile="../${package.name}-${version}.zip">
 			<zipfileset dir="${build.lib}" includes="${package.name}.jar" prefix="${package.name}-${version}"/>
 			<zipfileset dir="${build.lib}" includes="${package.name}-icons.jar" prefix="${package.name}-${version}/lib"/>			
-			<zipfileset dir="lib" prefix="${package.name}-${version}/lib"/>
+			<zipfileset dir="${lib.dir}" excludes="log4j-1.2.8.jar" prefix="${package.name}-${version}/lib"/>
 			<zipfileset dir="${rbnb.home}/bin" includes="rbnb.jar" prefix="${package.name}-${version}/lib"/>
 		</zip>
 	</target>
@@ -93,7 +96,7 @@
 		<zip destfile="../${package.name}-JNLP-${version}.zip">
 			<zipfileset dir="${build.lib}" includes="${package.name}.jar"/>
 			<zipfileset dir="${build.lib}" includes="${package.name}-icons.jar"/>			
-			<zipfileset dir="lib"/>
+			<zipfileset dir="${lib.dir}" excludes="log4j-1.2.8.jar"/>
 			<zipfileset dir="${rbnb.home}/bin" includes="rbnb.jar"/>
 			<zipfileset file="jnlp/RBNBDataViewer.jnlp"/>
 		</zip>	
