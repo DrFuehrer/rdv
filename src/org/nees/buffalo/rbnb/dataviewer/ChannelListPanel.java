@@ -210,6 +210,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  				root = DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort();
  				fireRootChanged();
  			} else {
+ 				boolean channelListChanged = false;
+ 				
  				String[] newChannelList = cmap.GetChannelList();
  				String[] oldChannelList = oldChannelMap.GetChannelList();
   		
@@ -221,17 +223,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  					if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
  						if (oldChannelTree.findNode(node.getFullName()) == null) {
  							log.info("Found new node: " + node.getFullName() + ".");
- 							
- 							int depth =  node.getDepth();
- 							Object[] path = new Object[depth+1];
-							path[0] =  root;
-							ChannelTree.Node parent = node;
- 	 						for (int i=depth; i>0; i--) {
- 	 							parent = parent.getParent();
- 	 							path[i] = parent;
- 	 						}
- 	 						
- 	 						fireChannelAdded(path, node); 							
+ 							channelListChanged = true;
+ 							break;
  						}
  					}
  				}
@@ -244,20 +237,15 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  					if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
  						if (ctree.findNode(node.getFullName()) == null) {
  							log.info("Found deleted node: " + node.getFullName() + ".");
- 							
- 							int depth =  node.getDepth();
- 							Object[] path = new Object[depth+1];
-							path[0] =  root;
-							ChannelTree.Node parent = node;
- 	 						for (int i=depth; i>0; i--) {
- 	 							parent = parent.getParent();
- 	 							path[i] = parent;
- 	 						}
- 	 						
- 	 						fireChannelRemoved(path, node); 							
+ 							channelListChanged = true;
+ 							break;
  						}
  					}
  				} 				
+ 				
+ 				if (channelListChanged) {
+ 					fireRootChanged();
+ 				}
  			}
  		} else {
  			root = DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort();
