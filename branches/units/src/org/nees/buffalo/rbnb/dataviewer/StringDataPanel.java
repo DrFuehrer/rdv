@@ -56,12 +56,9 @@ public class StringDataPanel extends AbstractDataPanel {
 		
 		labels = new Hashtable();
 
-		setDetach(true);
+		setComponent(panel);
+		setControlBar(true);
 		setDropTarget(true);
-	}
-
-	public JComponent getComponent() {
-		return panel;
 	}
 
 	public boolean supportsMultipleChannels() {

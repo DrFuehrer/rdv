@@ -3,6 +3,12 @@
  */
 package org.nees.buffalo.rbnb.dataviewer;
 
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.DisplayMode;
+import java.awt.Graphics;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -19,10 +25,12 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JWindow;
 import javax.swing.event.MouseInputAdapter;
 
@@ -38,6 +46,8 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	
 	double time;
 	double domain;
+
+	JPanel component;
 	
 	JFrame frame;
 	boolean attached;
@@ -72,6 +82,8 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		
 		time = 0;
 		domain = 1;
+		
+		component = new AbstractDataPanelContainer();
 		
 		attached = true;
 		
@@ -138,6 +150,14 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
+	void setComponent(JComponent c) {
+		component.add(c);
+	}
+	
+	public JComponent getComponent() {
+		return component;
+	}	
+	
 	/*
 	 * Clear the data displayed on the data panel.
 	 */
@@ -175,28 +195,88 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		iconsLoaded = true;
 	}
 	
-	void setDetach(boolean enable) {
+	void setControlBar(boolean enable) {
 		if (enable) {
-			final JComponent panel = getComponent();
-			panel.addMouseListener(new MouseInputAdapter() {
+			final JComponent component = getComponent();
+			component.addMouseListener(new MouseInputAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					if (e.getButton() == MouseEvent.BUTTON1) {
-						if (e.getX() >= panel.getWidth()-10 && e.getY() <= 12) {
+	 					int x = e.getX();
+	 					int y = e.getY();
+	 
+	 					int componentWidth = component.getWidth();
+	 					int componentHeight = component.getHeight();
+	 					
+	 					if (x < 16 && y < 16) {
+	 						pinned = !pinned;
+	 					} else if (x >= 16 && x < 32 && y < 16) {
+	 						togglePause();
+	 					} else if (x >= componentWidth-16 && y < 16) {
 							closePanel();
-						} else {
-							toggleDetach();
+	 					} else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
+							toggleMaximize();
+						} else if (x <  componentWidth-32 && x >= componentWidth-48 && y < 16) {
+							toggleDetach(); 												
 						}
 					}
+				}
+				
+				public void mouseEntered(MouseEvent e) {
+					hasFocus = true;
+					component.repaint();
+				}
+				
+				public void mouseExited(MouseEvent e) {
+					hasFocus = false;
+					component.repaint();
 				}
 			});
 		}
 	}
+
+	public void togglePause() {
+		Iterator i = channels.iterator();
+		while (i.hasNext()) {
+			String channelName = (String)i.next();
+			
+			if (paused) {
+				player.subscribe(channelName, this);
+			} else {
+				player.unsubscribe(channelName, this);
+			}
+		}
+		
+		paused = !paused;
+	}
+	
+	public void closePanel() {
+		removeAllChannels();
+
+ 		if (maximized) {
+ 			restorePanel(false);
+		} else if (!attached) {
+			attachPanel(false);		 			
+ 		} else if (attached) {
+			dataPanelContainer.removeDataPanel(this);
+ 		}
+ 		
+		player.removeStateListener(this);
+		player.removeTimeListener(this);
+	}
 	
 	public void toggleDetach() {
+		if (maximized) {
+			window.setVisible(false);
+			window.getContentPane().remove(getComponent());
+			window.dispose();
+			window = null;
+			maximized = false;
+		}
+		
 		if (attached) {
 			detachPanel();
 		} else {
-			attachPanel();
+			attachPanel(true);
 		}
 	}
 	
@@ -204,47 +284,84 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		attached = false;
 		dataPanelContainer.removeDataPanel(this);
 		
-		frame = new JFrame();
-		if (!attached) {
-			frame.setTitle(getTitle());
-		}
+		frame = new JFrame(getTitle());
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				attachPanel();
+				closePanel();
 			}
 		});
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);		
-		
+
 		frame.getContentPane().add(getComponent());
 		frame.pack();
 		frame.setVisible(true);
 	}
 	
-	public void attachPanel() {
-		frame.setVisible(false);
-		frame.getContentPane().remove(getComponent());
-		frame.dispose();
-		frame = null;			
-
-		dataPanelContainer.addDataPanel(this);
-		attached = true;	
-	}
-	
-	public void closePanel() {
-		removeAllChannels();
-		
-		if (attached) {
-			dataPanelContainer.removeDataPanel(this);
-		} else  if (frame != null) {
+	public void attachPanel(boolean addToContainer) {
+		if (frame != null) {
 			frame.setVisible(false);
 			frame.getContentPane().remove(getComponent());
 			frame.dispose();
-			frame = null;			
+			frame = null;
 		}
 		
-		player.removeStateListener(this);
-		player.removeTimeListener(this);
+		if (addToContainer) {
+			attached = true;
+			dataPanelContainer.addDataPanel(this);
+		}
+	}
+	
+	public void toggleMaximize() {	
+		if (maximized) {
+			restorePanel(attached);
+			if (!attached) {
+				detachPanel();
+			}
+		} else {
+			if (!attached) {
+				attachPanel(false);
+			}
+			maximizePanel();
+		}
+	}
+	
+	public void maximizePanel() {
+		maximized = true;
+		dataPanelContainer.removeDataPanel(this);
+		
+		window = new JWindow();
+		window.getContentPane().add(getComponent());
+		window.setSize(getScreenDimensions());
+		window.setVisible(true);
+	}
+	
+	public void restorePanel(boolean addToContainer) {
+		window.setVisible(false);
+		window.getContentPane().remove(getComponent());
+		window.dispose();
+		window = null;
+
+		maximized = false;
+		
+		if (addToContainer) {
+			dataPanelContainer.addDataPanel(this);
+		}
+		
 	}	
+	
+	Dimension getScreenDimensions() {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] gs = ge.getScreenDevices();
+		    
+		for (int i=0; i<gs.length; i++) {
+			DisplayMode dm = gs[i].getDisplayMode();
+			int screenWidth = dm.getWidth();
+			int screenHeight = dm.getHeight();
+			return new Dimension(screenWidth, screenHeight);
+		}
+		
+		return null;
+	}
 	
 	public void setDropTarget(boolean enable) {
 		if (enable) {
@@ -295,4 +412,25 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	}
 	
 	public void dragExit(DropTargetEvent e) {}
+	
+	class AbstractDataPanelContainer extends JPanel {
+		public void paintChildren(Graphics g) {
+			super.paintChildren(g);
+			
+			if (pinned || hasFocus) {
+				int componentWidth = getWidth();
+				int componentHeight = getHeight();
+				
+				g.setColor(Color.BLACK);
+				g.fillRect(0, 0, getWidth(), 16);
+				g.drawImage(windowPinImage, 0, 0, this);
+				g.drawImage(windowSnapshotImage, 16, 0, this);
+				g.drawImage(windowDetachImage, componentWidth-48, 0, this);
+				g.drawImage(windowMaximizeImage, componentWidth-32, 0, this);
+				g.drawImage(windowCloseImage, componentWidth-16, 0, this);
+				g.setColor(Color.WHITE);
+				g.drawString(getTitle(), 36, 12);
+			}
+		}
+	}
 }
