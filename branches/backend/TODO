@@ -1,0 +1,8 @@
+1.1
+-create a basic 3d viewer so we can feed it data from our Krypton
+-give my RBNB backend a serious look at to identify design issues affecting performance
+-add support to start up a viewing configuration via the command line
+-export selected channels to file on disk
+-export selected channels to repository
+-stop at end of stream (or find a good way to get the end of stream)
+-make UI more responsive when connecting
