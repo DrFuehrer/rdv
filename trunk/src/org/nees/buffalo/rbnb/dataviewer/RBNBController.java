@@ -661,13 +661,29 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		} 
 
 		//update current location
-		//TODO see if we should instead do this at the end for the latest location
 		if (state == STATE_MONITORING) {
-			location = getmap.GetTimeStart(0);
+			location = getLastTime(getmap);
 			updateTimeListeners(location);
+		}		
+		
+		channelManager.postData(getmap);
+	}
+	
+	private double getLastTime(ChannelMap channelMap) {
+		double lastTime = -1;
+		
+		String[] channels = channelMap.GetChannelList();
+		for (int i=0; i<channels.length; i++) {
+			String channelName = channels[i];
+			int channelIndex = channelMap.GetIndex(channelName);
+			double[] times = channelMap.GetTimes(channelIndex);
+			double endTime = times[times.length-1];
+			if (endTime > lastTime) {
+				lastTime = endTime;
+			}
 		}
 		
-		channelManager.postData(getmap);		
+		return lastTime;
 	}
 				
 	private static void printChannelMap(ChannelMap cmap) {

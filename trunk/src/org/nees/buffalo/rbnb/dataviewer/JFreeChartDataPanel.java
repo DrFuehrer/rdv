@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -69,6 +70,8 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	Number xValue, yValue;
 	
 	boolean xyMode;
+	
+	double time;
 
 	public JFreeChartDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		this(dataPanelContainer, player, false);
@@ -159,7 +162,7 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 
 		if (xyMode) {
 			if (channels.size() == 0) {
-				XYSeries data = new XYSeries(channelName);
+				XYSeries data = new XYSeries(channelName, false, true);
 				((XYSeriesCollection)dataCollection).addSeries(data);
 			} else if (channels.size() == 1) {
 				
@@ -233,17 +236,31 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			if (xyMode) {
 				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
 				XYSeries data = dataCollection.getSeries(i);
-				// TODO add correspoding code for XYSeries
+				//TODO add correspoding code for XYSeries
+				data.setMaximumItemCount((int)(256*domain*2));
 			} else {
 				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
 				TimeSeries data = dataCollection.getSeries(i);
-				data.setHistoryCount((int)(domain*1000));
+				data.setHistoryCount((int)(domain*1000*2));
 			}
-			
 		}
+		
+		if (!xyMode) {
+			setTimeAxis();
+		}		
 	}
 	
-	public void postTime(double time) {}
+	public void postTime(double time) {
+		this.time = time;
+		
+		if (!xyMode) {
+			setTimeAxis();
+		}		
+	}
+	
+	private void setTimeAxis() {
+		((DateAxis)((XYPlot)chart.getPlot()).getDomainAxis()).setRange((time-domain)*1000, time*1000);
+	}
 
 	public void postState(int newState, int oldState) {
 		switch (newState) {
