@@ -38,6 +38,9 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
+import org.nees.buffalo.rdv.rbnb.Player;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 
 import com.rbnb.sapi.ChannelMap;
@@ -49,21 +52,19 @@ import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 /**
  * @author Jason P. Hanley
  */
-public class ChannelListPanel extends JPanel implements TreeModel, TreeSelectionListener, DragGestureListener, DragSourceListener, MouseListener, SubscriptionListener {
+public class ChannelListPanel extends JPanel implements TreeModel, TreeSelectionListener, DragGestureListener, DragSourceListener, MouseListener, MetadataListener, StateListener {
 
 	static Log log = LogFactory.getLog(ChannelListPanel.class.getName());
 
-	private DataViewer dataViewer;
+	private ApplicationFrame applicationFrame;
+	private RBNBController rbnb;
+	
 	private ChannelTree ctree;
 	private ChannelMap cmap;
-	private HashMap units;
 	
 	private double startTime = -1;
 	private double endTime = -1;
 	
-	private Sink sink = null;
-	private final String rbnbSinkName = "RBNBDataViewer";
-
 	private Object root;
 	private ChannelTree.Node node;
 
@@ -72,27 +73,19 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	private JTree tree;
  	private JScrollPane treeView;
 	private JTextArea infoTextArea;
-	
-	private ArrayList channelListListeners;
 
- 	private boolean connected = false;
- 	private boolean updatingChannelList = false;
- 	
  	private boolean showHiddenChannels = false;
 	
 	private static final String NEWLINE = "\r\n";
 
-	public ChannelListPanel(DataViewer dataViewer) {
+	public ChannelListPanel(ApplicationFrame applicationFrame, RBNBController rbnb) {
 		super();
 		
-		this.dataViewer = dataViewer;
-		
-		channelListListeners =  new ArrayList();
+		this.applicationFrame = applicationFrame;
+		this.rbnb = rbnb;
 		
 		root = "";
 		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
-
-		units = new HashMap();
 		
 		initPanel();
 	}
@@ -122,99 +115,16 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		DragSource dragSource = DragSource.getDefaultDragSource();
 		dragSource.createDefaultDragGestureRecognizer(tree, DnDConstants.ACTION_LINK, this);		
 	}
-
- 	public void connect() {
- 		if (!connected) {
- 			connected = true;
- 			if (updateChannelList()) {
- 				log.info("Channel list is in state CONNECTED.");
- 			}
- 		}
- 	}
- 	
- 	public boolean isConnected() {
- 		return connected;
- 	}
- 	
- 	public void disconnect() {
-		clearChannelList();
- 		connected = false;
- 		
- 		clearMetadata();
- 		
- 		log.info("Channel list is in state DISCONNECTED.");
- 	}
- 	
- 	public void reconnect() {
- 		disconnect();
- 		connect();
- 	}
-
-	public boolean updateChannelListBackground() {
- 		if (!connected) return false;
- 		
- 		if (updatingChannelList) return true;
-
-		new Thread(new Runnable() {
-			public void run() {
-				updateChannelList();
-			}
-		}, "ChannelUpdate").start();	
-		
-		return true;
-	}
-
-	public boolean updateChannelList() {
- 		if (!connected) return false;
- 		
- 		if (updatingChannelList) return true;
- 		
- 		updatingChannelList = true;
-
-		log.info("Updating channel listing.");
-		
-		if (!initRBNB()) {
-			closeRBNB();
-			disconnect();
-			updatingChannelList = false;
-			return false;
-		}
-		
-		try {
-			sink.RequestRegistration();
-		} catch (SAPIException e) {
-			log.error("Failed to request channel listing.");
-			closeRBNB();
-			disconnect();
-			updatingChannelList = false;
-			return false;
-		}
-
-		ChannelMap oldChannelMap = cmap;
-		try {
-			cmap = sink.Fetch(0);
-		} catch (SAPIException e) {
-			log.error("Failed to fetch list of available channels.");
-			closeRBNB();
-			disconnect();
-			updatingChannelList = false;
-			return false;
-		}
-		
-		log.info("Received list of available channels.");
-						
-		getUnits();
-		
-		closeRBNB();
-		
-		fireChannelListUpdated(cmap);
-				
+	
+	public void channelListUpdated(ChannelMap cmap) {
+		ChannelMap oldChannelMap = this.cmap;
  		ChannelTree oldChannelTree = ctree;
+ 		this.cmap = cmap;
  		ctree = ChannelTree.createFromChannelMap(cmap);
   		
  		if (oldChannelMap != null) {
- 			if (!root.equals(DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort())) {
- 				root = DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort();
+ 			if (!root.equals(rbnb.getRBNBConnectionString())) {
+ 				root = rbnb.getRBNBConnectionString();
  				fireRootChanged();
  			} else {
  				boolean channelListChanged = false;
@@ -255,19 +165,15 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  				}
  			}
  		} else {
- 			root = DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort();
+ 			root = rbnb.getRBNBConnectionString();
  			fireRootChanged();			
   		}
  		
  		TreePath path = tree.getSelectionPath();
  		if (path != null) {
  			showMetadata(path.getLastPathComponent());
- 		}
- 		
- 		updatingChannelList = false;
- 		
- 		return true;
-  	}
+ 		}		
+	}
 	
 	public void showHiddenChannels(boolean showHiddenChannels) {
 		if (this.showHiddenChannels != showHiddenChannels) {
@@ -285,61 +191,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		
   		root = "";
   		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
-  		fireChannelListUpdated(new ChannelMap());
   		
  		fireRootChanged();
   	}
- 	
- 	private void getUnits() { 		
-		//subscribe to all units channels
-		ChannelMap unitsChannelMap = new ChannelMap();
-		try {
-			unitsChannelMap.Add("_Units/*");
-		} catch (SAPIException e) {
-			e.printStackTrace();
-		}
-		
-		//get the latest unit information
-		try {
-			sink.Request(unitsChannelMap, 0, 0, "newest");
-		} catch (SAPIException e) {
-			e.printStackTrace();
-		}
-		
-		//fetch the unit channel data
-		try {
-			unitsChannelMap = sink.Fetch(-1);
-		} catch (SAPIException e) {
-			e.printStackTrace();
-		}
-		
-		closeRBNB();
-		
-		String[] channels = unitsChannelMap.GetChannelList();
-		for (int i=0; i<channels.length; i++) {
-			String channelName = channels[i];
-			String parent = channelName.substring(channelName.lastIndexOf("/")+1);
-			int channelIndex = unitsChannelMap.GetIndex(channelName);
-			String[] data = unitsChannelMap.GetDataAsString(channelIndex);
-			String newestData = data[data.length-1];
-			String[] channelTokens = newestData.split("\t|,");
-			for (int j=0; j<channelTokens.length; j++) {
-				String[] tokens = channelTokens[j].split("=");
-				if (tokens.length == 2) {
-					String channel = parent + "/" + tokens[0].trim();
-					String unit = tokens[1].trim();
-					units.put(channel, unit);
-				} else {
-					log.error("Invalid unit string: " + channelTokens[j] + ".");
-				}
-			}
-		}
- 	}
- 	
- 	public String getUnit(String channel) {
- 		return (String)units.get(channel);
- 	}
- 	
+ 	 	
  	private void fireRootChanged() {
   		TreeModelEvent e = new TreeModelEvent(this, new Object[] {root});
  		for (int i = 0; i < treeModelListeners.size(); i++) {
@@ -360,49 +215,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   			((TreeModelListener)treeModelListeners.elementAt(i)).treeNodesRemoved(e);
   		}
   	}
-	
-	private synchronized boolean initRBNB() {
-		if (sink == null) {			
-			sink = new Sink();
-		}  else {
-			return true;
-		}
-		
-		try {
-			sink.OpenRBNBConnection(DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort(), rbnbSinkName);
-		} catch (SAPIException e) {
-			log.error("Failed to connect to RBNB server.");
-			return false;	
-		}
-		
-		log.info("Connected to RBNB server.");
-		
-		return true;
-	}
-
-	private synchronized boolean closeRBNB() {
-		if (sink == null) return true;
-			
-		sink.CloseRBNBConnection();
-		sink = null;
-
-		log.info("Connection to RBNB server closed.");
-		
-		return true;
-	}
-	
-	private synchronized boolean reInitRBNB() {
-		if (!closeRBNB()) {
-			return false;
-		}
-		
-		if (!initRBNB()) {
-			return false;
-		}
-		
-		return true;
-	}
-	
 	
 	public Object getRoot() {
 		return root;
@@ -497,18 +309,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		}		
 	}
 	
-	public Channel getChannel(String channelName) {
-		ChannelTree.Node node = ctree.findNode(channelName);
-		if (node != null) {
-			String mime = node.getMime();
-			String unit = (String)units.get(channelName);
-			Channel channel = new Channel(channelName, mime, unit);
-			return channel;
-		} else {
-			return null;
-		}
-	}
-	
 	private void showMetadata(Object o) {
 		infoTextArea.setText("");
 		
@@ -528,7 +328,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 				double start = cmap.GetTimeStart(channelIndex);
 				double duration = cmap.GetTimeDuration(channelIndex);
 				int size = node.getSize();
-				String unit = (String)units.get(channelName);
+				String unit = rbnb.getUnit(channelName);
 
 				infoTextArea.append("Start: " + DataViewer.formatDate(start) + NEWLINE);
 				infoTextArea.append("Duration: " + DataViewer.formatSeconds(duration));
@@ -570,7 +370,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 				ChannelTree.Node node = (ChannelTree.Node)o;
 				if (node.getType() == ChannelTree.CHANNEL) {
 					String channelName = node.getFullName();
-					String unit = getUnit(channelName);
+					String unit = rbnb.getUnit(channelName);
 					String data = channelName;
 					if (unit != null) {
 						data += "\t" + unit;
@@ -597,9 +397,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 					if (node.getType() == ChannelTree.CHANNEL) {
 						String channelName = node.getFullName();
 						String mime = node.getMime();
-						String unit = (String)units.get(channelName);
+						String unit = rbnb.getUnit(channelName);
 						Channel channel = new Channel(channelName, mime, unit);
-						dataViewer.viewChannel(channel);
+						applicationFrame.viewChannel(channel);
 					}
 				}
 			}
@@ -626,25 +426,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		
 	}
 
-	public void channelSubscribed(String channelName) {
-		updateChannelListBackground();				
-	}
-
-	public void channelUnsubscribed(String channelName) {}
-	
-	public void addChannelListListener(MetadataListener listener) {
-		channelListListeners.add(listener);
-	}
-
-	public void removeChannelListListener(MetadataListener listener) {
-		channelListListeners.remove(listener);
-	}
-	
-	private void fireChannelListUpdated(ChannelMap channelMap) {
-		MetadataListener listener;
-		for (int i=0; i<channelListListeners.size(); i++) {
-			listener = (MetadataListener)channelListListeners.get(i);
-			listener.channelListUpdated(channelMap);
+	public void postState(int newState, int oldState) {
+		if (newState == Player.STATE_DISCONNECTED) {
+			clearChannelList();
 		}
 	}
 }

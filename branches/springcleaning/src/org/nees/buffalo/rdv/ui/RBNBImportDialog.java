@@ -28,6 +28,7 @@ import javax.swing.JTextField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.Source;
@@ -39,6 +40,8 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 	static Log log = LogFactory.getLog(RBNBImportDialog.class.getName());
 	
 	RBNBImportDialog dialog;
+	
+	RBNBController rbnb;
 	
 	JTextField sourceNameTextField;
 	
@@ -52,10 +55,12 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 	
 	JProgressBar importProgressBar;
 	
-	public RBNBImportDialog(JFrame owner) {
+	public RBNBImportDialog(JFrame owner, RBNBController rbnb) {
 		super(owner);
 		
 		dialog = this;
+		
+		this.rbnb = rbnb;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
@@ -108,8 +113,8 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 		importButton = new JButton("Import");
 		importButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				final String rbnbHostName = DataViewer.getRBNBHostName();
-				final int rbnbPortNumber = DataViewer.getRBNBPort();
+				final String rbnbHostName = rbnb.getRBNBHostName();
+				final int rbnbPortNumber = rbnb.getRBNBPortNumber();
 				final String sourceName = sourceNameTextField.getText();
 				importProgressBar.setVisible(true);
 				

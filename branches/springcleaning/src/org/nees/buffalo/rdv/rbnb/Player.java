@@ -110,7 +110,6 @@ public interface Player {
 	 */
 	public void setLocation(final double location);
 	
-	
 	/**
 	 * Get the playback rate that the player is using. This is the rate at
 	 * which data is played back.
@@ -128,7 +127,6 @@ public interface Player {
 	 * @since               1.0
 	 */
 	public void setPlaybackRate(final double playbackRate);
-	
 	
 	/**
 	 * Subscribe to the channel and produce data for it.

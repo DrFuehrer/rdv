@@ -17,7 +17,6 @@ public class DataPanelContainer extends JPanel {
 	static Log log = LogFactory.getLog(DataPanelContainer.class.getName());
 	
 	ArrayList dataPanels;
-	ArrayList listeners;
 		
 	public static int HORIZONTAL_LAYOUT = 0;
 	public static int VERTICAL_LAYOUT = 1;
@@ -26,7 +25,6 @@ public class DataPanelContainer extends JPanel {
 	
 	public DataPanelContainer() {
 		dataPanels = new ArrayList();
-		listeners = new ArrayList();
 		
 		layout = HORIZONTAL_LAYOUT;
 	}

@@ -35,7 +35,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
-	private DataViewer dataViewer;
 	private Player player;
 
 	private JButton monitorButton;
@@ -66,10 +65,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	ArrayList playbackRateListeners;
 	ArrayList timeScaleChangeListeners;
 
-	public ControlPanel(DataViewer dataViewer, Player player) {
+	public ControlPanel(Player player) {
 		super();
-		
-		this.dataViewer = dataViewer;
+
 		this.player = player;
 		
 		startTime = -1;

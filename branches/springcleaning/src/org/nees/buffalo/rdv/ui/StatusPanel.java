@@ -19,17 +19,13 @@ import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
  */
 public class StatusPanel extends JPanel implements TimeListener, PlaybackRateListener, StateListener, TimeScaleListener {
 
-	private DataViewer dataViewer;
-
 	private JLabel locationLabel;
 	private JLabel playbackRateLabel;
 	private JLabel stateLabel;
 	private JLabel timeScaleLabel;
 	
-	public StatusPanel(DataViewer dataViewer) {
+	public StatusPanel() {
 		super();
-		
-		this.dataViewer = dataViewer;
 		
 		initPanel();
 	}

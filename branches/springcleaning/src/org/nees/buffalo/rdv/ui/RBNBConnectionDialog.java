@@ -30,9 +30,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 
  	static Log log = LogFactory.getLog(RBNBConnectionDialog.class.getName());
 	
- 	DataViewer dataViewer;
-	RBNBController rbnbController;
-	ChannelListPanel channelListPanel;
+	RBNBController rbnb;
 	
 	JLabel headerLabel;
 	
@@ -45,12 +43,10 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 	JButton connectButton;
 	JButton cancelButton;
 	
-	public RBNBConnectionDialog(DataViewer dataViewer, RBNBController rbnbController, ChannelListPanel channelListPanel) {
-		super(dataViewer);
+	public RBNBConnectionDialog(JFrame owner, RBNBController rbnbController) {
+		super(owner);
 		
-		this.dataViewer = dataViewer;
-		this.rbnbController = rbnbController;
-		this.channelListPanel = channelListPanel;
+		this.rbnb = rbnbController;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
@@ -92,11 +88,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		c.anchor = GridBagConstraints.NORTHEAST;
 		getContentPane().add(rbnbHostNameLabel, c);
 		
-		if (DataViewer.getRBNBHostName() != null) {
-			rbnbHostNameTextField = new JTextField(DataViewer.getRBNBHostName(), 25);
-		} else {
-			rbnbHostNameTextField = new JTextField(DataViewer.DEFAULT_RBNB_HOST_NAME, 25);
-		}
+		rbnbHostNameTextField = new JTextField(rbnb.getRBNBHostName(), 25);
 		rbnbHostNameTextField.requestFocusInWindow();
  		rbnbHostNameTextField.setSelectionStart(0);
  		rbnbHostNameTextField.setSelectionEnd(rbnbHostNameTextField.getText().length());
@@ -115,7 +107,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		c.anchor = GridBagConstraints.NORTHEAST;
 		getContentPane().add(rbnbPortLabel, c);
 
-		rbnbPortTextField = new JTextField(Integer.toString(DataViewer.getRBNBPort()));
+		rbnbPortTextField = new JTextField(Integer.toString(rbnb.getRBNBPortNumber()));
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
@@ -156,30 +148,23 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 	
 	private void connect() {
 		try {
-			DataViewer.setRBNBPort(Integer.parseInt(rbnbPortTextField.getText()));
+			rbnb.setRBNBPortNumber(Integer.parseInt(rbnbPortTextField.getText()));
 		} catch (NumberFormatException e) {
 			rbnbPortLabel.setForeground(Color.RED);
-			rbnbPortTextField.setText(Integer.toString(DataViewer.getRBNBPort()));
+			rbnbPortTextField.setText(Integer.toString(rbnb.getRBNBPortNumber()));
 			rbnbPortTextField.requestFocusInWindow();
 			return;
 		}
 		
-		DataViewer.setRBNBHostName(rbnbHostNameTextField.getText());
+		rbnb.setRBNBHostName(rbnbHostNameTextField.getText());
 		
 		dispose();
 		
-		if (rbnbController.isConnected()) {
-			rbnbController.reconnect();
+		if (rbnb.isConnected()) {
+			rbnb.reconnect();
 		} else {
-			rbnbController.connect();
+			rbnb.connect();
 		}
-
- 		if (channelListPanel.isConnected()) {
- 			dataViewer.closeAllDataPanels();
- 			channelListPanel.reconnect();
- 		} else {
- 			channelListPanel.connect();
- 		}
 	}
 	
 	private void cancel() {
