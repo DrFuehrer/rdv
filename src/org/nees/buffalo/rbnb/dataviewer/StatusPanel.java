@@ -47,7 +47,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 		c.anchor = GridBagConstraints.WEST;		
 		add(locationLabel, c);	
 	
-		timeScaleLabel = new JLabel();
+		domainLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0.5;
 		c.weighty = 0;
@@ -59,7 +59,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.EAST;		
-		add(timeScaleLabel, c);
+		add(domainLabel, c);
 				
 		stateLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
@@ -75,7 +75,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 		c.anchor = GridBagConstraints.WEST;		
 		add(stateLabel, c);
 		
-		domainLabel = new JLabel();
+		timeScaleLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0.5;
 		c.weighty = 0;
@@ -87,7 +87,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.EAST;		
-		add(domainLabel, c);
+		add(timeScaleLabel, c);
 	}
 
 	public void postTime(double time) {

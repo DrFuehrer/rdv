@@ -1056,7 +1056,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 				stateString = "playing";
 				break;
 			case STATE_MONITORING:
-				stateString = "monitoring";
+				stateString = "real time";
 				break;
 			case STATE_REALTIME:
 				stateString = "real time";
