@@ -38,6 +38,8 @@
 -Fixed time axis to always be duration with (even without enough data)
 -Created base data panel class with common control bar for all data panels
 -Complete redesign of data backend. Completely thread safe and better performance.
+-Fix retry connection logic
+-Fix full screen mode and add support for platforms that don't support it
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons
