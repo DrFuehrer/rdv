@@ -480,8 +480,8 @@ public class DataViewer extends JFrame implements DomainListener {
  		menuItem = new JMenuItem(addXYChartDataPanelAction);
   		windowMenu.add(menuItem);
   		
- 		menuItem = new JMenuItem(addStringDataPanelAction);
-  		windowMenu.add(menuItem);
+ 		/* menuItem = new JMenuItem(addStringDataPanelAction);
+  		windowMenu.add(menuItem); */
   		
  		windowMenu.addSeparator();
  		
