@@ -5,7 +5,7 @@
 	<information>
 		<title>RDV</title>
 		<vendor>University at Buffalo</vendor>
-		<homepage href="http://nees.buffalo.edu/software/RBNBDataViewer/" />
+		<homepage href="http://nees.buffalo.edu/software/RDV/" />
 		<description>A tool to view synchronzied, streaming data from a RBNB server.</description>
 		<offline-allowed/>
 	</information>
