@@ -75,7 +75,7 @@ public class DataViewer extends JFrame implements DomainListener {
  	private Action realTimeAction;
  	private Action playAction;
  	private Action pauseAction;
- 	private Action beginingAction;
+ 	private Action beginningAction;
  	private Action endAction;
  	private Action updateChannelListAction;
  	private Action dropDataAction;
@@ -271,7 +271,7 @@ public class DataViewer extends JFrame implements DomainListener {
  			}			
  		};
  
- 		beginingAction = new DataViewerAction("Go to beging", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0)) {
+ 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0)) {
  			public void actionPerformed(ActionEvent ae) {
 				controlPanel.setLocationBegin();
  			}			
@@ -457,7 +457,7 @@ public class DataViewer extends JFrame implements DomainListener {
  		
  		controlMenu.addSeparator();
  
- 		menuItem = new JMenuItem(beginingAction);
+ 		menuItem = new JMenuItem(beginningAction);
  		controlMenu.add(menuItem);
  
  		menuItem = new JMenuItem(endAction);

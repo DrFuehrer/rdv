@@ -97,7 +97,7 @@ public class ChannelManager {
 		for (int i=0; i < playerChannelListeners.size(); i++) {
 			listener = (PlayerChannelListener)playerChannelListeners.get(i);
 			if (isListenerInterested(listener, channelMap)) {
-				listener.postData(channelMap);
+				listener.postData(channelMap, new Time(-1, -1));
 			}
 		}
 	}
@@ -107,7 +107,7 @@ public class ChannelManager {
 		for (int i=0; i < playerChannelListeners.size(); i++) {
 			listener = (PlayerChannelListener)playerChannelListeners.get(i);
 			if (isListenerInterested(listener, channelMap)) {
-				listener.postData(channelMap, location, duration);
+				listener.postData(channelMap, new Time(location, duration));
 			}
 		}
 	}

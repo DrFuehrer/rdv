@@ -49,11 +49,7 @@ public class TemplateDataPanel extends AbstractDataPanel {
 		return false;
 	}
 
-	public void postData(ChannelMap channelMap) {
-		// TODO Auto-generated method stub
-	}
-
-	public void postData(ChannelMap channelMap, double startTime, double duration) {
+	public void postData(ChannelMap channelMap, Time time) {
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {

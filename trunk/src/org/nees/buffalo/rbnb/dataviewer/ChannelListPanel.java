@@ -281,13 +281,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			int channelIndex = unitsChannelMap.GetIndex(channelName);
 			String[] data = unitsChannelMap.GetDataAsString(channelIndex);
 			String newestData = data[data.length-1];
-			String[] channelTokens = newestData.split("\t,");
+			String[] channelTokens = newestData.split("\t|,");
 			for (int j=0; j<channelTokens.length; j++) {
 				String[] tokens = channelTokens[j].split("=");
 				if (tokens.length == 2) {
 					String channel = parent + "/" + tokens[0].trim();
 					String unit = tokens[1].trim();
-					log.debug("Got unit (" + unit + ") for channel " + channel + ".");
 					units.put(channel, unit);
 				} else {
 					log.debug("Invalid unit string: " + channelTokens[j] + ".");

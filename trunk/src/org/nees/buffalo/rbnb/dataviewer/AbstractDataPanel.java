@@ -465,11 +465,14 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public TimeIndex getTimeIndex(double[] times, double startTime, double duration) {
+	public TimeIndex getTimeIndex(double[] times, Time time) {
+		double startTime = time.location;
+		double duration = time.duration;
+		
 		int startIndex = -1;
 		int endIndex = -1;
 
-		if (startTime != -1 && duration != -1) {
+		if (!time.isUnspecified()) {
 			for (int i=0; i<times.length; i++) {
 				if (times[i] >= startTime) {
 					startIndex = i;
