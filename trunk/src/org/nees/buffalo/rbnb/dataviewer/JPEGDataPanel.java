@@ -72,6 +72,11 @@ public class JPEGDataPanel extends AbstractDataPanel {
 
 	public void postTime(double time) {
 		super.postTime(time);
+		
+		if (channelMap == null) {
+			//no data to display yet
+			return;
+		}	
 			
 		String channelName = (String)channels.iterator().next();
 
