@@ -5,6 +5,8 @@ import java.awt.GridBagLayout;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
@@ -15,26 +17,20 @@ import javax.swing.JPanel;
 /**
  * @author Jason P. Hanley
  */
-public class AboutDialog extends JDialog {
+public class AboutDialog extends JDialog implements KeyEventDispatcher {
 		
 	public AboutDialog(JFrame owner) {
 		super(owner);
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
- 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
- 		focusManager.addKeyEventDispatcher(new KeyEventDispatcher() {
- 			public boolean dispatchKeyEvent(KeyEvent keyEvent) {
- 				int keyCode = keyEvent.getKeyCode();
- 
- 				if (keyCode == KeyEvent.VK_ESCAPE) {
- 					dispose();				
- 					return true;
- 				} else {
- 					return false;
- 				}
- 			}
- 		});		
+		addWindowListener(new WindowAdapter() {
+			public void windowActivated(WindowEvent e) {
+				bindKeys();
+			}
+			public void windowDeactivated(WindowEvent e) {
+				unbindKeys();
+			}
+		});
 
 		setTitle("About RBNB Data Viewer");
 		
@@ -74,5 +70,26 @@ public class AboutDialog extends JDialog {
 		pack();
 				
 		setVisible(true);
+	}
+	
+	private void bindKeys() {
+ 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+ 		focusManager.addKeyEventDispatcher(this);		
+	}
+	
+	private void unbindKeys() {
+ 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+ 		focusManager.removeKeyEventDispatcher(this);
+	}	
+
+	public boolean dispatchKeyEvent(KeyEvent keyEvent) {
+		int keyCode = keyEvent.getKeyCode();
+
+		if (keyCode == KeyEvent.VK_ESCAPE) {
+			dispose();
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
