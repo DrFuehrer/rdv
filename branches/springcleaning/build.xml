@@ -9,7 +9,7 @@
 	
 	<!-- version information -->
 	<property file="build.properties"/>
-	<property name="version" value="${version.major}.${version.minor}.${version.release}"/>
+	<property name="version" value="${version.major}.${version.minor}.${version.release}${version.build}"/>
 			
 	<!-- src dir -->
 	<property name="src.dir" value="src"/>

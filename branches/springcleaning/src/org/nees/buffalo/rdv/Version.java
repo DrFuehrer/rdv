@@ -2,7 +2,7 @@ package org.nees.buffalo.rdv;
 
 /**
  * A class to encapsulate the version of the application.
- * The version is displayed in the format of major.minor.release.
+ * The version is displayed in the format of major.minor.release.build.
  * 
  * @author  Jason P. Hanley
  * @since   1.0
@@ -28,6 +28,13 @@ public final class Version {
 	 * @since  1.0
 	 */
 	public static final int release = 0;
+	
+	/**
+	 * The build string.
+	 *
+	 * @since  1.2
+	 */
+	public static final String build = "_alpha1";
 	
 	/**
 	 * This class can not be instantiated and it's constructor

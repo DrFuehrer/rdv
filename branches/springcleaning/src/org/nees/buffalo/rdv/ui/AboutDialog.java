@@ -58,7 +58,7 @@ public class AboutDialog extends JDialog implements KeyEventDispatcher {
 		container.add(new JLabel("RDV - Realtime Data Viewer"));
 		container.add(new JLabel("by Jason P. Hanley <jphanley@buffalo.edu>"));
 		container.add(new JLabel(" "));
-		container.add(new JLabel("Version: " + Version.major + "." + Version.minor + "." + Version.release));
+		container.add(new JLabel("Version: " + Version.major + "." + Version.minor + "." + Version.release + Version.build));
 		container.add(new JLabel(" "));
 		container.add(new JLabel("Copyright \251 2005 University at Buffalo"));
 		container.add(new JLabel("Visit http://nees.buffalo.edu/"));
