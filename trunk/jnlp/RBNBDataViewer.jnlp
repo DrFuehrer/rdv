@@ -15,6 +15,7 @@
 	<resources>
 		<j2se version="1.4+" initial-heap-size="64m" max-heap-size="256m"/>
 		<jar href="RBNBDataViewer.jar" main="true"/>
+		<jar href="RBNBDataViewer-icons.jar"/>		
 		<jar href="rbnb.jar"/>
 		<jar href="commons-logging.jar"/>
 		<jar href="gnujaxp.jar"/>
