@@ -627,7 +627,10 @@ public class DataViewer extends JFrame implements DomainListener {
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 	}
 		
-	public void viewChannel(String channelName, String mime, String unit) {
+	public void viewChannel(Channel channel) {
+		String channelName = channel.getName();
+		String mime = channel.getMimeType();
+		
 		log.debug("Cretaing data panel for channel " + channelName + ".");
 		
 		DataPanel2 panel = null;
@@ -638,7 +641,7 @@ public class DataViewer extends JFrame implements DomainListener {
 			panel = new JPEGDataPanel(dataPanelContainer, rbnb);
 		} else if (mime.equals("application/octet-stream")) {		
 			panel = new JFreeChartDataPanel(dataPanelContainer, rbnb);
-		}else  if (mime.equals("text/plain")) {
+		} else  if (mime.equals("text/plain")) {
 			panel = new StringDataPanel(dataPanelContainer, rbnb);
 		} else {
 			log.error("Unsupported data type for channel " + channelName + ".");
@@ -646,7 +649,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		}
 		
 		try {
-			panel.setChannel(channelName, unit);	
+			panel.setChannel(channel);	
 		} catch (Exception e) {
 			log.error("Failed to add chanel to data panel.");
 			e.printStackTrace();
