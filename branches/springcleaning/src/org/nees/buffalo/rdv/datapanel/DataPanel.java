@@ -1,7 +1,6 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import org.nees.buffalo.rdv.DataPanelManager;
-import org.nees.buffalo.rdv.rbnb.Channel;
 
 /**
  * This interface defines a data panel for displaying data from channels in a UI component.
@@ -66,7 +65,7 @@ public interface DataPanel {
 	 * @see                #supportsMultipleChannels
 	 * @since              1.0
 	 */
-	public boolean addChannel(String channelNam);
+	public boolean addChannel(String channelName);
 	
 	/**
 	 * Remove the channel from the data panel.
@@ -82,7 +81,7 @@ public interface DataPanel {
 	 * 
 	 * Clients must not call this method.
 	 * 
-	 * @see    DataPanelManager.closeDataPanel(DataPanel)
+	 * @see    DataPanelManager#closeDataPanel(DataPanel)
 	 * @since  1.0
 	 */
 	public void closePanel();

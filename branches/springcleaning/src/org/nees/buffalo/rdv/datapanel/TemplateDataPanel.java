@@ -14,10 +14,6 @@ public class TemplateDataPanel extends AbstractDataPanel {
 
 	JComponent dataComponent;
 	
-	/**
-	 * @param dataPanelContainer
-	 * @param player
-	 */
 	public TemplateDataPanel() {
 		super();
 

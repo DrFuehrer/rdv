@@ -249,10 +249,10 @@ public class DataPanelManager {
 	 * ID. This ID is by convention, the name of the class implementing
 	 * this extension.
 	 * 
-	 * @param extensionID  the ID of the extension to create
-	 * @throws Exception
-	 * @return             the newly created data panel
-	 * @since              1.2
+	 * @param extension   the extension to create
+	 * @throws Exception  
+	 * @return            the newly created data panel
+	 * @since             1.2
 	 */
 	public DataPanel createDataPanel(Extension extension) throws Exception {
 		Class dataPanelClass;

@@ -104,7 +104,7 @@
 		
 	<target name="javadoc" description="Build documentation">
 		<mkdir dir="${doc.dir}/api"/>  
-		<javadoc packagenames="org.nees.buffalo.rdv*" sourcepath="${src.dir}" defaultexcludes="yes" destdir="${doc.dir}/api" author="true" version="true" use="true" windowtitle="RDV API">
+		<javadoc packagenames="org.nees.buffalo.rdv.*" sourcepath="${src.dir}" defaultexcludes="yes" destdir="${doc.dir}/api" author="true" version="true" use="true" windowtitle="RDV API">
 			<link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
 		</javadoc>
 	</target>

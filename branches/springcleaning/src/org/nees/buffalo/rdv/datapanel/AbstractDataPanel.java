@@ -51,8 +51,6 @@ import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import com.rbnb.sapi.ChannelMap;
 
 /**
- * 
- * 
  * @since   1.1
  * @author  Jason P. Hanley
  */
