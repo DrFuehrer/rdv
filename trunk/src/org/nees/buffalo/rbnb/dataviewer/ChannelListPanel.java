@@ -470,6 +470,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 						infoTextArea.append("Start: " + DataViewer.formatDate(node.getStart()) + NEWLINE);
 						infoTextArea.append("Duriation: " + DataViewer.formatSeconds(node.getDuration()) + NEWLINE);
 						infoTextArea.append("Size: " + DataViewer.formatBytes(node.getSize()));
+						String unit = (String)units.get(node.getFullName());
+						if (unit != null) {
+							infoTextArea.append(NEWLINE + "Unit: " + unit);
+						}
 						
 						/* infoTextArea.append(NEWLINE + NEWLINE);
 						String channelName = node.getFullName();
