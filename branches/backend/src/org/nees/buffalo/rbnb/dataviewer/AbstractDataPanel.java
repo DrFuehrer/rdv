@@ -398,9 +398,11 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 				frame.setVisible(true);
 				frame.requestFocus();
 								
-				break;
+				return;
 			}
 		}
+		
+		log.warn("No screens available or full screen exclusive mode is unsupported on your platform.");
 	}
 	
 	void restorePanel(boolean addToContainer) {

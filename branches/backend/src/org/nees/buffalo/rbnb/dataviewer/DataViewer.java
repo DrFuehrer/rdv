@@ -344,8 +344,9 @@ public class DataViewer extends JFrame implements DomainListener {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  		        if (menuItem.isSelected()) {
- 		        	enterFullScreenMode();
- 		        	menuItem.setSelected(true);
+ 		        	if (enterFullScreenMode()) {
+ 		        		menuItem.setSelected(true);
+ 		        	}
  		        } else {
  		        	leaveFullScreenMode();
  		        	menuItem.setSelected(false);
@@ -695,7 +696,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		if (!applet) System.exit(0);		
 	}
 
- 	private void enterFullScreenMode() {
+ 	private boolean enterFullScreenMode() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
 		for (int i=0; i<devices.length; i++) {
@@ -708,9 +709,11 @@ public class DataViewer extends JFrame implements DomainListener {
 				try {
 					device.setFullScreenWindow(this);
 				} catch (InternalError e) {
-					log.error("Failed to switch to full screen mode: " + e.getMessage() + ".");
+					log.error("Failed to switch to full screen exclusive mode.");
+					e.printStackTrace();
+					
 					setVisible(true);
-					return;
+					return false;
 				}
 		
 				dispose();
@@ -718,9 +721,13 @@ public class DataViewer extends JFrame implements DomainListener {
 				setVisible(true);
 				requestFocus();
 				
-				break;
+				return true;
 			}
 		}
+		
+		log.warn("No screens available or full screen exclusive mode is unsupported on your platform.");
+		
+		return false;
  	}
  	
  	private void leaveFullScreenMode() {
