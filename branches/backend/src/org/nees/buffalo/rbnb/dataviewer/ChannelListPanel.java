@@ -209,7 +209,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   
  						log.debug("Found added channel " + newChannelList[i]);
  						
- 						fireRootChanged();
+ 						//fireRootChanged();
  						//fireChannelAdded(path.toArray());
  					}
  				}
@@ -226,9 +226,13 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   		
  						log.debug("Found removed channel " + oldChannelList[i]);
  						
- 						fireChannelRemoved(path.toArray());
+ 						//fireChannelRemoved(path.toArray());
  					}
- 				}	
+ 				}
+ 				
+ 				//FIXME to update the metadata
+ 				//      makes code above pointless
+ 				fireRootChanged();
  			}
  		} else {
  			root = DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort();

@@ -315,6 +315,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			return;
 		}
 		
+		if (channelMap == null) {
+			//no data to display yet
+			return;
+		}
+		
 		//Check to see if we have 2 channels for x vs. y mode
 		if (channels.size() != 2) {
 			return;
@@ -416,7 +421,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			chart.fireChartChanged();
 			
 		} catch (Exception e) {
-			log.error("Problem plotting data for channels " + xChannelName + " and " + yChannelName + ": " + e.getMessage() + ".");
+			log.error("Problem plotting data for channels " + xChannelName + " and " + yChannelName + ".");
+			e.printStackTrace();
 		}
 
 	}

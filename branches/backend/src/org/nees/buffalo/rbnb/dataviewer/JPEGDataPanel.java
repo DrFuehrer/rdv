@@ -80,7 +80,6 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			
 			//See if there is an data for us in the channel map
 			if (channelIndex == -1) {
-				log.error("Got channel map with no data for us (looking for channel " + channelName + ". This shouldn't happen.");
 				return;
 			}
 			
