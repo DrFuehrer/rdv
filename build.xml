@@ -117,6 +117,7 @@
  			<jvmarg value="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog"/>
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Dsun.java2d.ddscale=true"/>			
 		</java>
 	</target>
 
@@ -125,6 +126,7 @@
 		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Dsun.java2d.ddscale=true"/>
 			<arg line="rbnb.nees.buffalo.edu:3333"/>
 		</java>
 	</target>	

@@ -3,9 +3,11 @@ package org.nees.buffalo.rbnb.dataviewer;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -64,7 +66,10 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 	Player player;
 
  	Color textColor = Color.WHITE;
-
+ 	
+ 	boolean keepAspectRatio;
+ 	boolean showFrameRate;
+ 	
 	public JPEGDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		this.dataPanelContainer = dataPanelContainer;
 		this.player = player;
@@ -72,7 +77,9 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		channelName = "";
 		frameRate = -1;
 		lastTime = 0;
-		attached = true;		
+		attached = true;
+		keepAspectRatio = true;
+		showFrameRate = false;
 	
 		initImage();
 		
@@ -202,21 +209,7 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 
 				lastTime = currentTime;
 
- 				int imageWidth = 352;
- 				int imageHeight = 240;
- 				int componentWidth = image.getWidth();
- 				int componentHeight = image.getHeight();
- 				byte[] scaledImageData;
- 				if (componentWidth < imageWidth || componentHeight < imageHeight) {
- 					scaledImageData = scaleImage(imageData[imageIndex], imageWidth/2, imageHeight/2, true, 0.25f);
- 				} else if (componentWidth >= imageWidth*2 && componentHeight >= imageHeight*2) {
- 					scaledImageData = scaleImage(imageData[imageIndex], imageWidth*2, imageHeight*2, true, 0.25f);
- 				} else {
- 					scaledImageData = imageData[imageIndex];
- 				}
- 				image.update(scaledImageData);
- 				
- 				//image.update(imageData[imageIndex]);
+ 				image.update(imageData[imageIndex]);
 			} else{
 				log.error("Data array empty for channel: " + channelName + ".");	 
 			}
@@ -288,43 +281,6 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
  			textColor = Color.WHITE;
  		}
  	}
- 	
- 	private static byte[] scaleImage(byte[] imageData, int width, int height, boolean keepAspectRatio, float quality) {
-			JPEGImageDecoder decoder = JPEGCodec.createJPEGDecoder(new ByteArrayInputStream(imageData));
- 
-			// decode JPEG image to raw image
-			BufferedImage bi;
-			try {
-					bi = decoder.decodeAsBufferedImage();
-			} catch (IOException e){
-					log.error("Failed to decode input JPEG image, skipping.");
-					return null;
-			}
- 
-			// scale both width and height
-			float widthScale = width/(float)bi.getWidth();
-			float heightScale = height/(float)bi.getHeight();
-			if (keepAspectRatio && widthScale != heightScale) {
-				widthScale = heightScale = Math.min(widthScale, heightScale);
-			}
-			AffineTransformOp op = new AffineTransformOp(AffineTransform.getScaleInstance(widthScale, heightScale), null);
-			bi = op.filter(bi, null);
- 
-			// encode scaled image as JPEG image
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-			JPEGEncodeParam param = encoder.getDefaultJPEGEncodeParam(bi);
-			param.setQuality(quality, false);
-			try {
-					encoder.encode(bi, param);
-			} catch (IOException e) {
-					log.error("Failed to encode output JPEG image, skipping.");
-					return null;
-			}
- 
-			// get JPEG image data as byte array
-			return out.toByteArray();
-	}
 	
 	class JPEGPanel extends JComponent {
 		private Image image;
@@ -352,21 +308,22 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		}
 		
 		private void copyFrame() {
-			Graphics gVolatile = volatileImage.getGraphics();
+			Graphics2D gVolatile = (Graphics2D)volatileImage.getGraphics();
 			synchronized(this) {
 				gVolatile.drawImage(image, 0, 0, null);
 				gVolatile.setColor(textColor);
 				gVolatile.drawString(channelName, 2, 12);
-				if (frameRate != -1) {
+				if (showFrameRate && frameRate != -1) {
 					gVolatile.drawString(Double.toString(Math.round(frameRate*10d)/10d) + " fps", 2, 26);
 				}
-				//gVolatile.drawString("X", getWidth()-10, 12);
 				newFrame = false;
 			}
 			gVolatile.dispose();
 		}
 
-		public final void paintComponent(Graphics g) {
+		public final void paintComponent(Graphics g1) {
+			Graphics2D g = (Graphics2D)g1;
+			
 			if (image == null) return; 
 			
 			if (volatileImage == null || newFrame) {
@@ -381,10 +338,20 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 				} else if (valCode == VolatileImage.IMAGE_INCOMPATIBLE) {
 					createBackBuffer();
 				}
-
-				g.drawImage(volatileImage, (getWidth()-volatileImage.getWidth())/2, (getHeight()-volatileImage.getHeight())/2, this);
+			
+				// scale both width and height
+				float widthScale = getWidth()/(float)volatileImage.getWidth();
+				float heightScale = getHeight()/(float)volatileImage.getHeight();
+				if (keepAspectRatio && widthScale != heightScale) {
+					widthScale = heightScale = Math.min(widthScale, heightScale);
+				}
+				int scaledWidth = (int)(volatileImage.getWidth() * widthScale);
+				int scaledHeight = (int)(volatileImage.getHeight() * heightScale);
+				float widthOffset = (getWidth() - scaledWidth)/2f;
+				float heightOffset = (getHeight() - scaledHeight)/2f;
+				AffineTransform af = new AffineTransform(widthScale, 0f, 0f, heightScale, widthOffset, heightOffset);
+				g.drawImage(volatileImage, af, this);
 				g.drawString("X", getWidth()-10, 12);
-
 			} while (volatileImage.contentsLost());						
 		}
 			
@@ -414,7 +381,7 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		public Dimension getPreferredSize() {
 			Dimension dimension;
 			if (image != null) {
-				dimension = new Dimension(image.getWidth(this), image.getHeight(this));
+				dimension = new Dimension(image.getWidth(this), image.getWidth(this));
 			} else {
 				dimension = new Dimension(0, 0);
 			}
