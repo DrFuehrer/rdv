@@ -180,9 +180,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		if (oldState == STATE_EXITING) {
 			log.error("Can not transition out of exiting state to " + getStateName(state) + " state.");
 			return false;
-		} else if (oldState == newState) {
-			log.error("Transitioning to same state (" + getStateName(state) + ").");
-			return false;
  		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING) {
 			if (!initRBNB()) {
 				return false;
