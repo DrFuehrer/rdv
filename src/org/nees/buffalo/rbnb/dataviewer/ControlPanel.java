@@ -55,7 +55,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	
 	int playerState;
 	
-	ChannelTree ctree;
+	ChannelMap channelMap;
 	
 	ArrayList timeScaleChangeListeners;
 	ArrayList domainChangeListeners;
@@ -281,7 +281,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	}
 	
 	public void channelListUpdated(ChannelMap channelMap) {
-		ctree = ChannelTree.createFromChannelMap(channelMap);
+		this.channelMap = channelMap;
 		
 		updateTimeBoundaries();
 		
@@ -292,12 +292,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		double startTime = -1;
 		double endTime = -1;
 		
-		Iterator i = ctree.iterator();
-		while (i.hasNext()) {
-			ChannelTree.Node node = (ChannelTree.Node)i.next();
-			if (node.getType() == ChannelTree.CHANNEL && player.isSubscribed(node.getFullName())) {
-				double channelStart = node.getStart();
-				double channelDuration = node.getDuration();
+		String[] channels = channelMap.GetChannelList();
+		for (int i=0; i<channels.length; i++) {
+			String channelName = channels[i];
+			if (player.isSubscribed(channelName)) {
+				int channelIndex = channelMap.GetIndex(channelName);
+				double channelStart = channelMap.GetTimeStart(channelIndex);
+				double channelDuration = channelMap.GetTimeDuration(channelIndex);
 				double channelEnd = channelStart+channelDuration;
 				if (startTime == -1 || channelStart < startTime) {
 					startTime = channelStart;
