@@ -64,11 +64,6 @@ public class DataViewer extends JFrame implements DomainListener {
  	private Action fileAction;
  	private Action connectAction;
  	private Action disconnectAction;
- 	private Action loadAction;
- 	private Action saveAction;
- 	private Action importAction;
- 	private Action exportAction;
- 	private Action printAction;
  	private Action exitAction;
  	
  	private Action controlAction;
@@ -97,7 +92,6 @@ public class DataViewer extends JFrame implements DomainListener {
  	private Action closeAllDataPanelsAction;
  	
  	private Action helpAction;
- 	private Action contentsAction;
  	private Action aboutAction;
 
 	public static final String DEFAULT_RBNB_HOST_NAME = "localhost";
@@ -203,7 +197,7 @@ public class DataViewer extends JFrame implements DomainListener {
  	private void initActions() {
  		fileAction = new DataViewerAction("File", "File Menu", KeyEvent.VK_F);
  		
- 		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK)) {
+ 		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				if (rbnbConnectionDialog == null) {
  					rbnbConnectionDialog = new RBNBConnectionDialog((DataViewer)frame, rbnb, channelListPanel);
@@ -213,43 +207,13 @@ public class DataViewer extends JFrame implements DomainListener {
  			}			
  		};
  		
- 		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK)) {
+ 		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				closeAllDataPanels();
  				rbnb.disconnect();
  				channelListPanel.disconnect();
  			}			
  		};
- 
- 		loadAction = new DataViewerAction("Load", "Load configuration from file", KeyEvent.VK_L, KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK)) {
- 			public void actionPerformed(ActionEvent ae) {
- 				
- 			}			
- 		};
- 		
- 		saveAction = new DataViewerAction("Save", "Save configuration to file", KeyEvent.VK_S, KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK)) {
- 			public void actionPerformed(ActionEvent ae) {
- 				
- 			}			
- 		};		
- 
- 		importAction = new DataViewerAction("Import", "Import data from disk into RBNB server") {
- 			public void actionPerformed(ActionEvent ae) {
- 				
- 			}			
- 		};		
- 
- 		exportAction = new DataViewerAction("Export", "Export data from server to disk", KeyEvent.VK_E) {
- 			public void actionPerformed(ActionEvent ae) {
- 				
- 			}			
- 		};		
- 
- 		printAction = new DataViewerAction("Print", "Print data panels", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK)) {
- 			public void actionPerformed(ActionEvent ae) {
- 				
- 			}			
- 		};		
  
  		exitAction = new DataViewerAction("Exit", "Exit RBNB Data Viewer", KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
@@ -394,12 +358,6 @@ public class DataViewer extends JFrame implements DomainListener {
  		
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
  
- 		contentsAction = new DataViewerAction("Contents", "", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0)) {
- 			public void actionPerformed(ActionEvent ae) {
- 				
- 			}			
- 		};
- 
  		aboutAction = new DataViewerAction("About RBNB Data Viewer", "", KeyEvent.VK_A) {
  			public void actionPerformed(ActionEvent ae) {
  				if (aboutDialog == null) {
@@ -426,27 +384,6 @@ public class DataViewer extends JFrame implements DomainListener {
  		fileMenu.add(menuItem);
  		
  		fileMenu.addSeparator();	
- 		
- 		menuItem = new JMenuItem(loadAction);
- 		fileMenu.add(menuItem);
- 
- 		menuItem = new JMenuItem(saveAction);
- 		fileMenu.add(menuItem);
- 		
- 		fileMenu.addSeparator();	
- 		
- 		menuItem = new JMenuItem(importAction);
-  		fileMenu.add(menuItem);
-  
- 		menuItem = new JMenuItem(exportAction);
-  		fileMenu.add(menuItem);
-  		
-  		fileMenu.addSeparator();	
-  		
- 		menuItem = new JMenuItem(printAction);
- 		fileMenu.add(menuItem);		
- 		
- 		fileMenu.addSeparator();
  		
  		menuItem = new JMenuItem(exitAction);
   		fileMenu.add(menuItem);
@@ -547,11 +484,6 @@ public class DataViewer extends JFrame implements DomainListener {
   		
  		JMenu helpMenu = new JMenu(helpAction);
   
- 		menuItem = new JMenuItem(contentsAction);
- 		helpMenu.add(menuItem);		
- 		
- 		helpMenu.addSeparator();
- 		
  		menuItem = new JMenuItem(aboutAction);
   		helpMenu.add(menuItem);		
   		
