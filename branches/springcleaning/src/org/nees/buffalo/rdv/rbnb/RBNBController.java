@@ -132,7 +132,7 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 			for (int i=0; i<updateSubscriptionRequests.size(); i++) {
 				SubscriptionRequest subscriptionRequest = (SubscriptionRequest)updateSubscriptionRequests.get(i);
 				String channelName = subscriptionRequest.getChannelName();
-				PlayerChannelListener listener = subscriptionRequest.getListener();		
+				DataListener listener = subscriptionRequest.getListener();		
 				if (subscriptionRequest.isSubscribe()) {
 					subscribeSafe(channelName, listener);
 				} else {
@@ -299,7 +299,7 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 	
 	// Subscription Methods
 	
-	private boolean subscribeSafe(String channelName, PlayerChannelListener panel) {
+	private boolean subscribeSafe(String channelName, DataListener panel) {
 		//subscribe to channel
 		try {
 			requestedChannels.Add(channelName);
@@ -336,7 +336,7 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		return true;
 	}
 		
-	private boolean unsubscribeSafe(String channelName, PlayerChannelListener panel) {
+	private boolean unsubscribeSafe(String channelName, DataListener panel) {
 		channelManager.unsubscribe(channelName, panel);
 		
 		if (!channelManager.isChannelSubscribed(channelName)) {
@@ -949,7 +949,7 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		updatePlaybackRate = playbackRate;
 	}
 	
-	public boolean subscribe(String channelName, PlayerChannelListener listener) {
+	public boolean subscribe(String channelName, DataListener listener) {
 		synchronized (updateSubscriptionRequests) {
 			updateSubscriptionRequests.add(new SubscriptionRequest(channelName, listener, true));
 		}
@@ -957,7 +957,7 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		return true;
 	}
 
-	public boolean unsubscribe(String channelName, PlayerChannelListener listener) {
+	public boolean unsubscribe(String channelName, DataListener listener) {
 		synchronized (updateSubscriptionRequests) {
 			updateSubscriptionRequests.add(new SubscriptionRequest(channelName, listener, false));
 		}
@@ -1072,10 +1072,10 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 	
 	class SubscriptionRequest {
 		private String channelName;
-		private PlayerChannelListener listener;
+		private DataListener listener;
 		private boolean isSubscribe;
 		
-		public SubscriptionRequest(String channelName, PlayerChannelListener listener, boolean isSubscribe) {
+		public SubscriptionRequest(String channelName, DataListener listener, boolean isSubscribe) {
 			this.channelName = channelName;
 			this.listener = listener;
 			this.isSubscribe = isSubscribe;
@@ -1085,7 +1085,7 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 			return channelName;
 		}
 		
-		public PlayerChannelListener getListener() {
+		public DataListener getListener() {
 			return listener;
 		}
 		

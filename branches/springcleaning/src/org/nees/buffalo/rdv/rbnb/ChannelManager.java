@@ -28,7 +28,7 @@ public class ChannelManager {
 		playerChannelListeners = new ArrayList();
 	}
 
-	public boolean subscribe(String channelName, PlayerChannelListener listener) {
+	public boolean subscribe(String channelName, DataListener listener) {
 		//add channel to channel list for listener
 		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
 		if (listenerChannelSubscription == null) {
@@ -54,7 +54,7 @@ public class ChannelManager {
 		return true;
 	}
 	
-	public boolean unsubscribe(String channelName, PlayerChannelListener listener) {
+	public boolean unsubscribe(String channelName, DataListener listener) {
 		//remove channel from channel list for listener
 		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
 		listenerChannelSubscription.remove(channelName);
@@ -78,7 +78,7 @@ public class ChannelManager {
 		return true;
 	}
 	
-	private boolean isListenerSubscribedToAnyChannels(PlayerChannelListener listener) {
+	private boolean isListenerSubscribedToAnyChannels(DataListener listener) {
 		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
 		return listenerChannelSubscription != null;
 	}
@@ -88,7 +88,7 @@ public class ChannelManager {
 		return count != null;
 	}
 	
-	public boolean isListenerSubscribedToChannel(String channelName, PlayerChannelListener listener) {
+	public boolean isListenerSubscribedToChannel(String channelName, DataListener listener) {
 		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
 		if (listenerChannelSubscription != null) {
 			return listenerChannelSubscription.contains(channelName);
@@ -98,9 +98,9 @@ public class ChannelManager {
 	}
 	
 	public void postData(ChannelMap channelMap) {
-		PlayerChannelListener listener;
+		DataListener listener;
 		for (int i=0; i < playerChannelListeners.size(); i++) {
-			listener = (PlayerChannelListener)playerChannelListeners.get(i);
+			listener = (DataListener)playerChannelListeners.get(i);
 			try {
 				listener.postData(channelMap);
 			} catch (Exception e) {

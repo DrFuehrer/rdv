@@ -138,7 +138,7 @@ public interface Player {
 	 * @return                 true if the channel is subscribed, false otherwise
 	 * @since                  1.0
 	 */
-	public boolean subscribe(String channelName, PlayerChannelListener channelListener);
+	public boolean subscribe(String channelName, DataListener channelListener);
 	
 	/**
 	 * Unsubscribe the channel listener from the channel and stop
@@ -151,7 +151,7 @@ public interface Player {
 	 * @return                 true if the listener is unsubscribed, false otherwise
 	 * @since                  1.0
 	 */
-	public boolean unsubscribe(String channelName, PlayerChannelListener channelListener);
+	public boolean unsubscribe(String channelName, DataListener channelListener);
 	
 	/**
 	 * Tell if the player is getting data from the server for this

@@ -8,7 +8,7 @@ import com.rbnb.sapi.ChannelMap;
  * @author  Jason P. Hanley
  * @since   1.0
  */
-public interface PlayerChannelListener {
+public interface DataListener {
 	/**
 	 * Post a slice of data.
 	 * 
