@@ -241,42 +241,42 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 					double[] doubleData = channelMap.GetDataAsFloat64(channelIndex);
 					for (int i=0; i<doubleData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.add(time, doubleData[i]);
+						timeSeriesData.addOrUpdate(time, doubleData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_FLOAT32:
 					float[] floatData = channelMap.GetDataAsFloat32(channelIndex);
 					for (int i=0; i<floatData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.add(time, floatData[i]);
+						timeSeriesData.addOrUpdate(time, floatData[i]);
 					}
 				break;					
 				case ChannelMap.TYPE_INT64:
 					long[] longData = channelMap.GetDataAsInt64(channelIndex);
 					for (int i=0; i<longData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.add(time, longData[i]);
+						timeSeriesData.addOrUpdate(time, longData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT32:
 					int[] intData = channelMap.GetDataAsInt32(channelIndex);
 					for (int i=0; i<intData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.add(time, intData[i]);
+						timeSeriesData.addOrUpdate(time, intData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT16:
 					short[] shortData = channelMap.GetDataAsInt16(channelIndex);
 					for (int i=0; i<shortData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.add(time, shortData[i]);
+						timeSeriesData.addOrUpdate(time, shortData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_INT8:					
 					byte[] byteData = channelMap.GetDataAsInt8(channelIndex);
 					for (int i=0; i<byteData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.add(time, byteData[i]);
+						timeSeriesData.addOrUpdate(time, byteData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_STRING:
@@ -288,9 +288,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			
 			chart.setNotify(true);
 			chart.fireChartChanged();
-		} catch (SeriesException se) {
-			// FIXME why do we get this? Either a bug in JFreeChart or we are adding
-			//       duplicate data! We shouldn't be.
 		} catch (Exception e) {
 			log.error("Problem plotting data for channel " + channelName + ".");
 			e.printStackTrace();
