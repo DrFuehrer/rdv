@@ -59,12 +59,11 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	public boolean supportsMultipleChannels() {
 		return false;
 	}	
-	
-	public void postData(ChannelMap channelMap) {
-		postData(channelMap, -1, -1);
-	}
 
-	public void postData(ChannelMap channelMap, double startTime, double duration) {
+	public void postData(ChannelMap channelMap, Time time) {
+		double startTime = time.location;
+		double duration = time.duration;
+		
 		String channelName = (String)channels.iterator().next();
 
 		try {			
@@ -83,7 +82,8 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			
 			int imageIndex = -1;
 			
-			if (startTime != -1 && duration != -1) {
+			// TODO replace with function in the Abstract class
+			if (!time.isUnspecified()) {
 				double[] times = channelMap.GetTimes(channelIndex);
 				double endTime = startTime + duration;
 				for (int i=0; i<times.length; i++) {

@@ -6,12 +6,12 @@ package org.nees.buffalo.rbnb.dataviewer;
 /**
  * @author Jason P. Hanley
  */
-public class TimeSlice {
+public class Time {
 
 	public double location;
 	public double duration;
 	
-	public TimeSlice(double location, double duration) {
+	public Time(double location, double duration) {
 		this.location = location;
 		this.duration = duration;
 	}
@@ -20,8 +20,8 @@ public class TimeSlice {
 		return (location == -1 && duration == -1);
 	}
 	
-	public boolean equals(TimeSlice ts) {
-		return (ts.location == location && ts.duration == duration);
+	public boolean equals(Time time) {
+		return (time.location == location && time.duration == duration);
 	}
 	
 }

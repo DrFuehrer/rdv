@@ -110,7 +110,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
  		add(monitorButton, c);		
 		
  		beginButton = new JButton("<<");
- 		beginButton.setToolTipText("Go to begining");
+ 		beginButton.setToolTipText("Go to beginning");
  		beginButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
  				setLocationBegin();

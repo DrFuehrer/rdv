@@ -52,12 +52,8 @@ public class StringDataPanel extends AbstractDataPanel {
 	public boolean supportsMultipleChannels() {
 		return true;
 	}
-		
-	public void postData(ChannelMap channelMap) {
-		postData(channelMap, -1, -1);
-	}
-	
-	public void postData(ChannelMap channelMap, double startTime, double duration) {
+			
+	public void postData(ChannelMap channelMap, Time time) {
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -66,16 +62,16 @@ public class StringDataPanel extends AbstractDataPanel {
 			
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
-				postData(channelMap, channelName, channelIndex, startTime, duration);
+				postData(channelMap, channelName, channelIndex, time);
 			}
 		}
 	}
 
-	private void postData(ChannelMap channelMap, String channelName, int channelIndex, double startTime, double duration) {
+	private void postData(ChannelMap channelMap, String channelName, int channelIndex, Time time) {
 		String[] data = channelMap.GetDataAsString(channelIndex);
 		double[] times = channelMap.GetTimes(channelIndex);
 
-		TimeIndex index = getTimeIndex(times, startTime, duration);
+		TimeIndex index = getTimeIndex(times, time);
 		int startIndex = index.startIndex;
 		int endIndex = index.endIndex;
 		

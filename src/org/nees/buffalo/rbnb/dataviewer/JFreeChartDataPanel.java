@@ -206,19 +206,15 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		((DateAxis)((XYPlot)chart.getPlot()).getDomainAxis()).setRange((time-domain)*1000, time*1000);
 	}
 		
-	public void postData(ChannelMap channelMap) {
-		postData(channelMap, -1, -1);
-	}	
-
-	public void postData(ChannelMap channelMap, double startTime, double duration) {
+	public void postData(ChannelMap channelMap, Time time) {
 		if (xyMode) {
-			postDataXY(channelMap, startTime, duration);
+			postDataXY(channelMap, time);
 		} else {
-			postDataTimeSeries(channelMap, startTime, duration);
+			postDataTimeSeries(channelMap, time);
 		}
 	}
 
-	private void postDataTimeSeries(ChannelMap channelMap, double startTime, double duration) {
+	private void postDataTimeSeries(ChannelMap channelMap, Time time) {
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -227,12 +223,12 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
-				postDataTimeSeries(channelMap, channelName, channelIndex, startTime, duration);
+				postDataTimeSeries(channelMap, channelName, channelIndex, time);
 			}
 		}
 	}
 	
-	private void postDataTimeSeries(ChannelMap channelMap, String channelName, int channelIndex, double startTime, double duration) {		
+	private void postDataTimeSeries(ChannelMap channelMap, String channelName, int channelIndex, Time requestTime) {		
 		TimeSeries timeSeriesData = null;
 		TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
 		timeSeriesData = dataCollection.getSeries(getSeriesName(channelName));
@@ -240,7 +236,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		try {		
 			double[] times = channelMap.GetTimes(channelIndex);
 
-			TimeIndex index = getTimeIndex(times, startTime, duration);
+			TimeIndex index = getTimeIndex(times, requestTime);
 			int startIndex = index.startIndex;
 			int endIndex = index.endIndex;
 			
@@ -314,7 +310,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		}
 	}
 
-	private void postDataXY(ChannelMap channelMap, double startTime, double duration) {
+	private void postDataXY(ChannelMap channelMap, Time requestTime) {
 		if (!xyMode) {
 			log.error("Tried to post X vs. Y data when not in xy mode.");
 			return;
@@ -351,7 +347,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			//TODO make sure data is at the same timestamp
 			double[] times = channelMap.GetTimes(xChannelIndex); //FIXME go over all channel times
 
-			TimeIndex index = getTimeIndex(times, startTime, duration);
+			TimeIndex index = getTimeIndex(times, requestTime);
 			int startIndex = index.startIndex;
 			int endIndex = index.endIndex;
 			
