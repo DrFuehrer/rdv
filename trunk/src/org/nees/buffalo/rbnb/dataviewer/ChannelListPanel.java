@@ -410,9 +410,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 						infoTextArea.append("Mime: " + node.getMime() + NEWLINE);
 						infoTextArea.append("Start: " + DataViewer.formatDate(node.getStart()) + NEWLINE);
 						infoTextArea.append("Duriation: " + DataViewer.formatSeconds(node.getDuration()) + NEWLINE);
-						infoTextArea.append("Size: " + node.getSize() + " bytes");
+						infoTextArea.append("Size: " + DataViewer.formatBytes(node.getSize()));
 						
-						infoTextArea.append(NEWLINE + NEWLINE);
+						/* infoTextArea.append(NEWLINE + NEWLINE);
 						String channelName = node.getFullName();
 						int channelIndex = cmap.GetIndex(channelName);
 						try {
@@ -422,7 +422,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 							}
 						} catch (ClassCastException cce) {
 							log.warn("Failed to get metadata for channel " + channelName);
-						}
+						} */
 					}
 				}
 			}
