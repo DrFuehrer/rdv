@@ -292,24 +292,48 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			chart.setNotify(false);
 			
 			switch (typeID) {
-				case ChannelMap.TYPE_FLOAT64:
-				case ChannelMap.TYPE_FLOAT32:					
+				case ChannelMap.TYPE_FLOAT64:					
 					double[] doubleData = channelMap.GetDataAsFloat64(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
 						timeSeriesData.add(time, doubleData[i]);
 					}
 					break;
+				case ChannelMap.TYPE_FLOAT32:
+					float[] floatData = channelMap.GetDataAsFloat32(channelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						time = new FixedMillisecond((long)(times[i]*1000));
+						timeSeriesData.add(time, floatData[i]);
+					}
+				break;					
 				case ChannelMap.TYPE_INT64:
-				case ChannelMap.TYPE_INT32:
-				case ChannelMap.TYPE_INT16:
-				case ChannelMap.TYPE_INT8:					
 					long[] longData = channelMap.GetDataAsInt64(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
 						timeSeriesData.add(time, longData[i]);
 					}
 					break;
+				case ChannelMap.TYPE_INT32:
+					int[] intData = channelMap.GetDataAsInt32(channelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						time = new FixedMillisecond((long)(times[i]*1000));
+						timeSeriesData.add(time, intData[i]);
+					}
+					break;
+				case ChannelMap.TYPE_INT16:
+					short[] shortData = channelMap.GetDataAsInt16(channelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						time = new FixedMillisecond((long)(times[i]*1000));
+						timeSeriesData.add(time, shortData[i]);
+					}
+					break;					
+				case ChannelMap.TYPE_INT8:					
+					byte[] byteData = channelMap.GetDataAsInt8(channelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						time = new FixedMillisecond((long)(times[i]*1000));
+						timeSeriesData.add(time, byteData[i]);
+					}
+					break;					
 				case ChannelMap.TYPE_STRING:
 				case ChannelMap.TYPE_UNKNOWN:
 				case ChannelMap.TYPE_BYTEARRAY:
@@ -321,7 +345,8 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			chart.fireChartChanged();
 			
 		} catch (Exception e) {
-			log.error("Problem plotting data for channel: " + channelName + ": " + e.getMessage() + ".");
+			log.error("Problem plotting data for channel " + channelName + ".");
+			e.printStackTrace();
 		}
 	}
 
@@ -380,23 +405,47 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			
 			switch (typeID) {
 				case ChannelMap.TYPE_FLOAT64:
-				case ChannelMap.TYPE_FLOAT32:
 					double[] xDoubleData = channelMap.GetDataAsFloat64(xChannelIndex);
 					double[] yDoubleData = channelMap.GetDataAsFloat64(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						xySeriesData.add(xDoubleData[i], yDoubleData[i]);
 					}
 					break;
+				case ChannelMap.TYPE_FLOAT32:
+					float[] xFloatData = channelMap.GetDataAsFloat32(xChannelIndex);
+					float[] yFloatData = channelMap.GetDataAsFloat32(yChannelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						xySeriesData.add(xFloatData[i], yFloatData[i]);
+					}
+					break;					
 				case ChannelMap.TYPE_INT64:
-				case ChannelMap.TYPE_INT32:
-				case ChannelMap.TYPE_INT16:
-				case ChannelMap.TYPE_INT8:
 					long[] xLongData = channelMap.GetDataAsInt64(xChannelIndex);
 					long[] yLongData = channelMap.GetDataAsInt64(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						xySeriesData.add(xLongData[i], yLongData[i]);
 					}
 					break;
+				case ChannelMap.TYPE_INT32:
+					int[] xIntData = channelMap.GetDataAsInt32(xChannelIndex);
+					int[] yIntData = channelMap.GetDataAsInt32(yChannelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						xySeriesData.add(xIntData[i], yIntData[i]);
+					}
+					break;
+				case ChannelMap.TYPE_INT16:
+					short[] xShortData = channelMap.GetDataAsInt16(xChannelIndex);
+					short[] yShortData = channelMap.GetDataAsInt16(yChannelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						xySeriesData.add(xShortData[i], yShortData[i]);
+					}
+					break;					
+				case ChannelMap.TYPE_INT8:
+					byte[] xByteData = channelMap.GetDataAsInt8(xChannelIndex);
+					byte[] yByteData = channelMap.GetDataAsInt8(yChannelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						xySeriesData.add(xByteData[i], yByteData[i]);
+					}
+					break;					
 				case ChannelMap.TYPE_BYTEARRAY:					
 				case ChannelMap.TYPE_STRING:
 				case ChannelMap.TYPE_UNKNOWN:
