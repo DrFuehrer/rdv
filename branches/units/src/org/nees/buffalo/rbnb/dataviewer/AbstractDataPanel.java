@@ -3,13 +3,16 @@
  */
 package org.nees.buffalo.rbnb.dataviewer;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -27,17 +30,25 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import javax.swing.border.AbstractBorder;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JWindow;
+import javax.swing.border.EtchedBorder;
 import javax.swing.event.MouseInputAdapter;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Jason P. Hanley
  */
 public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelListener, PlayerTimeListener, PlayerStateListener, DropTargetListener {
+
+	static Log log = LogFactory.getLog(AbstractDataPanel.class.getName());
+	
 	DataPanelContainer dataPanelContainer;
 	Player player;
 	
@@ -48,6 +59,8 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	double domain;
 
 	JPanel component;
+	JComponent dataComponent;
+	ControlBarBorder controlBarBorder;
 	
 	JFrame frame;
 	boolean attached;
@@ -83,7 +96,9 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		time = 0;
 		domain = 1;
 		
-		component = new AbstractDataPanelContainer();
+		component = new JPanel();
+		
+		controlBarBorder = new ControlBarBorder();
 		
 		attached = true;
 		
@@ -91,13 +106,14 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 
 		hasFocus = false;
 		
-		pinned = false;
+		pinned = true;
+		
 		paused = false;
 
 		if (!iconsLoaded) {
 			loadIcons();
 		}
-		
+						
 		player.addTimeListener(this);
 		player.addStateListener(this);
 	}
@@ -125,6 +141,8 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		
 		if (!attached) {
 			frame.setTitle(getTitle());
+		} else if (pinned) {
+			component.repaint();
 		}
 	}
 	
@@ -140,7 +158,9 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 
 		if (!attached) {
 			frame.setTitle(getTitle());
-		}		
+		} else if (pinned) {
+			component.repaint();
+		}
 	}
 	
 	void removeAllChannels() {
@@ -149,9 +169,18 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 			removeChannel((String)channelNames[i]);
 		}
 	}
-	
-	void setComponent(JComponent c) {
-		component.add(c);
+		
+	public void setDataComponent(JComponent dataComponent) {
+		this.dataComponent = dataComponent;
+		
+		if (pinned) {
+			dataComponent.setBorder(controlBarBorder);
+		}
+		
+		component.setBorder(new EtchedBorder());
+				
+		component.setLayout(new BorderLayout());
+		component.add(dataComponent, BorderLayout.CENTER);
 	}
 	
 	public JComponent getComponent() {
@@ -166,7 +195,18 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	/*
 	 * Get the title of the data panel
 	 */
-	abstract String getTitle();
+	String getTitle() {
+		String titleString = "";
+		Iterator i = channels.iterator();
+		while (i.hasNext()) {
+			titleString += i.next();
+			if (i.hasNext()) {
+				titleString += ", ";
+			}
+		}
+
+		return titleString;
+	}
 	
 	public void postTime(double time) {
 		this.time = time;
@@ -197,7 +237,6 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	
 	void setControlBar(boolean enable) {
 		if (enable) {
-			final JComponent component = getComponent();
 			component.addMouseListener(new MouseInputAdapter() {
 				public void mouseClicked(MouseEvent e) {
 					if (e.getButton() == MouseEvent.BUTTON1) {
@@ -223,12 +262,16 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 				
 				public void mouseEntered(MouseEvent e) {
 					hasFocus = true;
-					component.repaint();
+					if (!pinned) {
+						dataComponent.setBorder(controlBarBorder);
+					}
 				}
 				
 				public void mouseExited(MouseEvent e) {
 					hasFocus = false;
-					component.repaint();
+					if (!pinned) {
+						dataComponent.setBorder(null);
+					}
 				}
 			});
 		}
@@ -267,7 +310,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	public void toggleDetach() {
 		if (maximized) {
 			window.setVisible(false);
-			window.getContentPane().remove(getComponent());
+			window.getContentPane().remove(component);
 			window.dispose();
 			window = null;
 			maximized = false;
@@ -292,7 +335,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		});
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);		
 
-		frame.getContentPane().add(getComponent());
+		frame.getContentPane().add(component);
 		frame.pack();
 		frame.setVisible(true);
 	}
@@ -300,7 +343,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	public void attachPanel(boolean addToContainer) {
 		if (frame != null) {
 			frame.setVisible(false);
-			frame.getContentPane().remove(getComponent());
+			frame.getContentPane().remove(component);
 			frame.dispose();
 			frame = null;
 		}
@@ -330,14 +373,14 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		dataPanelContainer.removeDataPanel(this);
 		
 		window = new JWindow();
-		window.getContentPane().add(getComponent());
+		window.getContentPane().add(component);
 		window.setSize(getScreenDimensions());
 		window.setVisible(true);
 	}
 	
 	public void restorePanel(boolean addToContainer) {
 		window.setVisible(false);
-		window.getContentPane().remove(getComponent());
+		window.getContentPane().remove(component);
 		window.dispose();
 		window = null;
 
@@ -346,7 +389,6 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		if (addToContainer) {
 			dataPanelContainer.addDataPanel(this);
 		}
-		
 	}	
 	
 	Dimension getScreenDimensions() {
@@ -365,7 +407,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	
 	public void setDropTarget(boolean enable) {
 		if (enable) {
-			new DropTarget(getComponent(), DnDConstants.ACTION_LINK, this);
+			new DropTarget(component, DnDConstants.ACTION_LINK, this);
 		} else {
 			
 		}
@@ -412,25 +454,30 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	}
 	
 	public void dragExit(DropTargetEvent e) {}
-	
-	class AbstractDataPanelContainer extends JPanel {
-		public void paintChildren(Graphics g) {
-			super.paintChildren(g);
+		
+	class ControlBarBorder extends AbstractBorder {
+		
+		public boolean isBorderOpaque() {
+			return true;
+		}
+		
+		public Insets getBorderInsets(Component c) {
+				return new Insets(16, 0, 0, 0);			
+		}
+		
+		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			int componentWidth = c.getWidth();
+			int componentHeight = c.getHeight();
 			
-			if (pinned || hasFocus) {
-				int componentWidth = getWidth();
-				int componentHeight = getHeight();
-				
-				g.setColor(Color.BLACK);
-				g.fillRect(0, 0, getWidth(), 16);
-				g.drawImage(windowPinImage, 0, 0, this);
-				g.drawImage(windowSnapshotImage, 16, 0, this);
-				g.drawImage(windowDetachImage, componentWidth-48, 0, this);
-				g.drawImage(windowMaximizeImage, componentWidth-32, 0, this);
-				g.drawImage(windowCloseImage, componentWidth-16, 0, this);
-				g.setColor(Color.WHITE);
-				g.drawString(getTitle(), 36, 12);
-			}
+			g.setColor(Color.BLACK);
+			g.fillRect(0, 0, componentWidth, 16);
+			g.drawImage(windowPinImage, 0, 0, null);
+			g.drawImage(windowSnapshotImage, 16, 0, null);
+			g.drawImage(windowDetachImage, componentWidth-48, 0, null);
+			g.drawImage(windowMaximizeImage, componentWidth-32, 0, null);
+			g.drawImage(windowCloseImage, componentWidth-16, 0, null);
+			g.setColor(Color.WHITE);
+			g.drawString(getTitle(), 36, 12);
 		}
 	}
 }

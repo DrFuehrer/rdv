@@ -1,17 +1,6 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
 import java.awt.BorderLayout;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -19,7 +8,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,9 +29,18 @@ public class StringDataPanel extends AbstractDataPanel {
 	
 	public StringDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		super(dataPanelContainer, player);
+				
+		labels = new Hashtable();
 		
+		initPanel();
+		setDataComponent(panel);
+		
+		setControlBar(true);
+		setDropTarget(true);
+	}
+	
+	JComponent initPanel() {
 		panel = new JPanel();
-		panel.setBorder(new EtchedBorder());
 		
 		panel.setLayout(new BorderLayout());
 		
@@ -54,11 +51,11 @@ public class StringDataPanel extends AbstractDataPanel {
 		dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
 		panel.add(dataPanel, BorderLayout.CENTER);
 		
-		labels = new Hashtable();
-
-		setComponent(panel);
-		setControlBar(true);
-		setDropTarget(true);
+		return panel;
+	}
+	
+	public String[] getSupportedMimeTypes() {
+		return new String[] { "text/plain" };
 	}
 
 	public boolean supportsMultipleChannels() {
@@ -120,19 +117,5 @@ public class StringDataPanel extends AbstractDataPanel {
 			JLabel dataLabel = (JLabel)labels.get(channelName);
 			dataLabel.setText(null);
 		}
-	}
-	
-	String getTitle() {
-		String titleString = "";
-		Iterator i = channels.iterator();
-		while (i.hasNext()) {
-			titleString += i.next() + ", ";
-		}
-
-		return titleString;
-	}
-	
-	public String[] getSupportedMimeTypes() {
-		return new String[] { "text/plain" };
 	}
 }
