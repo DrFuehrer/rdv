@@ -41,8 +41,8 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.DataListener;
-import org.nees.buffalo.rdv.rbnb.PlayerStateListener;
-import org.nees.buffalo.rdv.rbnb.PlayerTimeListener;
+import org.nees.buffalo.rdv.rbnb.StateListener;
+import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
@@ -50,7 +50,7 @@ import com.rbnb.sapi.ChannelMap;
 /**
  * @author Jason P. Hanley
  */
-public abstract class AbstractDataPanel implements DataPanel, DataListener, PlayerTimeListener, PlayerStateListener, DropTargetListener {
+public abstract class AbstractDataPanel implements DataPanel, DataListener, TimeListener, StateListener, DropTargetListener {
 
 	static Log log = LogFactory.getLog(AbstractDataPanel.class.getName());
 	

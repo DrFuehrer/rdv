@@ -38,7 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
-import org.nees.buffalo.rdv.rbnb.PlayerSubscriptionListener;
+import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
@@ -49,7 +49,7 @@ import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 /**
  * @author Jason P. Hanley
  */
-public class ChannelListPanel extends JPanel implements TreeModel, TreeSelectionListener, DragGestureListener, DragSourceListener, MouseListener, PlayerSubscriptionListener {
+public class ChannelListPanel extends JPanel implements TreeModel, TreeSelectionListener, DragGestureListener, DragSourceListener, MouseListener, SubscriptionListener {
 
 	static Log log = LogFactory.getLog(ChannelListPanel.class.getName());
 

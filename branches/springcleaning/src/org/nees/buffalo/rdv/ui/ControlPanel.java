@@ -21,9 +21,9 @@ import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 import org.nees.buffalo.rdv.rbnb.Player;
-import org.nees.buffalo.rdv.rbnb.PlayerStateListener;
-import org.nees.buffalo.rdv.rbnb.PlayerSubscriptionListener;
-import org.nees.buffalo.rdv.rbnb.PlayerTimeListener;
+import org.nees.buffalo.rdv.rbnb.StateListener;
+import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
+import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 
 import com.rbnb.sapi.ChannelMap;
@@ -31,7 +31,7 @@ import com.rbnb.sapi.ChannelMap;
 /**
  * @author Jason P. Hanley
  */
-public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTimeListener, PlayerStateListener, PlayerSubscriptionListener, MetadataListener {
+public class ControlPanel extends JPanel implements AdjustmentListener, TimeListener, StateListener, SubscriptionListener, MetadataListener {
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 

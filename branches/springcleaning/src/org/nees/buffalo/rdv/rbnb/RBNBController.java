@@ -801,7 +801,7 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 	
 	private void updateTimeListeners(double location) {
 		for (int i=0; i<timeListeners.size(); i++) {
-			PlayerTimeListener timeListener = (PlayerTimeListener)timeListeners.get(i);
+			TimeListener timeListener = (TimeListener)timeListeners.get(i);
 			try {
 				timeListener.postTime(location);
 			} catch (Exception e) {
@@ -813,23 +813,23 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 			
 	private void notifyStateListeners(int state, int oldState) {
 		for (int i=0; i<stateListeners.size(); i++) {
-			PlayerStateListener stateListener = (PlayerStateListener)stateListeners.get(i);
+			StateListener stateListener = (StateListener)stateListeners.get(i);
 			stateListener.postState(state, oldState);
 		}		
 	}
 	
 	private void fireSubscriptionNotification(String channelName) {
-		PlayerSubscriptionListener subscriptionListener;
+		SubscriptionListener subscriptionListener;
 		for (int i=0; i<subscriptionListeners.size(); i++) {
-			subscriptionListener = (PlayerSubscriptionListener)subscriptionListeners.get(i);
+			subscriptionListener = (SubscriptionListener)subscriptionListeners.get(i);
 			subscriptionListener.channelSubscribed(channelName);
 		}
 	}
 	
 	private void fireUnsubscriptionNotification(String channelName) {
-		PlayerSubscriptionListener subscriptionListener;
+		SubscriptionListener subscriptionListener;
 		for (int i=0; i<subscriptionListeners.size(); i++) {
-			subscriptionListener = (PlayerSubscriptionListener)subscriptionListeners.get(i);
+			subscriptionListener = (SubscriptionListener)subscriptionListeners.get(i);
 			subscriptionListener.channelUnsubscribed(channelName);
 		}		
 	}
@@ -969,22 +969,22 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		return channelManager.isChannelSubscribed(channelName);
 	}
 
-	public void addStateListener(PlayerStateListener stateListener) {
+	public void addStateListener(StateListener stateListener) {
 		stateListener.postState(state, state);
 		stateListeners.add(stateListener);
 	}
 
-	public void removeStateListener(PlayerStateListener stateListener) {
+	public void removeStateListener(StateListener stateListener) {
 		stateListeners.remove(stateListener);
 	}
 	
-	public void addTimeListener(PlayerTimeListener timeListener) {
+	public void addTimeListener(TimeListener timeListener) {
 		timeListeners.add(timeListener);
 		//FIXME listners expect data now when this is called
 		//timeListener.postTime(location);
 	}
 	
-	public void removeTimeListener(PlayerTimeListener timeListener) {
+	public void removeTimeListener(TimeListener timeListener) {
 		timeListeners.remove(timeListener);
 	}	
 	
@@ -1027,11 +1027,11 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		metaDataChannelMap = channelMap;
 	}	
 	
-	public void addSubscriptionListener(PlayerSubscriptionListener subscriptionListener) {
+	public void addSubscriptionListener(SubscriptionListener subscriptionListener) {
 		subscriptionListeners.add(subscriptionListener);
 	}
 
-	public void removeSubscriptionListener(PlayerSubscriptionListener subscriptionListener) {
+	public void removeSubscriptionListener(SubscriptionListener subscriptionListener) {
 		subscriptionListeners.remove(subscriptionListener);
 	}
 

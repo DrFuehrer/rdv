@@ -169,7 +169,7 @@ public interface Player {
 	 * @param stateListener  the listener to post state changes too
 	 * @since                1.0
 	 */
-	public void addStateListener(PlayerStateListener stateListener);
+	public void addStateListener(StateListener stateListener);
 	
 	/**
 	 * Stop posting state changes to the specified listener.
@@ -177,7 +177,7 @@ public interface Player {
 	 * @param stateListener  the listener to stop posting state changes too
 	 * @since                1.0
 	 */
-	public void removeStateListener(PlayerStateListener stateListener);
+	public void removeStateListener(StateListener stateListener);
 	
 	
 	/**
@@ -186,7 +186,7 @@ public interface Player {
 	 * @param timeListener  the listener to post the time too
 	 * @since               1.0
 	 */
-	public void addTimeListener(PlayerTimeListener timeListener);
+	public void addTimeListener(TimeListener timeListener);
 	
 	/**
 	 * Stop posting the current time to the specified listener.
@@ -194,5 +194,5 @@ public interface Player {
 	 * @param timeListener  the listener to stop posting the time too
 	 * @since               1.0
 	 */
-	public void removeTimeListener(PlayerTimeListener timeListener);
+	public void removeTimeListener(TimeListener timeListener);
 }

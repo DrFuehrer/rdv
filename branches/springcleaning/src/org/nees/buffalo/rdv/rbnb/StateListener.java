@@ -4,11 +4,11 @@ package org.nees.buffalo.rdv.rbnb;
  * A listener interface to post the current state of the player.
  * 
  * @author  Jason P. Hanley
- * @see     Player#addStateListener(PlayerStateListener)
- * @see     Player#removeStateListener(PlayerStateListener)
+ * @see     Player#addStateListener(StateListener)
+ * @see     Player#removeStateListener(StateListener)
  * @since   1.0
  */
-public interface PlayerStateListener {
+public interface StateListener {
 	/**
 	 * Posts the a state change in the player.
 	 * 

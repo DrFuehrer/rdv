@@ -9,15 +9,15 @@ import javax.swing.border.EtchedBorder;
 
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
-import org.nees.buffalo.rdv.rbnb.PlayerStateListener;
-import org.nees.buffalo.rdv.rbnb.PlayerTimeListener;
+import org.nees.buffalo.rdv.rbnb.StateListener;
+import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 
 /**
  * @author Jason P. Hanley
  */
-public class StatusPanel extends JPanel implements PlayerTimeListener, PlaybackRateListener, PlayerStateListener, TimeScaleListener {
+public class StatusPanel extends JPanel implements TimeListener, PlaybackRateListener, StateListener, TimeScaleListener {
 
 	private DataViewer dataViewer;
 

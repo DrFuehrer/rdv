@@ -2,12 +2,12 @@ package org.nees.buffalo.rdv.rbnb;
 
 /**
  * A listener interface to notify listeners when a channel has
- * been subscribed too or unsubscribed too in the player.
+ * been subscribed too or unsubscribed from in the player.
  * 
  * @author  Jason P. Hanley
  * @since   1.0
  */
-public interface PlayerSubscriptionListener {
+public interface SubscriptionListener {
 	/**
 	 * Called when the player subscribes to the specified channel.
 	 * 

@@ -4,11 +4,11 @@ package org.nees.buffalo.rdv.rbnb;
  * A listener interface to post the current time of the player.
  * 
  * @author  Jason P. Hanley
- * @see     Player#addTimeListener(PlayerTimeListener)
- * @see     Player#removeTimeListener(PlayerTimeListener)
+ * @see     Player#addTimeListener(TimeListener)
+ * @see     Player#removeTimeListener(TimeListener)
  * @since   1.0
  */
-public interface PlayerTimeListener {
+public interface TimeListener {
 	/**
 	 * Post the current time of the player.
 	 * 
