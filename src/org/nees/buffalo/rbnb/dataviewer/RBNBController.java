@@ -1061,6 +1061,35 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		return stateString;		
 	}
 	
+	public static double getStartTime(ChannelMap channelMap, String channelName) {
+		int channelIndex = channelMap.GetIndex(channelName);
+		if (channelIndex != -1) {
+			double start = channelMap.GetTimeStart(channelIndex);
+			return start;
+		} else {
+			return -1;
+		}
+	}
+	
+	public static double getStartTime(ChannelMap channelMap) {
+		double start = Double.MAX_VALUE;
+		
+		String[] channels = channelMap.GetChannelList();
+		for (int i=0; i<channels.length; i++) {
+			String channelName = channels[i];
+			double channelStart = getStartTime(channelMap, channelName);
+			if (channelStart != -1) {
+				start = Math.min(channelStart, start);
+			}
+		}
+		
+		if (start != Double.MAX_VALUE) {
+			return start;
+		} else {
+			return -1;
+		}
+	}
+	
 	public static double getEndTime(ChannelMap channelMap, String channelName) {
 		int channelIndex = channelMap.GetIndex(channelName);
 		if (channelIndex != -1) {
@@ -1079,7 +1108,10 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		String[] channels = channelMap.GetChannelList();
 		for (int i=0; i<channels.length; i++) {
 			String channelName = channels[i];
-			Math.max(getEndTime(channelMap, channelName), end);
+			double channelEnd = getEndTime(channelMap, channelName);
+			if (channelEnd != -1) {
+				end = Math.max(channelEnd, end);
+			}
 		}
 		
 		return end;
