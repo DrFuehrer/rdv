@@ -34,6 +34,8 @@
 -Added timezone to location display
 -Added full support for x vs. y plotting
 -Much better labeling for charts (legend)
+-Set autoscaling to always include 0
+-Fixed time axis to always be duration with (even without enough data)
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons
