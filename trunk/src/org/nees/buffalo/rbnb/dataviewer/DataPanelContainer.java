@@ -12,24 +12,28 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Jason P. Hanley
  */
-public class DataPanelContainer extends JPanel implements DomainListener{
+public class DataPanelContainer extends JPanel {
 
 	static Log log = LogFactory.getLog(DataPanelContainer.class.getName());
 	
 	ArrayList dataPanels;
 	ArrayList listeners;
+		
+	public static int HORIZONTAL_LAYOUT = 0;
+	public static int VERTICAL_LAYOUT = 1;
 	
-	double domain;
+	int layout;
 	
 	public DataPanelContainer() {
 		dataPanels = new ArrayList();
 		listeners = new ArrayList();
 		
 		setBorder(new EtchedBorder());
+		
+		layout = HORIZONTAL_LAYOUT;
 	}
 	
 	public void addDataPanel(DataPanel2 dataPanel) {
-		dataPanel.setDomain(domain);
 		dataPanels.add(dataPanel);
 		layoutDataPanels();
 		
@@ -44,11 +48,24 @@ public class DataPanelContainer extends JPanel implements DomainListener{
 		fireDataPanelRemoved(dataPanel);
 	}
 	
+	public void setLayout(int layout) {
+		this.layout = layout;
+		layoutDataPanels();
+	}
+	
 	private void layoutDataPanels() {
 		int numberOfDataPanels = dataPanels.size();
 		if (numberOfDataPanels > 0) {
 			int gridDimension = (int)Math.ceil(Math.sqrt(numberOfDataPanels));
-			setLayout(new GridLayout(gridDimension,gridDimension));
+			int rows = gridDimension;
+			int columns = gridDimension;
+			
+			if (layout == HORIZONTAL_LAYOUT && numberOfDataPanels == 2) {
+				rows = 1;
+			}
+			
+			setLayout(new GridLayout(rows, columns));
+			
 			DataPanel2 dataPanel;
 			int channelIndex = 0;
 			for (int i=0; i<numberOfDataPanels; i++) {
@@ -62,16 +79,7 @@ public class DataPanelContainer extends JPanel implements DomainListener{
 		validate();
 		repaint();
 	}
-	
-	public void domainChanged(double domain) {
-		this.domain = domain;
-		/* DataPanel2 dataPanel;
-		for (int i=0; i<dataPanels.size(); i++) {
-			dataPanel = (DataPanel2)dataPanels.get(i);
-			dataPanel.setDomain(domain);
-		} */
-	}
-	
+		
 	public void addDataPanelContainerListener(DataPanelContainerListener listener) {
 		listeners.add(listener);
 	}
