@@ -74,7 +74,7 @@
 	<target name="jar" depends="compile" description="Build jar">
 		<jar jarfile="${build.lib}/${package.name}.jar" basedir="${build.classes}">
 			<manifest>
-				<attribute name="Class-Path" value="lib/commons-logging.jar lib/gnujaxp.jar lib/jcommon-0.9.5.jar lib/jfreechart-0.9.21.jar lib/log4j-1.2.8.jar lib/rbnb.jar"/>
+				<attribute name="Class-Path" value="lib/commons-logging.jar lib/gnujaxp.jar lib/jcommon-0.9.7.jar lib/jfreechart-0.9.21.jar lib/log4j-1.2.8.jar lib/rbnb.jar"/>
 				<attribute name="Main-Class" value="org.nees.buffalo.rbnb.dataviewer.DataViewer"/>
 			</manifest>
 		</jar>
@@ -89,12 +89,7 @@
 			<zipfileset dir="${rbnb.home}/bin" includes="rbnb.jar" prefix="${package.name}-${version}/lib"/>
 		</zip>
 	</target>
-	
-	<!-- Make applet -->
-	<target name="applet" depends="jar" description="Build applet">
-		<copy file="${build.lib}/${package.name}.jar" todir="applet" overwrite="true"/>
-	</target>
-	
+		
 	<target name="javadoc" description="Build documentation">
 		<mkdir dir="${doc.dir}/api"/>  
 		<javadoc packagenames="org.nees.buffalo.rbnb.dataviewer*" sourcepath="${src.dir}" defaultexcludes="yes" destdir="${doc.dir}/api" author="true" version="true" use="true" windowtitle="RBNB Data Viewer API">
@@ -103,7 +98,7 @@
 	</target>
 	
 	<!-- Run the RBNB Data Viewer -->
-	<target name="run" depends="compile" description="Run it!">
+	<target name="run" depends="compile" description="Run application">
 		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
  			<jvmarg value="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.NoOpLog"/>
  			<jvmarg value="-Xms64M"/>
@@ -113,14 +108,14 @@
 	</target>
 
 	<!-- Run the RBNB Data Viewer (connect to rbnb.nees.buffalo.edu) -->
-	<target name="runBuffalo" depends="compile" description="Run it!">
+	<target name="runBuffalo" depends="compile" description="Run application connecting to Buffalo server">
 		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>
 			<arg line="rbnb.nees.buffalo.edu:3333"/>
 		</java>
-	</target>	
+	</target>
 	
 	<!-- Catch-all target to aggregate everything -->
 	<target name="all" depends="clean,compile,jar" description="Clean, compile, jar"/>
