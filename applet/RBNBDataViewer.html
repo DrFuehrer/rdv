@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<title>RBNB Data Viewer</title>
+<body>
+
+<script language="JavaScript" type="text/javascript">
+
+var myWidth = 0
+var myHeight = 0;
+if( typeof( window.innerWidth ) == 'number' ) {
+    //Non-IE
+    myWidth = window.innerWidth;
+    myHeight = window.innerHeight;
+} else if( document.documentElement && ( document.documentElement.clientWidth || document.documentElement.clientHeight ) ) {
+    //IE 6+ in 'standards compliant mode'
+    myWidth = document.documentElement.clientWidth;
+    myHeight = document.documentElement.clientHeight;
+} else if( document.body && ( document.body.clientWidth || document.body.clientHeight ) ) {
+    //IE 4 compatible
+    myWidth = document.body.clientWidth;
+    myHeight = document.body.clientHeight;
+} else {
+    myWidth = 1024
+    myHeight = 768
+}
+
+myWidth -= 50;
+myHeight -= 50;
+
+document.write('<APPLET CODE="org/nees/buffalo/rbnb/dataviewer/DataViewerApplet.class" ARCHIVE="RBNBDataViewer.jar,commons-logging.jar,gnujaxp.jar,jcommon-0.9.5.jar,jfreechart-0.9.21.jar,log4j-1.2.8.jar,rbnb.jar" WIDTH="' + myWidth + '" HEIGHT="' + myHeight + '">')
+document.write('</APPLET>')
+
+</script>
+
+
+</body>
+</html>
