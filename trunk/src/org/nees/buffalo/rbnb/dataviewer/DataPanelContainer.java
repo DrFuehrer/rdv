@@ -4,7 +4,6 @@ import java.awt.GridLayout;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,8 +26,6 @@ public class DataPanelContainer extends JPanel {
 	public DataPanelContainer() {
 		dataPanels = new ArrayList();
 		listeners = new ArrayList();
-		
-		setBorder(new EtchedBorder());
 		
 		layout = HORIZONTAL_LAYOUT;
 	}

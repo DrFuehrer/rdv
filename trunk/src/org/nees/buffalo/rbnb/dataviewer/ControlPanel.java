@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -20,7 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.rbnb.sapi.ChannelMap;
-import com.rbnb.sapi.ChannelTree;
 
 /**
  * @author Jason P. Hanley
@@ -189,20 +187,23 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
 		add(endButton, c);
-				
+
+		JPanel container = new JPanel();
+		container.setLayout(new GridBagLayout());		
+		
 		JLabel locationLabel = new JLabel("Time");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 1;
-		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridy = 0;
+		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;
-		add(locationLabel, c);
+		c.insets = new java.awt.Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;				
+		container.add(locationLabel, c);
 		
 		locationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 1);
 		locationScrollBar.addAdjustmentListener(this);
@@ -210,28 +211,28 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 0;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
-		add(locationScrollBar, c);
+		c.insets = new java.awt.Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;		
+		container.add(locationScrollBar, c);
 
 		JLabel domainLabel = new JLabel("Time Scale");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 2;
-		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridy = 1;
+		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,5,5,5);
+		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;
-		add(domainLabel, c);			
+		container.add(domainLabel, c);			
 		
 		domainScrollBar = new JScrollBar(Adjustable.HORIZONTAL, defaultDomainIndex, 1, 0, domains.length);
  		domainScrollBar.addAdjustmentListener(this);
@@ -239,28 +240,28 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 2;
+		c.gridy = 1;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;		
-		add(domainScrollBar, c);
+		container.add(domainScrollBar, c);
 		
 		JLabel timeScaleLabel = new JLabel("Playback Rate");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 3;
-		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridy = 2;
+		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,5,5,5);
+		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;
-		add(timeScaleLabel, c);		
+		container.add(timeScaleLabel, c);		
 		
  		durationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, -9, 10);
 		durationScrollBar.addAdjustmentListener(this);
@@ -268,14 +269,27 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 3;
+		c.gridy = 2;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;		
-		add(durationScrollBar, c);
+		container.add(durationScrollBar, c);
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(0,0,0,0);
+		c.anchor = GridBagConstraints.NORTHWEST;
+		add(container, c);		
 		
 		log.info("Initialized control panel.");
 	}

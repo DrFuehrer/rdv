@@ -524,7 +524,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,10,10,10);
+		c.insets = new java.awt.Insets(10,10,5,10);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(controlPanel, c);
 		
@@ -542,7 +542,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,10,10,10);
+		c.insets = new java.awt.Insets(5,10,5,10);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(dataPanelContainer, c);
 		
@@ -560,7 +560,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,10,10,10);
+		c.insets = new java.awt.Insets(5,10,10,10);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(statusPanel, c);
 		
