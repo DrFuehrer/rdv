@@ -36,6 +36,7 @@
 -Much better labeling for charts (legend)
 -Set autoscaling to always include 0
 -Fixed time axis to always be duration with (even without enough data)
+-Created base data panel class with common control bar for all data panels
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

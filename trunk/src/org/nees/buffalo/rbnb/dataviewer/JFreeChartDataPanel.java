@@ -1,34 +1,13 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDragEvent;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.DropTargetEvent;
-import java.awt.dnd.DropTargetListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.util.Vector;
+import java.awt.BorderLayout;
+import java.util.Iterator;
 
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
-import javax.swing.event.MouseInputAdapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -48,50 +27,32 @@ import com.rbnb.sapi.ChannelMap;
 /**
  * @author Jason P. Hanley
  */
-public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, PlayerTimeListener, PlayerStateListener, DropTargetListener {
+public class JFreeChartDataPanel extends AbstractDataPanel {
 	
 	static Log log = LogFactory.getLog(JFreeChartDataPanel.class.getName());
-
-	Vector channels;
 	
 	JFreeChart chart;
 	ChartPanel chartPanel;
 	XYDataset dataCollection;
 	
-	ChartPanelPanel panel;
+	JPanel chartPanelPanel;
 	
-	JFrame frame;
-	boolean attached;
-	
-	double domain;
-	
-	DataPanelContainer dataPanelContainer;
-	Player player;
-	Number xValue, yValue;
-	
-	boolean xyMode;
-	
-	double time;
+	final boolean xyMode;
 
 	public JFreeChartDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		this(dataPanelContainer, player, false);
 	}
 		
 	public JFreeChartDataPanel(DataPanelContainer dataPanelContainer, Player player, boolean xyMode) {
-		this.dataPanelContainer = dataPanelContainer;
-		this.player = player;
+		super(dataPanelContainer, player);
+		
 		this.xyMode = xyMode;
 		
-		channels = new Vector();
-		attached = true;
-		domain = 1;
-
 		initChart();
 		
-		player.addStateListener(this);
-		player.addTimeListener(this);
-			
-		new DropTarget(chartPanel, DnDConstants.ACTION_LINK, this);
+		setDataComponent(chartPanelPanel);
+		setControlBar(true);
+		setDropTarget(true);
 	}
 		
 	private void initChart() {
@@ -109,96 +70,61 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		
 		chart.setAntiAlias(false);
 		chartPanel = new ChartPanel(chart, true);
-		chartPanel.setPreferredSize(new Dimension(356,244));
-		
-		panel = new ChartPanelPanel(chartPanel);
-		panel.addMouseListener(new MouseInputAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1) {
-					if (e.getX() >= panel.getWidth()-10 && e.getY() <= 12) {
-						closePanel();
-					} else {
-						toggleDetach();
-					}
-				}
-			}
-		});
-
+				
+		chartPanelPanel = new JPanel();
+		chartPanelPanel.setLayout(new BorderLayout());
+		chartPanelPanel.add(chartPanel, BorderLayout.CENTER);
 	}
-
-	public JComponent getComponent() {
-		return panel;
-	}
-	
-	public void closePanel() {
-		removeAllChannels();
 		
-		if (attached) {
-			dataPanelContainer.removeDataPanel(this);
-		} else  if (frame != null) {
-			frame.setVisible(false);
-			frame.getContentPane().remove(panel);
-			frame.dispose();
-			frame = null;			
-		}
-		
-		player.removeStateListener(this);
-		player.removeTimeListener(this);
+	public String[] getSupportedMimeTypes() {
+		return new String[] {"application/octet-stream"};
 	}
 	
 	public boolean supportsMultipleChannels() {
 		return true;
 	}
 	
-	public void setChannel(String channelName) {
-		removeAllChannels();
-		addChannel(channelName);
-	}
+	public void addChannel(String channelName, String unit) {
+		super.addChannel(channelName, unit);
 
-	public void addChannel(String channelName) {
-		if (channels.contains(channelName)) return;
+		String seriesName = getSeriesName(channelName);
 		
-		log.debug("Adding channel: " + channelName + ".");
+		log.debug("Adding channel: " + seriesName + ".");
 
 		if (xyMode) {
-			if (channels.size() == 0) {
-				XYSeries data = new XYSeries(channelName, false, true);
+			if (channels.size() == 1) {
+				XYSeries data = new XYSeries(seriesName, false, true);
 				((XYSeriesCollection)dataCollection).addSeries(data);
-			} else if (channels.size() == 1) {
-				
-			} else {
+			} else if (channels.size() > 2) {
 				return;
 			}
 		} else {
-			TimeSeries data = new TimeSeries(channelName, FixedMillisecond.class);
+			TimeSeries data = new TimeSeries(seriesName, FixedMillisecond.class);
 			data.setHistoryCount((int)(domain*1000));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
 		}
 		
-		player.subscribe(channelName, this);
-		
-		channels.add(channelName);
-		setTitle();
-		
+		setAxisName();
 	}
 	
 	public void removeChannel(String channelName) {
+		String seriesName = getSeriesName(channelName);
+		
+		super.removeChannel(channelName);
+		
 		log.debug("Removing channel: " + channelName + ".");
 		
-		channels.remove(channelName);
-		setTitle();
 		if (xyMode) {
 			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
 			//TODO add this functionality
 		} else {
 			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-			TimeSeries data = dataCollection.getSeries(channelName);
+			TimeSeries data = dataCollection.getSeries(seriesName);
 			dataCollection.removeSeries(data);
-			player.unsubscribe(channelName, this);
 		}
 	}
 	
-	private void removeAllChannels() {
+	/* private void removeAllChannels() {
 		player.unsubscribeAll(this);
 		if (xyMode) {
 			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
@@ -208,33 +134,47 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			dataCollection.removeAllSeries();
 		}
 		channels.clear();
+		units.clear();
+	} */
+	
+	String getTitle() {
+		if (xyMode && channels.size() == 2) {
+			Object[] channelsArray = channels.toArray();
+			return channelsArray[0] + " vs. " + channelsArray[1];
+		} else {
+			return super.getTitle();
+		}
 	}
 	
-	private void setTitle() {	
-		String title = "";
-		
+	private void setAxisName() {	
 		if (xyMode) {
+			Object[] channelsArray = channels.toArray();
+			
 			if (channels.size() == 1) {
-				((XYPlot)chart.getPlot()).getDomainAxis().setLabel((String)channels.get(0));
-				title = (String) channels.get(0);
+				String channelName = (String)channelsArray[0];
+				String seriesName = getSeriesName(channelName);
+				((XYPlot)chart.getPlot()).getDomainAxis().setLabel(seriesName);
+				//title = (String) channels.get(0);
 			} else if (channels.size() == 2) {
-				((XYPlot)chart.getPlot()).getRangeAxis().setLabel((String)channels.get(1));
-				title = channels.get(0) + " vs. " + channels.get(1);
+				String channelName = (String)channelsArray[1];
+				String seriesName = getSeriesName(channelName);
+				((XYPlot)chart.getPlot()).getRangeAxis().setLabel(seriesName);
+				//title = channels.get(0) + " vs. " + channels.get(1);
 			}
-		} else {
-			for(int i=0; i < channels.size(); i++) {
-				title += channels.get(i) + (i==channels.size()-1?"" : ", ");
-			}			
 		}
-		
-		if (!attached) {
-			frame.setTitle(title);
+	}
+	
+	private String getSeriesName(String channelName) {
+		String seriesName = channelName;
+		String unit = (String)units.get(channelName);
+		if (unit != null) {
+			seriesName += " (" + unit + ")";
 		}
-
+		return seriesName;
 	}
 		
 	public void setDomain(double domain) {
-		this.domain = domain;
+		super.setDomain(domain);
 			
 		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
 			if (xyMode) {
@@ -255,24 +195,15 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	}
 	
 	public void postTime(double time) {
-		this.time = time;
+		super.postTime(time);
 		
-		if (!xyMode) {
+		if (!xyMode && chart != null) {
 			setTimeAxis();
 		}		
 	}
 	
 	private void setTimeAxis() {
 		((DateAxis)((XYPlot)chart.getPlot()).getDomainAxis()).setRange((time-domain)*1000, time*1000);
-	}
-
-	public void postState(int newState, int oldState) {
-		switch (newState) {
-			case Player.STATE_LOADING:
-			case Player.STATE_MONITORING:
-				clearData();
-				break;
-		}
 	}
 		
 	public void postData(ChannelMap channelMap) {
@@ -289,8 +220,9 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 
 	private void postDataTimeSeries(ChannelMap channelMap, double startTime, double duration) {
 		//loop over all channels and see if there is data for them
-		for (int i=0; i<channels.size(); i++) {
-			String channelName = (String)channels.get(i);
+		Iterator i = channels.iterator();
+		while (i.hasNext()) {
+			String channelName = (String)i.next();
 			int channelIndex = channelMap.GetIndex(channelName);
 			
 			//if there is data for channel, post it
@@ -303,7 +235,7 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	private void postDataTimeSeries(ChannelMap channelMap, String channelName, int channelIndex, double startTime, double duration) {		
 		TimeSeries timeSeriesData = null;
 		TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-		timeSeriesData = dataCollection.getSeries(channelName);
+		timeSeriesData = dataCollection.getSeries(getSeriesName(channelName));
 		
 		try {		
 			double[] times = channelMap.GetTimes(channelIndex);
@@ -393,8 +325,9 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			return;
 		}
 
-		String xChannelName = (String)channels.get(0);
-		String yChannelName = (String)channels.get(1);
+		Object[] channelsArray = channels.toArray();
+		String xChannelName = (String)channelsArray[0];
+		String yChannelName = (String)channelsArray[1];
 
 		int xChannelIndex = -1;
 		int yChannelIndex = -1;
@@ -414,7 +347,8 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			return;
 		}
 				
-		try {		
+		try {
+			//TODO make sure data is at the same timestamp
 			double[] times = channelMap.GetTimes(xChannelIndex); //FIXME go over all channel times
 
 			TimeIndex index = getTimeIndex(times, startTime, duration);
@@ -494,6 +428,26 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 
 	}
 	
+	void clearData() {
+		if (chart == null) {
+			return;
+		}
+		
+		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
+			if (xyMode) {
+				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+				XYSeries data = dataCollection.getSeries(i);
+				data.clear();
+			} else {
+				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
+				TimeSeries data = dataCollection.getSeries(i);
+				data.clear();				
+			}
+		}
+		
+		log.debug("Cleared data display.");
+	}
+		
 	class TimeIndex {
 		public int startIndex;
 		public int endIndex;
@@ -532,143 +486,5 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		}
 		
 		return new TimeIndex(startIndex, endIndex);
-	}
-	
-	private void clearData() {
-		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
-			if (xyMode) {
-				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
-				XYSeries data = dataCollection.getSeries(i);
-				data.clear();
-			} else {
-				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-				TimeSeries data = dataCollection.getSeries(i);
-				data.clear();				
-			}
-		}
-		
-		log.debug("Cleared data display.");
-	}
-	
-	public void toggleDetach() {
-		if (attached) {
-			detachPanel();
-		} else {
-			attachPanel();
-		}
-	}
-	
-	public void detachPanel() {
-		attached = false;
-		dataPanelContainer.removeDataPanel(this);
-		
-		frame = new JFrame();
-		setTitle();
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				attachPanel();
-			}
-		});
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);		
-		
-		frame.getContentPane().add(panel);
-		frame.pack();
-		frame.setVisible(true);
-	}
-	
-	public void attachPanel() {
-		frame.setVisible(false);
-		frame.getContentPane().remove(panel);
-		frame.dispose();
-		frame = null;			
-
-		dataPanelContainer.addDataPanel(this);
-		attached = true;	
-	}
-	
-
-	public void dragEnter(DropTargetDragEvent e) {}
-	
-	public void dragOver(DropTargetDragEvent e) {}
-	
-	public void dropActionChanged(DropTargetDragEvent e) {}
-	
-	public void drop(DropTargetDropEvent e) {
-		try {
-			DataFlavor stringFlavor = DataFlavor.stringFlavor;
-			Transferable tr = e.getTransferable();
-			if(e.isDataFlavorSupported(stringFlavor)) {
-				String channelName = (String)tr.getTransferData(stringFlavor);
-				e.acceptDrop(DnDConstants.ACTION_LINK);
-				e.dropComplete(true);
-				
-				try {
-					if (supportsMultipleChannels()) {
-						addChannel(channelName);
-					} else {
-						setChannel(channelName);
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			} else {
-				e.rejectDrop();
-			}
-		} catch(IOException ioe) {
-			ioe.printStackTrace();
-		} catch(UnsupportedFlavorException ufe) {
-			ufe.printStackTrace();
-		}	
-	}
-	
-	public void dragExit(DropTargetEvent e) {}
-
-	public String[] getSupportedMimeTypes() {
-		return new String[] {"application/octet-stream"};
-	}
-	
-	class ChartPanelPanel extends JPanel {
-		ChartPanel chartPanel;
-		
-		public ChartPanelPanel(ChartPanel chartPanel) {
-			super();
-			
-			this.chartPanel = chartPanel;
-			
-			setBorder(new EtchedBorder());
-			
-			setLayout(new GridBagLayout());
-			GridBagConstraints c = new GridBagConstraints();
-			c.fill = GridBagConstraints.BOTH;
-			c.weightx = 0.5;
-			c.weighty = 0.5;
-			c.gridx = 0;
-			c.gridy = 0;
-			c.gridwidth = 1;
-			c.gridheight = 1;
-			c.ipadx = 0;
-			c.ipady = 0;
-			c.insets = new java.awt.Insets(0,0,0,0);
-			c.anchor = GridBagConstraints.CENTER;		
-			add(chartPanel, c);
-		}
-		
-		protected void paintComponent(Graphics g) {
-			super.paintComponent(g);
-			g.drawString("X", getWidth()-10, 12);
-		}
-		
-		public void addMouseListener(MouseListener listener) {
-			super.addMouseListener(listener);
-			chartPanel.addMouseListener(listener);
-		}
-			
-		public void setBackground(Color c) {
-			super.setBackground(c);
-			if (chartPanel != null) {
-				chartPanel.setBackground(c);
-			}
-		}
-
 	}
 }
