@@ -61,7 +61,6 @@ public class AboutDialog extends JDialog {
 		container.add(new JLabel("by Jason P. Hanley <jphanley@buffalo.edu>"));
 		container.add(new JLabel(" "));
 		container.add(new JLabel("Version: " + Version.major + "." + Version.minor + "." + Version.release));
-		container.add(new JLabel("Date: " + Version.date));
 		container.add(new JLabel(" "));
 		container.add(new JLabel("Copyright \251 2004 University at Buffalo"));
 		container.add(new JLabel("Visit http://nees.buffalo.edu/"));

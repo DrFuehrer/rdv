@@ -1,13 +1,14 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.DisplayMode;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -21,17 +22,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JWindow;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MouseInputAdapter;
 
@@ -39,10 +37,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.rbnb.sapi.ChannelMap;
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGEncodeParam;
-import com.sun.image.codec.jpeg.JPEGImageDecoder;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
 
 /**
  * @author Jason P. Hanley
@@ -59,16 +53,34 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 	JFrame frame;
 	boolean attached;
 	
+	JWindow window;
+	boolean maximized;
+	
 	double frameRate;
 	double lastTime;
 	
 	DataPanelContainer dataPanelContainer;
 	Player player;
 
- 	Color textColor = Color.WHITE;
- 	
  	boolean keepAspectRatio;
  	boolean showFrameRate;
+ 	
+ 	static boolean iconsLoaded = false;
+ 	static Image windowPinImage;
+ 	static Image windowSnapshotImage;
+ 	static Image windowDetachImage;
+ 	static Image windowMaximizeImage;
+ 	static Image windowCloseImage;
+ 	
+ 	static String windowPinFileName = "icons/window_pin.gif";
+ 	static String windowSnapshotFileName = "icons/window_snapshot.gif";
+ 	static String windowDetachFileName = "icons/window_detach.gif";
+ 	static String windowMaximizeFileName = "icons/window_maximize.gif";
+ 	static String windowCloseFileName = "icons/window_close.gif";
+ 	
+ 	boolean hasFocus;
+ 	boolean pinned;
+ 	boolean paused;
  	
 	public JPEGDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		this.dataPanelContainer = dataPanelContainer;
@@ -78,8 +90,16 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		frameRate = -1;
 		lastTime = 0;
 		attached = true;
+		maximized = false;
 		keepAspectRatio = true;
 		showFrameRate = false;
+		hasFocus = false;
+		pinned = false;
+		paused = false;
+		
+		if (!iconsLoaded) {
+			loadIcons();
+		}
 	
 		initImage();
 		
@@ -88,46 +108,66 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		
 		new DropTarget(panel, DnDConstants.ACTION_LINK, this);
 	}
+	
+	private static void loadIcons() {
+		windowPinImage = new ImageIcon(windowPinFileName).getImage();
+		windowSnapshotImage = new ImageIcon(windowSnapshotFileName).getImage();
+		windowDetachImage = new ImageIcon(windowDetachFileName).getImage();
+		windowMaximizeImage = new ImageIcon(windowMaximizeFileName).getImage();
+		windowCloseImage = new ImageIcon(windowCloseFileName).getImage();
+		
+		iconsLoaded = true;
+	}
 		
 	private void initImage() {
 		panel = new JPanel();
 		
 		panel.setBorder(new EtchedBorder());
 
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();		
+		panel.setLayout(new BorderLayout());		
 
 		image = new JPEGPanel();
-		image.update("images/ub.gif");
 		image.addMouseListener(new MouseInputAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getButton() == MouseEvent.BUTTON1) {
  					int x = e.getX();
  					int y = e.getY();
- 					int imageWidth = image.getWidth();
- 					int imageHeight = image.getHeight();
- 					if (x <= 100 && y <= 25) {
- 						toggleTextColor();
- 					} else if (x >= imageWidth-10 && y <= 12) {
+ 
+ 					Dimension imageDimensions = image.getDisplayedImageSize();
+ 					int imageWidth = imageDimensions.width;
+ 					int imageHeight = imageDimensions.height;
+ 					
+ 					int componentWidth = image.getWidth();
+ 					int componentHeight = image.getHeight();
+ 					
+ 					int widthOffset = (componentWidth - imageWidth)/2;
+ 					int heightOffset = (componentHeight - imageHeight)/2;
+ 					
+ 					if (x < 16 && y < 16) {
+ 						pinned = !pinned;
+ 					} else if (x >= 16 && x < 32 && y < 16) {
+ 						togglePause();
+ 					} else if (x >= componentWidth-16 && y < 16) {
 						closePanel();
-					} else {
-						toggleDetach();
+ 					} else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
+						toggleMaximize();
+					} else if (x <  componentWidth-32 && x >= componentWidth-48 && y < 16) {
+						toggleDetach(); 												
 					}
 				}
 			}
+			
+			public void mouseEntered(MouseEvent e) {
+				hasFocus = true;
+				image.repaint();
+			}
+			
+			public void mouseExited(MouseEvent e) {
+				hasFocus = false;
+				image.repaint();
+			}
 		});		
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1;
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(0,0,0,0);
-		c.anchor = GridBagConstraints.CENTER;		
-		panel.add(image, c);	
+		panel.add(image, BorderLayout.CENTER);	
 	}
 	
 	public JComponent getComponent() {
@@ -221,29 +261,46 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 
 	}
 	
+	public void togglePause() {
+		if (paused) {
+			player.subscribe(channelName, this);
+		} else {
+			player.unsubscribe(channelName, this);
+		}
+		
+		paused = !paused;
+	}
+	
 	public void closePanel() {
  		if (!channelName.equals("")) {
 			player.unsubscribe(channelName, this);
 		}
 
-		if (attached) {
+ 		if (maximized) {
+ 			restorePanel(false);
+		} else if (!attached) {
+			attachPanel(false);		 			
+ 		} else if (attached) {
 			dataPanelContainer.removeDataPanel(this);
-		} else {
-			frame.setVisible(false);
-			frame.getContentPane().remove(panel);
-			frame.dispose();
-			frame = null;			
-		}
-		
+ 		}
+ 		
 		player.removeStateListener(this);
 		player.removeTimeListener(this);
 	}
 	
 	public void toggleDetach() {
+		if (maximized) {
+			window.setVisible(false);
+			window.getContentPane().remove(panel);
+			window.dispose();
+			window = null;
+			maximized = false;
+		}
+		
 		if (attached) {
 			detachPanel();
 		} else {
-			attachPanel();
+			attachPanel(true);
 		}
 	}
 	
@@ -254,34 +311,82 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		frame = new JFrame(channelName);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				attachPanel();
+				closePanel();
 			}
 		});
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);		
-		
+
 		frame.getContentPane().add(panel);
 		frame.pack();
 		frame.setVisible(true);
 	}
 	
-	public void attachPanel() {
-		frame.setVisible(false);
-		frame.getContentPane().remove(panel);
-		frame.dispose();
-		frame = null;			
-
-		dataPanelContainer.addDataPanel(this);
-		attached = true;	
+	public void attachPanel(boolean addToContainer) {
+		if (frame != null) {
+			frame.setVisible(false);
+			frame.getContentPane().remove(panel);
+			frame.dispose();
+			frame = null;
+		}
+		
+		if (addToContainer) {
+			attached = true;
+			dataPanelContainer.addDataPanel(this);
+		}
 	}
 	
- 	private void toggleTextColor() {
- 		if (textColor == Color.WHITE) {
- 			textColor = Color.BLACK;
- 		} else {
- 			textColor = Color.WHITE;
- 		}
- 	}
+	public void toggleMaximize() {	
+		if (maximized) {
+			restorePanel(attached);
+			if (!attached) {
+				detachPanel();
+			}
+		} else {
+			if (!attached) {
+				attachPanel(false);
+			}
+			maximizePanel();
+		}
+	}
 	
+	public void maximizePanel() {
+		maximized = true;
+		dataPanelContainer.removeDataPanel(this);
+		
+		window = new JWindow();
+		window.getContentPane().add(panel);
+		window.setSize(getScreenDimensions());
+		window.setVisible(true);
+	}
+	
+	public void restorePanel(boolean addToContainer) {
+		window.setVisible(false);
+		window.getContentPane().remove(panel);
+		window.dispose();
+		window = null;
+
+		maximized = false;
+		
+		if (addToContainer) {
+			dataPanelContainer.addDataPanel(this);
+		}
+		
+	}
+	
+	private Dimension getScreenDimensions() {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] gs = ge.getScreenDevices();
+		    
+		for (int i=0; i<gs.length; i++) {
+			DisplayMode dm = gs[i].getDisplayMode();
+			int screenWidth = dm.getWidth();
+			int screenHeight = dm.getHeight();
+			return new Dimension(screenWidth, screenHeight);
+		}
+		
+		return null;
+	}
+
 	class JPEGPanel extends JComponent {
 		private Image image;
 		private VolatileImage volatileImage;
@@ -319,7 +424,11 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		public final void paintComponent(Graphics g1) {
 			Graphics2D g = (Graphics2D)g1;
 			
-			if (image == null) return; 
+			if (image == null) {
+				g.setBackground(Color.BLACK);
+				g.clearRect(0, 0, getWidth(), getHeight());
+				return; 
+			}
 			
 			if (volatileImage == null || newFrame) {
 				createBackBuffer();
@@ -333,22 +442,39 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 				} else if (valCode == VolatileImage.IMAGE_INCOMPATIBLE) {
 					createBackBuffer();
 				}
-			
+								
 				// scale both width and height
-				float widthScale = getWidth()/(float)volatileImage.getWidth();
-				float heightScale = getHeight()/(float)volatileImage.getHeight();
+				int componentWidth = getWidth();
+				int componentHeight = getHeight();
+				
+				g.setBackground(Color.BLACK);
+				g.clearRect(0, 0, componentWidth, componentHeight);
+				
+				int imageWidth = volatileImage.getWidth();
+				int imageHeight = volatileImage.getHeight();
+
+				float widthScale = componentWidth/(float)imageWidth;
+				float heightScale = componentHeight/(float)imageHeight;
 				if (keepAspectRatio && widthScale != heightScale) {
 					widthScale = heightScale = Math.min(widthScale, heightScale);
 				}
-				int scaledWidth = (int)(volatileImage.getWidth() * widthScale);
-				int scaledHeight = (int)(volatileImage.getHeight() * heightScale);
-				float widthOffset = (getWidth() - scaledWidth)/2f;
-				float heightOffset = (getHeight() - scaledHeight)/2f;
+				int scaledWidth = (int)(imageWidth * widthScale);
+				int scaledHeight = (int)(imageHeight * heightScale);
+				int widthOffset = (componentWidth - scaledWidth)/2;
+				int heightOffset = (componentHeight - scaledHeight)/2;
 				AffineTransform af = new AffineTransform(widthScale, 0f, 0f, heightScale, widthOffset, heightOffset);
 				g.drawImage(volatileImage, af, this);
-				g.setColor(textColor);
-				g.drawString("X", getWidth()-widthOffset-10, heightOffset+12);
-				g.drawString(channelName, widthOffset+2, heightOffset+12);
+				if (pinned || hasFocus) {
+					g.setColor(Color.BLACK);
+					g.fillRect(0, 0, getWidth(), 16);
+					g.drawImage(windowPinImage, 0, 0, this);
+					g.drawImage(windowSnapshotImage, 16, 0, this);
+					g.drawImage(windowDetachImage, componentWidth-48, 0, this);
+					g.drawImage(windowMaximizeImage, componentWidth-32, 0, this);
+					g.drawImage(windowCloseImage, componentWidth-16, 0, this);
+					g.setColor(Color.WHITE);
+					g.drawString(channelName, 36, 12);
+				}
 				if (showFrameRate && frameRate != -1) {
 					g.drawString(Double.toString(Math.round(frameRate*10d)/10d) + " fps", widthOffset+2, heightOffset+26);
 				}				
@@ -381,7 +507,7 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		public Dimension getPreferredSize() {
 			Dimension dimension;
 			if (image != null) {
-				dimension = new Dimension(image.getWidth(this), image.getWidth(this));
+				dimension = new Dimension(image.getWidth(this), image.getHeight(this));
 			} else {
 				dimension = new Dimension(0, 0);
 			}
@@ -391,6 +517,18 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		
 		public Dimension getMinimumSize() {
 			return new Dimension(0,0);
+		}
+		
+		public Dimension getDisplayedImageSize() {
+			float widthScale = getWidth()/(float)image.getWidth(null);
+			float heightScale = getHeight()/(float)image.getHeight(null);
+			if (keepAspectRatio && widthScale != heightScale) {
+				widthScale = heightScale = Math.min(widthScale, heightScale);
+			}
+			int scaledWidth = (int)(volatileImage.getWidth() * widthScale);
+			int scaledHeight = (int)(volatileImage.getHeight() * heightScale);
+
+			return new Dimension(scaledWidth, scaledHeight);
 		}
 		
 	}
