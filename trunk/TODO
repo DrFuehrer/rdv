@@ -1,9 +1,10 @@
 1.1 - March 2005
 -make UI more responsive when connecting
 -only request the last frame when loading video
-
+-add command line options for location, time scale, and domain
 
 1.2 - August 2005
 -create a basic 3d viewer so we can feed it data from our Krypton
--export selected channels to file on disk
+-export selected channels to file
 -export selected channels to repository
+-load/save current state of viewer
