@@ -206,7 +206,7 @@ public class DataViewer extends JFrame implements DomainListener {
  		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				if (rbnbConnectionDialog == null) {
- 					rbnbConnectionDialog = new RBNBConnectionDialog(frame, rbnb, channelListPanel);
+ 					rbnbConnectionDialog = new RBNBConnectionDialog((DataViewer)frame, rbnb, channelListPanel);
  				} else {
  					rbnbConnectionDialog.setVisible(true);
  				}			
@@ -671,7 +671,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		dataPanels.add(dataPanel);
 	}
 	
-	private void closeAllDataPanels() {
+	protected void closeAllDataPanels() {
 		DataPanel2 dataPanel;
 		for (int i=0; i<dataPanels.size(); i++) {
 			dataPanel = (DataPanel2)dataPanels.get(i);

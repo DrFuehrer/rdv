@@ -44,6 +44,8 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	private double timeScale = 1;
 	private double domain = 1;
 	
+	private int STATE_RECONNECT = 100;
+	
 	private double updateLocation = -1;
 	private double updateTimeScale = -1;
 	private int updateState = -1;
@@ -155,7 +157,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}
 		
 		if (updateState != -1) {
-			changeStateSafe(updateState);
+			if (updateState == STATE_RECONNECT) {
+				changeStateSafe(STATE_DISCONNECTED);
+				changeStateSafe(STATE_STOPPED);
+			} else {
+				changeStateSafe(updateState);
+			}
+			
 			updateState = -1;
 		}		
 	}
@@ -199,14 +207,14 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		if (oldState == STATE_EXITING) {
 			log.error("Can not transition out of exiting state to " + getStateName(state) + " state.");
 			return false;
- 		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING) {
+ 		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING && newState != STATE_DISCONNECTED) {
 			if (!initRBNB()) {
 				return false;
 			}
 		}
 		
 		switch (newState) {
-			case STATE_MONITORING:		    
+			case STATE_MONITORING:
 				monitorData();
 				break;		
 			case STATE_PLAYING:
@@ -218,7 +226,9 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			case STATE_LOADING:
 			case STATE_STOPPED:
 			case STATE_EXITING:
-			case STATE_DISCONNECTED:				
+				break;
+			case STATE_DISCONNECTED:
+				closeRBNB(false);
 				break;
 			default:
 				log.error("Unknown state: " + state + ".");
@@ -248,7 +258,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			sink.OpenRBNBConnection(DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort(), rbnbSinkName);
 		} catch (SAPIException e) {
 			log.error("Failed to connect to RBNB server.");
-			changeStateSafe(STATE_DISCONNECTED);
+			closeRBNB();
 			return false;	
 		}
 		
@@ -266,7 +276,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			
 		sink.CloseRBNBConnection();
 		sink = null;
-
+		
  		if (changeState) {
 			changeStateSafe(STATE_DISCONNECTED);
 		}
@@ -877,8 +887,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 	
 	public void reconnect() {
-		disconnect();
-		connect();
+		changeState(STATE_RECONNECT);
 	}
 	
 	public void timeScaleChanged(double timeScale) {

@@ -117,9 +117,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  	public void connect() {
  		if (!connected) {
  			connected = true;
- 			updateChannelList();
- 		} else {
- 			connected = true;
+ 			if (updateChannelList()) {
+ 				log.info("Channel list is in state CONNECTED.");
+ 			}
  		}
  	}
  	
@@ -128,9 +128,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  	}
  	
  	public void disconnect() {
- 		if (connected) {
- 			clearChannelList();
- 		}
+		clearChannelList();
+ 		connected = false;
+ 		
+ 		log.info("Channel list is in state DISCONNECTED.");
  	}
  	
  	public void reconnect() {
@@ -138,25 +139,27 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		connect();
  	}
 
-	public void updateChannelListBackground() {
- 		if (!connected) return;		
+	public boolean updateChannelListBackground() {
+ 		if (!connected) return false;		
 
 		new Thread(new Runnable() {
 			public void run() {
 				updateChannelList();
 			}
 		}, "ChannelUpdate").start();	
+		
+		return true;
 	}
 
-	public synchronized void updateChannelList() {
- 		if (!connected) return;
+	public synchronized boolean updateChannelList() {
+ 		if (!connected) return false;
 
 		log.info("Updating channel listing.");
 		
 		if (!initRBNB()) {
 			closeRBNB();
-			clearChannelList();
-			return;
+			disconnect();
+			return false;
 		}
 		
 		try {
@@ -164,8 +167,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		} catch (SAPIException e) {
 			log.error("Failed to request channel listing.");
 			closeRBNB();
-			clearChannelList();
-			return;
+			disconnect();
+			return false;
 		}
 
 		ChannelMap oldChannelMap = cmap;
@@ -174,8 +177,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		} catch (SAPIException e) {
 			log.error("Failed to fetch list of available channels.");
 			closeRBNB();
-			clearChannelList();
-			return;
+			disconnect();
+			return false;
 		}
 		
 		log.info("Received list of available channels.");
@@ -238,9 +241,15 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  			root = DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort();
  			fireRootChanged();			
   		}
+ 		
+ 		return true;
   	}
   	
  	private synchronized void clearChannelList() {
+ 		if (root.equals("")) {
+ 			return;
+ 		}
+ 		
  		log.info("Clearing channel list.");
  		
   		root = "";
@@ -248,9 +257,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   		fireChannelListUpdated(new ChannelMap());
   		
  		fireRootChanged();
- 		
- 		connected = false;
- 	}
+  	}
  	
  	private void getUnits() { 		
 		//subscribe to all units channels
