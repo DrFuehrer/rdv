@@ -1,7 +1,6 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
@@ -27,7 +26,6 @@ public class DataPanelContainer extends JPanel implements DomainListener{
 		listeners = new ArrayList();
 		
 		setBorder(new EtchedBorder());
-		setLayout(new GridBagLayout());
 	}
 	
 	public void addDataPanel(DataPanel2 dataPanel) {
@@ -47,28 +45,18 @@ public class DataPanelContainer extends JPanel implements DomainListener{
 	}
 	
 	private void layoutDataPanels() {
-		GridBagConstraints c = new GridBagConstraints();
-		DataPanel2 dataPanel;
-		int channelIndex = 0;
-		for (int i=0; i<dataPanels.size(); i++) {
-			dataPanel = (DataPanel2)dataPanels.get(i);
-			remove(dataPanel.getComponent());
-			
-			c.fill = GridBagConstraints.BOTH;
-			c.weightx = 0.5;
-			c.weighty = 1;
-			c.gridx = (channelIndex % 2) + 1;
-			c.gridy = (channelIndex / 2) + 2;
-			c.gridwidth = 1;
-			c.gridheight = 1;
-			c.ipadx = 0;
-			c.ipady = 0;
-			c.insets = new java.awt.Insets(5,5,5,5);
-			c.anchor = GridBagConstraints.NORTH;
-	
-			add(dataPanel.getComponent(), c);
-			
-			channelIndex++;			
+		int numberOfDataPanels = dataPanels.size();
+		if (numberOfDataPanels > 0) {
+			int gridDimension = (int)Math.ceil(Math.sqrt(numberOfDataPanels));
+			setLayout(new GridLayout(gridDimension,gridDimension));
+			DataPanel2 dataPanel;
+			int channelIndex = 0;
+			for (int i=0; i<numberOfDataPanels; i++) {
+				dataPanel = (DataPanel2)dataPanels.get(i);
+				remove(dataPanel.getComponent());
+				add(dataPanel.getComponent());			
+				channelIndex++;			
+			}
 		}
 		
 		validate();

@@ -12,8 +12,18 @@
 -Added key bindings for connection dialog
 -Improved elapsed time formatting
 -Reorganized import statements
+-Simplified build/versioning system (removed build number and date)
 -Added switch to ant run target to enable direct draw hardware scaling on windows
--Added hardware scaling to JPEG data panels
+-Added hardware scaling to JPEG data panels, all images will sclae automatically now
+-Changed JPEG panels background to black
+-Changed layout of data panels, they should all be the same size now
+ and tile in a symmetric fashion
+-Added small control panel to top of each image visible when mouse is over any part of the image
+ -Click pin to toggle control panel stickyness
+ -Click snpashot to toggle freezing of the image
+ -Click up arrow to detach/attach image panel
+ -Click maximize to toggle fullscreen video
+ -Click close to close window
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

@@ -1,8 +1,11 @@
 <?xml version="1.0"?>
 
 <project default="compile" basedir=".">
-
+	
 	<property name="package.name" value="RBNBDataViewer" />
+	
+	<!-- version information -->
+	<property file="build.properties"/>
 			
 	<!-- src dir -->
 	<property name="src.dir" value="src"/>
@@ -54,24 +57,12 @@
 		<mkdir dir="${build.lib}"/>
 	</target>
 	
-	<target name="version">
-		<tstamp/>
-		<property file="build.properties"/>
-		<property name="version.date" value="${DSTAMP} ${TSTAMP}"/>
-		<copy file="template/Version.java" todir="${src.dir}/org/nees/buffalo/rbnb/dataviewer" overwrite="true"/>
-		<replace file="${src.dir}/org/nees/buffalo/rbnb/dataviewer/Version.java" token="@major@" value="${version.major}"/>
-		<replace file="${src.dir}/org/nees/buffalo/rbnb/dataviewer/Version.java" token="@minor@" value="${version.minor}"/>
-		<replace file="${src.dir}/org/nees/buffalo/rbnb/dataviewer/Version.java" token="@release@" value="${version.release}"/>
-		<replace file="${src.dir}/org/nees/buffalo/rbnb/dataviewer/Version.java" token="@date@" value="${version.date}"/>
-		<property name="version" value="${version.major}.${version.minor}.${version.release}"/>
-	</target>
-	
 	<target name="clean" description="Remove all generated files">
 		<delete dir="${build.dir}"/>
 	</target>
 	
 	<!-- Build target -->
-	<target name="compile" depends="prepare,version" description="Build from source">
+	<target name="compile" depends="prepare" description="Build from source">
 	  <javac srcdir="${src.dir}" 
 	         destdir="${build.classes}"
 	         classpathref="classpath"
