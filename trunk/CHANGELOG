@@ -12,6 +12,8 @@
 -Added key bindings for connection dialog
 -Improved elapsed time formatting
 -Reorganized import statements
+-Added switch to ant run target to enable direct draw hardware scaling on windows
+-Added hardware scaling to JPEG data panels
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons
