@@ -643,6 +643,10 @@ public class DataViewer extends JFrame implements DomainListener {
 			dataPanel.setDomain(domain);
 		}		
 	}
+	
+	public void setDomain(double domain) {
+		controlPanel.setDomain(domain);
+	}
 
 	public void exit() {
 		if (rbnb != null) {
@@ -784,7 +788,7 @@ public class DataViewer extends JFrame implements DomainListener {
 											 .create('h');
 		Option portNumberOption = OptionBuilder.withArgName("port number")
 											   .hasArg()
-											   .withDescription("The port number of the RBBB server")
+											   .withDescription("The port number of the RBNB server")
 											   .withLongOpt("port")
 											   .create('p');
 		Option channelsOption = OptionBuilder.withArgName("channels")
@@ -792,6 +796,11 @@ public class DataViewer extends JFrame implements DomainListener {
 											 .withDescription("Channels to subscribe to")
 											 .withLongOpt("channels")
 											 .create('c');
+		Option timeScaleOption = OptionBuilder.withArgName("time scale")
+											  .hasArg()
+											  .withDescription("The time scale in seconds")
+											  .withLongOpt("time-scale")
+											  .create('s');
 		Option playOption = OptionBuilder.withDescription("Start playing back data") 
 										 .withLongOpt("play")
 										 .create();
@@ -802,6 +811,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		options.addOption(hostNameOption);
 		options.addOption(portNumberOption);
 		options.addOption(channelsOption);
+		options.addOption(timeScaleOption);
 		options.addOption(playOption);
 		options.addOption(realTimeOption);			
 		options.addOption(helpOption);
@@ -809,6 +819,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		String hostName = null;
 		int portNumber = -1;
 		String[] channels = null;
+		double timeScale = -1;
 		boolean play = false;
 		boolean realTime = false;
 		
@@ -838,6 +849,11 @@ public class DataViewer extends JFrame implements DomainListener {
 	    		channels = line.getOptionValues('c');
 	    	}
 	    	
+	    	if (line.hasOption('s')) {
+	    		String value = line.getOptionValue('s');
+	    		timeScale = Double.parseDouble(value);
+	    	}
+	    	
 	    	if (line.hasOption("play")) {
 	    		play = true;
 	    	} else if (line.hasOption("real-time")) {
@@ -861,6 +877,10 @@ public class DataViewer extends JFrame implements DomainListener {
 		} else {
 			log.info("Starting data viewer in disconnected state.");
 			dataViewer = new DataViewer();
+		}
+		
+		if (timeScale != -1) {
+			dataViewer.setDomain(timeScale);
 		}
 		
 		if (channels != null && hostName != null) {
