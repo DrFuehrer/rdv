@@ -37,6 +37,7 @@
 -Set autoscaling to always include 0
 -Fixed time axis to always be duration with (even without enough data)
 -Created base data panel class with common control bar for all data panels
+-Complete redesign of data backend. Completely thread safe and better performance.
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

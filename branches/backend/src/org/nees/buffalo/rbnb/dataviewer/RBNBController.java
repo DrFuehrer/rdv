@@ -1,5 +1,6 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
@@ -46,6 +47,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	private double updateLocation = -1;
 	private double updateTimeScale = -1;
 	private int updateState = -1;
+	private ArrayList updateSubscriptionRequests = new ArrayList();
 
  	private boolean dropData;
 	
@@ -120,8 +122,25 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	// State Processing Methods
 	
 	private void processSubscriptionRequests() {
-		//TODO get subscription requests into here
-		//     so they are thread safe
+		//skip lock if no subscription requests
+		if (updateSubscriptionRequests.size() == 0) {
+			return;
+		}
+		
+		synchronized (updateSubscriptionRequests) {
+			//loop of subscription requests
+			for (int i=0; i<updateSubscriptionRequests.size(); i++) {
+				SubscriptionRequest subscriptionRequest = (SubscriptionRequest)updateSubscriptionRequests.get(i);
+				String channelName = subscriptionRequest.getChannelName();
+				PlayerChannelListener listener = subscriptionRequest.getListener();		
+				if (subscriptionRequest.isSubscribe()) {
+					subscribeSafe(channelName, listener);
+				} else {
+					unsubscribeSafe(channelName, listener);
+				}
+			}
+			updateSubscriptionRequests.clear();
+		}
 	}
 
 	private synchronized void processPlayerRequests() {
@@ -297,7 +316,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		
 		switch (state) {
 			case STATE_STOPPED:
-			//case STATE_LOADING:
 				//TODO we should really only load the data we need
 				setLocationSafe(loadLocation);
 				break;
@@ -395,11 +413,11 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		//stop if no data in fetch, most likely end of data
 		//FIXME this can stop with a small duration, figure out a way to stop at end of data
 		//if this happens maybe check the metadata length
- 		/* if (channelList.length == 0) {
- 			log.error("Received no data.");
+ 		if (channelList.length == 0) {
+ 			log.warn("Received no data. Assuming end of channel.");
  			changeStateSafe(STATE_STOPPED);
  			return;			
- 		} */
+ 		}
  		
  		preFetchData(location+timeScale, timeScale);
  		
@@ -764,7 +782,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 
  	public void monitor() {
 		changeState(STATE_MONITORING);
- 		//changeState(STATE_REALTIME);
 	}
 	
 	public void play() {
@@ -801,14 +818,20 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		updateTimeScale = timeScale;
 	}
 	
-	public boolean subscribe(String channelName, PlayerChannelListener panel) {
-		// FIXME make me thread safe
-		return subscribeSafe(channelName, panel);
+	public boolean subscribe(String channelName, PlayerChannelListener listener) {
+		synchronized (updateSubscriptionRequests) {
+			updateSubscriptionRequests.add(new SubscriptionRequest(channelName, listener, true));
+		}
+		
+		return true;
 	}
 
-	public boolean unsubscribe(String channelName, PlayerChannelListener panel) {
-		// FIXME make me thread safe
-		return unsubscribeSafe(channelName, panel);	
+	public boolean unsubscribe(String channelName, PlayerChannelListener listener) {
+		synchronized (updateSubscriptionRequests) {
+			updateSubscriptionRequests.add(new SubscriptionRequest(channelName, listener, false));
+		}
+		
+		return true;	
 	}
 
 	public boolean isSubscribed(String channelName) {
@@ -939,6 +962,30 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}
 		
 		return end;
+	}
+	
+	class SubscriptionRequest {
+		private String channelName;
+		private PlayerChannelListener listener;
+		private boolean isSubscribe;
+		
+		public SubscriptionRequest(String channelName, PlayerChannelListener listener, boolean isSubscribe) {
+			this.channelName = channelName;
+			this.listener = listener;
+			this.isSubscribe = isSubscribe;
+		}
+		
+		public String getChannelName() {
+			return channelName;
+		}
+		
+		public PlayerChannelListener getListener() {
+			return listener;
+		}
+		
+		public boolean isSubscribe() {
+			return isSubscribe;
+		}
 	}
 	
 }

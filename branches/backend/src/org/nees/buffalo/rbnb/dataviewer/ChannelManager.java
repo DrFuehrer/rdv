@@ -6,12 +6,17 @@ package org.nees.buffalo.rbnb.dataviewer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.rbnb.sapi.ChannelMap;
 
 /**
  * @author Jason P. Hanley
  */
 public class ChannelManager {
+	
+	static Log log = LogFactory.getLog(ChannelManager.class.getName());
 	
 	private HashMap listenerChannelSubscriptions;
 	private HashMap channelSubscriptionCounts;
