@@ -3,6 +3,7 @@
 -Added tabular data panel
 -Fix text data panel
 -Hide hidden channels by default. Add option to view menu.
+-Enable dynamic layout during application resize
 
 1.1.0 - March 22, 2005
 -Expanded domain slider to include usecond and day time values
