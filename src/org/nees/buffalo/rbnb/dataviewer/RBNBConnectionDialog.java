@@ -52,9 +52,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher,
 		addWindowFocusListener(this);
 		
 		setTitle("Select RBNB Server");
-		
-		getContentPane().setBackground(DataViewer.rightBackground);
-		
+			
 		getContentPane().setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		c.weighty = 1;
@@ -115,7 +113,6 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher,
 		getContentPane().add(rbnbPortTextField, c);
 		
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.setBackground(DataViewer.rightBackground);
 				
 		connectButton = new JButton("Connect");
 		connectButton.addActionListener(new ActionListener() {

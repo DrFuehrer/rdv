@@ -311,11 +311,6 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 			Graphics2D gVolatile = (Graphics2D)volatileImage.getGraphics();
 			synchronized(this) {
 				gVolatile.drawImage(image, 0, 0, null);
-				gVolatile.setColor(textColor);
-				gVolatile.drawString(channelName, 2, 12);
-				if (showFrameRate && frameRate != -1) {
-					gVolatile.drawString(Double.toString(Math.round(frameRate*10d)/10d) + " fps", 2, 26);
-				}
 				newFrame = false;
 			}
 			gVolatile.dispose();
@@ -351,7 +346,12 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 				float heightOffset = (getHeight() - scaledHeight)/2f;
 				AffineTransform af = new AffineTransform(widthScale, 0f, 0f, heightScale, widthOffset, heightOffset);
 				g.drawImage(volatileImage, af, this);
-				g.drawString("X", getWidth()-10, 12);
+				g.setColor(textColor);
+				g.drawString("X", getWidth()-widthOffset-10, heightOffset+12);
+				g.drawString(channelName, widthOffset+2, heightOffset+12);
+				if (showFrameRate && frameRate != -1) {
+					g.drawString(Double.toString(Math.round(frameRate*10d)/10d) + " fps", widthOffset+2, heightOffset+26);
+				}				
 			} while (volatileImage.contentsLost());						
 		}
 			

@@ -53,10 +53,8 @@ public class AboutDialog extends JDialog {
 		c.insets = new java.awt.Insets(20,20,20,20);
 		
 		JPanel container = new JPanel();
-		getContentPane().setBackground(DataViewer.rightBackground);
 		getContentPane().add(container, c);
 		
-		container.setBackground(DataViewer.rightBackground);
 		container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 		
 		container.add(new JLabel("RBNB Data Viewer"));
@@ -75,9 +73,7 @@ public class AboutDialog extends JDialog {
 		container.add(new JLabel("Numbers CMS-0086611 and CMS-0086612."));
 		
 		pack();
-		
-		//setSize(getWidth()+50, getHeight()+50);
-		
+				
 		setVisible(true);
 	}
 }

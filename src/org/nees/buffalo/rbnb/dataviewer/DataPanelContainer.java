@@ -32,7 +32,6 @@ public class DataPanelContainer extends JPanel implements DomainListener{
 	
 	public void addDataPanel(DataPanel2 dataPanel) {
 		dataPanel.setDomain(domain);
-		dataPanel.getComponent().setBackground(DataViewer.rightBackground);		
 		dataPanels.add(dataPanel);
 		layoutDataPanels();
 		

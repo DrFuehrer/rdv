@@ -98,9 +98,6 @@ public class DataViewer extends JFrame implements DomainListener {
 	public static final String DEFAULT_RBNB_HOST_NAME = "localhost";
 	public static final int DEFAULT_RBNB_PORT = 3333;
 	
-	public static final Color leftBackground = new Color(200, 225, 250);
-	public static final Color rightBackground = new Color(230, 230, 215);
-
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
 	
 	public DataViewer() {
@@ -151,9 +148,7 @@ public class DataViewer extends JFrame implements DomainListener {
 				}
 			});
 			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	
-			frame.getContentPane().setBackground(rightBackground);
-	
+		
 			frame.getContentPane().setLayout(new BorderLayout());
 	
 			frame.setTitle("RBNB Data Viewer");
@@ -385,78 +380,62 @@ public class DataViewer extends JFrame implements DomainListener {
  	
   	private void initMenuBar() {
   		menuBar = new JMenuBar();
-  		menuBar.setBackground(rightBackground);
   
   		JMenuItem menuItem;
   		
  		JMenu fileMenu = new JMenu(fileAction);
-  		fileMenu.setBackground(rightBackground);
   		
  		menuItem = new JMenuItem(connectAction);
- 		menuItem.setBackground(rightBackground);
  		fileMenu.add(menuItem);
  
  		menuItem = new JMenuItem(disconnectAction);
- 		menuItem.setBackground(rightBackground);
  		fileMenu.add(menuItem);
  		
  		fileMenu.addSeparator();	
  		
  		menuItem = new JMenuItem(loadAction);
- 		menuItem.setBackground(rightBackground);
  		fileMenu.add(menuItem);
  
  		menuItem = new JMenuItem(saveAction);
- 		menuItem.setBackground(rightBackground);
  		fileMenu.add(menuItem);
  		
  		fileMenu.addSeparator();	
  		
  		menuItem = new JMenuItem(importAction);
-  		menuItem.setBackground(rightBackground);
   		fileMenu.add(menuItem);
   
  		menuItem = new JMenuItem(exportAction);
-  		menuItem.setBackground(rightBackground);
   		fileMenu.add(menuItem);
   		
   		fileMenu.addSeparator();	
   		
  		menuItem = new JMenuItem(printAction);
- 		menuItem.setBackground(rightBackground);
  		fileMenu.add(menuItem);		
  		
  		fileMenu.addSeparator();
  		
  		menuItem = new JMenuItem(exitAction);
-  		menuItem.setBackground(rightBackground);
   		fileMenu.add(menuItem);
   		
   		menuBar.add(fileMenu);
   		
  		JMenu controlMenu = new JMenu(controlAction);
- 		controlMenu.setBackground(rightBackground);
  
  		menuItem = new JMenuItem(realTimeAction);
- 		menuItem.setBackground(rightBackground);
  		controlMenu.add(menuItem);
  		
  		menuItem = new JMenuItem(playAction);
- 		menuItem.setBackground(rightBackground);
  		controlMenu.add(menuItem);
  		
  		menuItem = new JMenuItem(pauseAction);
- 		menuItem.setBackground(rightBackground);
  		controlMenu.add(menuItem);
  		
  		controlMenu.addSeparator();
  
  		menuItem = new JMenuItem(beginingAction);
- 		menuItem.setBackground(rightBackground);
  		controlMenu.add(menuItem);
  
  		menuItem = new JMenuItem(endAction);
- 		menuItem.setBackground(rightBackground);
  		controlMenu.add(menuItem);
  		
  		menuBar.add(controlMenu);
@@ -464,77 +443,62 @@ public class DataViewer extends JFrame implements DomainListener {
  		controlMenu.addSeparator();
  		
  		menuItem = new JMenuItem(updateChannelListAction);
- 		menuItem.setBackground(rightBackground);
  		controlMenu.add(menuItem);
  		
  		controlMenu.addSeparator();
  		
  		menuItem = new JCheckBoxMenuItem(dropDataAction);
  		menuItem.setSelected(true);
- 		menuItem.setBackground(rightBackground);
  		controlMenu.add(menuItem);
  		
  		JMenu viewMenu = new JMenu(viewAction);
- 		viewMenu.setBackground(rightBackground);
  		
  		menuItem = new JCheckBoxMenuItem(showChannelListAction);
  		menuItem.setSelected(true);
- 		menuItem.setBackground(rightBackground);
  		viewMenu.add(menuItem);
  		
  		menuItem = new JCheckBoxMenuItem(showControlPanelAction);
  		menuItem.setSelected(true);
- 		menuItem.setBackground(rightBackground);
  		viewMenu.add(menuItem);
  		
  		menuItem = new JCheckBoxMenuItem(showStatusPanelAction);
  		menuItem.setSelected(true);
-		menuItem.setBackground(rightBackground);
  		viewMenu.add(menuItem);
  		
  		viewMenu.addSeparator();
  		
  		menuItem = new JCheckBoxMenuItem(fullScreenAction);
  		menuItem.setSelected(false);
- 		menuItem.setBackground(rightBackground);
  		viewMenu.add(menuItem);
  		
  		menuBar.add(viewMenu);
  		
  		JMenu windowMenu = new JMenu(windowAction);
-  		windowMenu.setBackground(rightBackground);
   		
  		menuItem = new JMenuItem(addJPEGDataPanelAction);
- 		menuItem.setBackground(rightBackground);
  		windowMenu.add(menuItem);
  		
  		menuItem = new JMenuItem(addJFreeChartDataPanelAction);
-  		menuItem.setBackground(rightBackground);
   		windowMenu.add(menuItem);
   		
  		menuItem = new JMenuItem(addStringDataPanelAction);
- 		menuItem.setBackground(rightBackground);
   		windowMenu.add(menuItem);
   		
  		windowMenu.addSeparator();
  		
  		menuItem = new JMenuItem(closeAllDataPanelsAction);
-  		menuItem.setBackground(rightBackground);
   		windowMenu.add(menuItem);
   		
   		menuBar.add(windowMenu);
   		
  		JMenu helpMenu = new JMenu(helpAction);
-  		helpMenu.setBackground(rightBackground);
   
  		menuItem = new JMenuItem(contentsAction);
- 		menuItem.setBackground(rightBackground);
  		helpMenu.add(menuItem);		
  		
  		helpMenu.addSeparator();
  		
  		menuItem = new JMenuItem(aboutAction);
-  		menuItem.setBackground(rightBackground);
   		helpMenu.add(menuItem);		
   		
   		menuBar.add(helpMenu);
@@ -552,13 +516,11 @@ public class DataViewer extends JFrame implements DomainListener {
 	private void initRightPanel() {
 		rightPanel = new JPanel();
 		rightPanel.setMinimumSize(new Dimension(0, 0));
-		rightPanel.setBackground(rightBackground);
 		rightPanel.setLayout(new GridBagLayout());
 	}
 		
 	private void initControls() {
 		controlPanel = new ControlPanel(this, rbnb);
-		controlPanel.setBackground(rightBackground);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 0;
@@ -577,7 +539,6 @@ public class DataViewer extends JFrame implements DomainListener {
 	
 	private void initDataPanelContainer() {
 		dataPanelContainer = new DataPanelContainer();
-		dataPanelContainer.setBackground(rightBackground);
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1;
 		c.weighty = 1;
@@ -596,7 +557,6 @@ public class DataViewer extends JFrame implements DomainListener {
 	
 	private void initStatus() {
 		statusPanel = new StatusPanel(this);
-		statusPanel.setBackground(rightBackground);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 0;
@@ -615,7 +575,6 @@ public class DataViewer extends JFrame implements DomainListener {
 	
 	private void initSplitPane() {
  		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, channelListPanel, rightPanel);
-		splitPane.setBackground(rightBackground);
 		splitPane.setResizeWeight(0);
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setContinuousLayout(true);
