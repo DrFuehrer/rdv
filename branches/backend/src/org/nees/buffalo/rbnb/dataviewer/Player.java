@@ -26,7 +26,6 @@ public interface Player {
 	public boolean subscribe(String channelName, PlayerChannelListener channelListener);
 	
 	public boolean unsubscribe(String channelName, PlayerChannelListener channelListener);
-	public boolean unsubscribeAll(PlayerChannelListener channelListener);
 	
 	public boolean isSubscribed(String channelName);
 	

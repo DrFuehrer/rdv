@@ -344,25 +344,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		return true;
 	}
 	
-	private boolean unsubscribeAllSafe(PlayerChannelListener channelListener) {
-		boolean anyUnsubscribes = false;
-		
-		//unsubscribe listener from all channels it is listening to
-		String[] channels = requestedChannels.GetChannelList();
-		for (int i=0; i<channels.length; i++) {
-			String channelName = channels[i];
-			if (channelManager.isListenerSubscribedToChannel(channelName, channelListener)) {
-				unsubscribeSafe(channelName, channelListener);
-				anyUnsubscribes = true;
-			}
-		}
-		
-		if (anyUnsubscribes && state == STATE_MONITORING) {
-			monitor();
-		}
-		
-		return true;
-	}	
 	
 	// Playback Methods
 	
@@ -830,11 +811,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		return unsubscribeSafe(channelName, panel);	
 	}
 
-	public boolean unsubscribeAll(PlayerChannelListener channelListener) {
-		// FIXME make me thread safe
-		return unsubscribeAllSafe(channelListener);
-	}
-	
 	public boolean isSubscribed(String channelName) {
 		return channelManager.isChannelSubscribed(channelName);
 	}
