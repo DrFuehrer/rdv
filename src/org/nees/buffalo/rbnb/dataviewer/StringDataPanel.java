@@ -1,13 +1,12 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
 import java.awt.BorderLayout;
-import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.swing.BoxLayout;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,16 +21,11 @@ public class StringDataPanel extends AbstractDataPanel {
 	static Log log = LogFactory.getLog(StringDataPanel.class.getName());
 		
 	JPanel panel;
-	JLabel title;
-	JPanel dataPanel;
-	
-	Hashtable labels;
+	JTextArea messages;
 	
 	public StringDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		super(dataPanelContainer, player);
 				
-		labels = new Hashtable();
-		
 		initPanel();
 		setDataComponent(panel);
 		
@@ -43,14 +37,11 @@ public class StringDataPanel extends AbstractDataPanel {
 		panel = new JPanel();
 		
 		panel.setLayout(new BorderLayout());
-		
-		title = new JLabel("EMPTY");
-		panel.add(title, BorderLayout.NORTH);
-		
-		dataPanel = new JPanel();
-		dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.Y_AXIS));
-		panel.add(dataPanel, BorderLayout.CENTER);
-		
+				
+		messages = new JTextArea();
+		messages.setEditable(false);
+		JScrollPane scrollPane = new JScrollPane(messages);
+		panel.add(scrollPane, BorderLayout.CENTER);
 		return panel;
 	}
 	
@@ -60,25 +51,6 @@ public class StringDataPanel extends AbstractDataPanel {
 
 	public boolean supportsMultipleChannels() {
 		return true;
-	}
-
-	public void addChannel(String channelName, String unit) {
-		super.addChannel(channelName, unit);
-		
-		JLabel label = new JLabel(channelName + ": ");
-		dataPanel.add(label);
-		labels.put(channelName, label);
-		
-		title.setText(getTitle());
-	}
-
-	public void removeChannel(String channelName) {
-		super.removeChannel(channelName);
-		
-		JLabel label = (JLabel)labels.remove(channelName);
-		dataPanel.remove(label);
-		
-		title.setText(getTitle());
 	}
 		
 	public void postData(ChannelMap channelMap) {
@@ -100,22 +72,24 @@ public class StringDataPanel extends AbstractDataPanel {
 	}
 
 	private void postData(ChannelMap channelMap, String channelName, int channelIndex, double startTime, double duration) {
-		//FIXME this doesn't look at the startTime and duration
-		JLabel dataLabel = (JLabel)labels.get(channelName);
 		String[] data = channelMap.GetDataAsString(channelIndex);
-		StringBuffer text = new StringBuffer(channelName + ": ");
-		for (int i=0; i<data.length; i++) {
-			text.append(data[i] + ", ");
+		double[] times = channelMap.GetTimes(channelIndex);
+
+		TimeIndex index = getTimeIndex(times, startTime, duration);
+		int startIndex = index.startIndex;
+		int endIndex = index.endIndex;
+		
+		//see if there is no data in the time range we are loooking at
+		if (startIndex == -1 || endIndex == -1) {
+			return;
 		}
-		dataLabel.setText(text.toString());
+		
+		for (int i=startIndex; i<endIndex; i++) {
+			messages.append(channelName + " (" + DataViewer.formatDate(times[i])+ ") : " + data[i] + "\n");
+		}
 	}
 	
 	void clearData() {
-		Iterator i = channels.iterator();
-		while (i.hasNext()) {
-			String channelName = (String)i.next();
-			JLabel dataLabel = (JLabel)labels.get(channelName);
-			dataLabel.setText(null);
-		}
+		messages.setText(null);
 	}
 }

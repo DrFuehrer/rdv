@@ -447,44 +447,4 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		
 		log.debug("Cleared data display.");
 	}
-		
-	class TimeIndex {
-		public int startIndex;
-		public int endIndex;
-		
-		public TimeIndex(int startIndex, int endIndex) {
-			this.startIndex = startIndex;
-			this.endIndex = endIndex;
-		}
-	}
-	
-	public TimeIndex getTimeIndex(double[] times, double startTime, double duration) {
-		int startIndex = -1;
-		int endIndex = -1;
-
-		if (startTime != -1 && duration != -1) {
-			for (int i=0; i<times.length; i++) {
-				if (times[i] >= startTime) {
-					startIndex = i;
-					break;
-				}
-			}
-			
-			if (startIndex != -1) {
-				double endTime = startTime + duration;
-				for (int i=startIndex; i<times.length; i++) {
-					if (times[i] < endTime) {
-						endIndex = i;
-					} else {
-						break;
-					}
-				}
-			}
-		} else {
-			startIndex = 0;
-			endIndex = times.length-1;
-		}
-		
-		return new TimeIndex(startIndex, endIndex);
-	}
 }
