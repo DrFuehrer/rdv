@@ -19,7 +19,7 @@ public class DataViewerApplet extends JApplet {
 	DataViewer dataViewer;
 	
 	public void init() {
-		dataViewer = new DataViewer("rbnb.nees.buffalo.edu");
+		dataViewer = new DataViewer("rbnb.nees.buffalo.edu", true);
 		this.setContentPane(dataViewer.getContentPane());
 	}
 	

@@ -48,6 +48,8 @@ public class DataViewer extends JFrame implements DomainListener {
 	private StatusPanel statusPanel;
 	private DataPanelContainer dataPanelContainer;
  	private JSplitPane splitPane;
+ 	
+ 	private boolean applet;
 	
 	private AboutDialog aboutDialog;
 	private RBNBConnectionDialog rbnbConnectionDialog;
@@ -102,19 +104,28 @@ public class DataViewer extends JFrame implements DomainListener {
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
 	
 	public DataViewer() {
- 		this(null, DEFAULT_RBNB_PORT);
+ 		this(null, DEFAULT_RBNB_PORT, false);
  	}
   		
  	public DataViewer(String rbnbHostName) {
- 		this(rbnbHostName, DEFAULT_RBNB_PORT);
+ 		this(rbnbHostName, DEFAULT_RBNB_PORT, false);
+	}
+
+ 	public DataViewer(String rbnbHostName, boolean applet) {
+ 		this(rbnbHostName, DEFAULT_RBNB_PORT, applet);
+	} 	
+ 	
+	public DataViewer(String rbnbHostName, int rbnbPort) {
+		this(rbnbHostName, rbnbPort, false);
 	}
 	
-	public DataViewer(String rbnbHostName, int rbnbPort) {
+	public DataViewer(String rbnbHostName, int rbnbPort, boolean applet) {
 		super();
-		
+			
 		DataViewer.rbnbHostName = rbnbHostName;
 		DataViewer.rbnbPort = rbnbPort;
-		
+		this.applet = applet;
+
 		init();
 	}
 	
@@ -133,23 +144,25 @@ public class DataViewer extends JFrame implements DomainListener {
 	}
 		
 	private void initFrame() {
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				exit();
-			}
-		});
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-		frame.getContentPane().setBackground(rightBackground);
-
-		frame.getContentPane().setLayout(new BorderLayout());
-
-		frame.setTitle("RBNB Data Viewer");
+		if (!applet) {
+			frame.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					exit();
+				}
+			});
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	
+			frame.getContentPane().setBackground(rightBackground);
+	
+			frame.getContentPane().setLayout(new BorderLayout());
+	
+			frame.setTitle("RBNB Data Viewer");
+		}
 		
 		c = new GridBagConstraints();
 
  		initActions();	
-		initMenuBar();
+		if (!applet) initMenuBar();
 		initChannelListPanel();
 		initRightPanel();
 		initControls();
@@ -176,9 +189,11 @@ public class DataViewer extends JFrame implements DomainListener {
  			channelListPanel.connect();
  		}
  
-  		frame.pack();
-  		frame.setVisible(true);
-  	}
+  		if (!applet) {
+  			frame.pack();
+  			frame.setVisible(true);
+  		}
+	}
   	
  	private void initActions() {
  		fileAction = new DataViewerAction("File", "File Menu", KeyEvent.VK_F);
@@ -660,7 +675,7 @@ public class DataViewer extends JFrame implements DomainListener {
 			rbnb.exit();
 		}
 		log.debug("Exiting.");
-		System.exit(0);		
+		if (!applet) System.exit(0);		
 	}
 
  	private void enterFullScreenMode() {
