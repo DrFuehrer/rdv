@@ -145,20 +145,8 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		panel.add(controlPanel, BorderLayout.SOUTH);	
 	}
 
-	public String[] getSupportedMimeTypes() {
-		return new String[] {"application/octet-stream"};
-	}
-
 	public boolean supportsMultipleChannels() {
 		return false;
-	}
-	
-	public boolean addChannel(Channel channel) {
-		if (!super.addChannel(channel)) {
-			return false;
-		}
-		
-		return true;
 	}
 	
 	public boolean removeChannel(String channelName) {

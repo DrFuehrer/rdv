@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -33,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 /**
@@ -89,12 +91,6 @@ public class ApplicationFrame extends JFrame {
  	private Action fullScreenAction;
  	
  	private Action windowAction;
- 	private Action addJPEGDataPanelAction;
- 	private Action addTimeSeriesChartDataPanelAction;
- 	private Action addXYChartDataPanelAction;
- 	private Action addStringDataPanelAction;
- 	private Action addTabularDataPanelAction;
- 	private Action addSpectrumAnalyzerDataPanelAction;
  	private Action closeAllDataPanelsAction;
  	
  	private Action helpAction;
@@ -304,48 +300,6 @@ public class ApplicationFrame extends JFrame {
  		
  		windowAction = new DataViewerAction("Window", "Window Menu", KeyEvent.VK_W);
  		
- 		addJPEGDataPanelAction = new DataViewerAction("Add Video/Photo Data Panel", "", KeyEvent.VK_J) {
- 			public void actionPerformed(ActionEvent ae) {
- 				/* JPEGDataPanel panel = new JPEGDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel); */
- 			}			
- 		};
- 		
- 		addTimeSeriesChartDataPanelAction = new DataViewerAction("Add Time Series Data Panel", "", KeyEvent.VK_C) {
- 			public void actionPerformed(ActionEvent ae) {
- 				/* JFreeChartDataPanel panel = new JFreeChartDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel); */
- 			}			
- 		};
- 		
- 		addXYChartDataPanelAction = new DataViewerAction("Add XY Data Panel", "", KeyEvent.VK_C) {
- 			public void actionPerformed(ActionEvent ae) {
- 				/* JFreeChartDataPanel panel = new JFreeChartDataPanel(dataPanelManager, dataPanelContainer, rbnb, true);
- 				dataPanelManager.addDataPanel(panel); */
- 			}			
- 		};
- 
- 		addStringDataPanelAction = new DataViewerAction("Add Text Data Panel", "", KeyEvent.VK_S) {
- 			public void actionPerformed(ActionEvent ae) {
- 				/* StringDataPanel panel = new StringDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel); */
- 			}			
- 		};
- 		
- 		addTabularDataPanelAction = new DataViewerAction("Add Tabular Data Panel", "", KeyEvent.VK_S) {
- 			public void actionPerformed(ActionEvent ae) {
- 				/* TabularDataPanel panel = new TabularDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel); */
- 			}			
- 		};
- 		
- 		addSpectrumAnalyzerDataPanelAction = new DataViewerAction("Add Spectrum Analyzer Data Panel", "", KeyEvent.VK_A) {
- 			public void actionPerformed(ActionEvent ae) {
- 				/* SpectrumAnalyzerDataPanel panel = new SpectrumAnalyzerDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel); */
- 			}
- 		};
- 
  		closeAllDataPanelsAction = new DataViewerAction("Close all data panels", "", KeyEvent.VK_C) {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();				
@@ -470,23 +424,23 @@ public class ApplicationFrame extends JFrame {
  		
  		JMenu windowMenu = new JMenu(windowAction);
   		
- 		menuItem = new JMenuItem(addJPEGDataPanelAction);
- 		windowMenu.add(menuItem);
- 		
- 		menuItem = new JMenuItem(addTimeSeriesChartDataPanelAction);
-  		windowMenu.add(menuItem);
-  
- 		menuItem = new JMenuItem(addXYChartDataPanelAction);
-  		windowMenu.add(menuItem);
-  		
- 		menuItem = new JMenuItem(addStringDataPanelAction);
-  		windowMenu.add(menuItem);
-  		
-  		menuItem = new JMenuItem(addTabularDataPanelAction);
-  		windowMenu.add(menuItem);
-
- 		menuItem = new JMenuItem(addSpectrumAnalyzerDataPanelAction);
-  		windowMenu.add(menuItem);
+ 		ArrayList extensions = dataPanelManager.getExtensions();
+ 		for (int i=0; i<extensions.size(); i++) {
+ 			final Extension extension = (Extension)extensions.get(i);
+	 		Action action = new DataViewerAction("Add " + extension.getName(), "", KeyEvent.VK_J) {
+	 			public void actionPerformed(ActionEvent ae) {
+	 				try {
+						dataPanelManager.createDataPanel(extension);
+					} catch (Exception e) {
+						log.error("Unable to open data panel provided by extension " + extension.getName() + " (" + extension.getID() + ").");
+						e.printStackTrace();
+					}
+	 			}			
+	 		};
+	 		
+	  		menuItem = new JMenuItem(action);
+	  		windowMenu.add(menuItem);
+ 		}
   		
  		windowMenu.addSeparator();
  		

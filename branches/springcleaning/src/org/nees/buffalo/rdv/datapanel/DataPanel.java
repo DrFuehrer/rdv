@@ -28,18 +28,6 @@ public interface DataPanel {
 	public void openPanel(DataPanelManager dataPanelManager);
 	
 	/**
-	 * Get the MIME types that this data panel supports.
-	 * 
-	 * A data panel should not assume that it will only be asked
-	 * to display this type of data, and should handle this situation
-	 * accordingly.
-	 * 
-	 * @return  an array of supported MIME types
-	 * @since   1.0
-	 */
-	public String[] getSupportedMimeTypes();
-	
-	/**
 	 * Tell if the data panel can support viewing more than one
 	 * at a time.
 	 * 
@@ -59,11 +47,11 @@ public interface DataPanel {
 	 * If the data panel can not view the channel for any reason,
 	 * it should return false. 
 	 * 
-	 * @param channel  The channel to be displayed by the data panel
-	 * @return         true if the data panel can display the channel, false otherwise
-	 * @since          1.0
+	 * @param channelName  The name of the channel to be displayed by the data panel
+	 * @return             true if the data panel can display the channel, false otherwise
+	 * @since              1.0
 	 */
-	public boolean setChannel(Channel channel);
+	public boolean setChannel(String channelName);
 	
 	/**
 	 * Tell the data panel to view this channel. If other channels
@@ -73,12 +61,12 @@ public interface DataPanel {
 	 * If the data panel can not view the channel for any reason,
 	 * it should return false. 
 	 * 
-	 * @param channel  The channel to be displayed by the data panel
-	 * @return         true if the data panel can display the channel, false otherwise
-	 * @see            #supportsMultipleChannels
-	 * @since          1.0
+	 * @param channelName  The name of the channel to be displayed by the data panel
+	 * @return             true if the data panel can display the channel, false otherwise
+	 * @see                #supportsMultipleChannels
+	 * @since              1.0
 	 */
-	public boolean addChannel(Channel channel);
+	public boolean addChannel(String channelNam);
 	
 	/**
 	 * Remove the channel from the data panel.

@@ -56,16 +56,12 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		panel.add(image, BorderLayout.CENTER);	
 	}
 	
-	public String[] getSupportedMimeTypes() {
-		return new String[] {"image/jpeg", "video/jpeg"};
-	}
-
 	public boolean supportsMultipleChannels() {
 		return false;
 	}
 	
-	public boolean setChannel(Channel channel) {
-		if (super.setChannel(channel)) {
+	public boolean setChannel(String channelName) {
+		if (super.setChannel(channelName)) {
 			clearImage();
 			return true;
 		} else {

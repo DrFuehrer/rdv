@@ -230,9 +230,7 @@ public class DataViewer {
 			for (int i=0; i<channels.length; i++) {
 				String channel = channels[i];
 				log.info("Viewing channel " + channel + ".");
-				if (!dataViewer.getDataPanelManager().viewChannel(channel)) {
-					log.error("Failed to view channel " + channel + ".");
-				}
+				dataViewer.getDataPanelManager().viewChannel(channel);
 			}
 		}
 		

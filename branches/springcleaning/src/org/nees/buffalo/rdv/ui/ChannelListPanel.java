@@ -366,12 +366,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 				ChannelTree.Node node = (ChannelTree.Node)o;
 				if (node.getType() == ChannelTree.CHANNEL) {
 					String channelName = node.getFullName();
-					String unit = rbnb.getUnit(channelName);
-					String data = channelName;
-					if (unit != null) {
-						data += "\t" + unit;
-					}
-					e.startDrag(DragSource.DefaultLinkDrop, new StringSelection(data), this);
+					e.startDrag(DragSource.DefaultLinkDrop, new StringSelection(channelName), this);
 				}
 			}
 		}
@@ -392,10 +387,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 					ChannelTree.Node node = (ChannelTree.Node)o;
 					if (node.getType() == ChannelTree.CHANNEL) {
 						String channelName = node.getFullName();
-						String mime = node.getMime();
-						String unit = rbnb.getUnit(channelName);
-						Channel channel = new Channel(channelName, mime, unit);
-						dataPanelManager.viewChannel(channel);
+						dataPanelManager.viewChannel(channelName);
 					}
 				}
 			}

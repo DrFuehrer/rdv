@@ -143,23 +143,19 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		rbnbController.addTimeScaleListener(this);
 	}
 
-	public boolean setChannel(Channel channel) {
-		String channelName = channel.getName();
-		String unit = channel.getUnit();
-		
+	public boolean setChannel(String channelName) {
 		if (channels.size() == 1 && channels.contains(channelName)) {
 			return true;
 		}
 		
 		removeAllChannels();
 		
-		return addChannel(channel);
+		return addChannel(channelName);
 	}
 	
-	public boolean addChannel(Channel channel) {
-		String channelName = channel.getName();
-		String unit = channel.getUnit();
-		
+	public boolean addChannel(String channelName) {
+		Channel channel = rbnbController.getChannel(channelName);
+				
 		if (channels.contains(channelName)) {
 			return false;
 		}
@@ -167,6 +163,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		rbnbController.subscribe(channelName, this);
 
 		channels.add(channelName);
+		
+		String unit = channel.getUnit();
 		if (unit != null) {
 			units.put(channelName, unit);
 		}
@@ -336,8 +334,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			dataPanelContainer.removeDataPanel(component);
  		}
  		
- 		dataPanelManager.removeDataPanel(this);
- 		
  		rbnbController.removeStateListener(this);
  		rbnbController.removeTimeListener(this);
  		rbnbController.removeTimeScaleListener(this);
@@ -476,22 +472,15 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			DataFlavor stringFlavor = DataFlavor.stringFlavor;
 			Transferable tr = e.getTransferable();
 			if(e.isDataFlavorSupported(stringFlavor)) {
-				String data = (String)tr.getTransferData(stringFlavor);
-				String[] tokens = data.split("\t");
-				String channelName = tokens[0];
-				String unit = null;
-				if (tokens.length == 2) {
-					unit = tokens[1];
-				}
+				String channelName = (String)tr.getTransferData(stringFlavor);
 				e.acceptDrop(DnDConstants.ACTION_LINK);
 				e.dropComplete(true);
 				
 				try {
-					Channel channel = new Channel(channelName, null, unit);
 					if (supportsMultipleChannels()) {
-						addChannel(channel);
+						addChannel(channelName);
 					} else {
-						setChannel(channel);
+						setChannel(channelName);
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();

@@ -52,23 +52,18 @@ public class TabularDataPanel extends AbstractDataPanel {
 		}
 	}
 
-	public String[] getSupportedMimeTypes() {
-		return new String[] {"application/octet-stream"};
-	}
-
 	public boolean supportsMultipleChannels() {
 		return true;
 	}
 	
-	public boolean addChannel(Channel channel) {
-		if (!super.addChannel(channel)) {
+	public boolean addChannel(String channelName) {
+		if (!super.addChannel(channelName)) {
 			return false;
 		}
-		
-		String channelName = channel.getName();
-		String unit = channel.getUnit();
-		
+			
 		String labelText = channelName;
+		
+		String unit = (String)units.get(channelName);
 		if (unit != null) {
 			labelText += "(" + unit + ")";
 		}

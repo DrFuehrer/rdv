@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="lib/jcommon-0.9.7.jar"/>
 	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jnt.FFT.jar"/>
+	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

@@ -34,11 +34,6 @@ public class TemplateDataPanel extends AbstractDataPanel {
 		// TODO Auto-generated method stub
 	}
 
-	public String[] getSupportedMimeTypes() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public boolean supportsMultipleChannels() {
 		// TODO Auto-generated method stub
 		return false;

@@ -47,10 +47,6 @@ public class StringDataPanel extends AbstractDataPanel {
 		panel.add(scrollPane, BorderLayout.CENTER);
 	}
 	
-	public String[] getSupportedMimeTypes() {
-		return new String[] { "text/plain" };
-	}
-
 	public boolean supportsMultipleChannels() {
 		return false;
 	}

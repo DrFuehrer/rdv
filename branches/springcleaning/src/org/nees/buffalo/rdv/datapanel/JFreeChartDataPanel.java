@@ -79,24 +79,17 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		chartPanelPanel.add(chartPanel, BorderLayout.CENTER);
 	}
 		
-	public String[] getSupportedMimeTypes() {
-		return new String[] {"application/octet-stream"};
-	}
-	
 	public boolean supportsMultipleChannels() {
 		return true;
 	}
 	
-	public boolean addChannel(Channel channel) {
-		String channelName = channel.getName();
-		String unit = channel.getUnit();
-		
+	public boolean addChannel(String channelName) {
 		if (xyMode && !channels.contains(channelName) && channels.size() == 2) {
 			log.warn("We don't support more than 2 channels.");
 			return false;			
 		}
 		
-		if (!super.addChannel(channel)) {
+		if (!super.addChannel(channelName)) {
 			return false;
 		}
 		
