@@ -611,8 +611,4 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	public void channelUnsubscribed(String channelName) {
 		updateTimeBoundaries();
 	}
-
-	public void channelChanged(String unsubscribedChannelName, String subscribedChannelName) {
-		updateTimeBoundaries();
-	}
 }
