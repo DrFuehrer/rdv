@@ -1,6 +1,7 @@
 package org.nees.buffalo.rdv;
 
 import org.nees.buffalo.rdv.datapanel.DataPanel2;
+import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 /**
  * A listener interface to notify listeners when a data

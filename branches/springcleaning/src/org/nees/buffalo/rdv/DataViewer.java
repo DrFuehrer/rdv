@@ -49,6 +49,7 @@ import org.nees.buffalo.rdv.datapanel.TabularDataPanel;
 import org.nees.buffalo.rdv.ui.AboutDialog;
 import org.nees.buffalo.rdv.ui.ChannelListPanel;
 import org.nees.buffalo.rdv.ui.ControlPanel;
+import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import org.nees.buffalo.rdv.ui.RBNBConnectionDialog;
 import org.nees.buffalo.rdv.ui.RBNBImportDialog;
 import org.nees.buffalo.rdv.ui.StatusPanel;

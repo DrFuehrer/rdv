@@ -9,9 +9,9 @@ import javax.swing.JTextArea;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.DataPanelContainer;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Player;
+import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
 

@@ -26,8 +26,8 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.nees.buffalo.rdv.Channel;
-import org.nees.buffalo.rdv.DataPanelContainer;
 import org.nees.buffalo.rdv.Player;
+import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import jnt.FFT.RealDoubleFFT;
 import jnt.FFT.RealDoubleFFT_Radix2;

@@ -11,8 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.nees.buffalo.rdv.Channel;
-import org.nees.buffalo.rdv.DataPanelContainer;
 import org.nees.buffalo.rdv.Player;
+import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
 
