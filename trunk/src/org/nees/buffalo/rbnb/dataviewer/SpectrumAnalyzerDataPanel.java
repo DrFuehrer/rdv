@@ -7,8 +7,10 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Iterator;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -18,7 +20,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -37,8 +41,10 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 	double sampleRate;
 	int numberOfSamples;
 	
-	double[] inputData;
-	int inputDataIndex;
+	ArrayList inputData;
+	
+	double[] hanningWindow;
+	boolean useHanningWindow;
 
 	double lastTimeDisplayed;
 	
@@ -51,6 +57,7 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 	
 	JTextField sampleRateTextField;
 	JTextField dataPointsTextField;
+	JCheckBox useHanningWindowCheckBox;
 	
 	public SpectrumAnalyzerDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		super(dataPanelContainer, player);
@@ -58,8 +65,10 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		sampleRate = 256;
 		numberOfSamples = 512;
 		
-		inputData = new double[numberOfSamples];
-		inputDataIndex = 0;
+		inputData = new ArrayList(numberOfSamples);
+		
+		setHanningWindow();
+		useHanningWindow = true;
 		
 		lastTimeDisplayed = -1;
 		
@@ -77,7 +86,11 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		xySeries = new XYSeries("", false, true);
 		xySeriesCollection = new XYSeriesCollection();
 		xySeriesCollection.addSeries(xySeries);
-		chart = ChartFactory.createXYLineChart(null, "Frequency (Hz)", null, xySeriesCollection, PlotOrientation.VERTICAL, false, true, false);	
+		chart = ChartFactory.createXYLineChart(null, "Frequency (Hz)", null, xySeriesCollection, PlotOrientation.VERTICAL, false, true, false);
+		XYPlot xyPlot = (XYPlot)chart.getPlot();
+		NumberAxis xAxis = (NumberAxis)xyPlot.getDomainAxis();
+		xAxis.setRange(0, sampleRate/2);
+
 		chart.setAntiAlias(false);
 		chartPanel = new ChartPanel(chart, true);
 		
@@ -92,10 +105,14 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 				} catch (NumberFormatException nfe) {
 					sampleRateTextField.setText(Double.toString(sampleRate));
 				}
+				XYPlot xyPlot = (XYPlot)chart.getPlot();
+				NumberAxis xAxis = (NumberAxis)xyPlot.getDomainAxis();
+				xAxis.setRange(0, sampleRate/2);
 				clearData();
 			}
 		});
 		controlPanel.add(sampleRateTextField);
+		
 		controlPanel.add(new JLabel("Data Points: "));
 		dataPointsTextField = new JTextField(Integer.toString(numberOfSamples));
 		dataPointsTextField.addActionListener(new ActionListener() {
@@ -106,13 +123,21 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 					dataPointsTextField.setText(Double.toString(numberOfSamples));
 				}
 				clearData();
-				if (inputData.length < numberOfSamples) {
-					inputData = new double[numberOfSamples];
+				if (inputData.size() < numberOfSamples) {
+					inputData.ensureCapacity(numberOfSamples);
 				}
+				setHanningWindow();
 			}
 		});
-		
 		controlPanel.add(dataPointsTextField);
+		
+		useHanningWindowCheckBox = new JCheckBox("Use hanning window", true);
+		useHanningWindowCheckBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				useHanningWindow = !useHanningWindow;
+			}
+		});
+		controlPanel.add(useHanningWindowCheckBox);
 				
 		panel.add(chartPanel, BorderLayout.CENTER);
 		panel.add(controlPanel, BorderLayout.SOUTH);
@@ -196,14 +221,18 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 			}
 		}
 				
-		for (int i=startIndex; i<=endIndex && inputDataIndex < numberOfSamples; i++) {
-			inputData[inputDataIndex++] = data[i];
+		for (int i=startIndex; i<=endIndex; i++) {
+			if (inputData.size() == numberOfSamples) {
+				inputData.remove(0);
+			}
+			inputData.add(new Double(data[i]));
 		}
 		
-		if (inputDataIndex >= numberOfSamples) {
+		if (inputData.size() == numberOfSamples) {
 			RealDoubleFFT fft = new RealDoubleFFT_Radix2(numberOfSamples);
-			fft.transform(inputData);
-			double[] values = fft.toWraparoundOrder(inputData);
+			double[] inputDataArray = toArray(inputData);
+			fft.transform(inputDataArray);
+			double[] values = fft.toWraparoundOrder(inputDataArray);
 			chart.setNotify(false);
 			xySeries.clear();
 			for (int i=0; i<numberOfSamples; i++) {
@@ -212,17 +241,39 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 			}
 			chart.setNotify(true);
 			chart.fireChartChanged();
-			inputDataIndex = 0;
 		}
 		
 		lastTimeDisplayed = times[endIndex];
 	}
 	
+	private double[] toArray(ArrayList arrayList) {
+		double[] array = new double[arrayList.size()];
+		for (int i=0; i<arrayList.size(); i++) {
+			Double d = (Double)arrayList.get(i);
+			array[i] = d.doubleValue();
+			if (useHanningWindow) {
+				array[i] *= hanningWindow[i];
+			}
+		}
+		return array;
+	}
 	
+	private void setHanningWindow() {
+	    double pi = Math.PI;
+	    int m = numberOfSamples/2;
+	    double r = pi/(m+1);
+	    double[] w = new double[numberOfSamples];
+        
+        for (int n = -m; n < m; n++) {
+          w[m + n] = 0.5d + 0.5d*Math.cos(n*r);
+        }
+		
+		hanningWindow = w;
+	}
 	
 	void clearData() {
 		xySeries.clear();
-		inputDataIndex = 0;
+		inputData.clear();
 		lastTimeDisplayed = -1;
 	}
 
