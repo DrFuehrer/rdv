@@ -97,6 +97,7 @@ public class DataViewer extends JFrame implements DomainListener {
  	private Action addTimeSeriesChartDataPanelAction;
  	private Action addXYChartDataPanelAction;
  	private Action addStringDataPanelAction;
+ 	private Action addTabularDataPanelAction;
  	private Action closeAllDataPanelsAction;
  	
  	private Action helpAction;
@@ -357,6 +358,13 @@ public class DataViewer extends JFrame implements DomainListener {
  				addDataPanel(panel);
  			}			
  		};
+ 		
+ 		addTabularDataPanelAction = new DataViewerAction("Add Tabular Data Panel", "", KeyEvent.VK_S) {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				TabularDataPanel panel = new TabularDataPanel(dataPanelContainer, rbnb);
+ 				addDataPanel(panel);
+ 			}			
+ 		};
  
  		closeAllDataPanelsAction = new DataViewerAction("Close all data panels", "", KeyEvent.VK_C) {
  			public void actionPerformed(ActionEvent ae) {
@@ -481,6 +489,9 @@ public class DataViewer extends JFrame implements DomainListener {
   		windowMenu.add(menuItem);
   		
  		menuItem = new JMenuItem(addStringDataPanelAction);
+  		windowMenu.add(menuItem);
+  		
+  		menuItem = new JMenuItem(addTabularDataPanelAction);
   		windowMenu.add(menuItem);
   		
  		windowMenu.addSeparator();
