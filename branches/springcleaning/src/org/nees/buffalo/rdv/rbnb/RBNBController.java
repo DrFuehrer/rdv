@@ -228,6 +228,9 @@ public class RBNBController implements Player {
 			log.error("Can not transition out of exiting state to " + getStateName(state) + " state.");
 			return false;
  		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING && newState != STATE_DISCONNECTED) {
+			if (!updateMetadata()) {
+				return false;
+			}
 			if (!initRBNB()) {
 				return false;
 			}
@@ -244,12 +247,7 @@ public class RBNBController implements Player {
 				}
 				break;
 			case STATE_LOADING:
-				break;
 			case STATE_STOPPED:
-				if (oldState == STATE_DISCONNECTED) {
-					updateMetadataBackground();
-				}
-				break;
 			case STATE_EXITING:
 				break;
 			case STATE_DISCONNECTED:
@@ -956,6 +954,10 @@ public class RBNBController implements Player {
 	
 	
  	// Player Methods
+	
+	public int getState() {
+		return state;
+	}
 
  	public void monitor() {
 		changeState(STATE_MONITORING);

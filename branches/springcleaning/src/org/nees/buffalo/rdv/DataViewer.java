@@ -61,10 +61,6 @@ public class DataViewer {
 		log.info("Exiting.");		
 	}
  	
- 	public Player getPlayer() {
- 		return rbnb;
- 	}
- 	
  	public RBNBController getRBNBController() {
  		return rbnb;
  	}
@@ -252,25 +248,31 @@ public class DataViewer {
 		if (hostName != null) {
 			rbnbController.setRBNBHostName(hostName);
 			rbnbController.connect();
-		}
-		
-		//FIXME need to wait for metadata before adding channels
-		
-		if (channels != null && hostName != null) {
-			for (int i=0; i<channels.length; i++) {
-				String channel = channels[i];
-				log.info("Viewing channel " + channel + ".");
-				dataViewer.getDataPanelManager().viewChannel(channel);
+			
+			//FIXME this nees to be done better
+			int tries = 0;
+			int numberOfTries = 20;
+			while (rbnbController.getState() == Player.STATE_DISCONNECTED && tries++ < numberOfTries) {
+				try { Thread.sleep(1000); } catch (Exception e) {}
 			}
-		}
-		
-		Player player = dataViewer.getPlayer();
-		if (play) {
-			log.info("Starting data playback.");
-			player.play();
-		} else if (realTime) {
-			log.info("Viewing data in real time.");
-			player.monitor();
+			
+			if (tries < numberOfTries) {	
+				if (channels != null && hostName != null) {
+					for (int i=0; i<channels.length; i++) {
+						String channel = channels[i];
+						log.info("Viewing channel " + channel + ".");
+						dataViewer.getDataPanelManager().viewChannel(channel);
+					}
+				}
+				
+				if (play) {
+					log.info("Starting data playback.");
+					rbnbController.play();
+				} else if (realTime) {
+					log.info("Viewing data in real time.");
+					rbnbController.monitor();
+				}
+			}
 		}
 	}
 }

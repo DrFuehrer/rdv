@@ -60,6 +60,14 @@ public interface Player {
 	public static final int STATE_REALTIME = 6;
 
 	/**
+	 * Returns the current state of the player.
+	 * 
+	 * @return  the state
+	 * @since   1.2
+	 */
+	public int getState();
+	
+	/**
 	 * Put the player in monitor mode. Get the newest data that is
 	 * comming into the server.
 	 *
