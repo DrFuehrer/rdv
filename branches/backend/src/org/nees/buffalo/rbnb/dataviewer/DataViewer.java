@@ -346,6 +346,8 @@ public class DataViewer extends JFrame implements DomainListener {
  		        if (menuItem.isSelected()) {
  		        	if (enterFullScreenMode()) {
  		        		menuItem.setSelected(true);
+ 		        	} else {
+ 		        		menuItem.setSelected(false);
  		        	}
  		        } else {
  		        	leaveFullScreenMode();
