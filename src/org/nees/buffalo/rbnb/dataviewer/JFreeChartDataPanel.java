@@ -36,7 +36,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -244,61 +243,46 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		}
 	}
 		
-	public void postData(ChannelMap channelMap, int channelIndex, String channelName) {
-		postData(channelMap, channelIndex, channelName, -1, -1);
+	public void postData(ChannelMap channelMap) {
+		postData(channelMap, -1, -1);
 	}	
 
-	public void postData(ChannelMap channelMap, int channelIndex, String channelName, double startTime, double duration) {
-		if (xyMode && channels.size() != 2) {
-			return;
-		}
-		
-		if (channelName == null) {
-			channelName = (String)channels.get(channelIndex);
-		}
-		
-		XYSeries xySeriesData = null;
-		TimeSeries timeSeriesData = null;
+	public void postData(ChannelMap channelMap, double startTime, double duration) {
 		if (xyMode) {
-			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
-			xySeriesData = dataCollection.getSeries(0);
+			postDataXY(channelMap, startTime, duration);
 		} else {
-			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-			timeSeriesData = dataCollection.getSeries(channelName);
+			postDataTimeSeries(channelMap, startTime, duration);
 		}
+	}
+
+	private void postDataTimeSeries(ChannelMap channelMap, double startTime, double duration) {
+		//loop over all channels and see if there is data for them
+		for (int i=0; i<channels.size(); i++) {
+			String channelName = (String)channels.get(i);
+			int channelIndex = channelMap.GetIndex(channelName);
+			
+			//if there is data for channel, post it
+			if (channelIndex != -1) {
+				postDataTimeSeries(channelMap, channelName, channelIndex, startTime, duration);
+			}
+		}
+	}
+	
+	private void postDataTimeSeries(ChannelMap channelMap, String channelName, int channelIndex, double startTime, double duration) {		
+		TimeSeries timeSeriesData = null;
+		TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
+		timeSeriesData = dataCollection.getSeries(channelName);
 		
 		try {		
 			double[] times = channelMap.GetTimes(channelIndex);
-			int startIndex = -1;
-			int endIndex = -1;
 
-			if (startTime != -1 && duration != -1) {
-				for (int i=0; i<times.length; i++) {
-					if (times[i] >= startTime) {
-						startIndex = i;
-						break;
-					}
-				}
-				
-				if (startIndex == -1) {
-					return;
-				}
-				
-				double endTime = startTime + duration;
-				for (int i=startIndex; i<times.length; i++) {
-					if (times[i] < endTime) {
-						endIndex = i;
-					} else {
-						break;
-					}
-				}
-				
-				if (endIndex == -1) {
-					return;
-				}
-			} else {
-				startIndex = 0;
-				endIndex = times.length-1;
+			TimeIndex index = getTimeIndex(times, startTime, duration);
+			int startIndex = index.startIndex;
+			int endIndex = index.endIndex;
+			
+			//see if there is no data in the time range we are loooking at
+			if (startIndex == -1 || endIndex == -1) {
+				return;
 			}
 			
 			int typeID = channelMap.GetType(channelIndex);
@@ -309,93 +293,25 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			
 			switch (typeID) {
 				case ChannelMap.TYPE_FLOAT64:
+				case ChannelMap.TYPE_FLOAT32:					
 					double[] doubleData = channelMap.GetDataAsFloat64(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-						if (xyMode) {
-							if (channelName.equals(channels.get(0))) {
-								xValue = new Double(doubleData[i]);
-							} else if (channelName.equals(channels.get(1))) {
-								yValue = new Double(doubleData[i]);
-							}
-							
-							if (xValue != null && yValue != null){
-								log.debug("Got data pair " + xValue + "\t" + doubleData[i]);
-								xySeriesData.add(xValue, new Double(doubleData[i]));
-								xValue = null;
-								yValue = null;
-							}							
-						} else {
-							time = new FixedMillisecond((long)(times[i]*1000));
-							timeSeriesData.add(time, doubleData[i]);
-						}
-					}
-					break;
-				case ChannelMap.TYPE_FLOAT32:
-					float[] floatData = channelMap.GetDataAsFloat32(channelIndex);
-					for (int i=startIndex; i<=endIndex; i++) {
-						if (xyMode) {
-							
-						} else {
-							time = new FixedMillisecond((long)(times[i]*1000));
-							timeSeriesData.add(time, floatData[i]);
-						}
+						time = new FixedMillisecond((long)(times[i]*1000));
+						timeSeriesData.add(time, doubleData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT64:
+				case ChannelMap.TYPE_INT32:
+				case ChannelMap.TYPE_INT16:
+				case ChannelMap.TYPE_INT8:					
 					long[] longData = channelMap.GetDataAsInt64(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-						if (xyMode) {
-							if (xValue == null) {
-								xValue = new Long(longData[i]);
-							} else {
-								xySeriesData.add(xValue, new Long(longData[i]));
-								xValue = null;
-							}
-						} else {
-							time = new FixedMillisecond((long)(times[i]*1000));
-							timeSeriesData.add(time, longData[i]);
-						}
-					}
-					break;
-				case ChannelMap.TYPE_INT32:
-					int[] intData = channelMap.GetDataAsInt32(channelIndex);
-					for (int i=startIndex; i<=endIndex; i++) {
-						if (xyMode) {
-							
-						} else {
-							time = new FixedMillisecond((long)(times[i]*1000));
-							timeSeriesData.add(time, intData[i]);
-						}
-					}
-					break;				
-				case ChannelMap.TYPE_INT16:
-					short[] shortData = channelMap.GetDataAsInt16(channelIndex);
-					for (int i=startIndex; i<=endIndex; i++) {
-						if (xyMode) {
-							
-						} else {
-							time = new FixedMillisecond((long)(times[i]*1000));
-							timeSeriesData.add(time, shortData[i]);
-						}
-					}
-					break;
-				case ChannelMap.TYPE_INT8:
-					byte[] byteData = channelMap.GetDataAsInt8(channelIndex);
-					for (int i=startIndex; i<=endIndex; i++) {
-						if (xyMode) {
-							
-						} else {
-							time = new FixedMillisecond((long)(times[i]*1000));
-							timeSeriesData.add(time, byteData[i]);
-						}
+						time = new FixedMillisecond((long)(times[i]*1000));
+						timeSeriesData.add(time, longData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_STRING:
-					log.error("Got string type of data for channel " + channelName + ". Don't know how to handle.");
-					break;
 				case ChannelMap.TYPE_UNKNOWN:
-					log.error("Got unknown type of data for channel " + channelName + ".");
-					break;
 				case ChannelMap.TYPE_BYTEARRAY:
 					log.error("Got byte array type for channel " + channelName + ". Don't know how to handle.");
 					break;
@@ -404,14 +320,139 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			chart.setNotify(true);
 			chart.fireChartChanged();
 			
-		//} catch (SeriesException se) {
-		//	log.error("Received duplicate data: " + se.getMessage() + ".");
 		} catch (Exception e) {
 			log.error("Problem plotting data for channel: " + channelName + ": " + e.getMessage() + ".");
 		}
-
 	}
 
+	private void postDataXY(ChannelMap channelMap, double startTime, double duration) {
+		if (!xyMode) {
+			log.error("Tried to post X vs. Y data when not in xy mode.");
+			return;
+		}
+		
+		//Check to see if we have 2 channels for x vs. y mode
+		if (channels.size() != 2) {
+			return;
+		}
+
+		String xChannelName = (String)channels.get(0);
+		String yChannelName = (String)channels.get(1);
+
+		int xChannelIndex = -1;
+		int yChannelIndex = -1;
+		
+		//get the channel indexs for the  x and y channels
+		String[] dataChannels = channelMap.GetChannelList();
+		for (int i=0; i<dataChannels.length; i++) {
+			if (xChannelName.equals(dataChannels[i])) {
+				xChannelIndex = channelMap.GetIndex(dataChannels[i]);
+			} else if(yChannelName.equals(dataChannels[i])) {
+				yChannelIndex = channelMap.GetIndex(dataChannels[i]);
+			}
+		}
+		
+		//return if this channel map doesn't have data for both the x and y channel
+		if(xChannelIndex == -1 || yChannelIndex == -1) {
+			return;
+		}
+				
+		try {		
+			double[] times = channelMap.GetTimes(xChannelIndex); //FIXME go over all channel times
+
+			TimeIndex index = getTimeIndex(times, startTime, duration);
+			int startIndex = index.startIndex;
+			int endIndex = index.endIndex;
+			
+			//see if there is no data in the time range we are loooking at
+			if (startIndex == -1 || endIndex == -1) {
+				return;
+			}
+
+			XYSeries xySeriesData = null;
+			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+			xySeriesData = dataCollection.getSeries(0);
+			
+			//FIXME assume data of same type
+			int typeID = channelMap.GetType(xChannelIndex);
+					
+			chart.setNotify(false);
+			
+			switch (typeID) {
+				case ChannelMap.TYPE_FLOAT64:
+				case ChannelMap.TYPE_FLOAT32:
+					double[] xDoubleData = channelMap.GetDataAsFloat64(xChannelIndex);
+					double[] yDoubleData = channelMap.GetDataAsFloat64(yChannelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						xySeriesData.add(xDoubleData[i], yDoubleData[i]);
+					}
+					break;
+				case ChannelMap.TYPE_INT64:
+				case ChannelMap.TYPE_INT32:
+				case ChannelMap.TYPE_INT16:
+				case ChannelMap.TYPE_INT8:
+					long[] xLongData = channelMap.GetDataAsInt64(xChannelIndex);
+					long[] yLongData = channelMap.GetDataAsInt64(yChannelIndex);
+					for (int i=startIndex; i<=endIndex; i++) {
+						xySeriesData.add(xLongData[i], yLongData[i]);
+					}
+					break;
+				case ChannelMap.TYPE_BYTEARRAY:					
+				case ChannelMap.TYPE_STRING:
+				case ChannelMap.TYPE_UNKNOWN:
+					log.error("Don't know how to handle data type for " + xChannelName + " and " + yChannelName + ".");
+					break;
+			}
+			
+			chart.setNotify(true);
+			chart.fireChartChanged();
+			
+		} catch (Exception e) {
+			log.error("Problem plotting data for channels " + xChannelName + " and " + yChannelName + ": " + e.getMessage() + ".");
+		}
+
+	}
+	
+	class TimeIndex {
+		public int startIndex;
+		public int endIndex;
+		
+		public TimeIndex(int startIndex, int endIndex) {
+			this.startIndex = startIndex;
+			this.endIndex = endIndex;
+		}
+	}
+	
+	public TimeIndex getTimeIndex(double[] times, double startTime, double duration) {
+		int startIndex = -1;
+		int endIndex = -1;
+
+		if (startTime != -1 && duration != -1) {
+			for (int i=0; i<times.length; i++) {
+				if (times[i] >= startTime) {
+					startIndex = i;
+					break;
+				}
+			}
+			
+			if (startIndex != -1) {
+				double endTime = startTime + duration;
+				for (int i=startIndex; i<times.length; i++) {
+					if (times[i] < endTime) {
+						endIndex = i;
+					} else {
+						break;
+					}
+				}
+			}
+		} else {
+			startIndex = 0;
+			endIndex = times.length-1;
+		}
+		
+		return new TimeIndex(startIndex, endIndex);
+	}
+	
 	private void clearData() {
 		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
 			if (xyMode) {

@@ -1,6 +1,8 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -28,7 +30,8 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	
 	private ChannelMap requestedChannels;
 	
-	private Hashtable channelViewers;
+	private ChannelManager channelManager;
+	
 	private Vector timeListeners;
 	private Vector stateListeners;
 	private Vector subscriptionListeners;
@@ -52,7 +55,8 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	static final double PLAYBACK_REFRESH_RATE = 0.05;
 	
 	public RBNBController() {
-		channelViewers = new Hashtable();
+		channelManager = new ChannelManager(); 
+		
 		timeListeners = new Vector();
 		stateListeners = new Vector();
 		subscriptionListeners = new Vector();
@@ -301,21 +305,15 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 	
 	public boolean subscribe(String channelName, PlayerChannelListener panel, boolean loadData, boolean alertListeners) {
-		if (channelViewers.containsKey(channelName)) {
-			Vector dataPanels = (Vector)channelViewers.get(channelName);
-			dataPanels.add(panel);
-		} else {
-			Vector dataPanels = new Vector();
-			dataPanels.add(panel);
-			channelViewers.put(channelName, dataPanels);
-		}
-		
+		//subscribe to channel
 		try {
 			requestedChannels.Add(channelName);
 		} catch (SAPIException e) {
 			log.error("Failed to add channel " + channelName + ".");
 			return false;
 		}
+
+		channelManager.subscribe(channelName, panel);
 		
 		if (loadData) {
 			switch (state) {
@@ -340,36 +338,26 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		return unsubscribe(channelName, panel, true, true);	
 	}
 		
-	public boolean unsubscribe(String channelName, PlayerChannelListener panel, boolean loadData, boolean alertListeners) {		
-		if (channelViewers.containsKey(channelName)) {
-			Vector dataPanels = (Vector)channelViewers.get(channelName);
-			if (!dataPanels.remove(panel)) {
-				log.warn("Player channel listener not subscribed to channel " + channelName + ".");
-				return false;
-			}
-			if (dataPanels.size() == 0) {
-				channelViewers.remove(channelName);
-			}
-		} else {
-			log.warn("Player channel listener not subscribed to channel " + channelName + ".");
-			return false;
-		}
+	public boolean unsubscribe(String channelName, PlayerChannelListener panel, boolean loadData, boolean alertListeners) {
+		channelManager.unsubscribe(channelName, panel);
 		
-		ChannelMap newRequestedChannels = new ChannelMap();
-		
-		String[] channelList = requestedChannels.GetChannelList();
-		for (int i=0; i<channelList.length; i++) {
-			if (!channelName.equals(channelList[i])) {
-				int channelIndex = -1;
-				try {
-					channelIndex = newRequestedChannels.Add(channelList[i]);
-				} catch (SAPIException e) {
-					log.error("Failed to remove to channel " + channelName + ".");
-					return false;
+		if (!channelManager.isChannelSubscribed(channelName)) {
+			//unsubscribe from the channel
+			ChannelMap newRequestedChannels = new ChannelMap();		
+			String[] channelList = requestedChannels.GetChannelList();
+			for (int i=0; i<channelList.length; i++) {
+				if (!channelName.equals(channelList[i])) {
+					int channelIndex = -1;
+					try {
+						channelIndex = newRequestedChannels.Add(channelList[i]);
+					} catch (SAPIException e) {
+						log.error("Failed to remove to channel " + channelName + ".");
+						return false;
+					}
 				}
 			}
+			requestedChannels = newRequestedChannels;
 		}
-		requestedChannels = newRequestedChannels;
 		
 		if (loadData) {
 			switch (state) {
@@ -402,23 +390,29 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 
 	public boolean unsubscribeAll(PlayerChannelListener channelListener) {
-		Enumeration channels = channelViewers.keys();
-		while (channels.hasMoreElements()) {
-			String channelName = (String)channels.nextElement();
-			Vector channelListeners = (Vector)channelViewers.get(channelName);
-			if (channelListeners != null && channelListeners.contains(channelListener)) {
+		boolean anyUnsubscribes = false;
+		
+		//unsubscribe listener from all channels it is listening to
+		String[] channels = requestedChannels.GetChannelList();
+		for (int i=0; i<channels.length; i++) {
+			String channelName = channels[i];
+			if (channelManager.isListenerSubscribedToChannel(channelName, channelListener)) {
 				unsubscribe(channelName, channelListener, false, true);
+				anyUnsubscribes = true;
 			}
 		}
 		
-		switch (state) {
-			case STATE_STOPPED:
-			//case STATE_LOADING:
-				setLocation(location);
-				break;
-			case STATE_MONITORING:
-				monitor();
-				break;
+		//only load data if there was an actual unsubscribe
+		if (anyUnsubscribes) {
+			switch (state) {
+				case STATE_STOPPED:
+				//case STATE_LOADING:
+					setLocation(location);
+					break;
+				case STATE_MONITORING:
+					monitor();
+					break;
+			}
 		}
 		
 		return true;
@@ -522,12 +516,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		String[] channelList = getmap.GetChannelList();
 
 		//stop if no data in fetch, most likely end of data
-		//FIXME this can stop with a small duration
- 		if (channelList.length == 0) {
+		//FIXME this can stop with a small duration, figure out a way to stop at end of data
+		//if this happens maybe check the metadata length
+ 		/* if (channelList.length == 0) {
  			log.error("Received no data.");
  			changeStateSafe(STATE_STOPPED);
  			return;			
- 		}
+ 		} */
  		
  		preFetchData(location+timeScale, timeScale);		
 		
@@ -548,25 +543,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		while (i<playbackSteps && updateState == -1 && updateLocation == -1 && updateTimeScale == -1) {
 			updateTimeListeners(location);
 			
-			PlayerChannelListener panel;
-			for (int j=0; j<channelList.length; j++) {
-				int channelIndex = getmap.GetIndex(channelList[j]);
-				Vector dataPanels = (Vector)channelViewers.get(channelList[j]);
-				if (dataPanels == null) {
-					//log.warn("Unable to find and viewers for subscribed channel " + channelList[j]);
-					continue;
-				}
-				
-				for (int k=0; k<dataPanels.size(); k++) {
-					panel = (PlayerChannelListener)dataPanels.get(k);
-					if (panel == null) {
-						log.error("Got null data panel for channel: " + channelList[j]);
-						continue;
-					} 
-					
-					panel.postData(getmap, channelIndex, channelList[j], location, playbackStepTime);					
-				}
-			}
+			channelManager.postData(getmap, location, playbackStepTime);					
 			
 			double timeDifference = (playbackRefreshRate*(i+1)) - ((System.currentTimeMillis() - playbackStartTime)/1000d);
  			if (dropData && timeDifference < -playbackRefreshRate) {
@@ -652,7 +629,9 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		return fetchedMap;
 	}
 
-	private synchronized void updateDataMonitoring() {			
+	private synchronized void updateDataMonitoring() {	
+		//stop monitoring if no channels selected
+		//TODO see if this should be posible or indicates an error in the program
 		if (requestedChannels.NumberOfChannels() == 0) {
 			log.warn("No channels selected for data monitor.");
 			changeStateSafe(STATE_STOPPED);
@@ -675,37 +654,22 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}
 
 		String[] channelList = getmap.GetChannelList();
+		
+		//received no data
 		if (channelList.length == 0) {
 			return;			
 		} 
 
+		//update current location
+		//TODO see if we should instead do this at the end for the latest location
 		if (state == STATE_MONITORING) {
 			location = getmap.GetTimeStart(0);
 			updateTimeListeners(location);
 		}
-			
-		PlayerChannelListener panel;
-		for (int i=0; i<channelList.length; i++) {
-			int channelIndex = getmap.GetIndex(channelList[i]);
-			Vector dataPanels = (Vector)channelViewers.get(channelList[i]);
-			if (dataPanels == null) {
-				log.warn("Unable to find any viewers for subscribed channel " + channelList[i]);
-				continue;
-			}
-				
-			for (int k=0; k<dataPanels.size(); k++) {
-				panel = (PlayerChannelListener)dataPanels.get(k);
-				if (panel == null) {
-					log.error("Got null data panel for channel: " + channelList[i]);
-					continue;
-				}
-				
-				panel.postData(getmap, channelIndex, channelList[i]);
-			}
-		}
 		
+		channelManager.postData(getmap);		
 	}
-			
+				
 	private static void printChannelMap(ChannelMap cmap) {
 		String[] channels = cmap.GetChannelList();
 		for (int i=0; i<channels.length; i++) {
@@ -807,12 +771,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 	
 	public boolean isSubscribed(String channelName) {
-		Vector channels = (Vector)channelViewers.get(channelName);
-		if (channels == null) {
-			return false;
-		} else {
-			return true;
-		}
+		return channelManager.isChannelSubscribed(channelName);
 	}
 
 	public void timeScaleChanged(double timeScale) {
