@@ -190,7 +190,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.anchor = GridBagConstraints.NORTHWEST;				
 		add(endButton, c);
 				
-		JLabel locationLabel = new JLabel("location");
+		JLabel locationLabel = new JLabel("Time");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.weighty = 0;
@@ -219,41 +219,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.anchor = GridBagConstraints.NORTHWEST;				
 		add(locationScrollBar, c);
 
-		JLabel timeScaleLabel = new JLabel("time scale");
+		JLabel domainLabel = new JLabel("Time Scale");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
 		c.gridy = 2;
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;
-		add(timeScaleLabel, c);		
-		
- 		durationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, -9, 10);
-		durationScrollBar.addAdjustmentListener(this);
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
-		c.weighty = 0;
-		c.gridx = 1;
-		c.gridy = 2;
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;		
-		add(durationScrollBar, c);
-
-		JLabel domainLabel = new JLabel("domain");
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 3;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -268,7 +239,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 3;
+		c.gridy = 2;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -276,6 +247,35 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;		
 		add(domainScrollBar, c);
+		
+		JLabel timeScaleLabel = new JLabel("Playback Rate");
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
+		c.gridx = 0;
+		c.gridy = 3;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(10,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;
+		add(timeScaleLabel, c);		
+		
+ 		durationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, -9, 10);
+		durationScrollBar.addAdjustmentListener(this);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
+		c.gridx = 1;
+		c.gridy = 3;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;		
+		add(durationScrollBar, c);
 		
 		log.info("Initialized control panel.");
 	}
@@ -516,6 +516,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 			disbaleUI();
 		} else if (oldState == Player.STATE_DISCONNECTED && newState != Player.STATE_EXITING) {
 			enableUI();
+		} else if (newState == Player.STATE_MONITORING) {
+			durationScrollBar.setEnabled(false);
+		} else if (oldState == Player.STATE_MONITORING) {
+			durationScrollBar.setEnabled(true);
 		}
 	}
 	
