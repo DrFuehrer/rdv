@@ -3,7 +3,6 @@ package org.nees.buffalo.rbnb.dataviewer;
 import java.awt.BorderLayout;
 import java.util.Iterator;
 
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -22,9 +21,14 @@ public class StringDataPanel extends AbstractDataPanel {
 		
 	JPanel panel;
 	JTextArea messages;
+	JScrollPane scrollPane;
+	
+	double lastTimeDisplayed;
 	
 	public StringDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		super(dataPanelContainer, player);
+		
+		lastTimeDisplayed = -1;
 				
 		initPanel();
 		setDataComponent(panel);
@@ -33,16 +37,16 @@ public class StringDataPanel extends AbstractDataPanel {
 		setDropTarget(true);
 	}
 	
-	JComponent initPanel() {
+	private void initPanel() {
 		panel = new JPanel();
 		
 		panel.setLayout(new BorderLayout());
 				
 		messages = new JTextArea();
 		messages.setEditable(false);
-		JScrollPane scrollPane = new JScrollPane(messages);
+		messages.setDropTarget(null);
+		scrollPane = new JScrollPane(messages);
 		panel.add(scrollPane, BorderLayout.CENTER);
-		return panel;
 	}
 	
 	public String[] getSupportedMimeTypes() {
@@ -50,12 +54,21 @@ public class StringDataPanel extends AbstractDataPanel {
 	}
 
 	public boolean supportsMultipleChannels() {
-		return true;
+		return false;
 	}
 	
-	//FIXME to new interface
-	/* 
-	public void postData(ChannelMap channelMap, Time time) {
+	public void postData(ChannelMap channelMap) {
+		super.postData(channelMap);
+	}
+	
+	public void postTime(double time) {
+		super.postTime(time);
+		
+		if (channelMap == null) {
+			//no data to display yet
+			return;
+		}		
+
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -64,30 +77,54 @@ public class StringDataPanel extends AbstractDataPanel {
 			
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
-				postData(channelMap, channelName, channelIndex, time);
+				postDataText(channelName, channelIndex);
 			}
 		}
 	}
 
-	private void postData(ChannelMap channelMap, String channelName, int channelIndex, Time time) {
+	private void postDataText(String channelName, int channelIndex) {
 		String[] data = channelMap.GetDataAsString(channelIndex);
 		double[] times = channelMap.GetTimes(channelIndex);
 
-		TimeIndex index = getTimeIndex(times, time);
-		int startIndex = index.startIndex;
-		int endIndex = index.endIndex;
+		int startIndex = -1;
+		
+		for (int i=0; i<times.length; i++) {
+			if (times[i] > lastTimeDisplayed && times[i] <= time) {
+				startIndex = i;
+				break;
+			}
+		}
 		
 		//see if there is no data in the time range we are loooking at
-		if (startIndex == -1 || endIndex == -1) {
+		if (startIndex == -1) {
 			return;
-		}
+		}		
+
+		int endIndex = startIndex;
 		
-		for (int i=startIndex; i<endIndex; i++) {
+		for (int i=times.length-1; i>startIndex; i--) {
+			if (times[i] <= time) {
+				endIndex = i;
+				break;
+			}
+		}
+				
+		for (int i=startIndex; i<=endIndex; i++) {
 			messages.append(channelName + " (" + DataViewer.formatDate(times[i])+ ") : " + data[i] + "\n");
 		}
-	} */
+		
+		int maximum = scrollPane.getHorizontalScrollBar().getMaximum();
+		scrollPane.getHorizontalScrollBar().setValue(maximum);
+		
+		lastTimeDisplayed = times[endIndex];
+	}
 	
 	void clearData() {
 		messages.setText(null);
+		lastTimeDisplayed = -1;
+	}
+	
+	public String toString() {
+		return "Text Data Panel";
 	}
 }
