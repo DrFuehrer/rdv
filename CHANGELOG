@@ -32,7 +32,8 @@
  or vertical layout. Only works for 2 data panels currently
 -Fixed subsecond time display
 -Added timezone to location display
--Added basic support for x vs. y plotting (playback only)
+-Added full support for x vs. y plotting
+-Much better labeling for charts (legend)
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

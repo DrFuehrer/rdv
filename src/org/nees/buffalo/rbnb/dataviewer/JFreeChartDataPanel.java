@@ -33,6 +33,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -92,10 +93,10 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	private void initChart() {
 		if (xyMode) {
 			dataCollection = new XYSeriesCollection();
-			chart = ChartFactory.createXYLineChart("Empty", "x", "y", dataCollection, PlotOrientation.VERTICAL, false, false, false);
+			chart = ChartFactory.createXYLineChart(null, null, null, dataCollection, PlotOrientation.VERTICAL, false, false, false);
 		} else {
 			dataCollection = new TimeSeriesCollection();
-			chart = ChartFactory.createTimeSeriesChart("Empty", "t", "x", dataCollection, false, false, false);
+			chart = ChartFactory.createTimeSeriesChart(null, "Time", null, dataCollection, true, false, false);
 		}
 		
 		chart.setAntiAlias(false);
@@ -201,13 +202,18 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		channels.clear();
 	}
 	
-	private void setTitle() {
+	private void setTitle() {	
 		String title = "";
-		for(int i=0; i < channels.size(); i++) {
-			title += channels.get(i) + (i==channels.size()-1?"" : ", ");
-		}
 		
-		chart.setTitle(title);
+		if (xyMode && channels.size() == 2) {
+			((XYPlot)chart.getPlot()).getDomainAxis().setLabel((String)channels.get(0));
+			((XYPlot)chart.getPlot()).getRangeAxis().setLabel((String)channels.get(1));
+			title = channels.get(0) + " vs " + channels.get(1);
+		} else {
+			for(int i=0; i < channels.size(); i++) {
+				title += channels.get(i) + (i==channels.size()-1?"" : ", ");
+			}			
+		}
 		
 		if (!attached) {
 			frame.setTitle(title);
