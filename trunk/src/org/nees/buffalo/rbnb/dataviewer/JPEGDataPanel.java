@@ -31,14 +31,14 @@ public class JPEGDataPanel extends AbstractDataPanel {
 				
  	boolean keepAspectRatio;
  	
- 	int displayedImageIndex;
+ 	double displayedImageTime;
  	 	
 	public JPEGDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		super(dataPanelContainer, player);
 		
 		keepAspectRatio = true;
 		
-		displayedImageIndex = -1;
+		displayedImageTime = -1;
 	
 		initImage();
 
@@ -67,7 +67,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	
 	public boolean setChannel(Channel channel) {
 		if (super.setChannel(channel)) {
-			image.clear();			
+			clearImage();
 			return true;
 		} else {
 			return false;
@@ -77,8 +77,6 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	
 	public void postData(ChannelMap channelMap) {
 		super.postData(channelMap);
-		
-		displayedImageIndex = -1;
 	}
 
 	public void postTime(double time) {
@@ -126,7 +124,10 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			if (imageIndex == -1) {
 				//no data in this time for us to display
 				return;
-			} else if (imageIndex == displayedImageIndex) {
+			}
+			
+			double imageTime = times[imageIndex];
+			if (imageTime == displayedImageTime) {
 				//we are already displaying this image
 				return;
 			}
@@ -138,7 +139,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
  				image.update(imageData[imageIndex]);
  				
 				//update the image index currently displayed for this channel map
-				displayedImageIndex = imageIndex;
+				displayedImageTime = imageTime;
 			} else{
 				log.error("Data array empty for channel " + channelName + ".");	 
 			}
@@ -148,11 +149,16 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			e.printStackTrace();
 		}
 
-	}	
+	}
+	
+	private void clearImage() {
+		image.clear();
+		displayedImageTime = -1;
+	}
 
 	void clearData() {
 		//TODO should we clear here?
-		//image.clear();
+		//clearImage();
 	}
 	
 	public String toString() {
