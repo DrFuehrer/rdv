@@ -1,0 +1,58 @@
+RBNB Data Viewer
+by Jason P. Hanley <jphanley@buffalo.edu>
+
+
+Introduction
+------------
+
+
+Release
+-------
+Version: 1.0.2
+Date: ?
+
+
+Building
+--------
+Set JAVA_HOME
+Set RBNB_HOME
+
+> ant compile
+
+
+Running
+-------
+> ant run
+
+and the application should compile and run. This will pop up 
+the application with a channel list on the left 
+and a control interface on the top. Select "File->Connect" and 
+specify a RBNB server to connect to and click "connect". 
+To add channels, go to the 
+channel list and double click the channel you want to view. 
+Then either monitor with the RT button or drag the location bar 
+to where you want it and click play (">"). The time scale bar 
+controls how fast playback is. The domain scroll bar controls 
+the size of the time axis on the plots, there is no effect on 
+the video. The data plotter supports multiple channels, so you 
+can drag additional channels onto it. To close a data panel 
+click the "X" in the upper right hand corner, this is a little 
+broken but just click there and it should work. If you click 
+anywhere else in a data panel, the panel will detach and become 
+its own window. To reattach the data panel just click it again. 
+
+Distribution
+------------
+> ant zip
+
+
+Copyright
+---------
+Copyright (c) 2004 University at Buffalo
+
+
+Acknowledgements
+----------------
+This work is supported in part by the George E. Brown, Jr. Network 
+for Earthquake Engineering Simulation (NEES) Program of the National 
+Science Foundation under Award Numbers CMS-0086611 and CMS-0086612.
