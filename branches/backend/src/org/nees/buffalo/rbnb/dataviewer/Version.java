@@ -5,6 +5,6 @@ package org.nees.buffalo.rbnb.dataviewer;
  */
 public class Version {
 	public static final int major = 1;
-	public static final int minor = 0;
-	public static final int release = 2; 
+	public static final int minor = 1;
+	public static final int release = 0; 
 }

@@ -132,19 +132,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		}
 	}
 	
-	/* private void removeAllChannels() {
-		player.unsubscribeAll(this);
-		if (xyMode) {
-			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
-			dataCollection.removeAllSeries();
-		} else {
-			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-			dataCollection.removeAllSeries();
-		}
-		channels.clear();
-		units.clear();
-	} */
-	
 	String getTitle() {
 		if (xyMode && channels.size() == 2) {
 			Object[] channelsArray = channels.toArray();

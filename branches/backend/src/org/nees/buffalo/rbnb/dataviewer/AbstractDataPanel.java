@@ -6,8 +6,6 @@ package org.nees.buffalo.rbnb.dataviewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.DisplayMode;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -35,7 +33,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JWindow;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MouseInputAdapter;
 
@@ -178,7 +175,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 		
-	public void setDataComponent(JComponent dataComponent) {
+	void setDataComponent(JComponent dataComponent) {
 		this.dataComponent = dataComponent;
 		
 		if (pinned) {
@@ -238,7 +235,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	static void loadIcons() {
+	private static void loadIcons() {
 		windowPinImage = new ImageIcon(windowPinFileName).getImage();
 		windowSnapshotImage = new ImageIcon(windowSnapshotFileName).getImage();
 		windowDetachImage = new ImageIcon(windowDetachFileName).getImage();
@@ -290,7 +287,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 
-	public void togglePause() {
+	void togglePause() {
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
 			String channelName = (String)i.next();
@@ -320,7 +317,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		player.removeTimeListener(this);
 	}
 	
-	public void toggleDetach() {
+	void toggleDetach() {
 		if (maximized) {
 			restorePanel(false);
 		}
@@ -332,7 +329,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public void detachPanel() {
+	void detachPanel() {
 		attached = false;
 		dataPanelContainer.removeDataPanel(this);
 		
@@ -349,7 +346,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		frame.setVisible(true);
 	}
 	
-	public void attachPanel(boolean addToContainer) {
+	void attachPanel(boolean addToContainer) {
 		if (frame != null) {
 			frame.setVisible(false);
 			frame.getContentPane().remove(component);
@@ -363,7 +360,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public void toggleMaximize() {	
+	void toggleMaximize() {	
 		if (maximized) {
 			restorePanel(attached);
 			if (!attached) {
@@ -377,7 +374,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public void maximizePanel() {
+	void maximizePanel() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
 		for (int i=0; i<devices.length; i++) {
@@ -406,7 +403,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public void restorePanel(boolean addToContainer) {
+	void restorePanel(boolean addToContainer) {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
 		for (int i=0; i<devices.length; i++) {
@@ -429,7 +426,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}	
 	
-	public void setDropTarget(boolean enable) {
+	void setDropTarget(boolean enable) {
 		if (enable) {
 			new DropTarget(component, DnDConstants.ACTION_LINK, this);
 		} else {
