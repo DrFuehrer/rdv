@@ -1,5 +1,6 @@
 1.1.1
--Added command line option (-s or --time-scale) to set the time scale.
+-Added command line option (-s or --time-scale) to set the time scale
+-Added tabular data panel
 
 1.1.0 - March 22, 2005
 -Expanded domain slider to include usecond and day time values
