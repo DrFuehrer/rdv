@@ -27,11 +27,11 @@ public class TemplateDataPanel extends AbstractDataPanel {
 	}
 
 	void clearData() {
-		// TODO Auto-generated method stub
+		// TODO clear your data display
 	}
 
 	public boolean supportsMultipleChannels() {
-		// TODO Auto-generated method stub
+		// TODO change if this data panel supports multiple channels
 		return false;
 	}
 
