@@ -36,8 +36,9 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	private Object preFetchLock = new Object();
 	private boolean preFetchDone;
 	
-	String[] availableChannels;
+	ChannelMap metaDataChannelMap;
 	
+	//FIXME should be -1, but breaks stuff
 	private double location = System.currentTimeMillis()/1000d;
 	private double timeScale = 1;
 	private double domain = 1;
@@ -64,8 +65,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		stateListeners = new Vector();
 		subscriptionListeners = new Vector();
 		
-		availableChannels = new String[0];
-		
 		run();
 	}
 	
@@ -78,7 +77,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 	
 	private void runRBNB() {
-		log.debug("RBNB data thread has started.");
+		log.info("RBNB data thread has started.");
 		
 		requestedChannels = new ChannelMap();
 		
@@ -87,36 +86,42 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			processSubscriptionRequests();
 			
 			processPlayerRequests();
-						
-			if (state == STATE_LOADING) {
-				requestData(location-domain, domain);
-				updateDataMonitoring();
-				changeStateSafe(STATE_STOPPED);
-			} else if (state == STATE_PLAYING) {
-				updateDataPlaying();
-			} else if (state == STATE_MONITORING) {
-				updateDataMonitoring();
-			} else if (state == STATE_REALTIME) {
-				updateDataRealTime();
-			} else if (state == STATE_STOPPED) {
-				initRBNB();
-			}
-
-			if (state == STATE_STOPPED || state == STATE_DISCONNECTED) {
-				try { Thread.sleep(50); } catch (Exception e) {}
+					
+			switch (state) {
+				case STATE_LOADING:
+					requestData(location-domain, domain);
+					updateDataMonitoring();
+					updateTimeListeners(location);					
+					changeStateSafe(STATE_STOPPED);
+					break;
+				case STATE_PLAYING:
+					updateDataPlaying();
+					break;
+				case STATE_MONITORING:
+					updateDataMonitoring();
+					break;
+				case STATE_REALTIME:
+					updateDataRealTime();
+					break;
+				case STATE_STOPPED:
+					initRBNB();
+				case STATE_DISCONNECTED:
+					try { Thread.sleep(50); } catch (Exception e) {}
+					break;
 			}
 		}
 			
  		closeRBNB(false);
 
-		log.debug("RBNB data thread is exiting.");
+		log.info("RBNB data thread is exiting.");
 	}
 	
 	
 	// State Processing Methods
 	
 	private void processSubscriptionRequests() {
-
+		//TODO get subscription requests into here
+		//     so they are thread safe
 	}
 
 	private synchronized void processPlayerRequests() {
@@ -137,7 +142,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 	
 	private void setLocationSafe(double location) {
-		log.debug("Setting location to " + DataViewer.formatDate(location) + ".");
+		log.info("Setting location to " + DataViewer.formatDate(location) + ".");
 	
 		this.location = location;
 
@@ -147,7 +152,12 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 	
 	private void setTimeScaleSafe(double timeScale) {
-		log.debug("Setting time scale to " + timeScale + " seconds.");
+		if (this.timeScale == timeScale) {
+			//the time scale value hasn't changed
+			return;
+		}
+		
+		log.info("Setting time scale to " + timeScale + " seconds.");
 		
 		this.timeScale = timeScale;
 		
@@ -166,46 +176,40 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		if (oldState == STATE_EXITING) {
 			log.error("Can not transition out of exiting state to " + getStateName(state) + " state.");
 			return false;
- 		} else if (oldState == STATE_DISCONNECTED && !(newState == STATE_EXITING || newState == STATE_DISCONNECTED)) {
+		} else if (oldState == newState) {
+			log.error("Transitioning to same state (" + getStateName(state) + ").");
+			return false;
+ 		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING) {
 			if (!initRBNB()) {
 				return false;
 			}
 		}
 		
 		switch (newState) {
-			case STATE_LOADING:
-				state = newState;
-				break;
+			case STATE_MONITORING:		    
+				monitorData();
+				break;		
 			case STATE_PLAYING:
+			case STATE_REALTIME:
 				if (oldState == STATE_MONITORING || oldState == STATE_STOPPED) {
 					preFetchData(location, timeScale);
 				}
-				
-				state = newState;
 				break;
-			case STATE_MONITORING:		    
-				state = newState;
-				monitorData();
-				break;
-			case STATE_REALTIME:
-				if (oldState == STATE_MONITORING || oldState == STATE_STOPPED) {
-					preFetchData(-1, -1);
-				}
-				state = newState;
+			case STATE_LOADING:
 			case STATE_STOPPED:
-				state = newState;
-				break;
 			case STATE_EXITING:
-				state = newState;
+			case STATE_DISCONNECTED:				
 				break;
-			case STATE_DISCONNECTED:
-				state = newState;
-				break;
+			default:
+				log.error("Unknown state: " + state + ".");
+				return false;
 		}
+		
+		state = newState;
 		
 		notifyStateListeners(state, oldState);
 
-		log.debug("Transitioned from state " + getStateName(oldState) + " to " + getStateName(state) + ".");
+		log.info("Transitioned from state " + getStateName(oldState) + " to " + getStateName(state) + ".");
 		
 		return true;
 	}
@@ -228,7 +232,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			return false;	
 		}
 		
-		log.debug("Connected to RBNB server.");
+		log.info("Connected to RBNB server.");
 		
 		return true;
 	}
@@ -247,7 +251,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			changeStateSafe(STATE_DISCONNECTED);
 		}
 
-		log.debug("Connection to RBNB server closed.");
+		log.info("Connection to RBNB server closed.");
 		
 		return true;
 	}
@@ -273,15 +277,28 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			requestedChannels.Add(channelName);
 		} catch (SAPIException e) {
 			log.error("Failed to add channel " + channelName + ".");
+			e.printStackTrace();
 			return false;
 		}
 
+		//notify channel manager
 		channelManager.subscribe(channelName, panel);
+		
+		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
+		
+		double loadLocation;
+		if (location == -1) {
+			//set initial location to end time for channel
+			loadLocation = getEndTime(metaDataChannelMap, channelName);
+		} else {
+			loadLocation = location;
+		}
 		
 		switch (state) {
 			case STATE_STOPPED:
 			//case STATE_LOADING:
-				setLocation(location);
+				//TODO we should really only load the data we need
+				setLocationSafe(loadLocation);
 				break;
 			case STATE_MONITORING:
 				monitor();
@@ -293,7 +310,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		return true;
 	}
 		
-	private boolean unsubscribeSafe(String channelName, PlayerChannelListener panel, boolean loadData, boolean alertListeners) {
+	private boolean unsubscribeSafe(String channelName, PlayerChannelListener panel) {
 		channelManager.unsubscribe(channelName, panel);
 		
 		if (!channelManager.isChannelSubscribed(channelName)) {
@@ -307,6 +324,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 						channelIndex = newRequestedChannels.Add(channelList[i]);
 					} catch (SAPIException e) {
 						log.error("Failed to remove to channel " + channelName + ".");
+						e.printStackTrace();
 						return false;
 					}
 				}
@@ -314,26 +332,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			requestedChannels = newRequestedChannels;
 		}
 		
-		// FIXME we don't need to fetch new data, we need to get
-		// the start and duration for the subscribed channels based
-		// off the old channel map
-		if (loadData) {
-			switch (state) {
-				case STATE_STOPPED:
-				//case STATE_LOADING:
-					if (requestedChannels.NumberOfChannels() > 0) {
-						setLocation(location);
-					}
-					break;
-				case STATE_MONITORING:
-					monitor();
-					break;
-			}
+		log.info("Unsubscribed from " + channelName + " for listener " + panel + ".");
+		
+		if (state == STATE_MONITORING) {
+			monitor();
 		}
 		
-		if (alertListeners) {
-			fireUnsubscriptionNotification(channelName);
-		}
+		fireUnsubscriptionNotification(channelName);
 		
 		return true;
 	}
@@ -346,25 +351,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		for (int i=0; i<channels.length; i++) {
 			String channelName = channels[i];
 			if (channelManager.isListenerSubscribedToChannel(channelName, channelListener)) {
-				unsubscribeSafe(channelName, channelListener, false, true);
+				unsubscribeSafe(channelName, channelListener);
 				anyUnsubscribes = true;
 			}
 		}
 		
-		//only load data if there was an actual unsubscribe
-		// FIXME we don't need to fetch new data, we need to get
-		// the start and duration for the subscribed channels based
-		// off the old channel map
-		if (anyUnsubscribes) {
-			switch (state) {
-				case STATE_STOPPED:
-				//case STATE_LOADING:
-					setLocation(location);
-					break;
-				case STATE_MONITORING:
-					monitor();
-					break;
-			}
+		if (anyUnsubscribes && state == STATE_MONITORING) {
+			monitor();
 		}
 		
 		return true;
@@ -381,7 +374,9 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			reInitRBNB();
 			requestIsMonitor = false;
 		}
-	
+
+		log.debug("Requesting data at location " + DataViewer.formatDate(location) + " for " + duration + " seconds.");
+		
 		try {
 			sink.Request(requestedChannels, location, duration, "absolute");
 		} catch (SAPIException e) {
@@ -395,7 +390,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	
 	private synchronized void updateDataPlaying() {			
 		if (requestedChannels.NumberOfChannels() == 0) {
-			log.debug("No channels selected for data playback.");
+			log.warn("No channels selected for data playback.");
 			changeStateSafe(STATE_STOPPED);		
 			return;
 		}
@@ -424,9 +419,9 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
  			return;			
  		} */
  		
- 		preFetchData(location+timeScale, timeScale);		
-		
-		//printChannelMap(getmap);
+ 		preFetchData(location+timeScale, timeScale);
+ 		
+		channelManager.postData(getmap);					
 		
 		//log.debug("Playing back " + timeScale + " seconds of data for " + channelList.length + " channels at location " + formatDate(location) + ".");
 		
@@ -440,11 +435,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		long playbackStartTime = System.currentTimeMillis();
 		
 		int i = 0;
-		while (i<playbackSteps && updateState == -1 && updateLocation == -1 && updateTimeScale == -1) {
-			updateTimeListeners(location);
-			
-			channelManager.postData(getmap, location, playbackStepTime);					
-			
+		while (i<playbackSteps && updateState == -1 && updateLocation == -1 && updateTimeScale == -1) {			
 			double timeDifference = (playbackRefreshRate*(i+1)) - ((System.currentTimeMillis() - playbackStartTime)/1000d);
  			if (dropData && timeDifference < -playbackRefreshRate) {
 				int stepsToSkip = (int)((timeDifference*-1) / playbackRefreshRate);
@@ -458,9 +449,8 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			i++;
 			
 			location = locationStartTime + (playbackStepTime) * i;
+			updateTimeListeners(location);
 		}
-		
-		updateTimeListeners(location);
 		
 		//long playbackEndTime = System.currentTimeMillis();
 		//log.debug("Actual duration " + (playbackEndTime-playbackStartTime)/1000d + ", seconds desired duration " + playbackDuration/playbackRate + " seconds.");
@@ -470,7 +460,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		preFetchChannelMap = null;
 		preFetchDone = false;
 		
-		//log.debug("Pre-fetching data at location " + DataViewer.formatDate(location) + " for " + duration + " seconds.");
+		log.debug("Pre-fetching data at location " + DataViewer.formatDate(location) + " for " + duration + " seconds.");
 		
 		final long preFetchStartTime = System.currentTimeMillis();
 		
@@ -503,15 +493,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 					preFetchLock.notify();
 				}				
 			}
-		}, "prefetch").start();
-		
-				
+		}, "prefetch").start();				
 	}
 	
 	private ChannelMap getPreFetchChannelMap(long timeOut) {
 		synchronized(preFetchLock) {
 			if (!preFetchDone) {
-				//log.warn("Waiting for channel map.");
+				log.debug("Waiting for pre-fetch channel map.");
 				try {
 					if (timeOut == -1) {
 						preFetchLock.wait();
@@ -522,7 +510,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
  					log.error("Failed to wait for channel map.");
  					e.printStackTrace();
  				}
- 				//log.debug("Done waiting for channel map.");
+ 				log.debug("Done waiting for pre-fetch channel map.");
 			}
 		}
 		
@@ -545,11 +533,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		if (requestIsMonitor) {		
 			reInitRBNB();
 		}
+		
+		log.debug("Monitoring data after location " + DataViewer.formatDate(location) + ".");
 	
 		try {
 			sink.Monitor(requestedChannels, 5);
 			requestIsMonitor = true;
-			log.debug("Monitoring selected data channels.");
+			log.info("Monitoring selected data channels.");
 		} catch (SAPIException e) {
 			log.error("Failed to monitor channels.");
 			return false;
@@ -562,15 +552,22 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		//stop monitoring if no channels selected
 		//TODO see if this should be posible or indicates an error in the program
 		if (requestedChannels.NumberOfChannels() == 0) {
-			log.debug("No channels subscribed to monitor.");
+			log.warn("No channels subscribed to monitor.");
 			changeStateSafe(STATE_STOPPED);
 			return;
 		}
 		
 		ChannelMap getmap = null;
 
+		int timeout;
+		if (state == STATE_MONITORING) {
+			timeout = 500;
+		} else {
+			timeout = 5000;
+		}
+		
 		try {
-			getmap = sink.Fetch(500);
+			getmap = sink.Fetch(timeout);
 		} catch (SAPIException e) {
  			log.error("Failed to fetch data.");
  			e.printStackTrace();
@@ -579,8 +576,18 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}
 
 		if (getmap.GetIfFetchTimedOut()) {
-			log.warn("Fetch timed out.");
-			return;
+			if (state == STATE_MONITORING) {
+				//no data was received, this is not an error and we should go on
+				//to see if more data is recieved next time around
+				//TODO see if we should sleep here
+				log.debug("Fetch timed out for monitor.");
+				return;
+				
+			} else {
+				log.error("Failed to fetch data.");
+				changeState(STATE_STOPPED);
+				return;
+			}
 		}
 
 		String[] channelList = getmap.GetChannelList();
@@ -590,12 +597,14 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			return;			
 		} 
 
-		//update current location
-		location = getLastTime(getmap);
-		updateTimeListeners(location);
-
 		//post data to listeners
 		channelManager.postData(getmap);
+		
+		if (state == STATE_MONITORING) {
+			//update current location
+			location = getLastTime(getmap);
+			updateTimeListeners(location);
+		}
 	}
 	
 	
@@ -817,7 +826,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 
 	public boolean unsubscribe(String channelName, PlayerChannelListener panel) {
 		// FIXME make me thread safe
-		return unsubscribeSafe(channelName, panel, true, true);	
+		return unsubscribeSafe(channelName, panel);	
 	}
 
 	public boolean unsubscribeAll(PlayerChannelListener channelListener) {
@@ -840,7 +849,8 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	
 	public void addTimeListener(PlayerTimeListener timeListener) {
 		timeListeners.add(timeListener);
-		timeListener.postTime(location);
+		//FIXME listners expect data now when this is called
+		//timeListener.postTime(location);
 	}
 	
 	public void removeTimeListener(PlayerTimeListener timeListener) {
@@ -884,7 +894,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	}
 
 	public void channelListUpdated(ChannelMap channelMap) {
-		availableChannels = channelMap.GetChannelList();
+		metaDataChannelMap = channelMap;
 	}	
 	
 	public void addSubscriptionListener(PlayerSubscriptionListener subscriptionListener) {
@@ -928,6 +938,30 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}
 		
 		return stateString;		
+	}
+	
+	public static double getEndTime(ChannelMap channelMap, String channelName) {
+		int channelIndex = channelMap.GetIndex(channelName);
+		if (channelIndex != -1) {
+			double start = channelMap.GetTimeStart(channelIndex);
+			double duration = channelMap.GetTimeDuration(channelIndex);
+			double end = start+duration;
+			return end;
+		} else {
+			return -1;
+		}
+	}
+	
+	public static double getEndTime(ChannelMap channelMap) {
+		double end = -1;
+		
+		String[] channels = channelMap.GetChannelList();
+		for (int i=0; i<channels.length; i++) {
+			String channelName = channels[i];
+			Math.max(getEndTime(channelMap, channelName), end);
+		}
+		
+		return end;
 	}
 	
 }

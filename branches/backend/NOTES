@@ -11,3 +11,10 @@ Rework of RBNB backend
  
 UI
 -Make the location bar more stable in where the time is
+
+Procedure
+-Startup with no location (default time scale and domain)
+-When adding first channel, set location to end time of that channel
+-When adding any channel set the location bar ranges based on metadata
+-When adding any channel, load data for location and domain
+-When removing a channel, let data panel remove data. Update location bar range

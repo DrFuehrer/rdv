@@ -171,14 +171,20 @@ public class DataViewer extends JFrame implements DomainListener {
 		initSplitPane();
 		
 		rbnb.addSubscriptionListener(channelListPanel);
+		rbnb.addSubscriptionListener(controlPanel);
+		
 		rbnb.addTimeListener(controlPanel);
 		rbnb.addTimeListener(statusPanel);
+		
 		rbnb.addStateListener(statusPanel);
 		rbnb.addStateListener(controlPanel);
+		
 		channelListPanel.addChannelListListener(rbnb);
 		channelListPanel.addChannelListListener(controlPanel);
+		
 		controlPanel.addTimeScaleListener(rbnb);
 		controlPanel.addTimeScaleListener(statusPanel);
+		
 		controlPanel.addDomainListener(rbnb);
   		controlPanel.addDomainListener(statusPanel);
   		controlPanel.addDomainListener(this);
@@ -555,7 +561,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		channelListPanel = new ChannelListPanel(this);
 		channelListPanel.setMinimumSize(new Dimension(0, 0));
 		
-		log.debug("Created channel tree with initial channel list.");
+		log.info("Created channel tree with initial channel list.");
 	}
 	
 	private void initRightPanel() {
@@ -579,7 +585,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(controlPanel, c);
 		
-		log.debug("Added control panel.");
+		log.info("Added control panel.");
 	}
 	
 	private void initDataPanelContainer() {
@@ -597,7 +603,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(dataPanelContainer, c);
 		
-		log.debug("Added data panel container.");
+		log.info("Added data panel container.");
 	}
 	
 	private void initStatus() {
@@ -615,7 +621,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(statusPanel, c);
 		
-		log.debug("Added status panel.");		
+		log.info("Added status panel.");		
 	}
 	
 	private void initSplitPane() {
@@ -631,7 +637,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		String channelName = channel.getName();
 		String mime = channel.getMimeType();
 		
-		log.debug("Cretaing data panel for channel " + channelName + ".");
+		log.info("Cretaing data panel for channel " + channelName + ".");
 		
 		DataPanel2 panel = null;
 		if (mime == null) {
@@ -685,7 +691,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		if (rbnb != null) {
 			rbnb.exit();
 		}
-		log.debug("Exiting.");
+		log.info("Exiting.");
 		if (!applet) System.exit(0);		
 	}
 
@@ -693,7 +699,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
 		if (devices[0].isFullScreenSupported() && devices[0].getFullScreenWindow() == null) {
-			log.debug("Switching to full screen mode.");
+			log.info("Switching to full screen mode.");
 	
 			setVisible(false);
 	
@@ -716,7 +722,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
 		if (devices[0].isFullScreenSupported() && devices[0].getFullScreenWindow() != null) {
-			log.debug("Leaving full screen mode.");
+			log.info("Leaving full screen mode.");
 
 			setVisible(false);
 			devices[0].setFullScreenWindow(null);

@@ -25,7 +25,7 @@ import com.rbnb.sapi.ChannelTree;
 /**
  * @author Jason P. Hanley
  */
-public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTimeListener, PlayerStateListener, ChannelListListener {
+public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTimeListener, PlayerStateListener, PlayerSubscriptionListener, ChannelListListener {
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
@@ -55,6 +55,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	
 	int playerState;
 	
+	ChannelTree ctree;
+	
 	ArrayList timeScaleChangeListeners;
 	ArrayList domainChangeListeners;
 
@@ -64,7 +66,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		this.dataViewer = dataViewer;
 		this.player = player;
 		
-		startTime = endTime = location = System.currentTimeMillis()/1000d;
+		startTime = -1;
+		endTime = -1;
+		location = -1;
 		timeScale = 1;
 		domain = 1;
 		
@@ -72,9 +76,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		
 		timeScaleChangeListeners = new ArrayList();
 		domainChangeListeners = new ArrayList();
-		
-		setSliderBounds(startTime, endTime);
-		setSliderLocation(location);
 		
 		locationScrollBar.removeAdjustmentListener(this);
 		locationScrollBar.setVisibleAmount((int)(timeScale*1000));
@@ -274,12 +275,20 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;		
-		add(domainScrollBar, c);		
+		add(domainScrollBar, c);
+		
+		log.info("Initialized control panel.");
 	}
 	
 	public void channelListUpdated(ChannelMap channelMap) {
-		ChannelTree ctree = ChannelTree.createFromChannelMap(channelMap);
+		ctree = ChannelTree.createFromChannelMap(channelMap);
 		
+		updateTimeBoundaries();
+		
+		log.info("Received updated channel metatdata.");
+	}
+	
+	private void updateTimeBoundaries() {
 		double startTime = -1;
 		double endTime = -1;
 		
@@ -300,20 +309,17 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		}
 		
 		if (startTime == -1) {
-			startTime = System.currentTimeMillis()/1000d;
+			return;
 		}
 		
-		if (endTime == -1) {
-			endTime = startTime;
-		}
-		
-		log.debug("Setting time to start at " + DataViewer.formatDate(startTime) + " and end at " + DataViewer.formatDate(endTime) + " seconds.");
 		setSliderBounds(startTime, endTime);
 	}	
 		
 	private void setSliderBounds(double startTime, double endTime) {
 		this.startTime = startTime;
 		this.endTime = endTime;
+
+		log.info("Setting time to start at " + DataViewer.formatDate(startTime) + " and end at " + DataViewer.formatDate(endTime) + " seconds.");
 		
 		refreshSliderBounds();
 		
@@ -321,9 +327,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 			setSliderLocation(startTime);
 		} else {
 			double location = player.getLocation();
-			if (location < startTime || location > endTime) {
+			if (location < startTime) {
+				setLocationBegin();
+			} else if (location > endTime) {
 				if (playerState != Player.STATE_MONITORING) {
-					setLocationBegin();
+					log.warn("Current time (" + DataViewer.formatDate(location) + ") is past time range (" + DataViewer.formatDate(endTime) + ").");
 				}
 			} else {
 				setSliderLocation(location);
@@ -332,22 +340,14 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	}
 	
 	private void refreshSliderBounds() {
-		int intStartTime = (int)(startTime*1000);
-		int intEndTime = (int)(endTime*1000);
 		int intDurationTime = (int)((endTime-startTime)*1000);
 		
 		locationScrollBar.removeAdjustmentListener(this);
 		locationScrollBar.setMinimum(0);
 		locationScrollBar.setMaximum(intDurationTime);
 		locationScrollBar.addAdjustmentListener(this);
+	}
 		
-		//log.debug("Set bounds of location bar.");
-	}
-	
-	public void postTime(double time) {
-		setSliderLocation(time);
-	}
-	
 	public void setSliderLocation(double location) {
 		if (!locationScrollBar.getValueIsAdjusting()) {
 			int sliderLocation = (int)((location-startTime)*1000);
@@ -360,20 +360,24 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 					endTime = location;
 					refreshSliderBounds();
 				}
-				
+						
 				this.sliderLocation = sliderLocation;
 				locationScrollBar.removeAdjustmentListener(this);
 				locationScrollBar.setValue(sliderLocation);
 				locationScrollBar.addAdjustmentListener(this);
+				
+				log.debug("Set slider location to " + DataViewer.formatDate(location) + ".");
 			}
 		}
 	}
 	
 	public void setLocationBegin() {
+		log.info("Setting location begining.");
 		player.setLocation(startTime);
 	}
 	
 	public void setLocationEnd() {
+		log.info("Setting location to end");
 		player.setLocation(endTime);
 	}
 			
@@ -393,7 +397,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		if (this.sliderLocation != sliderLocation) {
 			this.sliderLocation = sliderLocation;
 			location = (((double)sliderLocation)/1000)+startTime;
-			log.debug("Location bar moved to " + DataViewer.formatDate(location));
+			log.debug("Location bar moved to " + DataViewer.formatDate(location) + ".");
 			player.setLocation(location);
 		}
 	}	
@@ -431,6 +435,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		if (timeScale != oldTimeScale) {
 			fireTimeScaleChanged(timeScale);
 			
+			log.debug("Time scale slider changed to " + timeScale + ".");
+			
 			locationScrollBar.removeAdjustmentListener(this);
 			locationScrollBar.setVisibleAmount((int)(timeScale*1000));
 			locationScrollBar.setUnitIncrement((int)(timeScale*1000));			
@@ -448,37 +454,17 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	
 		int value = domainScrollBar.getValue();
 		
-		/* if (value >= 0) {
-			int quotient = value / 3;
-			int mod = value % 3;
-			
-			if (mod == 0) {
-				domain = 1*Math.pow(10, quotient);
-			} else if (mod == 1) {
-				domain = 2*Math.pow(10, quotient);
-			} else if (mod == 2) {
-				domain = 5*Math.pow(10, quotient);
-			}				
-		} else {
-			value = value - 2;
-			int quotient = value / 3;
-			int mod = value % 3;			
-			
-			if (mod == 0) {
-				domain = 5*Math.pow(10, quotient);
-			} else if (mod == -1) {
-				domain = 2*Math.pow(10, quotient);
-			} else if (mod == -2) {
-				domain = 1*Math.pow(10, quotient);
-			}				
-		} */
-
 		domain = domains[value];
 		
 		if (domain != oldDomain) {
 			fireDomainChanged(domain);
+			
+			log.debug("Domain slider changed to " + domain + ".");
 		}
 	}
+	
+	
+	// Time Scale Listener Methods
 
 	public void addTimeScaleListener(TimeScaleListener listener) {
 		listener.timeScaleChanged(timeScale);
@@ -497,12 +483,15 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		}
 	}	
 	
+	
+	// Domain Listener Methods
+	
 	public void addDomainListener(DomainListener listener) {
 		listener.domainChanged(domain);
 		domainChangeListeners.add(listener);
 	}
 	
-	public void removeChangeListener(DomainListener listener) {
+	public void removeDomainListener(DomainListener listener) {
 		domainChangeListeners.remove(listener);
 	}
 	
@@ -513,13 +502,22 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 			listener.domainChanged(domain);
 		}
 	}
+	
+	
+	// Player Time Methods
+	
+	public void postTime(double time) {
+		setSliderLocation(time);
+	}
+	
+	// Player State Methods
 
 	public void postState(int newState, int oldState) {
 		playerState = newState;
 		
 		if (newState == Player.STATE_DISCONNECTED) {
 			disbaleUI();
-		} else {
+		} else if (oldState == Player.STATE_DISCONNECTED && newState != Player.STATE_EXITING) {
 			enableUI();
 		}
 	}
@@ -534,6 +532,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		locationScrollBar.setEnabled(false);
 		durationScrollBar.setEnabled(false);
 		domainScrollBar.setEnabled(false);
+		
+		log.info("Control Panel UI disbaled.");
 	}
 	
 	private void enableUI() {
@@ -545,6 +545,23 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 
 		locationScrollBar.setEnabled(true);
 		durationScrollBar.setEnabled(true);
-		domainScrollBar.setEnabled(true);		
+		domainScrollBar.setEnabled(true);
+		
+		log.info("Control Panel UI enabled.");
+	}
+
+	
+	// Player Subscription Methods
+	
+	public void channelSubscribed(String channelName) {
+		updateTimeBoundaries();
+	}
+
+	public void channelUnsubscribed(String channelName) {
+		updateTimeBoundaries();
+	}
+
+	public void channelChanged(String unsubscribedChannelName, String subscribedChannelName) {
+		updateTimeBoundaries();
 	}
 }

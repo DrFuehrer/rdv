@@ -42,6 +42,8 @@ import javax.swing.event.MouseInputAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.rbnb.sapi.ChannelMap;
+
 /**
  * @author Jason P. Hanley
  */
@@ -85,6 +87,8 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
  	
  	boolean pinned;
  	boolean paused;
+
+	ChannelMap channelMap;
 
 	public AbstractDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		this.dataPanelContainer = dataPanelContainer;
@@ -212,6 +216,10 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 
 		return titleString;
+	}
+	
+	public void postData(ChannelMap channelMap) {
+		this.channelMap = channelMap;
 	}
 	
 	public void postTime(double time) {

@@ -151,7 +151,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	public synchronized void updateChannelList() {
  		if (!connected) return;
 
-		log.debug("Updating channel listing.");
+		log.info("Updating channel listing.");
 		
 		if (!initRBNB()) {
 			closeRBNB();
@@ -178,7 +178,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			return;
 		}
 		
-		log.debug("Received list of available channels.");
+		log.info("Received list of available channels.");
 						
 		getUnits();
 		
@@ -237,10 +237,11 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   	}
   	
  	private synchronized void clearChannelList() {
- 		log.debug("Clearing channel list.");
+ 		log.info("Clearing channel list.");
  		
   		root = "";
   		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
+  		fireChannelListUpdated(new ChannelMap());
   		
  		fireRootChanged();
  		
@@ -258,7 +259,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		
 		//get the latest unit information
 		try {
-			//sink.Request(unitsChannelMap, 0, Double.MAX_VALUE, "absolute");
 			sink.Request(unitsChannelMap, 0, 0, "newest");
 		} catch (SAPIException e) {
 			e.printStackTrace();
@@ -288,7 +288,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 					String unit = tokens[1].trim();
 					units.put(channel, unit);
 				} else {
-					log.debug("Invalid unit string: " + channelTokens[j] + ".");
+					log.error("Invalid unit string: " + channelTokens[j] + ".");
 				}
 			}
 		}
@@ -333,7 +333,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			return false;	
 		}
 		
-		log.debug("Connected to RBNB server.");
+		log.info("Connected to RBNB server.");
 		
 		return true;
 	}
@@ -344,7 +344,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		sink.CloseRBNBConnection();
 		sink = null;
 
-		log.debug("Connection to RBNB server closed.");
+		log.info("Connection to RBNB server closed.");
 		
 		return true;
 	}

@@ -96,32 +96,7 @@ public class ChannelManager {
 		PlayerChannelListener listener;
 		for (int i=0; i < playerChannelListeners.size(); i++) {
 			listener = (PlayerChannelListener)playerChannelListeners.get(i);
-			if (isListenerInterested(listener, channelMap)) {
-				listener.postData(channelMap, new Time(-1, -1));
-			}
+			listener.postData(channelMap);
 		}
-	}
-	
-	public void postData(ChannelMap channelMap, double location, double duration) {
-		PlayerChannelListener listener;
-		for (int i=0; i < playerChannelListeners.size(); i++) {
-			listener = (PlayerChannelListener)playerChannelListeners.get(i);
-			if (isListenerInterested(listener, channelMap)) {
-				listener.postData(channelMap, new Time(location, duration));
-			}
-		}
-	}
-	
-	private boolean isListenerInterested(PlayerChannelListener listener, ChannelMap channelMap) {
-		String[] channels = channelMap.GetChannelList();
-		for (int i=0; i<channels.length; i++) {
-			String channelName = channels[i];
-			if (isListenerSubscribedToChannel(channelName, listener)) {
-				return true;
-			}
-		}
-		
-		//the listener isn't subscribed to any of the channels in the channel map
-		return false;
 	}
 }

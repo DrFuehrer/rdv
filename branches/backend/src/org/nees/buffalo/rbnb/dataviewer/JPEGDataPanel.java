@@ -29,11 +29,15 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	JPanel panel;
 				
  	boolean keepAspectRatio;
+ 	
+ 	int displayedImageIndex;
  	 	
 	public JPEGDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		super(dataPanelContainer, player);
 		
 		keepAspectRatio = true;
+		
+		displayedImageIndex = -1;
 	
 		initImage();
 
@@ -59,11 +63,16 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	public boolean supportsMultipleChannels() {
 		return false;
 	}	
-
-	public void postData(ChannelMap channelMap, Time time) {
-		double startTime = time.location;
-		double duration = time.duration;
+	
+	public void postData(ChannelMap channelMap) {
+		super.postData(channelMap);
 		
+		displayedImageIndex = -1;
+	}
+
+	public void postTime(double time) {
+		super.postTime(time);
+			
 		String channelName = (String)channels.iterator().next();
 
 		try {			
@@ -83,27 +92,32 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			int imageIndex = -1;
 			
 			// TODO replace with function in the Abstract class
-			if (!time.isUnspecified()) {
-				double[] times = channelMap.GetTimes(channelIndex);
-				double endTime = startTime + duration;
-				for (int i=0; i<times.length; i++) {
-					if (times[i] >= startTime && times[i] < endTime) {
-						imageIndex = i;
-						break;
-					}
+			double[] times = channelMap.GetTimes(channelIndex);
+			for (int i=times.length-1; i>=0; i--) {
+				// TODO we could add a check for the duration as
+				//      as a lower bound here
+				if (times[i] <= time) {
+					imageIndex = i;
+					break;
 				}
-				
-				if (imageIndex == -1) {
-					return;
-				}
-			} else {
-				imageIndex = 0;
+			}
+			
+			if (imageIndex == -1) {
+				//no data in this time for us to display
+				return;
+			} else if (imageIndex == displayedImageIndex) {
+				//we are already displaying this image
+				return;
 			}
 			
 			byte[][] imageData = channelMap.GetDataAsByteArray(channelIndex);
 			
 			if (imageData.length > 0) {
+				//draw image on screen
  				image.update(imageData[imageIndex]);
+ 				
+				//update the image index currently displayed for this channel map
+				displayedImageIndex = imageIndex;
 			} else{
 				log.error("Data array empty for channel " + channelName + ".");	 
 			}
@@ -118,6 +132,10 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	void clearData() {
 		//TODO should we clear here?
 		//image.clear();
+	}
+	
+	public String toString() {
+		return "JPEG Data Panel";
 	}
 	
 	class JPEGPanel extends JComponent {
