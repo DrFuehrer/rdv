@@ -40,6 +40,7 @@
 -Complete redesign of data backend. Completely thread safe and better performance.
 -Fix retry connection logic
 -Fix full screen mode and add support for platforms that don't support it
+-Put icons in jar file for applet and jnlp to load
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons
