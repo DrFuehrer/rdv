@@ -10,8 +10,6 @@ import java.util.Iterator;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.nees.buffalo.rdv.rbnb.Channel;
-
 import com.rbnb.sapi.ChannelMap;
 
 /**
@@ -88,10 +86,6 @@ public class TabularDataPanel extends AbstractDataPanel {
 		return true;
 	}
 	
-	public void postData(ChannelMap channelMap) {
-		super.postData(channelMap);
-	}
-	
 	public void postTime(double time) {
 		super.postTime(time);
 		
@@ -118,7 +112,7 @@ public class TabularDataPanel extends AbstractDataPanel {
 		
 		double[] times = channelMap.GetTimes(channelIndex);
 		for (int i=times.length-1; i>=0; i--) {
-			// TODO we could add a check for the duration as
+			// TODO we could add a check for the time scale as
 			//      as a lower bound here
 			if (times[i] <= time) {
 				dataIndex = i;

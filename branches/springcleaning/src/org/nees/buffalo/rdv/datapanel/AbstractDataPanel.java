@@ -51,29 +51,116 @@ import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import com.rbnb.sapi.ChannelMap;
 
 /**
+ * A default implementation of the DataPanel interface. This class manages
+ * add and remove channel requests, and handles subscription to the
+ * RBNBController for time, data, state, and posting. It also provides a toolbar
+ * placed at the top of the UI component to enable the detach and fullscreen
+ * features along with a close button.
+ * <p>
+ * Data panels extending this class must have a no argument constructor and call
+ * setDataComponent with their UI component in this constructor. 
+ * 
  * @since   1.1
  * @author  Jason P. Hanley
  */
 public abstract class AbstractDataPanel implements DataPanel, DataListener, TimeListener, TimeScaleListener, StateListener, DropTargetListener {
 
+	/**
+	 * The logger for this class.
+	 * 
+	 * @since  1.1
+	 */
 	static Log log = LogFactory.getLog(AbstractDataPanel.class.getName());
 	
+	/**
+	 * The data panel manager for callbacks to the main application.
+	 * 
+	 * @since  1.2
+	 */
 	DataPanelManager dataPanelManager;
+	
+	/**
+	 * The data panel container for docking in the UI.
+	 * 
+	 * @since  1.2
+	 */
 	DataPanelContainer dataPanelContainer;
+	
+	/**
+	 * The RBNB controller for receiving data.
+	 * 
+	 * @since 1.2
+	 */
 	RBNBController rbnbController;
 	
+	/**
+	 * A list of subscribed channels.
+	 * 
+	 * @since  1.1
+	 */
 	HashSet channels;
+	
+	/**
+	 * A list of units for channels.
+	 * 
+	 * @since  1.1
+	 */
 	Hashtable units;
 	
+	/**
+	 * The last posted time.
+	 * 
+	 * @since  1.1
+	 */
 	double time;
+	
+	/**
+	 * The last posted time scale.
+	 * 
+	 * @since  1.1
+	 */
 	double timeScale;
 
+	/**
+	 * The UI component with toolbar.
+	 * 
+	 * @since  1.1
+	 */
 	JPanel component;
+	
+	/**
+	 * The subclass UI component.
+	 * 
+	 * @since  1.1
+	 */
 	JComponent dataComponent;
+	
+	/**
+	 * The toolbar UI component.
+	 * 
+	 * @since  1.1
+	 */
 	ControlBarBorder controlBarBorder;
 	
+	/**
+	 * The frame used when the UI component is detached or full screen.
+	 * 
+	 * @since  1.1
+	 */
 	JFrame frame;
+	
+	/**
+	 * Indicating if the UI component is docked.
+	 * 
+	 * @since  1.1
+	 */
 	boolean attached;
+	
+	/**
+	 * Indicating if the UI component is in fullscreen mode.
+	 * 
+	 * @since  1.1
+	 */
 	boolean maximized;
 	
  	static boolean iconsLoaded = false;
@@ -89,13 +176,40 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
  	static String windowMaximizeFileName = "icons/window_maximize.gif";
  	static String windowCloseFileName = "icons/window_close.gif";
  	
+ 	/**
+ 	 * Indicating if the UI component has mouse focus.
+ 	 * 
+ 	 * @since  1.1
+ 	 */
  	boolean hasFocus;
  	
+ 	/**
+ 	 * Indicating if the toolbar is pinned.
+ 	 * 
+ 	 * @since  1.1
+ 	 */
  	boolean pinned;
+ 	
+ 	/**
+ 	 * Indicating if the data panel has been paused by the snaphsot button in the
+ 	 * toolbar.
+ 	 * 
+ 	 * @since  1.1
+ 	 */
  	boolean paused;
 
+ 	/**
+ 	 * A data channel map from the last post of data.
+ 	 * 
+ 	 * @since  1.1
+ 	 */
 	ChannelMap channelMap;
 
+	/**
+	 * Initialize the list of channels and units. Set parameters to defaults.
+	 * 
+	 * @since  1.1
+	 */
 	public AbstractDataPanel() {		
 		channels = new HashSet();
 		units = new Hashtable();
@@ -195,6 +309,13 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		return true;
 	}
 	
+	/**
+	 * Calls removeChannel for each subscribed channel.
+	 * 
+	 * @see    removeChannel(String)
+	 * @since  1.1
+	 *
+	 */
 	void removeAllChannels() {
 		Object[] channelNames = channels.toArray();
 		for (int i=0; i<channelNames.length; i++) {
@@ -202,17 +323,32 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		}
 	}
 		
+	/**
+	 * Set the UI component to be used for displaying data. This method must be 
+	 * called from the constructor of the subclass.
+	 * 
+	 * @param dataComponent  the UI component
+	 * @since                1.1
+	 */
 	void setDataComponent(JComponent dataComponent) {
 		this.dataComponent = dataComponent;
 	}
 	
 	/*
-	 * Clear the data displayed on the data panel.
+	 * Clear the data displayed on the data panel. This is called when the
+	 * RBNBController is loading data from a new time period or when starting to
+	 * view data in realtime.
+	 * 
+	 * @since  1.1
 	 */
 	abstract void clearData();
 	
 	/*
-	 * Get the title of the data panel
+	 * Get the title of the data panel. Override this method if you want something
+	 * different than a comma separated list of subscribed channel names. This is
+	 * used in the UI for the title of the data panel.
+	 * 
+	 * @since  1.1
 	 */
 	String getTitle() {
 		String titleString = "";
@@ -249,6 +385,11 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		}
 	}
 	
+	/**
+	 * Load icons needed for the toolbar.
+	 * 
+	 * @since  1.1
+	 */
 	void loadIcons() {
 		ClassLoader cl = getClass().getClassLoader();
 		
@@ -262,7 +403,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 
 	/**
-	 * 
+	 * Setup the mouselistener for the toolbar.
 	 *
 	 * @since  1.2
 	 */
@@ -306,6 +447,13 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		});
 	}
 
+	/**
+	 * Toggle pausing of the data panel. Pausing is freezing the data display and
+	 * stopping listeners for data. When a channel is unpaused it will again
+	 * subscribe to data for the subscribed channels.
+	 *
+	 * @since  1.1
+	 */
 	void togglePause() {
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -337,6 +485,11 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
  		rbnbController.removeTimeScaleListener(this);
 	}
 	
+	/**
+	 * Toggle detaching the UI component from the data panel container.
+	 * 
+	 * @since  1.1
+	 */
 	void toggleDetach() {
 		if (maximized) {
 			restorePanel(false);
@@ -349,6 +502,11 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		}
 	}
 	
+	/**
+	 * Detach the UI component from the data panel container.
+	 * 
+	 * @since  1.1
+	 */
 	void detachPanel() {
 		attached = false;
 		dataPanelContainer.removeDataPanel(component);
@@ -366,6 +524,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		frame.setVisible(true);
 	}
 	
+	/** Dispose of the frame for the UI component. Dock the UI component if
+	 * addToContainer is true.
+	 * 
+	 * @param addToContainer  whether to dock the UI component
+	 * @since                 1.1
+	 */
 	void attachPanel(boolean addToContainer) {
 		if (frame != null) {
 			frame.setVisible(false);
@@ -380,6 +544,11 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		}
 	}
 	
+	/**
+	 * Toggle maximizing the data panel UI component to fullscreen.
+	 * 
+	 * @since  1.1
+	 */
 	void toggleMaximize() {	
 		if (maximized) {
 			restorePanel(attached);
@@ -393,7 +562,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			maximizePanel();
 		}
 	}
-	
+
+	/**
+	 * Undock the UI component and display fullscreen.
+	 * 
+	 * @since  1.1
+	 */
 	void maximizePanel() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
@@ -425,6 +599,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		log.warn("No screens available or full screen exclusive mode is unsupported on your platform.");
 	}
 	
+	/**
+	 * Leave fullscreen mode and dock the UI component if addToContainer is true.
+	 * 
+	 * @param addToContainer  whether to dock the UI component
+	 * @since                 1.1
+	 */
 	void restorePanel(boolean addToContainer) {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
@@ -451,7 +631,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}	
 	
 	/**
-	 * 
+	 * Setup the drop target for channel subscription via drag-and-drop.
 	 *
 	 * @since  1.2
 	 */

@@ -8,6 +8,9 @@ import java.util.Iterator;
 import javax.swing.JComponent;
 
 /**
+ * A template for creating a data panel extension. This is the bare minumum
+ * needed to get a working data panel (that does nothing).
+ * 
  * @author Jason P. Hanley
  */
 public class TemplateDataPanel extends AbstractDataPanel {
