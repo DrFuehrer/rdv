@@ -1,7 +1,7 @@
 /*
  * Created on Feb 5, 2005
  */
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -38,6 +38,13 @@ import javax.swing.event.MouseInputAdapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.Channel;
+import org.nees.buffalo.rdv.DataPanelContainer;
+import org.nees.buffalo.rdv.Player;
+import org.nees.buffalo.rdv.PlayerChannelListener;
+import org.nees.buffalo.rdv.PlayerStateListener;
+import org.nees.buffalo.rdv.PlayerTimeListener;
+import org.nees.buffalo.rdv.Time;
 
 import com.rbnb.sapi.ChannelMap;
 

@@ -1,6 +1,8 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.datapanel;
 
 import javax.swing.JComponent;
+
+import org.nees.buffalo.rdv.Channel;
 
 /**
  * This interface defines a data panel for displaying data from channels in a UI component.

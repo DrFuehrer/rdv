@@ -1,7 +1,7 @@
 /*
  * Created on Mar 24, 2005
  */
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -25,6 +25,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.nees.buffalo.rdv.Channel;
+import org.nees.buffalo.rdv.DataPanelContainer;
+import org.nees.buffalo.rdv.Player;
 
 import jnt.FFT.RealDoubleFFT;
 import jnt.FFT.RealDoubleFFT_Radix2;

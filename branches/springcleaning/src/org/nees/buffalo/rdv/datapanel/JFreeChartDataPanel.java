@@ -1,4 +1,4 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
 import java.util.Iterator;
@@ -21,6 +21,9 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.nees.buffalo.rdv.Channel;
+import org.nees.buffalo.rdv.DataPanelContainer;
+import org.nees.buffalo.rdv.Player;
 
 import com.rbnb.sapi.ChannelMap;
 

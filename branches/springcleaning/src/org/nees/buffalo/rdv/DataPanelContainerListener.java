@@ -1,5 +1,7 @@
 package org.nees.buffalo.rdv;
 
+import org.nees.buffalo.rdv.datapanel.DataPanel2;
+
 /**
  * A listener interface to notify listeners when a data
  * panel has been added or removed from the data panel

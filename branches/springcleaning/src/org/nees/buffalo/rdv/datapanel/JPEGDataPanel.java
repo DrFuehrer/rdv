@@ -1,4 +1,4 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,6 +16,9 @@ import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.Channel;
+import org.nees.buffalo.rdv.DataPanelContainer;
+import org.nees.buffalo.rdv.Player;
 
 import com.rbnb.sapi.ChannelMap;
 

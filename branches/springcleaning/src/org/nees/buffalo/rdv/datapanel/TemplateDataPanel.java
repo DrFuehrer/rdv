@@ -1,11 +1,14 @@
 /*
  * Created on Feb 7, 2005
  */
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.datapanel;
 
 import java.util.Iterator;
 
 import javax.swing.JComponent;
+
+import org.nees.buffalo.rdv.DataPanelContainer;
+import org.nees.buffalo.rdv.Player;
 
 import com.rbnb.sapi.ChannelMap;
 

@@ -40,6 +40,12 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.datapanel.DataPanel2;
+import org.nees.buffalo.rdv.datapanel.JFreeChartDataPanel;
+import org.nees.buffalo.rdv.datapanel.JPEGDataPanel;
+import org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel;
+import org.nees.buffalo.rdv.datapanel.StringDataPanel;
+import org.nees.buffalo.rdv.datapanel.TabularDataPanel;
 
 /**
  * @author Jason P. Hanley

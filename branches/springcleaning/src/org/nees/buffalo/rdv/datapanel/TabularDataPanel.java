@@ -1,7 +1,7 @@
 /*
  * Created on Mar 23, 2005
  */
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.GridLayout;
 import java.util.Hashtable;
@@ -9,6 +9,10 @@ import java.util.Iterator;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import org.nees.buffalo.rdv.Channel;
+import org.nees.buffalo.rdv.DataPanelContainer;
+import org.nees.buffalo.rdv.Player;
 
 import com.rbnb.sapi.ChannelMap;
 

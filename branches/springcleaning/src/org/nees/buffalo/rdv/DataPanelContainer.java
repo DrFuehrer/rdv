@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.datapanel.DataPanel2;
 
 /**
  * @author Jason P. Hanley
