@@ -9,4 +9,5 @@
 -export selected channels to file on disk
 -export selected channels to repository
 -extend video UI improvements to all data panels
+-make applet version and html to deploy
 -stop at end of stream (or find a good way to get the end of stream)
