@@ -19,12 +19,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
-import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 import org.nees.buffalo.rdv.rbnb.Player;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
-import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -35,7 +34,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
-	private Player player;
+	private RBNBController rbnbController;
 
 	private JButton monitorButton;
 	private JButton startButton;
@@ -61,13 +60,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	int playerState;
 	
 	ChannelMap channelMap;
-	
-	ArrayList timeScaleChangeListeners;
 
-	public ControlPanel(Player player) {
+	public ControlPanel(RBNBController rbnbController) {
 		super();
 
-		this.player = player;
+		this.rbnbController = rbnbController;
 		
 		startTime = -1;
 		endTime = -1;
@@ -76,8 +73,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		timeScale = 1;
 		
 		initPanel();
-		
-		timeScaleChangeListeners = new ArrayList();
 		
 		locationScrollBar.removeAdjustmentListener(this);
 		locationScrollBar.setVisibleAmount((int)(playbackRate*1000));
@@ -96,7 +91,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  		monitorButton.setToolTipText("Real Time");
  		monitorButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
- 				player.monitor();
+				rbnbController.monitor();
 			}
 		});
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -136,7 +131,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  		pauseButton.setToolTipText("Pause");
 		pauseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				player.pause();
+				rbnbController.pause();
 			}
 		});
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -156,7 +151,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  		startButton.setToolTipText("Play");
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				player.play();
+				rbnbController.play();
 			}
 		});
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -313,7 +308,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		String[] channels = channelMap.GetChannelList();
 		for (int i=0; i<channels.length; i++) {
 			String channelName = channels[i];
-			if (player.isSubscribed(channelName)) {
+			if (rbnbController.isSubscribed(channelName)) {
 				int channelIndex = channelMap.GetIndex(channelName);
 				double channelStart = channelMap.GetTimeStart(channelIndex);
 				double channelDuration = channelMap.GetTimeDuration(channelIndex);
@@ -343,7 +338,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		if (playerState != Player.STATE_MONITORING && playerState != Player.STATE_PLAYING) {
 			refreshSliderBounds();
 			
-			double location = player.getLocation();
+			double location = rbnbController.getLocation();
 			if (location < startTime) {
 				log.warn("Current time (" + DataViewer.formatDate(location) + ") is before known start time (" + DataViewer.formatDate(endTime) + ").");
 				setLocationBegin();
@@ -386,12 +381,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	
 	public void setLocationBegin() {
 		log.info("Setting location to begining.");
-		player.setLocation(startTime);
+		rbnbController.setLocation(startTime);
 	}
 	
 	public void setLocationEnd() {
 		log.info("Setting location to end");
-		player.setLocation(endTime);
+		rbnbController.setLocation(endTime);
 	}
 			
 	public void adjustmentValueChanged(AdjustmentEvent e) {
@@ -412,7 +407,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			double location = (((double)sliderLocation)/1000)+startTime;
 			if (this.location != location) {
 				this.location = location;
-				player.setLocation(location);
+				rbnbController.setLocation(location);
 			}
 		}
 	}
@@ -448,7 +443,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 
 		if (playbackRate != oldPlaybackRate) {
-			player.setPlaybackRate(playbackRate);
+			rbnbController.setPlaybackRate(playbackRate);
 			
 			log.debug("Playback rate slider changed to " + playbackRate + ".");
 			
@@ -460,7 +455,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 	}
 	
-	public double getTimeScale() {
+	/* public double getTimeScale() {
 		return timeScale;
 	}
 	
@@ -498,7 +493,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 		
 		return this.timeScale;
-	}
+	} */
 
 	private void timeScaleChange() {
 		double oldTimeScale = timeScale;
@@ -508,29 +503,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		timeScale = timeScales[value];
 		
 		if (timeScale != oldTimeScale) {
-			fireTimeScaleChanged(timeScale);
+			rbnbController.setTimeScale(timeScale);
 			
 			log.debug("Time scale slider changed to " + timeScale + ".");
-		}
-	}
-	
-	
-	// Time Scale Listener Methods
-	
-	public void addTimeScaleListener(TimeScaleListener listener) {
-		listener.timeScaleChanged(timeScale);
-		timeScaleChangeListeners.add(listener);
-	}
-	
-	public void removeTimeScaleListener(TimeScaleListener listener) {
-		timeScaleChangeListeners.remove(listener);
-	}
-	
-	private void fireTimeScaleChanged(double timeScale) {
-		TimeScaleListener listener;
-		for (int i=0; i<timeScaleChangeListeners.size(); i++) {
-			listener = (TimeScaleListener)timeScaleChangeListeners.get(i);
-			listener.timeScaleChanged(timeScale);
 		}
 	}
 	

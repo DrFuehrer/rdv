@@ -45,6 +45,7 @@ import org.nees.buffalo.rdv.rbnb.DataListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
+import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
@@ -55,7 +56,7 @@ import com.rbnb.sapi.ChannelMap;
  * @since   1.1
  * @author  Jason P. Hanley
  */
-public abstract class AbstractDataPanel implements DataPanel, DataListener, TimeListener, StateListener, DropTargetListener {
+public abstract class AbstractDataPanel implements DataPanel, DataListener, TimeListener, TimeScaleListener, StateListener, DropTargetListener {
 
 	static Log log = LogFactory.getLog(AbstractDataPanel.class.getName());
 	
@@ -139,6 +140,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 		rbnbController.addTimeListener(this);
 		rbnbController.addStateListener(this);
+		rbnbController.addTimeScaleListener(this);
 	}
 
 	public boolean setChannel(Channel channel) {
@@ -237,8 +239,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		this.time = time;
 	}
 	
-	//FIXME convert to listener
-	public void setTimeScale(double timeScale) {
+	public void timeScaleChanged(double timeScale) {
 		this.timeScale = timeScale;
 	}
 	
@@ -339,6 +340,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
  		
  		rbnbController.removeStateListener(this);
  		rbnbController.removeTimeListener(this);
+ 		rbnbController.removeTimeScaleListener(this);
 	}
 	
 	void toggleDetach() {

@@ -21,10 +21,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.RBNBController;
-import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -178,8 +175,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		return seriesName;
 	}
 		
-	public void setTimeScale(double timeScale) {
-		super.setTimeScale(timeScale);
+	public void timeScaleChanged(double timeScale) {
+		super.timeScaleChanged(timeScale);
 			
 		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
 			if (xyMode) {

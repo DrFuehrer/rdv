@@ -33,11 +33,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.datapanel.JFreeChartDataPanel;
-import org.nees.buffalo.rdv.datapanel.JPEGDataPanel;
-import org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel;
-import org.nees.buffalo.rdv.datapanel.StringDataPanel;
-import org.nees.buffalo.rdv.datapanel.TabularDataPanel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 /**
@@ -154,8 +149,7 @@ public class ApplicationFrame extends JFrame {
 		
 		rbnb.addPlaybackRateListener(statusPanel);
 		
-		controlPanel.addTimeScaleListener(rbnb);
-  		controlPanel.addTimeScaleListener(statusPanel);
+  		rbnb.addTimeScaleListener(statusPanel);
    
  		frame.pack();
   		frame.setVisible(true);

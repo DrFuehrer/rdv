@@ -16,7 +16,7 @@ import com.rbnb.sapi.Sink;
 /**
  * @author Jason P. Hanley
  */
-public class RBNBController implements Player, TimeScaleListener {
+public class RBNBController implements Player {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
 
@@ -42,6 +42,7 @@ public class RBNBController implements Player, TimeScaleListener {
 	private Vector stateListeners;
 	private Vector subscriptionListeners;
 	private ArrayList playbackRateListeners;
+	private ArrayList timeScaleChangeListeners;
 	
 	private ChannelMap preFetchChannelMap;
 	private Object preFetchLock = new Object();
@@ -82,6 +83,7 @@ public class RBNBController implements Player, TimeScaleListener {
 		stateListeners = new Vector();
 		subscriptionListeners = new Vector();
 		playbackRateListeners = new ArrayList();
+		timeScaleChangeListeners = new ArrayList();
 
 		initMetadataListener();
 		
@@ -866,6 +868,14 @@ public class RBNBController implements Player, TimeScaleListener {
 			listener.playbackRateChanged(playbackRate);
 		}
 	}	
+	
+	private void fireTimeScaleChanged(double timeScale) {
+		TimeScaleListener listener;
+		for (int i=0; i<timeScaleChangeListeners.size(); i++) {
+			listener = (TimeScaleListener)timeScaleChangeListeners.get(i);
+			listener.timeScaleChanged(timeScale);
+		}
+	}
 
 	
 	// Utility (Static) Methods
@@ -982,6 +992,21 @@ public class RBNBController implements Player, TimeScaleListener {
 		updatePlaybackRate = playbackRate;
 	}
 	
+	public double getTimeScale() {
+		return timeScale;
+	}
+	
+	public void setTimeScale(double timeScale) {
+		this.timeScale = timeScale;
+		
+		fireTimeScaleChanged(timeScale);
+		
+		//TODO make this loading smarter
+		if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
+ 			changeState(STATE_LOADING);
+		}		
+	}
+	
 	public boolean subscribe(String channelName, DataListener listener) {
 		synchronized (updateSubscriptionRequests) {
 			updateSubscriptionRequests.add(new SubscriptionRequest(channelName, listener, true));
@@ -1030,6 +1055,15 @@ public class RBNBController implements Player, TimeScaleListener {
 		playbackRateListeners.remove(listener);
 	}
 
+	public void addTimeScaleListener(TimeScaleListener listener) {
+		listener.timeScaleChanged(timeScale);
+		timeScaleChangeListeners.add(listener);
+	}
+	
+	public void removeTimeScaleListener(TimeScaleListener listener) {
+		timeScaleChangeListeners.remove(listener);
+	}
+
 	
 	// Public Methods
 	
@@ -1073,14 +1107,6 @@ public class RBNBController implements Player, TimeScaleListener {
 		changeState(STATE_RECONNECT);
 	}
 	
-	public void timeScaleChanged(double timeScale) {
-		this.timeScale = timeScale;
-		
-		if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
- 			changeState(STATE_LOADING);
-		}
-	}
-
 	public void addSubscriptionListener(SubscriptionListener subscriptionListener) {
 		subscriptionListeners.add(subscriptionListener);
 	}
