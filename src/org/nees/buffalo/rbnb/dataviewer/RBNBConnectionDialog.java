@@ -28,6 +28,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 
  	static Log log = LogFactory.getLog(RBNBConnectionDialog.class.getName());
 	
+ 	DataViewer dataViewer;
 	RBNBController rbnbController;
 	ChannelListPanel channelListPanel;
 	
@@ -42,9 +43,10 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 	JButton connectButton;
 	JButton cancelButton;
 	
-	public RBNBConnectionDialog(JFrame owner, RBNBController rbnbController, ChannelListPanel channelListPanel) {
-		super(owner);
+	public RBNBConnectionDialog(DataViewer dataViewer, RBNBController rbnbController, ChannelListPanel channelListPanel) {
+		super(dataViewer);
 		
+		this.dataViewer = dataViewer;
 		this.rbnbController = rbnbController;
 		this.channelListPanel = channelListPanel;
 		
@@ -171,6 +173,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		}
 
  		if (channelListPanel.isConnected()) {
+ 			dataViewer.closeAllDataPanels();
  			channelListPanel.reconnect();
  		} else {
  			channelListPanel.connect();

@@ -37,6 +37,8 @@ public class DataPanelContainer extends JPanel {
 		dataPanels.add(dataPanel);
 		layoutDataPanels();
 		
+		log.info("Added data panel to container (total=" + dataPanels.size() + ").");
+		
 		fireDataPanelAdded(dataPanel);
 	}
 
@@ -44,6 +46,8 @@ public class DataPanelContainer extends JPanel {
 		remove(dataPanel.getComponent());
 		dataPanels.remove(dataPanel);
 		layoutDataPanels();
+		
+		log.info("Removed data panel container (total=" + dataPanels.size() + ").");
 		
 		fireDataPanelRemoved(dataPanel);
 	}

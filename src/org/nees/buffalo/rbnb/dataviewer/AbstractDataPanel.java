@@ -6,8 +6,6 @@ package org.nees.buffalo.rbnb.dataviewer;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.DisplayMode;
 import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -35,12 +33,13 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JWindow;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.MouseInputAdapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.rbnb.sapi.ChannelMap;
 
 /**
  * @author Jason P. Hanley
@@ -64,8 +63,6 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	
 	JFrame frame;
 	boolean attached;
-	
-	JWindow window;
 	boolean maximized;
 	
  	static boolean iconsLoaded = false;
@@ -85,6 +82,8 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
  	
  	boolean pinned;
  	boolean paused;
+
+	ChannelMap channelMap;
 
 	public AbstractDataPanel(DataPanelContainer dataPanelContainer, Player player) {
 		this.dataPanelContainer = dataPanelContainer;
@@ -176,7 +175,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 		
-	public void setDataComponent(JComponent dataComponent) {
+	void setDataComponent(JComponent dataComponent) {
 		this.dataComponent = dataComponent;
 		
 		if (pinned) {
@@ -214,6 +213,10 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		return titleString;
 	}
 	
+	public void postData(ChannelMap channelMap) {
+		this.channelMap = channelMap;
+	}
+	
 	public void postTime(double time) {
 		this.time = time;
 	}
@@ -226,12 +229,13 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		switch (newState) {
 			case Player.STATE_LOADING:
 			case Player.STATE_MONITORING:
+			case Player.STATE_REALTIME:
 				clearData();
 				break;
 		}
 	}
 	
-	static void loadIcons() {
+	private static void loadIcons() {
 		windowPinImage = new ImageIcon(windowPinFileName).getImage();
 		windowSnapshotImage = new ImageIcon(windowSnapshotFileName).getImage();
 		windowDetachImage = new ImageIcon(windowDetachFileName).getImage();
@@ -283,7 +287,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 
-	public void togglePause() {
+	void togglePause() {
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
 			String channelName = (String)i.next();
@@ -313,13 +317,9 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		player.removeTimeListener(this);
 	}
 	
-	public void toggleDetach() {
+	void toggleDetach() {
 		if (maximized) {
-			window.setVisible(false);
-			window.getContentPane().remove(component);
-			window.dispose();
-			window = null;
-			maximized = false;
+			restorePanel(false);
 		}
 		
 		if (attached) {
@@ -329,7 +329,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public void detachPanel() {
+	void detachPanel() {
 		attached = false;
 		dataPanelContainer.removeDataPanel(this);
 		
@@ -346,7 +346,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		frame.setVisible(true);
 	}
 	
-	public void attachPanel(boolean addToContainer) {
+	void attachPanel(boolean addToContainer) {
 		if (frame != null) {
 			frame.setVisible(false);
 			frame.getContentPane().remove(component);
@@ -360,7 +360,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public void toggleMaximize() {	
+	void toggleMaximize() {	
 		if (maximized) {
 			restorePanel(attached);
 			if (!attached) {
@@ -374,44 +374,63 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public void maximizePanel() {
-		maximized = true;
-		dataPanelContainer.removeDataPanel(this);
+	void maximizePanel() {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] devices = ge.getScreenDevices();
+		for (int i=0; i<devices.length; i++) {
+			GraphicsDevice device = devices[i];
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == null) {			
+				maximized = true;
+				dataPanelContainer.removeDataPanel(this);
+
+				frame = new JFrame(getTitle());
+				frame.setUndecorated(true);				
+				frame.getContentPane().add(component);
+				
+				try {
+					device.setFullScreenWindow(frame);
+				} catch (InternalError e) {
+					log.error("Failed to switch to full screen mode: " + e.getMessage() + ".");
+					restorePanel(true);
+					return;
+				}
+				
+				frame.setVisible(true);
+				frame.requestFocus();
+								
+				return;
+			}
+		}
 		
-		window = new JWindow();
-		window.getContentPane().add(component);
-		window.setSize(getScreenDimensions());
-		window.setVisible(true);
+		log.warn("No screens available or full screen exclusive mode is unsupported on your platform.");
 	}
 	
-	public void restorePanel(boolean addToContainer) {
-		window.setVisible(false);
-		window.getContentPane().remove(component);
-		window.dispose();
-		window = null;
-
-		maximized = false;
+	void restorePanel(boolean addToContainer) {
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] devices = ge.getScreenDevices();
+		for (int i=0; i<devices.length; i++) {
+			GraphicsDevice device = devices[i];
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == frame) {
+				if (frame != null) {
+					frame.setVisible(false);
+					device.setFullScreenWindow(null);
+					frame.getContentPane().remove(component);
+					frame.dispose();
+					frame = null;
+				}
 		
-		if (addToContainer) {
-			dataPanelContainer.addDataPanel(this);
+				maximized = false;
+				
+				if (addToContainer) {
+					dataPanelContainer.addDataPanel(this);
+				}
+				
+				break;
+			}
 		}
 	}	
 	
-	Dimension getScreenDimensions() {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-		    
-		for (int i=0; i<gs.length; i++) {
-			DisplayMode dm = gs[i].getDisplayMode();
-			int screenWidth = dm.getWidth();
-			int screenHeight = dm.getHeight();
-			return new Dimension(screenWidth, screenHeight);
-		}
-		
-		return null;
-	}
-	
-	public void setDropTarget(boolean enable) {
+	void setDropTarget(boolean enable) {
 		if (enable) {
 			new DropTarget(component, DnDConstants.ACTION_LINK, this);
 		} else {

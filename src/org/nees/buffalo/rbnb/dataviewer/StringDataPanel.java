@@ -52,7 +52,9 @@ public class StringDataPanel extends AbstractDataPanel {
 	public boolean supportsMultipleChannels() {
 		return true;
 	}
-			
+	
+	//FIXME to new interface
+	/* 
 	public void postData(ChannelMap channelMap, Time time) {
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
@@ -83,7 +85,7 @@ public class StringDataPanel extends AbstractDataPanel {
 		for (int i=startIndex; i<endIndex; i++) {
 			messages.append(channelName + " (" + DataViewer.formatDate(times[i])+ ") : " + data[i] + "\n");
 		}
-	}
+	} */
 	
 	void clearData() {
 		messages.setText(null);

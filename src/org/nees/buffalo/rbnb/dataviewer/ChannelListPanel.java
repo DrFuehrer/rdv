@@ -117,9 +117,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  	public void connect() {
  		if (!connected) {
  			connected = true;
- 			updateChannelList();
- 		} else {
- 			connected = true;
+ 			if (updateChannelList()) {
+ 				log.info("Channel list is in state CONNECTED.");
+ 			}
  		}
  	}
  	
@@ -128,9 +128,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  	}
  	
  	public void disconnect() {
- 		if (connected) {
- 			clearChannelList();
- 		}
+		clearChannelList();
+ 		connected = false;
+ 		
+ 		log.info("Channel list is in state DISCONNECTED.");
  	}
  	
  	public void reconnect() {
@@ -138,25 +139,27 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		connect();
  	}
 
-	public void updateChannelListBackground() {
- 		if (!connected) return;		
+	public boolean updateChannelListBackground() {
+ 		if (!connected) return false;		
 
 		new Thread(new Runnable() {
 			public void run() {
 				updateChannelList();
 			}
 		}, "ChannelUpdate").start();	
+		
+		return true;
 	}
 
-	public synchronized void updateChannelList() {
- 		if (!connected) return;
+	public synchronized boolean updateChannelList() {
+ 		if (!connected) return false;
 
-		log.debug("Updating channel listing.");
+		log.info("Updating channel listing.");
 		
 		if (!initRBNB()) {
 			closeRBNB();
-			clearChannelList();
-			return;
+			disconnect();
+			return false;
 		}
 		
 		try {
@@ -164,8 +167,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		} catch (SAPIException e) {
 			log.error("Failed to request channel listing.");
 			closeRBNB();
-			clearChannelList();
-			return;
+			disconnect();
+			return false;
 		}
 
 		ChannelMap oldChannelMap = cmap;
@@ -174,11 +177,11 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		} catch (SAPIException e) {
 			log.error("Failed to fetch list of available channels.");
 			closeRBNB();
-			clearChannelList();
-			return;
+			disconnect();
+			return false;
 		}
 		
-		log.debug("Received list of available channels.");
+		log.info("Received list of available channels.");
 						
 		getUnits();
 		
@@ -209,7 +212,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   
  						log.debug("Found added channel " + newChannelList[i]);
  						
- 						fireRootChanged();
+ 						//fireRootChanged();
  						//fireChannelAdded(path.toArray());
  					}
  				}
@@ -226,26 +229,35 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   		
  						log.debug("Found removed channel " + oldChannelList[i]);
  						
- 						fireChannelRemoved(path.toArray());
+ 						//fireChannelRemoved(path.toArray());
  					}
- 				}	
+ 				}
+ 				
+ 				//FIXME to update the metadata
+ 				//      makes code above pointless
+ 				fireRootChanged();
  			}
  		} else {
  			root = DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort();
  			fireRootChanged();			
   		}
+ 		
+ 		return true;
   	}
   	
  	private synchronized void clearChannelList() {
- 		log.debug("Clearing channel list.");
+ 		if (root.equals("")) {
+ 			return;
+ 		}
+ 		
+ 		log.info("Clearing channel list.");
  		
   		root = "";
   		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
+  		fireChannelListUpdated(new ChannelMap());
   		
  		fireRootChanged();
- 		
- 		connected = false;
- 	}
+  	}
  	
  	private void getUnits() { 		
 		//subscribe to all units channels
@@ -258,7 +270,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		
 		//get the latest unit information
 		try {
-			//sink.Request(unitsChannelMap, 0, Double.MAX_VALUE, "absolute");
 			sink.Request(unitsChannelMap, 0, 0, "newest");
 		} catch (SAPIException e) {
 			e.printStackTrace();
@@ -288,7 +299,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 					String unit = tokens[1].trim();
 					units.put(channel, unit);
 				} else {
-					log.debug("Invalid unit string: " + channelTokens[j] + ".");
+					log.error("Invalid unit string: " + channelTokens[j] + ".");
 				}
 			}
 		}
@@ -333,7 +344,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			return false;	
 		}
 		
-		log.debug("Connected to RBNB server.");
+		log.info("Connected to RBNB server.");
 		
 		return true;
 	}
@@ -344,7 +355,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		sink.CloseRBNBConnection();
 		sink = null;
 
-		log.debug("Connection to RBNB server closed.");
+		log.info("Connection to RBNB server closed.");
 		
 		return true;
 	}

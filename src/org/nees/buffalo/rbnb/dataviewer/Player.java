@@ -10,30 +10,22 @@ public interface Player {
 	public static final int STATE_PLAYING = 3;
 	public static final int STATE_EXITING = 4;
 	public static final int STATE_DISCONNECTED = 5;
+	public static final int STATE_REALTIME = 6;
 
 	public void monitor();
 	public void play();
 	public void pause();
 	public void exit();
 	
-	public int getState();
-	
-	public void setLocation(final double location);
 	public double getLocation();
-	public void setTimeScale(final double timeScale);
+	public void setLocation(final double location);
+	
 	public double getTimeScale();
-	
-	public String[] getAvailableChannels();
-	
-	public String[] getSubscribedChannels(PlayerChannelListener channelListener);
+	public void setTimeScale(final double timeScale);
 	
 	public boolean subscribe(String channelName, PlayerChannelListener channelListener);
-	public boolean subscribeAll(PlayerChannelListener channelListener);
 	
 	public boolean unsubscribe(String channelName, PlayerChannelListener channelListener);
-	public boolean unsubscribeAll(PlayerChannelListener channelListener);
-	
-	public boolean unsubscribeAndSubscribe(String unsubscribeChannelName, String subscribeChannelName, PlayerChannelListener channelListener);
 	
 	public boolean isSubscribed(String channelName);
 	
