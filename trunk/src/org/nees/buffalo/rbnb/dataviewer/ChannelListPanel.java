@@ -106,6 +106,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		treeView = new JScrollPane(tree);
 
 		infoTextArea = new JTextArea(6, 5);
+		infoTextArea.setEditable(false);
 		JScrollPane infoView = new JScrollPane(infoTextArea);
 
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treeView, infoView);
