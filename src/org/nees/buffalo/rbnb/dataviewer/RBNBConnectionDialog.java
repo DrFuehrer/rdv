@@ -4,11 +4,12 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowFocusListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -23,7 +24,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Jason P. Hanley
  */
-public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher, WindowFocusListener {
+public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher {
 
  	static Log log = LogFactory.getLog(RBNBConnectionDialog.class.getName());
 	
@@ -48,8 +49,14 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher,
 		this.channelListPanel = channelListPanel;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-		addWindowFocusListener(this);
+		addWindowListener(new WindowAdapter() {
+			public void windowActivated(WindowEvent e) {
+				bindKeys();
+			}
+			public void windowDeactivated(WindowEvent e) {
+				unbindKeys();
+			}
+		});
 		
 		setTitle("Select RBNB Server");
 			
@@ -139,6 +146,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher,
 		getContentPane().add(buttonPanel, c);
 		
 		pack();
+		
 		setVisible(true);
 	}
 	
@@ -154,7 +162,6 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher,
 		
 		DataViewer.setRBNBHostName(rbnbHostNameTextField.getText());
 		
-		setVisible(false);
 		dispose();
 		
 		if (rbnbController.isConnected()) {
@@ -168,12 +175,20 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher,
  		} else {
  			channelListPanel.connect();
  		}
-
 	}
 	
 	private void cancel() {
-		setVisible(false);
 		dispose();		
+	}
+	
+	private void bindKeys() {
+ 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+ 		focusManager.addKeyEventDispatcher(this);		
+	}
+	
+	private void unbindKeys() {
+ 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+ 		focusManager.removeKeyEventDispatcher(this);
 	}
 
  	public boolean dispatchKeyEvent(KeyEvent keyEvent) {
@@ -188,15 +203,5 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher,
  		} else {
  			return false;
  		}
- 	}
- 
- 	public void windowGainedFocus(WindowEvent e) {
- 		//KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
- 		//focusManager.addKeyEventDispatcher(this);
- 	}
- 
- 	public void windowLostFocus(WindowEvent e) {
- 		//KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
- 		//focusManager.removeKeyEventDispatcher(this);
  	}
 }
