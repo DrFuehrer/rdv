@@ -21,10 +21,7 @@
 	
 	<!-- environment access via env.* -->
 	<property environment="env"/>
-	
-	<!-- pull JDK location from users' environment, this is checked in the build -->
-	<property name="java.home" value="${env.JAVA_HOME}"/>
-	
+		
 	<!-- pull RBNB location from users' environment, this is checked in the build -->
 	<property name="rbnb.home" value="${env.RBNB_HOME}"/>
 	
@@ -40,16 +37,12 @@
 		</fileset>
 	</path>
 	
-	<!-- targets to check environment variables -->
-	<target name="checkJAVA" unless="env.JAVA_HOME">
-		<fail message="JAVA_HOME must be defined in your environment."/>
-	</target>
 	<target name="checkRBNB" unless="env.RBNB_HOME">
 		<fail message="RBNB_HOME must be defined in your environment."/>
 	</target>
 	
 	<!-- Meta-target that depends on all environment variables -->
-	<target name="checkEnvVars" depends="checkJAVA,checkRBNB" description="Check necessary environment variables"/>
+	<target name="checkEnvVars" depends="checkRBNB" description="Check necessary environment variables"/>
 	
 	<!-- target to make temp dirs -->
 	<target name="prepare" depends="checkEnvVars" description="Make directories">
