@@ -8,8 +8,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -162,11 +160,6 @@ public class DataViewer extends JFrame implements DomainListener {
 			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 			frame.getContentPane().setLayout(new BorderLayout());
-			frame.addComponentListener(new ComponentAdapter() {
-				public void componentResized(ComponentEvent e) {
-					log.info("Frame resized.");
-				}
-			});
 	
 			frame.setTitle("RDV");
 		}
