@@ -50,6 +50,8 @@
 -Fixed cases where control panel would set the player location when it shouldn't
 -Fix more spurious ineraction of control panel and player
 -Better performance when viewing video and dragging location bar with a large domain.
+-Fix data loss bug when starting and stopping playback.
+-Fix issue with playback stoping when time scale is set too small.
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons
