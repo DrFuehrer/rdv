@@ -100,6 +100,7 @@ public class DataViewer extends JFrame implements DomainListener {
  	private Action addXYChartDataPanelAction;
  	private Action addStringDataPanelAction;
  	private Action addTabularDataPanelAction;
+ 	private Action addSpectrumAnalyzerDataPanelAction;
  	private Action closeAllDataPanelsAction;
  	
  	private Action helpAction;
@@ -383,6 +384,13 @@ public class DataViewer extends JFrame implements DomainListener {
  				addDataPanel(panel);
  			}			
  		};
+ 		
+ 		addSpectrumAnalyzerDataPanelAction = new DataViewerAction("Add Spectrum Analyzer Data Panel", "", KeyEvent.VK_A) {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				SpectrumAnalyzerDataPanel panel = new SpectrumAnalyzerDataPanel(dataPanelContainer, rbnb);
+ 				addDataPanel(panel);
+ 			}
+ 		};
  
  		closeAllDataPanelsAction = new DataViewerAction("Close all data panels", "", KeyEvent.VK_C) {
  			public void actionPerformed(ActionEvent ae) {
@@ -516,6 +524,9 @@ public class DataViewer extends JFrame implements DomainListener {
   		windowMenu.add(menuItem);
   		
   		menuItem = new JMenuItem(addTabularDataPanelAction);
+  		windowMenu.add(menuItem);
+
+ 		menuItem = new JMenuItem(addSpectrumAnalyzerDataPanelAction);
   		windowMenu.add(menuItem);
   		
  		windowMenu.addSeparator();
