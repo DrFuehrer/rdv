@@ -316,7 +316,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		double loadLocation;
 		if (location == -1) {
 			//set initial location to end time for channel
-			loadLocation = getEndTime(metaDataChannelMap, channelName);
+			loadLocation = RBNBUtilities.getEndTime(metaDataChannelMap, channelName);
 		} else {
 			loadLocation = location;
 		}
@@ -849,7 +849,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		
 		for (int i=0; i<channels.length; i++) {
 			String channelName = channels[i];
-			double channelEndTime = getEndTime(metaDataChannelMap, channelName);
+			double channelEndTime = RBNBUtilities.getEndTime(metaDataChannelMap, channelName);
 			if (channelEndTime != -1) {
 				endTime = Math.max(endTime, channelEndTime);
 			}
@@ -1075,62 +1075,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}
 		
 		return stateString;		
-	}
-	
-	public static double getStartTime(ChannelMap channelMap, String channelName) {
-		int channelIndex = channelMap.GetIndex(channelName);
-		if (channelIndex != -1) {
-			double start = channelMap.GetTimeStart(channelIndex);
-			return start;
-		} else {
-			return -1;
-		}
-	}
-	
-	public static double getStartTime(ChannelMap channelMap) {
-		double start = Double.MAX_VALUE;
-		
-		String[] channels = channelMap.GetChannelList();
-		for (int i=0; i<channels.length; i++) {
-			String channelName = channels[i];
-			double channelStart = getStartTime(channelMap, channelName);
-			if (channelStart != -1) {
-				start = Math.min(channelStart, start);
-			}
-		}
-		
-		if (start != Double.MAX_VALUE) {
-			return start;
-		} else {
-			return -1;
-		}
-	}
-	
-	public static double getEndTime(ChannelMap channelMap, String channelName) {
-		int channelIndex = channelMap.GetIndex(channelName);
-		if (channelIndex != -1) {
-			double start = channelMap.GetTimeStart(channelIndex);
-			double duration = channelMap.GetTimeDuration(channelIndex);
-			double end = start+duration;
-			return end;
-		} else {
-			return -1;
-		}
-	}
-	
-	public static double getEndTime(ChannelMap channelMap) {
-		double end = -1;
-		
-		String[] channels = channelMap.GetChannelList();
-		for (int i=0; i<channels.length; i++) {
-			String channelName = channels[i];
-			double channelEnd = getEndTime(channelMap, channelName);
-			if (channelEnd != -1) {
-				end = Math.max(channelEnd, end);
-			}
-		}
-		
-		return end;
 	}
 	
 	class SubscriptionRequest {
