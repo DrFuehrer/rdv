@@ -40,6 +40,7 @@ import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
+import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 
 /**
  * @author Jason P. Hanley
@@ -201,46 +202,60 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  				String[] oldChannelList = oldChannelMap.GetChannelList();
   		
  				//find channels added
- 				for (int i=0; i<newChannelList.length; i++) {
- 					if (oldChannelTree.findNode(newChannelList[i]) == null) {
- 						ArrayList path = new ArrayList();
- 						ChannelTree.Node node = ctree.findNode(newChannelList[i]);
- 						while (node != null) {
- 							path.add(node);
- 							node = node.getParent();
+ 				Iterator newIterator = ctree.iterator();
+ 				while (newIterator.hasNext()) {
+ 					ChannelTree.Node node = (ChannelTree.Node)newIterator.next();
+ 					NodeTypeEnum type = node.getType();
+ 					if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
+ 						if (oldChannelTree.findNode(node.getFullName()) == null) {
+ 							log.info("Found new node: " + node.getFullName() + ".");
+ 							
+ 							int depth =  node.getDepth();
+ 							Object[] path = new Object[depth+1];
+							path[0] =  root;
+							ChannelTree.Node parent = node;
+ 	 						for (int i=depth; i>0; i--) {
+ 	 							parent = parent.getParent();
+ 	 							path[i] = parent;
+ 	 						}
+ 	 						
+ 	 						fireChannelAdded(path, node); 							
  						}
-  
- 						log.debug("Found added channel " + newChannelList[i]);
- 						
- 						//fireRootChanged();
- 						//fireChannelAdded(path.toArray());
- 					}
- 				}
-  
- 				//find channels removed
- 				for (int i=0; i<oldChannelList.length; i++) {
- 					if (ctree.findNode(oldChannelList[i]) == null) {
- 						ArrayList path = new ArrayList();
- 						ChannelTree.Node node = oldChannelTree.findNode(oldChannelList[i]).getParent();
- 						while (node != null) {
- 							path.add(node);
- 							node = node.getParent();
- 						}
-  		
- 						log.debug("Found removed channel " + oldChannelList[i]);
- 						
- 						//fireChannelRemoved(path.toArray());
  					}
  				}
  				
- 				//FIXME to update the metadata
- 				//      makes code above pointless
- 				fireRootChanged();
+ 				//find channels removed
+ 				Iterator oldIterator = oldChannelTree.iterator();
+ 				while (oldIterator.hasNext()) {
+ 					ChannelTree.Node node = (ChannelTree.Node)oldIterator.next();
+ 					NodeTypeEnum type = node.getType();
+ 					if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
+ 						if (ctree.findNode(node.getFullName()) == null) {
+ 							log.info("Found deleted node: " + node.getFullName() + ".");
+ 							
+ 							int depth =  node.getDepth();
+ 							Object[] path = new Object[depth+1];
+							path[0] =  root;
+							ChannelTree.Node parent = node;
+ 	 						for (int i=depth; i>0; i--) {
+ 	 							parent = parent.getParent();
+ 	 							path[i] = parent;
+ 	 						}
+ 	 						
+ 	 						fireChannelRemoved(path, node); 							
+ 						}
+ 					}
+ 				} 				
  			}
  		} else {
  			root = DataViewer.getRBNBHostName() + ":" + DataViewer.getRBNBPort();
  			fireRootChanged();			
   		}
+ 		
+ 		TreePath path = tree.getSelectionPath();
+ 		if (path != null) {
+ 			showMetadata(path.getLastPathComponent());
+ 		}
  		
  		return true;
   	}
@@ -316,17 +331,17 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		}		
  	}
  	
- 	private void fireChannelAdded(Object[] path) {
- 		TreeModelEvent e = new TreeModelEvent(this, path);
+ 	private void fireChannelAdded(Object[] path, Object child) {
+ 		TreeModelEvent e = new TreeModelEvent(this, path, new int[] {0}, new Object[] {child});
  		for (int i = 0; i < treeModelListeners.size(); i++) {
  			((TreeModelListener)treeModelListeners.elementAt(i)).treeNodesInserted(e);
  		}
  	}
  	
- 	private void fireChannelRemoved(Object[] path) {
- 		TreeModelEvent e = new TreeModelEvent(this, path);
+ 	private void fireChannelRemoved(Object[] path, Object child) {
+ 		TreeModelEvent e = new TreeModelEvent(this, path, new int[] {0}, new Object[] {child});
  		for (int i = 0; i < treeModelListeners.size(); i++) {
-  			((TreeModelListener)treeModelListeners.elementAt(i)).treeStructureChanged(e);
+  			((TreeModelListener)treeModelListeners.elementAt(i)).treeNodesRemoved(e);
   		}
   	}
 	
@@ -459,48 +474,46 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	}
 	
 	public void valueChanged(TreeSelectionEvent e) {
+		if (e.isAddedPath()) {
+			TreePath treePaths = e.getPath();
+			Object o = treePaths.getLastPathComponent();
+			showMetadata(o);
+		}		
+	}
+	
+	private void showMetadata(Object o) {
 		infoTextArea.setText("");
 		
-		TreePath[] treePaths = e.getPaths();
-		Object o;
-		for (int i=0; i<treePaths.length; i++) {
-			o = treePaths[i].getLastPathComponent();
-			if (o.equals(root)) {
-				if (e.isAddedPath(i)) {
-					infoTextArea.append("Server: " + root);
+		if (o == null) {
+			return;
+		} else if (o.equals(root)) {
+			infoTextArea.append("Server: " + root);
+		} else {
+			node = (ChannelTree.Node)o;
+			node = ctree.findNode(node.getFullName());
+			infoTextArea.append("Type: " + node.getType() + NEWLINE);
+			infoTextArea.append("Name: " + node.getFullName() + NEWLINE);
+			if (node.getType() == ChannelTree.CHANNEL) {
+				infoTextArea.append("Mime: " + node.getMime() + NEWLINE);
+				infoTextArea.append("Start: " + DataViewer.formatDate(node.getStart()) + NEWLINE);
+				infoTextArea.append("Duriation: " + DataViewer.formatSeconds(node.getDuration()) + NEWLINE);
+				infoTextArea.append("Size: " + DataViewer.formatBytes(node.getSize()));
+				String unit = (String)units.get(node.getFullName());
+				if (unit != null) {
+					infoTextArea.append(NEWLINE + "Unit: " + unit);
 				}
-			} else {
-				node = (ChannelTree.Node)o;
-				if (e.isAddedPath(i)) {
-					infoTextArea.append("Type: " + node.getType() + NEWLINE);
-					infoTextArea.append("Name: " + node.getFullName() + NEWLINE);
-					if (node.getType() == ChannelTree.CHANNEL) {
-						infoTextArea.append("Mime: " + node.getMime() + NEWLINE);
-						infoTextArea.append("Start: " + DataViewer.formatDate(node.getStart()) + NEWLINE);
-						infoTextArea.append("Duriation: " + DataViewer.formatSeconds(node.getDuration()) + NEWLINE);
-						infoTextArea.append("Size: " + DataViewer.formatBytes(node.getSize()));
-						String unit = (String)units.get(node.getFullName());
-						if (unit != null) {
-							infoTextArea.append(NEWLINE + "Unit: " + unit);
-						}
-						
-						/* infoTextArea.append(NEWLINE + NEWLINE);
-						String channelName = node.getFullName();
-						int channelIndex = cmap.GetIndex(channelName);
-						try {
-							String[] metaData = cmap.GetDataAsString(channelIndex);					
-							for (int j=0; j<metaData.length; j++) {
-								infoTextArea.append(metaData[j] + NEWLINE);
-							}
-						} catch (ClassCastException cce) {
-							log.warn("Failed to get metadata for channel " + channelName);
-						} */
+				
+				/* infoTextArea.append(NEWLINE + NEWLINE);
+				String channelName = node.getFullName();
+				int channelIndex = cmap.GetIndex(channelName);
+				try {
+					String[] metaData = cmap.GetDataAsString(channelIndex);					
+					for (int j=0; j<metaData.length; j++) {
+						infoTextArea.append(metaData[j] + NEWLINE);
 					}
-				}
-			}
-			
-			if (i == treePaths.length-1) {
-				infoTextArea.append(NEWLINE + NEWLINE);				
+				} catch (ClassCastException cce) {
+					log.warn("Failed to get metadata for channel " + channelName);
+				} */
 			}
 		}
 		
@@ -576,9 +589,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		updateChannelListBackground();				
 	}
 
-	public void channelUnsubscribed(String channelName) {
-		updateChannelListBackground();		
-	}
+	public void channelUnsubscribed(String channelName) {}
 	
 	public void channelChanged(String unsubscribedChannelName, String subscribedChannelName) {
 		updateChannelListBackground();

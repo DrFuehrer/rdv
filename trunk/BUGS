@@ -1,9 +1,1 @@
-PH - if you add a source after running RDV, the refresh doesn't
-     seem to reload the channel list. Same on Linux and Mac.
-JPH - when you remove a data panel, it goes to the server for
-      data again
-JPH - increase the domain to an hour, then when you decrease it,
-      the data goes away and doesn't seem to load
 JPH - Can subscribe twice to a channel in time series viewer
-JPH - Try to connect to an address that will fail. Then connect
-      to a valid address and what data playback fail.
