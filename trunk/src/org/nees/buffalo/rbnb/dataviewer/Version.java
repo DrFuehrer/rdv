@@ -1,10 +1,39 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
 /**
- * @author Jason P. Hanley
+ * A class to encapsulate the version of the application.
+ * The version is displayed in the format of major.minor.release.
+ * 
+ * @author  Jason P. Hanley
+ * @since   1.0
  */
-public class Version {
+public final class Version {
+	/**
+	 * The major version number.
+	 * 
+	 * @since  1.0
+	 */
 	public static final int major = 1;
+	
+	/**
+	 * The minor version number
+	 * 
+	 * @since  1.0 
+	 */
 	public static final int minor = 1;
-	public static final int release = 0; 
+	
+	/**
+	 * The release number.
+	 * 
+	 * @since  1.0
+	 */
+	public static final int release = 0;
+	
+	/**
+	 * This class can not be instantiated and it's constructor
+	 * always throws an exception.
+	 */
+	private Version() {
+		throw new UnsupportedOperationException("This class can not be instantiated.");
+	}
 }
