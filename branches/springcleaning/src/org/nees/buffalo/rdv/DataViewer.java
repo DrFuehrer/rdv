@@ -46,6 +46,12 @@ import org.nees.buffalo.rdv.datapanel.JPEGDataPanel;
 import org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel;
 import org.nees.buffalo.rdv.datapanel.StringDataPanel;
 import org.nees.buffalo.rdv.datapanel.TabularDataPanel;
+import org.nees.buffalo.rdv.ui.AboutDialog;
+import org.nees.buffalo.rdv.ui.ChannelListPanel;
+import org.nees.buffalo.rdv.ui.ControlPanel;
+import org.nees.buffalo.rdv.ui.RBNBConnectionDialog;
+import org.nees.buffalo.rdv.ui.RBNBImportDialog;
+import org.nees.buffalo.rdv.ui.StatusPanel;
 
 /**
  * @author Jason P. Hanley
@@ -692,7 +698,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		dataPanels.add(dataPanel);
 	}
 	
-	protected void closeAllDataPanels() {
+	public void closeAllDataPanels() {
 		DataPanel2 dataPanel;
 		for (int i=0; i<dataPanels.size(); i++) {
 			dataPanel = (DataPanel2)dataPanels.get(i);

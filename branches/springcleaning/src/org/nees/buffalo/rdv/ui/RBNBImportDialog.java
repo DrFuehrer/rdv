@@ -1,7 +1,7 @@
 /*
  * Created on Mar 25, 2005
  */
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.ui;
 
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataViewer;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.Source;

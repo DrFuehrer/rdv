@@ -1,4 +1,4 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.ui;
 
 import java.awt.Adjustable;
 import java.awt.GridBagConstraints;
@@ -17,6 +17,14 @@ import javax.swing.border.EtchedBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.ChannelListListener;
+import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.DomainListener;
+import org.nees.buffalo.rdv.Player;
+import org.nees.buffalo.rdv.PlayerStateListener;
+import org.nees.buffalo.rdv.PlayerSubscriptionListener;
+import org.nees.buffalo.rdv.PlayerTimeListener;
+import org.nees.buffalo.rdv.TimeScaleListener;
 
 import com.rbnb.sapi.ChannelMap;
 

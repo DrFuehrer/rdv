@@ -1,4 +1,4 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.ui;
 
 import java.awt.Color;
 import java.awt.GridBagConstraints;
@@ -20,6 +20,8 @@ import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.RBNBController;
 
 /**
  * @author Jason P. Hanley
