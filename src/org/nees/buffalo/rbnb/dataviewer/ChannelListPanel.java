@@ -16,7 +16,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -534,7 +533,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 						String channelName = node.getFullName();
 						String mime = node.getMime();
 						String unit = (String)units.get(channelName);
-						dataViewer.viewChannel(channelName, mime, unit);
+						Channel channel = new Channel(channelName, mime, unit);
+						dataViewer.viewChannel(channel);
 					}
 				}
 			}

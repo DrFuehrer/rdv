@@ -22,11 +22,11 @@ public class Channel {
 		this.unit = unit;
 	}
 	
-	public String getName() {
+	public String getShortName() {
 		return name.substring(name.lastIndexOf("/")+1);
 	}
 	
-	public String getFullName() {
+	public String getName() {
 		return name;
 	}
 	

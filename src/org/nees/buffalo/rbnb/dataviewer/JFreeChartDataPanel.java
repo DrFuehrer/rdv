@@ -84,8 +84,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		return true;
 	}
 	
-	public void addChannel(String channelName, String unit) {
-		super.addChannel(channelName, unit);
+	public void addChannel(Channel channel) {
+		super.addChannel(channel);
+		
+		String channelName = channel.getName();
+		String unit = channel.getUnit();
 
 		String seriesName = getSeriesName(channelName);
 		

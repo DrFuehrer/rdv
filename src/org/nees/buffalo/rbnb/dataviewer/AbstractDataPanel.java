@@ -118,16 +118,22 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		player.addStateListener(this);
 	}
 
-	public void setChannel(String channelName, String unit) {
+	public void setChannel(Channel channel) {
+		String channelName = channel.getName();
+		String unit = channel.getUnit();
+		
 		if (channels.size() == 1 && channels.contains(channelName)) {
 			return;
 		}
 		
 		removeAllChannels();
-		addChannel(channelName, unit);
+		addChannel(channel);
 	}
 	
-	public void addChannel(String channelName, String unit) {
+	public void addChannel(Channel channel) {
+		String channelName = channel.getName();
+		String unit = channel.getUnit();
+		
 		if (channels.contains(channelName)) {
 			return;
 		}
@@ -146,7 +152,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	public void removeChannel(String channelName) {
+	public void removeChannel(String channelName) {		
 		if (!channels.contains(channelName)) {
 			return;
 		}
@@ -435,10 +441,11 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 				e.dropComplete(true);
 				
 				try {
+					Channel channel = new Channel(channelName, null, unit);
 					if (supportsMultipleChannels()) {
-						addChannel(channelName, unit);
+						addChannel(channel);
 					} else {
-						setChannel(channelName, unit);
+						setChannel(channel);
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
