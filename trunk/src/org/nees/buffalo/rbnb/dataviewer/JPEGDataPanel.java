@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.VolatileImage;
+import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -76,9 +77,15 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		if (channelMap == null) {
 			//no data to display yet
 			return;
-		}	
+		}
+		
+		Iterator it = channels.iterator();
+		if (!it.hasNext()) {
+			//no channels to post to
+			return;
+		}
 			
-		String channelName = (String)channels.iterator().next();
+		String channelName = (String)it.next();
 
 		try {			
 			int channelIndex = channelMap.GetIndex(channelName);
