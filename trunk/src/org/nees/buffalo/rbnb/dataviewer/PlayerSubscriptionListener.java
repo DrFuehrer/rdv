@@ -6,5 +6,4 @@ package org.nees.buffalo.rbnb.dataviewer;
 public interface PlayerSubscriptionListener {
 	public void channelSubscribed(String channelName);
 	public void channelUnsubscribed(String channelName);
-	public void channelChanged(String unsubscribedChannelName, String subscribedChannelName);
 }

@@ -833,14 +833,6 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}		
 	}
 	
-	private void fireChangeNotification(String unsubscribedChannelName, String subscribedChannelName) {
-		PlayerSubscriptionListener subscriptionListener;
-		for (int i=0; i<subscriptionListeners.size(); i++) {
-			subscriptionListener = (PlayerSubscriptionListener)subscriptionListeners.get(i);
-			subscriptionListener.channelChanged(unsubscribedChannelName, subscribedChannelName);
-		}		
-	}
-	
 	
 	// Utility (Static) Methods
 	

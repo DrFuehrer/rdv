@@ -628,10 +628,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
 	public void channelUnsubscribed(String channelName) {}
 	
-	public void channelChanged(String unsubscribedChannelName, String subscribedChannelName) {
-		updateChannelListBackground();
-	}
-	
 	public void addChannelListListener(ChannelListListener listener) {
 		channelListListeners.add(listener);
 	}
