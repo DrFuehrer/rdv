@@ -21,6 +21,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
@@ -44,12 +45,12 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	
 	int lastXYDataIndex;
 
-	public JFreeChartDataPanel(DataPanelContainer dataPanelContainer, Player player) {
-		this(dataPanelContainer, player, false);
+	public JFreeChartDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
+		this(dataPanelManager, dataPanelContainer, player, false);
 	}
 		
-	public JFreeChartDataPanel(DataPanelContainer dataPanelContainer, Player player, boolean xyMode) {
-		super(dataPanelContainer, player);
+	public JFreeChartDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player, boolean xyMode) {
+		super(dataPanelManager, dataPanelContainer, player);
 		
 		this.xyMode = xyMode;
 		

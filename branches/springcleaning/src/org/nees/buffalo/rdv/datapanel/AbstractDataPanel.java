@@ -38,6 +38,7 @@ import javax.swing.event.MouseInputAdapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.DataListener;
@@ -54,6 +55,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 	static Log log = LogFactory.getLog(AbstractDataPanel.class.getName());
 	
+	DataPanelManager dataPanelManager;
 	DataPanelContainer dataPanelContainer;
 	Player player;
 	
@@ -91,7 +93,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 	ChannelMap channelMap;
 
-	public AbstractDataPanel(DataPanelContainer dataPanelContainer, Player player) {
+	public AbstractDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
+		this.dataPanelManager = dataPanelManager;
 		this.dataPanelContainer = dataPanelContainer;
 		this.player = player;
 			
@@ -197,6 +200,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 				
 		component.setLayout(new BorderLayout());
 		component.add(dataComponent, BorderLayout.CENTER);
+		
+		dataPanelContainer.addDataPanel(this);
 	}
 	
 	public JComponent getComponent() {
@@ -325,6 +330,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
  		} else if (attached) {
 			dataPanelContainer.removeDataPanel(this);
  		}
+ 		
+ 		dataPanelManager.removeDataPanel(this);
  		
 		player.removeStateListener(this);
 		player.removeTimeListener(this);

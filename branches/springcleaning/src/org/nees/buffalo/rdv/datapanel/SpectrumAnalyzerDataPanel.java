@@ -25,6 +25,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
@@ -63,8 +64,8 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 	JTextField dataPointsTextField;
 	JCheckBox useHanningWindowCheckBox;
 	
-	public SpectrumAnalyzerDataPanel(DataPanelContainer dataPanelContainer, Player player) {
-		super(dataPanelContainer, player);
+	public SpectrumAnalyzerDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
+		super(dataPanelManager, dataPanelContainer, player);
 		
 		sampleRate = 256;
 		numberOfSamples = 512;

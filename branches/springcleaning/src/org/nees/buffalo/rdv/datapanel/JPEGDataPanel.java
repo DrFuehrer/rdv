@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
@@ -36,8 +37,8 @@ public class JPEGDataPanel extends AbstractDataPanel {
  	
  	double displayedImageTime;
  	 	
-	public JPEGDataPanel(DataPanelContainer dataPanelContainer, Player player) {
-		super(dataPanelContainer, player);
+	public JPEGDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
+		super(dataPanelManager, dataPanelContainer, player);
 		
 		keepAspectRatio = true;
 		
