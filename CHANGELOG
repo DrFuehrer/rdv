@@ -45,6 +45,7 @@
 -Remove uneeded connections to server when removing a channel for viewing
 -Added warnings when try to add channels when the viewer doesn't support them (or that many)
 -Fixed JFreeChart panel behaviour when adding the same channel
+-Removed no functional menus and changed some key bindings (see KEYBOARD)
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

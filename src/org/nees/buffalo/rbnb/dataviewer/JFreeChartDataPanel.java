@@ -94,7 +94,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		String unit = channel.getUnit();
 		
 		if (xyMode && !channels.contains(channelName) && channels.size() == 2) {
-			log.error("We don't support more than 2 channels");
+			log.warn("We don't support more than 2 channels.");
 			return false;			
 		}
 		
@@ -426,7 +426,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	}
 	
 	private void setTimeAxis() {
-		((DateAxis)((XYPlot)chart.getPlot()).getDomainAxis()).setRange((time-domain)*1000, time*1000);
+		XYPlot xyPlot = (XYPlot)chart.getPlot();
+		DateAxis dateAxis = (DateAxis)xyPlot.getDomainAxis();
+		dateAxis.setRange((time-domain)*1000, time*1000);
 	}	
 	
 	void clearData() {
