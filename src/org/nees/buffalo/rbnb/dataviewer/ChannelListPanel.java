@@ -73,6 +73,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
  	private boolean connected = false;
  	private boolean updatingChannelList = false;
+ 	
+ 	private boolean showHiddenChannels = false;
 	
 	private static final String NEWLINE = "\r\n";
 
@@ -261,6 +263,13 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		
  		return true;
   	}
+	
+	public void showHiddenChannels(boolean showHiddenChannels) {
+		if (this.showHiddenChannels != showHiddenChannels) {
+			this.showHiddenChannels = showHiddenChannels;
+			fireRootChanged();
+		}
+	}
   	
  	private synchronized void clearChannelList() {
  		if (root.equals("")) {
@@ -407,7 +416,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		int i=0;
 		while (i<=index && it.hasNext()) {
 			node = (ChannelTree.Node)it.next();
-			if (node.getType() == ChannelTree.SERVER || node.getType() == ChannelTree.SOURCE || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
+			if (node.getType() == ChannelTree.SERVER || (node.getType() == ChannelTree.SOURCE && (showHiddenChannels || !node.getName().startsWith("_"))) || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
 				i++;
 			}
 		}
@@ -428,7 +437,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		int i=0;
 		while (it.hasNext()) {
 			node = (ChannelTree.Node)it.next();
-			if (node.getType() == ChannelTree.SERVER || node.getType() == ChannelTree.SOURCE || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
+			if (node.getType() == ChannelTree.SERVER || (node.getType() == ChannelTree.SOURCE && (showHiddenChannels || !node.getName().startsWith("_"))) || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
 				i++;
 			}
 		}		
@@ -457,7 +466,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		int i=0;
 		while (it.hasNext()) {
 			node = (ChannelTree.Node)it.next();
-			if (node.getType() == ChannelTree.SERVER || node.getType() == ChannelTree.SOURCE || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
+			if (node.getType() == ChannelTree.SERVER || (node.getType() == ChannelTree.SOURCE && (showHiddenChannels || !node.getName().startsWith("_"))) || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
 				if (node.equals(child)) {
 					return i;
 				}

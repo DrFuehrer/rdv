@@ -90,6 +90,7 @@ public class DataViewer extends JFrame implements DomainListener {
  	private Action dataPanelAction;
  	private Action dataPanelHorizontalLayoutAction;
  	private Action dataPanelVerticalLayoutAction;
+ 	private Action showHiddenChannelsAction;
  	private Action fullScreenAction;
  	
  	private Action windowAction;
@@ -321,6 +322,14 @@ public class DataViewer extends JFrame implements DomainListener {
  			}			
  		}; 		
  		
+ 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H) {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
+ 				boolean selected = menuItem.isSelected();
+ 				channelListPanel.showHiddenChannels(selected);
+ 			}			
+ 		};
+
  		fullScreenAction = new DataViewerAction("Full Screen", "", KeyEvent.VK_F, KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)) {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
@@ -476,6 +485,12 @@ public class DataViewer extends JFrame implements DomainListener {
  		dataLanelLayoutGroup.add(menuItem);
  		
  		viewMenu.add(dataPanelSubMenu);
+
+ 		viewMenu.addSeparator();
+ 		
+ 		menuItem = new JCheckBoxMenuItem(showHiddenChannelsAction);
+ 		menuItem.setSelected(false);
+ 		viewMenu.add(menuItem);
 
  		viewMenu.addSeparator();
  		
