@@ -1,0 +1,2 @@
+The logic to set the location should be in the controller except when
+the user requests a specific location via the slider bar.
