@@ -4,6 +4,9 @@
 	
 	<property name="package.name" value="RBNBDataViewer" />
 	
+	<!-- debug -->
+	<property name="debug" value="on"/>
+	
 	<!-- version information -->
 	<property file="build.properties"/>
 	<property name="version" value="${version.major}.${version.minor}.${version.release}"/>
@@ -57,10 +60,10 @@
 	
 	<!-- Build target -->
 	<target name="compile" depends="prepare" description="Build from source">
-	  <javac srcdir="${src.dir}" 
-	         destdir="${build.classes}"
-	         classpathref="classpath"
-	         debug="on">
+		<javac srcdir="${src.dir}" 
+			destdir="${build.classes}"
+			classpathref="classpath"
+			debug="${debug}">
 	  </javac>
 	</target>
 		
@@ -118,10 +121,27 @@
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>
-			<arg line="rbnb.nees.buffalo.edu:3333"/>
+			<arg line="--host rbnb.nees.buffalo.edu --channels NE/video.jpg --real-time"/>
 		</java>
 	</target>
 	
+	<!-- Run the RBNB Data Viewer (connect to neestpm.sdsc.edu) -->
+	<target name="runNEESit" depends="compile" description="Run application connecting to Buffalo server">
+		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
+ 			<jvmarg value="-Xms64M"/>
+ 			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Dsun.java2d.ddscale=true"/>
+			<arg line="--host neestpm.sdsc.edu --channels FakeDAQ/0 'M1 cam1/video.jpg' --real-time"/>
+		</java>
+	</target>
+	
+	
+	<target name="help" depends="compile" description="Show usage">
+		<java classpathref="classpath" classname="org.nees.buffalo.rbnb.dataviewer.DataViewer" fork="true">
+			<arg line="--help"/>
+		</java>
+	</target>
+		
 	<!-- Catch-all target to aggregate everything -->
 	<target name="all" depends="clean,compile,jar" description="Clean, compile, jar"/>
 </project>

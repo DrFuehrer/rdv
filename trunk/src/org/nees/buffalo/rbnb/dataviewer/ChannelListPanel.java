@@ -72,6 +72,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	private ArrayList channelListListeners;
 
  	private boolean connected = false;
+ 	private boolean updatingChannelList = false;
 	
 	private static final String NEWLINE = "\r\n";
 
@@ -141,7 +142,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  	}
 
 	public boolean updateChannelListBackground() {
- 		if (!connected) return false;		
+ 		if (!connected) return false;
+ 		
+ 		if (updatingChannelList) return true;
 
 		new Thread(new Runnable() {
 			public void run() {
@@ -152,8 +155,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		return true;
 	}
 
-	public synchronized boolean updateChannelList() {
+	public boolean updateChannelList() {
  		if (!connected) return false;
+ 		
+ 		if (updatingChannelList) return true;
+ 		
+ 		updatingChannelList = true;
 
 		log.info("Updating channel listing.");
 		
@@ -256,6 +263,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		if (path != null) {
  			showMetadata(path.getLastPathComponent());
  		}
+ 		
+ 		updatingChannelList = false;
  		
  		return true;
   	}
@@ -479,6 +488,18 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			Object o = treePaths.getLastPathComponent();
 			showMetadata(o);
 		}		
+	}
+	
+	public Channel getChannel(String channelName) {
+		ChannelTree.Node node = ctree.findNode(channelName);
+		if (node != null) {
+			String mime = node.getMime();
+			String unit = (String)units.get(channelName);
+			Channel channel = new Channel(channelName, mime, unit);
+			return channel;
+		} else {
+			return null;
+		}
 	}
 	
 	private void showMetadata(Object o) {
