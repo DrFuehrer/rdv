@@ -321,20 +321,16 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 
 		log.info("Setting time to start at " + DataViewer.formatDate(startTime) + " and end at " + DataViewer.formatDate(endTime) + " seconds.");
 		
-		refreshSliderBounds();
-		
-		if (startTime == endTime) {
-			setSliderLocation(startTime);
-		} else {
+		if (playerState != Player.STATE_MONITORING && playerState != Player.STATE_PLAYING) {
+			refreshSliderBounds();
+			
 			double location = player.getLocation();
 			if (location < startTime) {
+				log.warn("Current time (" + DataViewer.formatDate(location) + ") is before known start time (" + DataViewer.formatDate(endTime) + ").");
 				setLocationBegin();
 			} else if (location > endTime) {
-				if (playerState != Player.STATE_MONITORING) {
-					log.warn("Current time (" + DataViewer.formatDate(location) + ") is past time range (" + DataViewer.formatDate(endTime) + ").");
-				}
-			} else {
-				setSliderLocation(location);
+				log.warn("Current time (" + DataViewer.formatDate(location) + ") is past known end time (" + DataViewer.formatDate(endTime) + ").");
+				setLocationEnd();
 			}
 		}
 	}
@@ -365,14 +361,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 				locationScrollBar.removeAdjustmentListener(this);
 				locationScrollBar.setValue(sliderLocation);
 				locationScrollBar.addAdjustmentListener(this);
-				
-				log.debug("Set slider location to " + DataViewer.formatDate(location) + ".");
 			}
 		}
 	}
 	
 	public void setLocationBegin() {
-		log.info("Setting location begining.");
+		log.info("Setting location to begining.");
 		player.setLocation(startTime);
 	}
 	
@@ -391,20 +385,18 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		}
 	}
 
-	private void locationChange() {
-		if (playerState == Player.STATE_MONITORING || playerState == Player.STATE_PLAYING) {
-			return;
-		}
-		
+	private void locationChange() {	
 		int sliderLocation = locationScrollBar.getValue();
 		
 		if (this.sliderLocation != sliderLocation) {
 			this.sliderLocation = sliderLocation;
-			location = (((double)sliderLocation)/1000)+startTime;
-			log.debug("Location bar moved to " + DataViewer.formatDate(location) + ".");
-			player.setLocation(location);
+			double location = (((double)sliderLocation)/1000)+startTime;
+			if (this.location != location) {
+				this.location = location;
+				player.setLocation(location);
+			}
 		}
-	}	
+	}
 	
 	private void durationChange() {
 		double oldTimeScale = timeScale;
