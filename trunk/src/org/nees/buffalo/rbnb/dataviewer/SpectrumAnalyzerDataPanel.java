@@ -41,9 +41,10 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 	double sampleRate;
 	int numberOfSamples;
 	
-	ArrayList inputData;
+	double[] inputData;
+	int inputDataIndex;
 	
-	double[] hanningWindow;
+	double[] window;
 	boolean useHanningWindow;
 
 	double lastTimeDisplayed;
@@ -65,9 +66,10 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		sampleRate = 256;
 		numberOfSamples = 512;
 		
-		inputData = new ArrayList(numberOfSamples);
+		inputData = new double[numberOfSamples];
+		inputDataIndex = 0;
 		
-		setHanningWindow();
+		createWindow();
 		useHanningWindow = true;
 		
 		lastTimeDisplayed = -1;
@@ -83,7 +85,7 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		
-		xySeries = new XYSeries("", false, true);
+		xySeries = new XYSeries("", false, false);
 		xySeriesCollection = new XYSeriesCollection();
 		xySeriesCollection.addSeries(xySeries);
 		chart = ChartFactory.createXYLineChart(null, "Frequency (Hz)", null, xySeriesCollection, PlotOrientation.VERTICAL, false, true, false);
@@ -123,10 +125,11 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 					dataPointsTextField.setText(Double.toString(numberOfSamples));
 				}
 				clearData();
-				if (inputData.size() < numberOfSamples) {
-					inputData.ensureCapacity(numberOfSamples);
+				if (inputData.length < numberOfSamples) {
+					inputData = new double[numberOfSamples];
+					inputDataIndex = 0;
 				}
-				setHanningWindow();
+				createWindow();
 			}
 		});
 		controlPanel.add(dataPointsTextField);
@@ -135,14 +138,13 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		useHanningWindowCheckBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				useHanningWindow = !useHanningWindow;
+				plotSpectrum();
 			}
 		});
 		controlPanel.add(useHanningWindowCheckBox);
 				
 		panel.add(chartPanel, BorderLayout.CENTER);
-		panel.add(controlPanel, BorderLayout.SOUTH);
-		
-		
+		panel.add(controlPanel, BorderLayout.SOUTH);	
 	}
 
 	public String[] getSupportedMimeTypes() {
@@ -222,58 +224,76 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		}
 				
 		for (int i=startIndex; i<=endIndex; i++) {
-			if (inputData.size() == numberOfSamples) {
-				inputData.remove(0);
+			inputData[inputDataIndex++] = data[i];
+			if (inputDataIndex == numberOfSamples) {
+				inputDataIndex = 0;
 			}
-			inputData.add(new Double(data[i]));
 		}
 		
-		if (inputData.size() == numberOfSamples) {
-			RealDoubleFFT fft = new RealDoubleFFT_Radix2(numberOfSamples);
-			double[] inputDataArray = toArray(inputData);
-			fft.transform(inputDataArray);
-			double[] values = fft.toWraparoundOrder(inputDataArray);
-			chart.setNotify(false);
-			xySeries.clear();
-			for (int i=0; i<numberOfSamples; i++) {
-				double frequency = sampleRate*i/(numberOfSamples*2);
-				xySeries.add(frequency, values[i]);
-			}
-			chart.setNotify(true);
-			chart.fireChartChanged();
-		}
+		plotSpectrum();
 		
 		lastTimeDisplayed = times[endIndex];
 	}
 	
-	private double[] toArray(ArrayList arrayList) {
-		double[] array = new double[arrayList.size()];
-		for (int i=0; i<arrayList.size(); i++) {
-			Double d = (Double)arrayList.get(i);
-			array[i] = d.doubleValue();
+	private void plotSpectrum() {
+		RealDoubleFFT fft = new RealDoubleFFT_Radix2(numberOfSamples);
+		double[] inputDataArray = generateInputArray();
+		fft.transform(inputDataArray);
+		chart.setNotify(false);
+		xySeries.clear();
+		
+		/* double[] values = fft.toWraparoundOrder(inputDataArray);
+		double period = sampleRate/(numberOfSamples*2);
+		double frequency = 0;
+		for (int i=0; i<numberOfSamples; i++) {
+			frequency += period;
+			xySeries.add(frequency, values[i]);
+		} */
+		
+		double period = sampleRate/(numberOfSamples*2);
+		double frequency = 0;
+		xySeries.add(frequency, inputDataArray[0]);
+		frequency += period;
+		xySeries.add(frequency, 0.0);
+		for (int i=1; i<numberOfSamples/2; i++) {
+			frequency += period;
+			xySeries.add(frequency, inputDataArray[i]);
+			frequency += period;
+			xySeries.add(frequency, inputDataArray[numberOfSamples-i]);
+		}
+		
+		chart.setNotify(true);
+		chart.fireChartChanged();		
+	}
+	
+	private double[] generateInputArray() {
+		double[] array = new double[numberOfSamples];
+		for (int i=0; i<numberOfSamples; i++) {
+			int index = (inputDataIndex + i) % numberOfSamples;
+			array[i] = inputData[index];
 			if (useHanningWindow) {
-				array[i] *= hanningWindow[i];
+				array[i] *= window[i];
 			}
 		}
 		return array;
 	}
 	
-	private void setHanningWindow() {
+	private void createWindow() {
 	    double pi = Math.PI;
 	    int m = numberOfSamples/2;
 	    double r = pi/(m+1);
-	    double[] w = new double[numberOfSamples];
-        
+	    window = new double[numberOfSamples];
         for (int n = -m; n < m; n++) {
-          w[m + n] = 0.5d + 0.5d*Math.cos(n*r);
+          window[m + n] = 0.5d + 0.5d*Math.cos(n*r);
         }
-		
-		hanningWindow = w;
 	}
 	
 	void clearData() {
 		xySeries.clear();
-		inputData.clear();
+		for (int i=0; i<inputData.length; i++) {
+			inputData[i] = 0;
+		}
+		inputDataIndex = 0;
 		lastTimeDisplayed = -1;
 	}
 
