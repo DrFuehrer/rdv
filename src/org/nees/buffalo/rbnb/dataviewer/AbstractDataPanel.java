@@ -235,12 +235,14 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 		}
 	}
 	
-	private static void loadIcons() {
-		windowPinImage = new ImageIcon(windowPinFileName).getImage();
-		windowSnapshotImage = new ImageIcon(windowSnapshotFileName).getImage();
-		windowDetachImage = new ImageIcon(windowDetachFileName).getImage();
-		windowMaximizeImage = new ImageIcon(windowMaximizeFileName).getImage();
-		windowCloseImage = new ImageIcon(windowCloseFileName).getImage();
+	private void loadIcons() {
+		ClassLoader cl = getClass().getClassLoader();
+		
+		windowPinImage = new ImageIcon(cl.getResource(windowPinFileName)).getImage();
+		windowSnapshotImage = new ImageIcon(cl.getResource(windowSnapshotFileName)).getImage();
+		windowDetachImage = new ImageIcon(cl.getResource(windowDetachFileName)).getImage();
+		windowMaximizeImage = new ImageIcon(cl.getResource(windowMaximizeFileName)).getImage();
+		windowCloseImage = new ImageIcon(cl.getResource(windowCloseFileName)).getImage();
 		
 		iconsLoaded = true;
 	}
