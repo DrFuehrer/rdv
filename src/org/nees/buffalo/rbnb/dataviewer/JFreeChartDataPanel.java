@@ -32,9 +32,14 @@ import org.apache.commons.logging.LogFactory;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.xy.XYDataItem;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -49,7 +54,7 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	
 	JFreeChart chart;
 	ChartPanel chartPanel;
-	TimeSeriesCollection dataCollection;
+	XYDataset dataCollection;
 	
 	ChartPanelPanel panel;
 	
@@ -60,10 +65,18 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	
 	DataPanelContainer dataPanelContainer;
 	Player player;
+	Number xValue, yValue;
+	
+	boolean xyMode;
 
 	public JFreeChartDataPanel(DataPanelContainer dataPanelContainer, Player player) {
+		this(dataPanelContainer, player, false);
+	}
+		
+	public JFreeChartDataPanel(DataPanelContainer dataPanelContainer, Player player, boolean xyMode) {
 		this.dataPanelContainer = dataPanelContainer;
 		this.player = player;
+		this.xyMode = xyMode;
 		
 		channels = new Vector();
 		attached = true;
@@ -78,8 +91,14 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	}
 		
 	private void initChart() {
-		dataCollection = new TimeSeriesCollection();		
-		chart = ChartFactory.createTimeSeriesChart("Empty", "t", "x", dataCollection, false, false, false);
+		if (xyMode) {
+			dataCollection = new XYSeriesCollection();
+			chart = ChartFactory.createXYLineChart("Empty", "x", "y", dataCollection, PlotOrientation.VERTICAL, false, false, false);
+		} else {
+			dataCollection = new TimeSeriesCollection();
+			chart = ChartFactory.createTimeSeriesChart("Empty", "t", "x", dataCollection, false, false, false);
+		}
+		
 		chart.setAntiAlias(false);
 		chartPanel = new ChartPanel(chart, true);
 		chartPanel.setPreferredSize(new Dimension(356,244));
@@ -132,15 +151,27 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		if (channels.contains(channelName)) return;
 		
 		log.debug("Adding channel: " + channelName + ".");
+
+		if (xyMode) {
+			if (channels.size() == 0) {
+				XYSeries data = new XYSeries(channelName);
+				((XYSeriesCollection)dataCollection).addSeries(data);
+			} else if (channels.size() == 1) {
+				
+			} else {
+				return;
+			}
+		} else {
+			TimeSeries data = new TimeSeries(channelName, FixedMillisecond.class);
+			data.setHistoryCount((int)(domain*1000));
+			((TimeSeriesCollection)dataCollection).addSeries(data);
+		}
+		
+		player.subscribe(channelName, this);
 		
 		channels.add(channelName);
 		setTitle();
 		
-		TimeSeries data = new TimeSeries(channelName, FixedMillisecond.class);
-		data.setHistoryCount((int)(domain*1000));
-		dataCollection.addSeries(data);
-		
-		player.subscribe(channelName, this);
 	}
 	
 	public void removeChannel(String channelName) {
@@ -148,15 +179,26 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		
 		channels.remove(channelName);
 		setTitle();
-		
-		TimeSeries data = dataCollection.getSeries(channelName);
-		dataCollection.removeSeries(data);
-		player.unsubscribe(channelName, this);
+		if (xyMode) {
+			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+			//TODO add this functionality
+		} else {
+			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
+			TimeSeries data = dataCollection.getSeries(channelName);
+			dataCollection.removeSeries(data);
+			player.unsubscribe(channelName, this);
+		}
 	}
 	
 	private void removeAllChannels() {
 		player.unsubscribeAll(this);
-		dataCollection.removeAllSeries();
+		if (xyMode) {
+			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+			dataCollection.removeAllSeries();
+		} else {
+			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
+			dataCollection.removeAllSeries();
+		}
 		channels.clear();
 	}
 	
@@ -176,10 +218,18 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		
 	public void setDomain(double domain) {
 		this.domain = domain;
-		TimeSeries data;	
+			
 		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
-			data = dataCollection.getSeries(i);
-			data.setHistoryCount((int)(domain*1000));
+			if (xyMode) {
+				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+				XYSeries data = dataCollection.getSeries(i);
+				// TODO add correspoding code for XYSeries
+			} else {
+				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
+				TimeSeries data = dataCollection.getSeries(i);
+				data.setHistoryCount((int)(domain*1000));
+			}
+			
 		}
 	}
 	
@@ -199,11 +249,23 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	}	
 
 	public void postData(ChannelMap channelMap, int channelIndex, String channelName, double startTime, double duration) {
+		if (xyMode && channels.size() != 2) {
+			return;
+		}
+		
 		if (channelName == null) {
 			channelName = (String)channels.get(channelIndex);
 		}
-			
-		TimeSeries data = dataCollection.getSeries(channelName);
+		
+		XYSeries xySeriesData = null;
+		TimeSeries timeSeriesData = null;
+		if (xyMode) {
+			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+			xySeriesData = dataCollection.getSeries(0);
+		} else {
+			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
+			timeSeriesData = dataCollection.getSeries(channelName);
+		}
 		
 		try {		
 			double[] times = channelMap.GetTimes(channelIndex);
@@ -249,43 +311,83 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 				case ChannelMap.TYPE_FLOAT64:
 					double[] doubleData = channelMap.GetDataAsFloat64(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-						time = new FixedMillisecond((long)(times[i]*1000));
-						data.add(time, doubleData[i]);
+						if (xyMode) {
+							if (channelName.equals(channels.get(0))) {
+								xValue = new Double(doubleData[i]);
+							} else if (channelName.equals(channels.get(1))) {
+								yValue = new Double(doubleData[i]);
+							}
+							
+							if (xValue != null && yValue != null){
+								log.debug("Got data pair " + xValue + "\t" + doubleData[i]);
+								xySeriesData.add(xValue, new Double(doubleData[i]));
+								xValue = null;
+								yValue = null;
+							}							
+						} else {
+							time = new FixedMillisecond((long)(times[i]*1000));
+							timeSeriesData.add(time, doubleData[i]);
+						}
 					}
 					break;
 				case ChannelMap.TYPE_FLOAT32:
 					float[] floatData = channelMap.GetDataAsFloat32(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-						time = new FixedMillisecond((long)(times[i]*1000));
-						data.add(time, floatData[i]);
+						if (xyMode) {
+							
+						} else {
+							time = new FixedMillisecond((long)(times[i]*1000));
+							timeSeriesData.add(time, floatData[i]);
+						}
 					}
 					break;
 				case ChannelMap.TYPE_INT64:
 					long[] longData = channelMap.GetDataAsInt64(channelIndex);
-				for (int i=startIndex; i<=endIndex; i++) {
-						time = new FixedMillisecond((long)(times[i]*1000));
-						data.add(time, longData[i]);
+					for (int i=startIndex; i<=endIndex; i++) {
+						if (xyMode) {
+							if (xValue == null) {
+								xValue = new Long(longData[i]);
+							} else {
+								xySeriesData.add(xValue, new Long(longData[i]));
+								xValue = null;
+							}
+						} else {
+							time = new FixedMillisecond((long)(times[i]*1000));
+							timeSeriesData.add(time, longData[i]);
+						}
 					}
 					break;
 				case ChannelMap.TYPE_INT32:
 					int[] intData = channelMap.GetDataAsInt32(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-						time = new FixedMillisecond((long)(times[i]*1000));
-						data.add(time, intData[i]);
+						if (xyMode) {
+							
+						} else {
+							time = new FixedMillisecond((long)(times[i]*1000));
+							timeSeriesData.add(time, intData[i]);
+						}
 					}
 					break;				
 				case ChannelMap.TYPE_INT16:
 					short[] shortData = channelMap.GetDataAsInt16(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-						time = new FixedMillisecond((long)(times[i]*1000));
-						data.add(time, shortData[i]);
+						if (xyMode) {
+							
+						} else {
+							time = new FixedMillisecond((long)(times[i]*1000));
+							timeSeriesData.add(time, shortData[i]);
+						}
 					}
 					break;
 				case ChannelMap.TYPE_INT8:
 					byte[] byteData = channelMap.GetDataAsInt8(channelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-						time = new FixedMillisecond((long)(times[i]*1000));
-						data.add(time, byteData[i]);
+						if (xyMode) {
+							
+						} else {
+							time = new FixedMillisecond((long)(times[i]*1000));
+							timeSeriesData.add(time, byteData[i]);
+						}
 					}
 					break;
 				case ChannelMap.TYPE_STRING:
@@ -311,10 +413,16 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	}
 
 	private void clearData() {
-		TimeSeries data;	
 		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
-			data = dataCollection.getSeries(i);
-			data.clear();
+			if (xyMode) {
+				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+				XYSeries data = dataCollection.getSeries(i);
+				data.clear();
+			} else {
+				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
+				TimeSeries data = dataCollection.getSeries(i);
+				data.clear();				
+			}
 		}
 		
 		log.debug("Cleared data display.");

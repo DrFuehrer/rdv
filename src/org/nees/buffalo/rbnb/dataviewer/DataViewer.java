@@ -1,7 +1,6 @@
 package org.nees.buffalo.rbnb.dataviewer;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -25,7 +24,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
@@ -93,7 +91,8 @@ public class DataViewer extends JFrame implements DomainListener {
  	
  	private Action windowAction;
  	private Action addJPEGDataPanelAction;
- 	private Action addJFreeChartDataPanelAction;
+ 	private Action addTimeSeriesChartDataPanelAction;
+ 	private Action addXYChartDataPanelAction;
  	private Action addStringDataPanelAction;
  	private Action closeAllDataPanelsAction;
  	
@@ -104,7 +103,7 @@ public class DataViewer extends JFrame implements DomainListener {
 	public static final String DEFAULT_RBNB_HOST_NAME = "localhost";
 	public static final int DEFAULT_RBNB_PORT = 3333;
 	
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
 	
 	public DataViewer() {
  		this(null, DEFAULT_RBNB_PORT, false);
@@ -350,16 +349,23 @@ public class DataViewer extends JFrame implements DomainListener {
  		
  		windowAction = new DataViewerAction("Window", "Window Menu", KeyEvent.VK_W);
  		
- 		addJPEGDataPanelAction = new DataViewerAction("Add JPEG Data Panel", "", KeyEvent.VK_J) {
+ 		addJPEGDataPanelAction = new DataViewerAction("Add Video/Photo Data Panel", "", KeyEvent.VK_J) {
  			public void actionPerformed(ActionEvent ae) {
  				JPEGDataPanel panel = new JPEGDataPanel(dataPanelContainer, rbnb);
  				addDataPanel(panel);
  			}			
  		};
  		
- 		addJFreeChartDataPanelAction = new DataViewerAction("Add JFreeChart Data Panel", "", KeyEvent.VK_C) {
+ 		addTimeSeriesChartDataPanelAction = new DataViewerAction("Add Time Series Data Panel", "", KeyEvent.VK_C) {
  			public void actionPerformed(ActionEvent ae) {
  				JFreeChartDataPanel panel = new JFreeChartDataPanel(dataPanelContainer, rbnb);
+ 				addDataPanel(panel);
+ 			}			
+ 		};
+ 		
+ 		addXYChartDataPanelAction = new DataViewerAction("Add XY Data Panel", "", KeyEvent.VK_C) {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				JFreeChartDataPanel panel = new JFreeChartDataPanel(dataPanelContainer, rbnb, true);
  				addDataPanel(panel);
  			}			
  		};
@@ -514,7 +520,10 @@ public class DataViewer extends JFrame implements DomainListener {
  		menuItem = new JMenuItem(addJPEGDataPanelAction);
  		windowMenu.add(menuItem);
  		
- 		menuItem = new JMenuItem(addJFreeChartDataPanelAction);
+ 		menuItem = new JMenuItem(addTimeSeriesChartDataPanelAction);
+  		windowMenu.add(menuItem);
+  
+ 		menuItem = new JMenuItem(addXYChartDataPanelAction);
   		windowMenu.add(menuItem);
   		
  		menuItem = new JMenuItem(addStringDataPanelAction);
@@ -735,16 +744,16 @@ public class DataViewer extends JFrame implements DomainListener {
 		return DATE_FORMAT.format(new Date(date));
 	}
 
- 	public static String formatSeconds(double seconds) {
- 		String secondsString;
-		if (seconds == 0 || seconds < 60) {
- 			secondsString = Double.toString(round(seconds)) + " s";
-		} else if (seconds < 1e-6) {
- 			secondsString = Double.toString(round(seconds*1000000000)) + " ns";
-		} else if (seconds < 1e-3) {
- 			secondsString = Double.toString(round(seconds*1000000)) + " us";
- 		} else if (seconds < 1) {
- 			secondsString = Double.toString(round(seconds*1000)) + " ms";
+	public static String formatSeconds(double seconds) {
+		String secondsString;
+		if (seconds < 1e-6) {
+			secondsString = Double.toString(round(seconds*1000000000)) + " ns";
+ 		} else if (seconds < 1e-3) {
+			secondsString = Double.toString(round(seconds*1000000)) + " us";
+ 		} else if (seconds < 1 && seconds != 0) {
+			secondsString = Double.toString(round(seconds*1000)) + " ms";
+ 		} else if (seconds < 60) {
+ 		 	secondsString = Double.toString(round(seconds)) + " s";
  		} else if (seconds < 60*60) {
 			secondsString = Double.toString(round(seconds/60)) + " m";
  		} else if (seconds < 60*60*24){

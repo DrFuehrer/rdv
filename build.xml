@@ -67,7 +67,7 @@
 	  <javac srcdir="${src.dir}" 
 	         destdir="${build.classes}"
 	         classpathref="classpath"
-	         debug="on">
+	         debug="off">
 	  </javac>
 	</target>
 		
