@@ -27,6 +27,9 @@
 -Commented out useless XML metadata display
 -More readable channel sizes
 -Added TODO file
+-Added JNLP file and ant build support
+-Added initial layout custimization support. Can choose horizontal
+ or vertical layout. Only works for 2 data panels currently
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

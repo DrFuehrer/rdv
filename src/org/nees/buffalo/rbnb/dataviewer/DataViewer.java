@@ -17,6 +17,7 @@ import java.util.Date;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
@@ -24,6 +25,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -83,6 +86,9 @@ public class DataViewer extends JFrame implements DomainListener {
  	private Action showChannelListAction;
  	private Action showControlPanelAction;
  	private Action showStatusPanelAction;
+ 	private Action dataPanelAction;
+ 	private Action dataPanelHorizontalLayoutAction;
+ 	private Action dataPanelVerticalLayoutAction;
  	private Action fullScreenAction;
  	
  	private Action windowAction;
@@ -175,7 +181,6 @@ public class DataViewer extends JFrame implements DomainListener {
 		controlPanel.addTimeScaleListener(rbnb);
 		controlPanel.addTimeScaleListener(statusPanel);
 		controlPanel.addDomainListener(rbnb);
-		controlPanel.addDomainListener(dataPanelContainer);
   		controlPanel.addDomainListener(statusPanel);
   		controlPanel.addDomainListener(this);
   
@@ -315,7 +320,21 @@ public class DataViewer extends JFrame implements DomainListener {
  				statusPanel.setVisible(menuItem.isSelected());
  			}			
  		};
- 
+
+ 		dataPanelAction = new DataViewerAction("Data Panel", "Data Panel Sub-Menu", KeyEvent.VK_D);
+ 		
+		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Layout") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				dataPanelContainer.setLayout(DataPanelContainer.HORIZONTAL_LAYOUT);
+ 			}			
+ 		}; 		
+ 		
+		dataPanelVerticalLayoutAction = new DataViewerAction("Vertical Layout") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				dataPanelContainer.setLayout(DataPanelContainer.VERTICAL_LAYOUT);
+ 			}			
+ 		}; 		
+ 		
  		fullScreenAction = new DataViewerAction("Full Screen", "", KeyEvent.VK_F, KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)) {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
@@ -467,6 +486,23 @@ public class DataViewer extends JFrame implements DomainListener {
  		
  		viewMenu.addSeparator();
  		
+ 		JMenu dataPanelSubMenu = new JMenu(dataPanelAction);
+ 		
+ 		ButtonGroup dataLanelLayoutGroup = new ButtonGroup();
+ 		
+ 		menuItem = new JRadioButtonMenuItem(dataPanelHorizontalLayoutAction);
+ 		menuItem.setSelected(true);
+ 		dataPanelSubMenu.add(menuItem);
+ 		dataLanelLayoutGroup.add(menuItem);
+ 		
+ 		menuItem = new JRadioButtonMenuItem(dataPanelVerticalLayoutAction);
+ 		dataPanelSubMenu.add(menuItem);
+ 		dataLanelLayoutGroup.add(menuItem);
+ 		
+ 		viewMenu.add(dataPanelSubMenu);
+
+ 		viewMenu.addSeparator();
+ 		
  		menuItem = new JCheckBoxMenuItem(fullScreenAction);
  		menuItem.setSelected(false);
  		viewMenu.add(menuItem);
@@ -609,6 +645,7 @@ public class DataViewer extends JFrame implements DomainListener {
 	}
 	
 	private void addDataPanel(DataPanel2 dataPanel) {
+		dataPanel.setDomain(controlPanel.getDomain());
 		dataPanelContainer.addDataPanel(dataPanel);
 		dataPanels.add(dataPanel);
 	}

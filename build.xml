@@ -6,6 +6,7 @@
 	
 	<!-- version information -->
 	<property file="build.properties"/>
+	<property name="version" value="${version.major}.${version.minor}.${version.release}"/>
 			
 	<!-- src dir -->
 	<property name="src.dir" value="src"/>
@@ -85,9 +86,19 @@
 		<zip destfile="../${package.name}-${version}.zip">
 			<zipfileset dir="${build.lib}" includes="${package.name}.jar" prefix="${package.name}-${version}"/>
 			<zipfileset dir="lib" prefix="${package.name}-${version}/lib"/>
-			<zipfileset dir="images" prefix="${package.name}-${version}/images"/>
+			<zipfileset dir="icons" prefix="${package.name}-${version}/icons"/>
 			<zipfileset dir="${rbnb.home}/bin" includes="rbnb.jar" prefix="${package.name}-${version}/lib"/>
 		</zip>
+	</target>
+	
+	<!-- Package JNLP file for webserver -->
+	<target name="jnlp" depends="jar" description="Build JNLP zip distribution for webserver">
+		<zip destfile="../${package.name}-JNLP-${version}.zip">
+			<zipfileset dir="${build.lib}" includes="${package.name}.jar"/>
+			<zipfileset dir="lib"/>
+			<zipfileset dir="${rbnb.home}/bin" includes="rbnb.jar"/>
+			<zipfileset file="jnlp/RBNBDataViewer.jnlp"/>
+		</zip>	
 	</target>
 		
 	<target name="javadoc" description="Build documentation">

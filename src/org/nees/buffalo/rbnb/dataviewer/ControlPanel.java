@@ -438,6 +438,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 			locationScrollBar.addAdjustmentListener(this);
 		}
 	}
+	
+	public double getDomain() {
+		return domain;
+	}
 
 	private void domainChange() {
 		double oldDomain = domain;
@@ -530,7 +534,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		locationScrollBar.setEnabled(false);
 		durationScrollBar.setEnabled(false);
 		domainScrollBar.setEnabled(false);
-		
 	}
 	
 	private void enableUI() {
