@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.time.FixedMillisecond;
@@ -94,9 +95,13 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		if (xyMode) {
 			dataCollection = new XYSeriesCollection();
 			chart = ChartFactory.createXYLineChart(null, null, null, dataCollection, PlotOrientation.VERTICAL, false, false, false);
+			((NumberAxis)((XYPlot)chart.getPlot()).getDomainAxis()).setAutoRangeIncludesZero(true);
+			((NumberAxis)((XYPlot)chart.getPlot()).getRangeAxis()).setAutoRangeIncludesZero(true);
+
 		} else {
 			dataCollection = new TimeSeriesCollection();
 			chart = ChartFactory.createTimeSeriesChart(null, "Time", null, dataCollection, true, false, false);
+			((NumberAxis)((XYPlot)chart.getPlot()).getRangeAxis()).setAutoRangeIncludesZero(true);
 		}
 		
 		chart.setAntiAlias(false);
