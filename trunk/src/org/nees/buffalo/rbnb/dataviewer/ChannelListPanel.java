@@ -133,6 +133,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		clearChannelList();
  		connected = false;
  		
+ 		clearMetadata();
+ 		
  		log.info("Channel list is in state DISCONNECTED.");
  	}
  	
@@ -539,6 +541,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		}
 		
 		infoTextArea.setCaretPosition(0);
+	}
+	
+	private void clearMetadata() {
+		infoTextArea.setText("");
 	}
 	
 	public void dragGestureRecognized(DragGestureEvent e) {
