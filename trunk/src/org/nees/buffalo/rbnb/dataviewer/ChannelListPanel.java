@@ -520,18 +520,27 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			infoTextArea.append("Type: " + node.getType() + NEWLINE);
 			infoTextArea.append("Name: " + node.getFullName() + NEWLINE);
 			if (node.getType() == ChannelTree.CHANNEL) {
-				infoTextArea.append("Mime: " + node.getMime() + NEWLINE);
-				infoTextArea.append("Start: " + DataViewer.formatDate(node.getStart()) + NEWLINE);
-				infoTextArea.append("Duriation: " + DataViewer.formatSeconds(node.getDuration()) + NEWLINE);
-				infoTextArea.append("Size: " + DataViewer.formatBytes(node.getSize()));
-				String unit = (String)units.get(node.getFullName());
+				String channelName = node.getFullName();
+				int channelIndex = cmap.GetIndex(channelName);
+				String mime = node.getMime();
+				double start = cmap.GetTimeStart(channelIndex);
+				double duration = cmap.GetTimeDuration(channelIndex);
+				int size = node.getSize();
+				String unit = (String)units.get(channelName);
+
+				infoTextArea.append("Start: " + DataViewer.formatDate(start) + NEWLINE);
+				infoTextArea.append("Duration: " + DataViewer.formatSeconds(duration));
+				if (mime != null) {
+					infoTextArea.append(NEWLINE + "Mime: " + mime);
+				}
 				if (unit != null) {
 					infoTextArea.append(NEWLINE + "Unit: " + unit);
 				}
+				if (size != -1) {
+					infoTextArea.append(NEWLINE + "Size: " + DataViewer.formatBytes(size));
+				}
 				
 				/* infoTextArea.append(NEWLINE + NEWLINE);
-				String channelName = node.getFullName();
-				int channelIndex = cmap.GetIndex(channelName);
 				try {
 					String[] metaData = cmap.GetDataAsString(channelIndex);					
 					for (int j=0; j<metaData.length; j++) {

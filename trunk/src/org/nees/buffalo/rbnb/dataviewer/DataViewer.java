@@ -595,7 +595,11 @@ public class DataViewer extends JFrame implements DomainListener {
 		DataPanel2 panel = null;
 		if (mime == null) {
 			log.warn("Unknown data type for channel " + channelName + ".");
-			panel = new JFreeChartDataPanel(dataPanelContainer, rbnb);
+			if (channelName.endsWith(".jpg")) {
+				panel = new JPEGDataPanel(dataPanelContainer, rbnb);
+			} else {
+				panel = new JFreeChartDataPanel(dataPanelContainer, rbnb);
+			}
 		} else if (mime.equals("image/jpeg")) {		
 			panel = new JPEGDataPanel(dataPanelContainer, rbnb);
 		} else if (mime.equals("application/octet-stream")) {		
