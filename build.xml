@@ -71,7 +71,7 @@
 	<target name="jar" depends="compile" description="Build jar">
 		<jar jarfile="${build.lib}/${package.name}.jar" basedir="${build.classes}">
 			<manifest>
-				<attribute name="Class-Path" value="lib/${package.name}-icons.jar lib/commons-logging.jar lib/gnujaxp.jar lib/jcommon-0.9.7.jar lib/jfreechart-0.9.21.jar lib/log4j-1.2.8.jar lib/rbnb.jar"/>
+				<attribute name="Class-Path" value="lib/${package.name}-icons.jar lib/commons-logging.jar lib/jcommon-0.9.7.jar lib/jfreechart-0.9.21.jar lib/log4j-1.2.8.jar lib/rbnb.jar"/>
 				<attribute name="Main-Class" value="org.nees.buffalo.rbnb.dataviewer.DataViewer"/>
 			</manifest>
 		</jar>

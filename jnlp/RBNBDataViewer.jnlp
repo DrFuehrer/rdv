@@ -18,7 +18,6 @@
 		<jar href="RBNBDataViewer-icons.jar"/>		
 		<jar href="rbnb.jar"/>
 		<jar href="commons-logging.jar"/>
-		<jar href="gnujaxp.jar"/>
 		<jar href="jcommon-0.9.7.jar"/>
 		<jar href="jfreechart-0.9.21.jar"/>
 		<jar href="log4j-1.2.8.jar"/>
