@@ -162,6 +162,10 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		this.timeScale = timeScale;
 		
 		if (state == STATE_PLAYING) {
+			if (!preFetchDone) {
+				//wait for last prefetch to finish
+				getPreFetchChannelMap(-1);
+			}
 			preFetchData(location, timeScale);
 		}
 	}	

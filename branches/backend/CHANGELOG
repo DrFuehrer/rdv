@@ -1,4 +1,4 @@
-1.0.2
+1.1.0
 -Expanded domain slider to include usecond and day time values
 -Improved channel list to keep expansion and selection state on refresh
 -Added ability to hide channel list, control panel, and status panel
