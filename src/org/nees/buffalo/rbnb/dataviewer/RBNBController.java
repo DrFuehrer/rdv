@@ -757,7 +757,12 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	private void updateTimeListeners(double location) {
 		for (int i=0; i<timeListeners.size(); i++) {
 			PlayerTimeListener timeListener = (PlayerTimeListener)timeListeners.get(i);
-			timeListener.postTime(location);
+			try {
+				timeListener.postTime(location);
+			} catch (Exception e) {
+				log.error("Failed to post time to " + timeListener + ".");
+				e.printStackTrace();
+			}
 		}
 	}	
 			
