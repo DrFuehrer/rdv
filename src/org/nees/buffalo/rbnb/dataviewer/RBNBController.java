@@ -93,10 +93,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 					
 			switch (state) {
 				case STATE_LOADING:
-					requestData(location-domain, domain);
-					updateDataMonitoring();
-					updateTimeListeners(location);
-					changeStateSafe(STATE_STOPPED);
+					loadAllData();
 					break;
 				case STATE_PLAYING:
 					updateDataPlaying();
@@ -326,8 +323,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		
 		switch (state) {
 			case STATE_STOPPED:
-				//TODO we should really only load the data we need
-				setLocationSafe(loadLocation);
+				loadData(channelName);
 				break;
 			case STATE_MONITORING:
 				monitor();
@@ -370,6 +366,46 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		fireUnsubscriptionNotification(channelName);
 		
 		return true;
+	}
+	
+	
+	// Load Methods
+	
+	private boolean loadData(String channelName) {
+		ChannelMap realRequestedChannels = requestedChannels;
+		
+		requestedChannels = new ChannelMap();
+		try {
+			requestedChannels.Add(channelName);
+		} catch (SAPIException e) {
+			log.error("Failed to add channel " + channelName + ".");
+			requestedChannels = realRequestedChannels;
+			e.printStackTrace();
+			return false;
+		}
+		
+		if (!requestData(location-domain, domain)) {
+			requestedChannels = realRequestedChannels;
+			return false;
+		}
+		
+		updateDataMonitoring();
+		updateTimeListeners(location);
+		
+		log.info("Loaded " + DataViewer.formatSeconds(domain) + " of data for channel " + channelName + " at " + DataViewer.formatDate(location) + ".");
+		
+		requestedChannels = realRequestedChannels;
+		
+		return true;
+	}
+	
+	private void loadAllData() {
+		requestData(location-domain, domain);
+		updateDataMonitoring();
+		updateTimeListeners(location);
+		changeStateSafe(STATE_STOPPED);
+		
+		log.info("Loaded " + DataViewer.formatSeconds(domain) + " of data for all channels at " + DataViewer.formatDate(location) + ".");
 	}
 	
 	
