@@ -66,8 +66,6 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	
 	JFrame frame;
 	boolean attached;
-	
-	JWindow window;
 	boolean maximized;
 	
  	static boolean iconsLoaded = false;
@@ -324,11 +322,7 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	
 	public void toggleDetach() {
 		if (maximized) {
-			window.setVisible(false);
-			window.getContentPane().remove(component);
-			window.dispose();
-			window = null;
-			maximized = false;
+			restorePanel(false);
 		}
 		
 		if (attached) {
@@ -384,41 +378,56 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	}
 	
 	public void maximizePanel() {
-		maximized = true;
-		dataPanelContainer.removeDataPanel(this);
-		
-		window = new JWindow();
-		window.getContentPane().add(component);
-		window.setSize(getScreenDimensions());
-		window.setVisible(true);
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] devices = ge.getScreenDevices();
+		for (int i=0; i<devices.length; i++) {
+			GraphicsDevice device = devices[i];
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == null) {			
+				maximized = true;
+				dataPanelContainer.removeDataPanel(this);
+
+				frame = new JFrame(getTitle());
+				frame.setUndecorated(true);				
+				frame.getContentPane().add(component);
+				
+				try {
+					device.setFullScreenWindow(frame);
+				} catch (InternalError e) {
+					log.error("Failed to switch to full screen mode: " + e.getMessage() + ".");
+					restorePanel(true);
+					return;
+				}
+				
+				frame.setVisible(true);
+				frame.requestFocus();
+								
+				break;
+			}
+		}
 	}
 	
 	public void restorePanel(boolean addToContainer) {
-		window.setVisible(false);
-		window.getContentPane().remove(component);
-		window.dispose();
-		window = null;
-
-		maximized = false;
+		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		GraphicsDevice[] devices = ge.getScreenDevices();
+		for (int i=0; i<devices.length; i++) {
+			GraphicsDevice device = devices[i];
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == frame) {
+				if (frame != null) {
+					frame.setVisible(false);
+					device.setFullScreenWindow(null);
+					frame.getContentPane().remove(component);
+					frame.dispose();
+					frame = null;
+				}
 		
-		if (addToContainer) {
-			dataPanelContainer.addDataPanel(this);
+				maximized = false;
+				
+				if (addToContainer) {
+					dataPanelContainer.addDataPanel(this);
+				}
+			}
 		}
 	}	
-	
-	Dimension getScreenDimensions() {
-		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-		GraphicsDevice[] gs = ge.getScreenDevices();
-		    
-		for (int i=0; i<gs.length; i++) {
-			DisplayMode dm = gs[i].getDisplayMode();
-			int screenWidth = dm.getWidth();
-			int screenHeight = dm.getHeight();
-			return new Dimension(screenWidth, screenHeight);
-		}
-		
-		return null;
-	}
 	
 	public void setDropTarget(boolean enable) {
 		if (enable) {

@@ -698,37 +698,47 @@ public class DataViewer extends JFrame implements DomainListener {
  	private void enterFullScreenMode() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
-		if (devices[0].isFullScreenSupported() && devices[0].getFullScreenWindow() == null) {
-			log.info("Switching to full screen mode.");
-	
-			setVisible(false);
-	
-			try {
-				devices[0].setFullScreenWindow(this);
-			} catch (InternalError e) {
-				log.error("Failed to switch to full screen mode: " + e.getMessage() + ".");
+		for (int i=0; i<devices.length; i++) {
+			GraphicsDevice device = devices[i];
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == null) {
+				log.info("Switching to full screen mode.");
+		
+				setVisible(false);
+		
+				try {
+					device.setFullScreenWindow(this);
+				} catch (InternalError e) {
+					log.error("Failed to switch to full screen mode: " + e.getMessage() + ".");
+					setVisible(true);
+					return;
+				}
+		
+				dispose();
+				setUndecorated(true);
 				setVisible(true);
-				return;
+				requestFocus();
+				
+				break;
 			}
-	
-			dispose();
-			setUndecorated(true);
-			setVisible(true);
-			requestFocus();
 		}
  	}
  	
  	private void leaveFullScreenMode() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] devices = ge.getScreenDevices();
-		if (devices[0].isFullScreenSupported() && devices[0].getFullScreenWindow() != null) {
-			log.info("Leaving full screen mode.");
-
-			setVisible(false);
-			devices[0].setFullScreenWindow(null);
-			dispose();
-			setUndecorated(false);
-			setVisible(true);
+		for (int i=0; i<devices.length; i++) {
+			GraphicsDevice device = devices[i];
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == this) {
+				log.info("Leaving full screen mode.");
+	
+				setVisible(false);
+				device.setFullScreenWindow(null);
+				dispose();
+				setUndecorated(false);
+				setVisible(true);
+				
+				break;
+			}
 		}
 	}
 
