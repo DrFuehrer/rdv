@@ -19,6 +19,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.JComponent;
@@ -53,6 +54,7 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	static Log log = LogFactory.getLog(JFreeChartDataPanel.class.getName());
 
 	Vector channels;
+	Hashtable units;
 	
 	JFreeChart chart;
 	ChartPanel chartPanel;
@@ -83,6 +85,7 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		this.xyMode = xyMode;
 		
 		channels = new Vector();
+		units = new Hashtable();
 		attached = true;
 		domain = 1;
 
@@ -151,18 +154,30 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	}
 	
 	public void setChannel(String channelName) {
+		setChannel(channelName, null);
+	}
+	
+	public void setChannel(String channelName, String unit) {
 		removeAllChannels();
-		addChannel(channelName);
+		addChannel(channelName, unit);
 	}
 
 	public void addChannel(String channelName) {
+		addChannel(channelName, null);
+	}
+	
+	public void addChannel(String channelName, String unit) {
 		if (channels.contains(channelName)) return;
 		
-		log.debug("Adding channel: " + channelName + ".");
+		log.debug("Adding channel: " + channelName + " (" + unit + ").");
 
+		if (unit != null) {
+			units.put(channelName, unit);
+		}		
+		
 		if (xyMode) {
 			if (channels.size() == 0) {
-				XYSeries data = new XYSeries(channelName, false, true);
+				XYSeries data = new XYSeries(getSeriesName(channelName), false, true);
 				((XYSeriesCollection)dataCollection).addSeries(data);
 			} else if (channels.size() == 1) {
 				
@@ -170,29 +185,30 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 				return;
 			}
 		} else {
-			TimeSeries data = new TimeSeries(channelName, FixedMillisecond.class);
+			TimeSeries data = new TimeSeries(getSeriesName(channelName), FixedMillisecond.class);
 			data.setHistoryCount((int)(domain*1000));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
 		}
 		
 		player.subscribe(channelName, this);
-		
+
 		channels.add(channelName);
-		setTitle();
 		
+		setTitle();
 	}
 	
 	public void removeChannel(String channelName) {
 		log.debug("Removing channel: " + channelName + ".");
 		
 		channels.remove(channelName);
+		units.remove(channelName);
 		setTitle();
 		if (xyMode) {
 			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
 			//TODO add this functionality
 		} else {
 			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-			TimeSeries data = dataCollection.getSeries(channelName);
+			TimeSeries data = dataCollection.getSeries(getSeriesName(channelName));
 			dataCollection.removeSeries(data);
 			player.unsubscribe(channelName, this);
 		}
@@ -208,6 +224,7 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			dataCollection.removeAllSeries();
 		}
 		channels.clear();
+		units.clear();
 	}
 	
 	private void setTitle() {	
@@ -215,15 +232,20 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 		
 		if (xyMode) {
 			if (channels.size() == 1) {
-				((XYPlot)chart.getPlot()).getDomainAxis().setLabel((String)channels.get(0));
+				String channelName = (String)channels.get(0);
+				String seriesName = getSeriesName(channelName);
+				((XYPlot)chart.getPlot()).getDomainAxis().setLabel(seriesName);
 				title = (String) channels.get(0);
 			} else if (channels.size() == 2) {
-				((XYPlot)chart.getPlot()).getRangeAxis().setLabel((String)channels.get(1));
+				String channelName = (String)channels.get(1);
+				String seriesName = getSeriesName(channelName);
+				((XYPlot)chart.getPlot()).getRangeAxis().setLabel(seriesName);
 				title = channels.get(0) + " vs. " + channels.get(1);
 			}
 		} else {
 			for(int i=0; i < channels.size(); i++) {
-				title += channels.get(i) + (i==channels.size()-1?"" : ", ");
+				String channelName = (String)channels.get(i);
+				title += channelName + (i==channels.size()-1?"" : ", ");
 			}			
 		}
 		
@@ -231,6 +253,15 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			frame.setTitle(title);
 		}
 
+	}
+	
+	private String getSeriesName(String channelName) {
+		String seriesName = channelName;
+		String unit = (String)units.get(channelName);
+		if (unit != null) {
+			seriesName += " (" + unit + ")";
+		}
+		return seriesName;
 	}
 		
 	public void setDomain(double domain) {
@@ -303,7 +334,7 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	private void postDataTimeSeries(ChannelMap channelMap, String channelName, int channelIndex, double startTime, double duration) {		
 		TimeSeries timeSeriesData = null;
 		TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-		timeSeriesData = dataCollection.getSeries(channelName);
+		timeSeriesData = dataCollection.getSeries(getSeriesName(channelName));
 		
 		try {		
 			double[] times = channelMap.GetTimes(channelIndex);
@@ -414,7 +445,8 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			return;
 		}
 				
-		try {		
+		try {
+			//TODO make sure data is at the same timestamp
 			double[] times = channelMap.GetTimes(xChannelIndex); //FIXME go over all channel times
 
 			TimeIndex index = getTimeIndex(times, startTime, duration);
@@ -598,15 +630,21 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 			DataFlavor stringFlavor = DataFlavor.stringFlavor;
 			Transferable tr = e.getTransferable();
 			if(e.isDataFlavorSupported(stringFlavor)) {
-				String channelName = (String)tr.getTransferData(stringFlavor);
+				String data = (String)tr.getTransferData(stringFlavor);
+				String[] tokens = data.split("\t");
+				String channelName = tokens[0];
+				String unit = null;
+				if (tokens.length == 2) {
+					unit = tokens[1];
+				}
 				e.acceptDrop(DnDConstants.ACTION_LINK);
 				e.dropComplete(true);
 				
 				try {
 					if (supportsMultipleChannels()) {
-						addChannel(channelName);
+						addChannel(channelName, unit);
 					} else {
-						setChannel(channelName);
+						setChannel(channelName, unit);
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();

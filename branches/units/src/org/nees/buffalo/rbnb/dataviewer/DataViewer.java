@@ -627,7 +627,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 	}
 		
-	public void viewChannel(String channelName, String mime) {
+	public void viewChannel(String channelName, String mime, String unit) {
 		log.debug("Cretaing data panel for channel " + channelName + ".");
 		
 		DataPanel2 panel = null;
@@ -646,7 +646,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		}
 		
 		try {
-			panel.setChannel(channelName);	
+			panel.setChannel(channelName, unit);	
 		} catch (Exception e) {
 			log.error("Failed to add chanel to data panel.");
 			return;

@@ -75,12 +75,12 @@ public class StringDataPanel implements DataPanel2, PlayerChannelListener, DropT
 		return true;
 	}
 
-	public void setChannel(String channelName) {
+	public void setChannel(String channelName, String unit) {
 		player.unsubscribeAll(this);
 		channels.clear();
-		addChannel(channelName);
+		addChannel(channelName, unit);
 	}
-	public void addChannel(String channelName) {
+	public void addChannel(String channelName, String unit) {
 		if (channels.contains(channelName)) return;
 		
 		log.debug("Adding channel: " + channelName + ".");
@@ -178,9 +178,9 @@ public class StringDataPanel implements DataPanel2, PlayerChannelListener, DropT
 				
 				try {
 					if (supportsMultipleChannels()) {
-						addChannel(channelName);
+						addChannel(channelName, null);
 					} else {
-						setChannel(channelName);
+						setChannel(channelName, null);
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();

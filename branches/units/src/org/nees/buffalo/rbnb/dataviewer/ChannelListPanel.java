@@ -15,6 +15,8 @@ import java.awt.dnd.DragSourceListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -50,6 +52,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	private DataViewer dataViewer;
 	private ChannelTree ctree;
 	private ChannelMap cmap;
+	private HashMap units;
 	
 	private double startTime = -1;
 	private double endTime = -1;
@@ -81,6 +84,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		
 		root = "";
 		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
+
+		units = new HashMap();
 		
 		initPanel();
 	}
@@ -175,6 +180,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		}
 		
 		log.debug("Received list of available channels.");
+						
+		getUnits();
 		
 		closeRBNB();
 		
@@ -239,6 +246,58 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		fireRootChanged();
  		
  		connected = false;
+ 	}
+ 	
+ 	private void getUnits() { 		
+		//subscribe to all units channels
+		ChannelMap unitsChannelMap = new ChannelMap();
+		try {
+			unitsChannelMap.Add("_Units/*");
+		} catch (SAPIException e) {
+			e.printStackTrace();
+		}
+		
+		//get the latest unit information
+		try {
+			//sink.Request(unitsChannelMap, 0, Double.MAX_VALUE, "absolute");
+			sink.Request(unitsChannelMap, 0, 0, "newest");
+		} catch (SAPIException e) {
+			e.printStackTrace();
+		}
+		
+		//fetch the unit channel data
+		try {
+			unitsChannelMap = sink.Fetch(-1);
+		} catch (SAPIException e) {
+			e.printStackTrace();
+		}
+		
+		closeRBNB();
+		
+		String[] channels = unitsChannelMap.GetChannelList();
+		for (int i=0; i<channels.length; i++) {
+			String channelName = channels[i];
+			String parent = channelName.substring(channelName.lastIndexOf("/")+1);
+			int channelIndex = unitsChannelMap.GetIndex(channelName);
+			String[] data = unitsChannelMap.GetDataAsString(channelIndex);
+			String newestData = data[data.length-1];
+			String[] channelTokens = newestData.split("\t,");
+			for (int j=0; j<channelTokens.length; j++) {
+				String[] tokens = channelTokens[j].split("=");
+				if (tokens.length == 2) {
+					String channel = parent + "/" + tokens[0].trim();
+					String unit = tokens[1].trim();
+					log.debug("Got unit (" + unit + ") for channel " + channel + ".");
+					units.put(channel, unit);
+				} else {
+					log.debug("Invalid unit string: " + channelTokens[j] + ".");
+				}
+			}
+		}
+ 	}
+ 	
+ 	public String getUnit(String channel) {
+ 		return (String)units.get(channel);
  	}
  	
  	private void fireRootChanged() {
@@ -444,7 +503,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 				ChannelTree.Node node = (ChannelTree.Node)o;
 				if (node.getType() == ChannelTree.CHANNEL) {
 					String channelName = node.getFullName();
-					e.startDrag(DragSource.DefaultLinkDrop, new StringSelection(channelName), this);
+					String unit = getUnit(channelName);
+					String data = channelName;
+					if (unit != null) {
+						data += "\t" + unit;
+					}
+					e.startDrag(DragSource.DefaultLinkDrop, new StringSelection(data), this);
 				}
 			}
 		}
@@ -466,7 +530,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 					if (node.getType() == ChannelTree.CHANNEL) {
 						String channelName = node.getFullName();
 						String mime = node.getMime();
-						dataViewer.viewChannel(channelName, mime);
+						String unit = (String)units.get(channelName);
+						dataViewer.viewChannel(channelName, mime, unit);
 					}
 				}
 			}

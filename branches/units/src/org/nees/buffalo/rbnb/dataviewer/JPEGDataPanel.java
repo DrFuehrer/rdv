@@ -174,7 +174,7 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		return panel;
 	}
 	
-	public void setChannel(String channelName) {
+	public void setChannel(String channelName, String unit) {
 		if (this.channelName.equals(channelName)) {
 			return;
 		} else if (this.channelName.equals("")) {
@@ -549,7 +549,7 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		return false;
 	}
 
-	public void addChannel(String channelName) {}
+	public void addChannel(String channelName, String unit) {}
 
 	public void removeChannel(String channelName) {}
 
@@ -570,9 +570,9 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 				
 				try {
 					if (supportsMultipleChannels()) {
-						addChannel(channelName);
+						addChannel(channelName, null);
 					} else {
-						setChannel(channelName);
+						setChannel(channelName, null);
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
