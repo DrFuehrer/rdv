@@ -11,21 +11,30 @@ Date: ?
 Introduction
 ------------
 
+RBNB Data Viewer is a software package used to view time synchronized,
+streaming data, in live or archived form, over the internet from a
+Data Turbine server. It is capable of displaying any time series data,
+whether numeric, image, or video, in an integrated application for
+viewing and analysis.
+
 
 Requirements
 ------------
-The following software is required to build and run the application:
-Java SDK 1.4
-Ant
-RBNB 2.4
+The following software is required to build the application:
+-Java SDK 1.4
+-Ant
+-RBNB 2.4
+
+The following software is required to run the application:
+-Java 1.4
 
 
 Building
 --------
 Set the following environmental variables:
-JAVA_HOME                root of JDK instalation
-ANT_HOME                 root of Ant installation
-RBNB_HOME                root of RBNB instalation
+-JAVA_HOME                root of JDK instalation
+-ANT_HOME                 root of Ant installation
+-RBNB_HOME                root of RBNB instalation
 
 Add JAVA_HOME/bin and ANT_HOME/bin to your path.
 
@@ -52,7 +61,8 @@ can drag additional channels onto it. To close a data panel
 click the "X" in the upper right hand corner, this is a little 
 broken but just click there and it should work. If you click 
 anywhere else in a data panel, the panel will detach and become 
-its own window. To reattach the data panel just click it again. 
+its own window. To reattach the data panel just click it again.
+
 
 Distribution
 ------------
@@ -65,7 +75,7 @@ To create a Java Web Start (JNLP) package:
 
 Copyright
 ---------
-Copyright (c) 2004 University at Buffalo
+Copyright (c) 2005 University at Buffalo
 
 
 Acknowledgements
