@@ -649,6 +649,7 @@ public class DataViewer extends JFrame implements DomainListener {
 			panel.setChannel(channelName, unit);	
 		} catch (Exception e) {
 			log.error("Failed to add chanel to data panel.");
+			e.printStackTrace();
 			return;
 		}
 		
