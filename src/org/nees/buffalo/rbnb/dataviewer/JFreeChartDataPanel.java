@@ -213,10 +213,14 @@ public class JFreeChartDataPanel implements DataPanel2, PlayerChannelListener, P
 	private void setTitle() {	
 		String title = "";
 		
-		if (xyMode && channels.size() == 2) {
-			((XYPlot)chart.getPlot()).getDomainAxis().setLabel((String)channels.get(0));
-			((XYPlot)chart.getPlot()).getRangeAxis().setLabel((String)channels.get(1));
-			title = channels.get(0) + " vs " + channels.get(1);
+		if (xyMode) {
+			if (channels.size() == 1) {
+				((XYPlot)chart.getPlot()).getDomainAxis().setLabel((String)channels.get(0));
+				title = (String) channels.get(0);
+			} else if (channels.size() == 2) {
+				((XYPlot)chart.getPlot()).getRangeAxis().setLabel((String)channels.get(1));
+				title = channels.get(0) + " vs. " + channels.get(1);
+			}
 		} else {
 			for(int i=0; i < channels.size(); i++) {
 				title += channels.get(i) + (i==channels.size()-1?"" : ", ");
