@@ -502,13 +502,11 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		
 		String[] channelList = getmap.GetChannelList();
 
-		//stop if no data in fetch, most likely end of data
-		//FIXME this can stop with a small duration, figure out a way to stop at end of data
-		//if this happens maybe check the metadata length
- 		if (channelList.length == 0) {
- 			log.warn("Received no data. Assuming end of channel.");
- 			changeStateSafe(STATE_STOPPED);
- 			return;			
+		//stop if no data in fetch and past end time, most likely end of data
+ 		if (channelList.length == 0 && !moreData(requestedChannels.GetChannelList(), metaDataChannelMap, location)) {
+			log.warn("Received no data. Assuming end of channel.");
+			changeStateSafe(STATE_STOPPED);
+			return;
  		}
  		
  		preFetchData(location+timeScale, timeScale);
@@ -845,6 +843,24 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	
 	
 	// Utility (Static) Methods
+	
+	private static boolean moreData(String[] channels, ChannelMap metaDataChannelMap, double time) {
+		double endTime = -1;
+		
+		for (int i=0; i<channels.length; i++) {
+			String channelName = channels[i];
+			double channelEndTime = getEndTime(metaDataChannelMap, channelName);
+			if (channelEndTime != -1) {
+				endTime = Math.max(endTime, channelEndTime);
+			}
+		}
+		
+		if (endTime == -1 || time >= endTime) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
 	private static boolean isVideo(ChannelMap channelMap, String channelName) {
 		if (channelName == null) {
