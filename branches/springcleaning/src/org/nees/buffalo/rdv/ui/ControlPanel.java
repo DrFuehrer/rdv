@@ -18,20 +18,20 @@ import javax.swing.border.EtchedBorder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.rbnb.ChannelListListener;
+import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.DomainListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.PlayerStateListener;
 import org.nees.buffalo.rdv.rbnb.PlayerSubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.PlayerTimeListener;
-import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
+import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 
 import com.rbnb.sapi.ChannelMap;
 
 /**
  * @author Jason P. Hanley
  */
-public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTimeListener, PlayerStateListener, PlayerSubscriptionListener, ChannelListListener {
+public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTimeListener, PlayerStateListener, PlayerSubscriptionListener, MetadataListener {
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
@@ -54,7 +54,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	private double startTime;
 	private double endTime;
 	private double location;
-	private double timeScale;
+	private double playbackRate;
 	private double domain;
 	
 	int sliderLocation;
@@ -63,7 +63,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	
 	ChannelMap channelMap;
 	
-	ArrayList timeScaleChangeListeners;
+	ArrayList playbackRateListeners;
 	ArrayList domainChangeListeners;
 
 	public ControlPanel(DataViewer dataViewer, Player player) {
@@ -75,18 +75,18 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		startTime = -1;
 		endTime = -1;
 		location = -1;
-		timeScale = 1;
+		playbackRate = 1;
 		domain = 1;
 		
 		initPanel();
 		
-		timeScaleChangeListeners = new ArrayList();
+		playbackRateListeners = new ArrayList();
 		domainChangeListeners = new ArrayList();
 		
 		locationScrollBar.removeAdjustmentListener(this);
-		locationScrollBar.setVisibleAmount((int)(timeScale*1000));
-		locationScrollBar.setUnitIncrement((int)(timeScale*1000));			
-		locationScrollBar.setBlockIncrement((int)(timeScale*1000));
+		locationScrollBar.setVisibleAmount((int)(playbackRate*1000));
+		locationScrollBar.setUnitIncrement((int)(playbackRate*1000));			
+		locationScrollBar.setBlockIncrement((int)(playbackRate*1000));
 		locationScrollBar.addAdjustmentListener(this);
 	}
 	
@@ -257,7 +257,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.anchor = GridBagConstraints.NORTHWEST;		
 		container.add(domainScrollBar, c);
 		
-		JLabel timeScaleLabel = new JLabel("Playback Rate");
+		JLabel playbackRateLabel = new JLabel("Playback Rate");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.weighty = 0;
@@ -269,7 +269,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;
-		container.add(timeScaleLabel, c);		
+		container.add(playbackRateLabel, c);		
 		
  		durationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, -9, 10);
 		durationScrollBar.addAdjustmentListener(this);
@@ -422,7 +422,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	}
 	
 	private void durationChange() {
-		double oldTimeScale = timeScale;
+		double oldPlaybackRate = playbackRate;
 		
 		int value = durationScrollBar.getValue();
 			
@@ -431,11 +431,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 			int mod = value % 3;
 			
 			if (mod == 0) {
-				timeScale = 1*Math.pow(10, quotient);
+				playbackRate = 1*Math.pow(10, quotient);
 			} else if (mod == 1) {
-				timeScale = 2*Math.pow(10, quotient);
+				playbackRate = 2*Math.pow(10, quotient);
 			} else if (mod == 2) {
-				timeScale = 5*Math.pow(10, quotient);
+				playbackRate = 5*Math.pow(10, quotient);
 			}				
 		} else {
 			value = value - 2;
@@ -443,23 +443,23 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 			int mod = value % 3;			
 			
 			if (mod == 0) {
-				timeScale = 5*Math.pow(10, quotient);
+				playbackRate = 5*Math.pow(10, quotient);
 			} else if (mod == -1) {
-				timeScale = 2*Math.pow(10, quotient);
+				playbackRate = 2*Math.pow(10, quotient);
 			} else if (mod == -2) {
-				timeScale = 1*Math.pow(10, quotient);
+				playbackRate = 1*Math.pow(10, quotient);
 			}				
 		}
 
-		if (timeScale != oldTimeScale) {
-			fireTimeScaleChanged(timeScale);
+		if (playbackRate != oldPlaybackRate) {
+			firePlaybackRateChanged(playbackRate);
 			
-			log.debug("Time scale slider changed to " + timeScale + ".");
+			log.debug("Playback rate slider changed to " + playbackRate + ".");
 			
 			locationScrollBar.removeAdjustmentListener(this);
-			locationScrollBar.setVisibleAmount((int)(timeScale*1000));
-			locationScrollBar.setUnitIncrement((int)(timeScale*1000));			
-			locationScrollBar.setBlockIncrement((int)(timeScale*10000));
+			locationScrollBar.setVisibleAmount((int)(playbackRate*1000));
+			locationScrollBar.setUnitIncrement((int)(playbackRate*1000));			
+			locationScrollBar.setBlockIncrement((int)(playbackRate*10000));
 			locationScrollBar.addAdjustmentListener(this);
 		}
 	}
@@ -494,7 +494,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 		}
 		
 		if (this.domain != oldDomain && index != -1) {
-			log.info("Setting time scale to " + this.domain);
+			log.info("Setting domain to " + this.domain);
 			domainScrollBar.setValue(index);
 			fireDomainChanged(this.domain);
 		} else if (index == -1) {
@@ -519,22 +519,22 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	}
 	
 	
-	// Time Scale Listener Methods
+	// Playback Rate Listener Methods
 
-	public void addTimeScaleListener(TimeScaleListener listener) {
-		listener.timeScaleChanged(timeScale);
-		timeScaleChangeListeners.add(listener);
+	public void addPlaybackRateListener(PlaybackRateListener listener) {
+		listener.playbackRateChanged(playbackRate);
+		playbackRateListeners.add(listener);
 	}
 	
-	public void removeTimeScaleListener(TimeScaleListener listener) {
-		timeScaleChangeListeners.remove(listener);
+	public void removePlaybackRateListener(PlaybackRateListener listener) {
+		playbackRateListeners.remove(listener);
 	}
 	
-	private void fireTimeScaleChanged(double timeScale) {
-		TimeScaleListener listener;
-		for (int i=0; i<timeScaleChangeListeners.size(); i++) {
-			listener = (TimeScaleListener)timeScaleChangeListeners.get(i);
-			listener.timeScaleChanged(timeScale);
+	private void firePlaybackRateChanged(double playbackRate) {
+		PlaybackRateListener listener;
+		for (int i=0; i<playbackRateListeners.size(); i++) {
+			listener = (PlaybackRateListener)playbackRateListeners.get(i);
+			listener.playbackRateChanged(playbackRate);
 		}
 	}	
 	

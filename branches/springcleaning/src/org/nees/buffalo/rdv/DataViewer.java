@@ -206,8 +206,8 @@ public class DataViewer extends JFrame implements DomainListener {
 		channelListPanel.addChannelListListener(rbnb);
 		channelListPanel.addChannelListListener(controlPanel);
 		
-		controlPanel.addTimeScaleListener(rbnb);
-		controlPanel.addTimeScaleListener(statusPanel);
+		controlPanel.addPlaybackRateListener(rbnb);
+		controlPanel.addPlaybackRateListener(statusPanel);
 		
 		controlPanel.addDomainListener(rbnb);
   		controlPanel.addDomainListener(statusPanel);

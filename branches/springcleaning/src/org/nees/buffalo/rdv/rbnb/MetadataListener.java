@@ -8,7 +8,7 @@ import com.rbnb.sapi.ChannelMap;
  * @author  Jason P. Hanley
  * @since   1.0
  */
-public interface ChannelListListener {
+public interface MetadataListener {
 	
 	/**
 	 * Invoked when the channel list is updated. This will contain
@@ -16,7 +16,7 @@ public interface ChannelListListener {
 	 * This information is encapsulated in the <code>ChannelMap</code>.
 	 * 
 	 * @param channelMap  The channel map
-	 * @since           1.0
+	 * @since             1.0
 	 */
 	public void channelListUpdated(ChannelMap channelMap);
 }

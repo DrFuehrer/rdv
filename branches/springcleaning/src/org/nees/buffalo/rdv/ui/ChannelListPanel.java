@@ -37,7 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.ChannelListListener;
+import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.PlayerSubscriptionListener;
 
 import com.rbnb.sapi.ChannelMap;
@@ -632,18 +632,18 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
 	public void channelUnsubscribed(String channelName) {}
 	
-	public void addChannelListListener(ChannelListListener listener) {
+	public void addChannelListListener(MetadataListener listener) {
 		channelListListeners.add(listener);
 	}
 
-	public void removeChannelListListener(ChannelListListener listener) {
+	public void removeChannelListListener(MetadataListener listener) {
 		channelListListeners.remove(listener);
 	}
 	
 	private void fireChannelListUpdated(ChannelMap channelMap) {
-		ChannelListListener listener;
+		MetadataListener listener;
 		for (int i=0; i<channelListListeners.size(); i++) {
-			listener = (ChannelListListener)channelListListeners.get(i);
+			listener = (MetadataListener)channelListListeners.get(i);
 			listener.channelListUpdated(channelMap);
 		}
 	}

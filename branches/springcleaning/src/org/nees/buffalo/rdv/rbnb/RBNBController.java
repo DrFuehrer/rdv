@@ -14,7 +14,7 @@ import com.rbnb.sapi.Sink;
 /**
  * @author Jason P. Hanley
  */
-public class RBNBController implements Player, TimeScaleListener, DomainListener, ChannelListListener {
+public class RBNBController implements Player, PlaybackRateListener, DomainListener, MetadataListener {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
 
@@ -42,13 +42,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 	
 	//FIXME should be -1, but breaks stuff
 	private double location = System.currentTimeMillis()/1000d;
-	private double timeScale = 1;
+	private double playbackRate = 1;
 	private double domain = 1;
 	
 	private int STATE_RECONNECT = 100;
 	
 	private double updateLocation = -1;
-	private double updateTimeScale = -1;
+	private double updatePlaybackRate = -1;
 	private int updateState = -1;
 	private ArrayList updateSubscriptionRequests = new ArrayList();
 
@@ -149,9 +149,9 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			updateLocation = -1;
 		}
 		
-		if (updateTimeScale != -1) {
-			setTimeScaleSafe(updateTimeScale);
-			updateTimeScale = -1;
+		if (updatePlaybackRate != -1) {
+			setPlaybackRateSafe(updatePlaybackRate);
+			updatePlaybackRate = -1;
 		}
 		
 		if (updateState != -1 && state != STATE_LOADING) {
@@ -176,22 +176,22 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		}
 	}
 	
-	private void setTimeScaleSafe(double timeScale) {
-		if (this.timeScale == timeScale) {
-			//the time scale value hasn't changed
+	private void setPlaybackRateSafe(double playbackRate) {
+		if (this.playbackRate == playbackRate) {
+			//the playback rate hasn't changed
 			return;
 		}
 		
-		log.info("Setting time scale to " + timeScale + " seconds.");
+		log.info("Setting playback rate to " + playbackRate + " seconds.");
 		
-		this.timeScale = timeScale;
+		this.playbackRate = playbackRate;
 		
 		if (state == STATE_PLAYING) {
 			if (!preFetchDone) {
 				//wait for last prefetch to finish
 				getPreFetchChannelMap(-1);
 			}
-			preFetchData(location, timeScale);
+			preFetchData(location, playbackRate);
 		}
 	}	
 		
@@ -218,7 +218,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			case STATE_PLAYING:
 			case STATE_REALTIME:
 				if (oldState == STATE_MONITORING || oldState == STATE_STOPPED) {
-					preFetchData(location, timeScale);
+					preFetchData(location, playbackRate);
 				}
 				break;
 			case STATE_LOADING:
@@ -510,14 +510,14 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			return;
  		}
  		
- 		preFetchData(location+timeScale, timeScale);
+ 		preFetchData(location+playbackRate, playbackRate);
  		
 		channelManager.postData(getmap);					
 		
-		//log.debug("Playing back " + timeScale + " seconds of data for " + channelList.length + " channels at location " + formatDate(location) + ".");
+		//log.debug("Playing back " + playbackRate + " seconds of data for " + channelList.length + " channels at location " + formatDate(location) + ".");
 		
-		double playbackRate = timeScale;
-		double playbackDuration = timeScale;
+		double playbackRate = this.playbackRate; //FIXME not really needed anymore
+		double playbackDuration = playbackRate;
 		double playbackRefreshRate = PLAYBACK_REFRESH_RATE;
 		double playbackStepTime = playbackRate * playbackRefreshRate;
 		long playbackSteps = (long)(playbackDuration / playbackStepTime);
@@ -526,7 +526,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		long playbackStartTime = System.currentTimeMillis();
 		
 		int i = 0;
-		while (i<playbackSteps && updateState == -1 && updateLocation == -1 && updateTimeScale == -1) {			
+		while (i<playbackSteps && updateState == -1 && updateLocation == -1 && updatePlaybackRate == -1) {			
 			double timeDifference = (playbackRefreshRate*(i+1)) - ((System.currentTimeMillis() - playbackStartTime)/1000d);
  			if (dropData && timeDifference < -playbackRefreshRate) {
 				int stepsToSkip = (int)((timeDifference*-1) / playbackRefreshRate);
@@ -941,12 +941,12 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		updateLocation = location;
 	}
 	
-	public double getTimeScale() {
-		return timeScale;
+	public double getPlaybackRate() {
+		return playbackRate;
 	}
 
-	public void setTimeScale(final double timeScale) {
-		updateTimeScale = timeScale;
+	public void setPlaybackRate(final double playbackRate) {
+		updatePlaybackRate = playbackRate;
 	}
 	
 	public boolean subscribe(String channelName, PlayerChannelListener listener) {
@@ -1011,8 +1011,8 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		changeState(STATE_RECONNECT);
 	}
 	
-	public void timeScaleChanged(double timeScale) {
-		setTimeScale(timeScale);
+	public void playbackRateChanged(double playbackRate) {
+		setPlaybackRate(playbackRate);
 	}
 
 	public void domainChanged(double domain) {

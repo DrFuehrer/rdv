@@ -112,22 +112,22 @@ public interface Player {
 	
 	
 	/**
-	 * Get the time scale that player is using. This is the rate at
+	 * Get the playback rate that the player is using. This is the rate at
 	 * which data is played back.
 	 * 
-	 * @return  the current time scale
+	 * @return  the current playback rate
 	 * @since   1.0
 	 */
-	public double getTimeScale();
+	public double getPlaybackRate();
 	
 	/**
-	 * Set the time scale that the player uses for data playback.
+	 * Set the playback rate that the player uses for data playback.
 	 * This is the rate at which data is played back.
 	 * 
-	 * @param timeScale  the time scale to set
-	 * @since            1.0
+	 * @param playbackRate  the playback rate to set
+	 * @since               1.0
 	 */
-	public void setTimeScale(final double timeScale);
+	public void setPlaybackRate(final double playbackRate);
 	
 	
 	/**

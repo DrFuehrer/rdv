@@ -12,17 +12,17 @@ import org.nees.buffalo.rdv.rbnb.DomainListener;
 import org.nees.buffalo.rdv.rbnb.PlayerStateListener;
 import org.nees.buffalo.rdv.rbnb.PlayerTimeListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
-import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
+import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 
 /**
  * @author Jason P. Hanley
  */
-public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScaleListener, PlayerStateListener, DomainListener {
+public class StatusPanel extends JPanel implements PlayerTimeListener, PlaybackRateListener, PlayerStateListener, DomainListener {
 
 	private DataViewer dataViewer;
 
 	private JLabel locationLabel;
-	private JLabel timeScaleLabel;
+	private JLabel playbackRateLabel;
 	private JLabel stateLabel;
 	private JLabel domainLabel;
 	
@@ -82,7 +82,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 		c.anchor = GridBagConstraints.WEST;		
 		add(stateLabel, c);
 		
-		timeScaleLabel = new JLabel();
+		playbackRateLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0.5;
 		c.weighty = 0;
@@ -94,7 +94,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.EAST;		
-		add(timeScaleLabel, c);
+		add(playbackRateLabel, c);
 	}
 
 	public void postTime(double time) {
@@ -102,8 +102,8 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 		locationLabel.setText("Time: " + locationString);		
 	}
 
-	public void timeScaleChanged(double timeScale) {
-		timeScaleLabel.setText("Playback Rate: " + Double.toString(timeScale));		
+	public void playbackRateChanged(double playbackRate) {
+		playbackRateLabel.setText("Playback Rate: " + Double.toString(playbackRate));		
 	}
 
 	public void postState(int newState, int oldState) {
