@@ -1,0 +1,4 @@
+When monitoring and then you disconnect, the player only transitions
+to the stopped state and not disconnected.
+
+Snapshot doesn't work for time series data panel.
