@@ -198,7 +198,10 @@ public class DataPanelManager {
 	 */
 	public void viewChannel(String channelName) {
 		Channel channel = rbnbController.getChannel(channelName);
-		String mime = channel.getMimeType();
+		String mime = null;
+		if (channel != null) {
+			mime = channel.getMimeType();
+		}
 
 		if (mime == null && channelName.endsWith(".jpg")) {
 			mime = "image/jpeg";

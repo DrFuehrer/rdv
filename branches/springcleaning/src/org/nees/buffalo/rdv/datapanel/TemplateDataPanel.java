@@ -36,6 +36,8 @@ public class TemplateDataPanel extends AbstractDataPanel {
 	}
 
 	public void postTime(double time) {
+		super.postTime(time);
+		
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
