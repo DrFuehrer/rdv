@@ -30,6 +30,9 @@
 -Added JNLP file and ant build support
 -Added initial layout custimization support. Can choose horizontal
  or vertical layout. Only works for 2 data panels currently
+-Fixed subsecond time display
+-Added timezone to location display
+-Added basic support for x vs. y plotting (playback only)
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

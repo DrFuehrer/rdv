@@ -521,11 +521,13 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 		
 		String[] channelList = getmap.GetChannelList();
 
- 		/* if (channelList.length == 0) {
+		//stop if no data in fetch, most likely end of data
+		//FIXME this can stop with a small duration
+ 		if (channelList.length == 0) {
  			log.error("Received no data.");
  			changeStateSafe(STATE_STOPPED);
  			return;			
- 		} */
+ 		}
  		
  		preFetchData(location+timeScale, timeScale);		
 		
@@ -687,7 +689,7 @@ public class RBNBController implements Player, TimeScaleListener, DomainListener
 			int channelIndex = getmap.GetIndex(channelList[i]);
 			Vector dataPanels = (Vector)channelViewers.get(channelList[i]);
 			if (dataPanels == null) {
-				//log.warn("Unable to find and viewers for subscribed channel " + channelList[i]);
+				log.warn("Unable to find any viewers for subscribed channel " + channelList[i]);
 				continue;
 			}
 				
