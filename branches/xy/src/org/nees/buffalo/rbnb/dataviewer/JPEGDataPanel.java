@@ -205,12 +205,20 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 		}
 	}	
 		
-	public void postData(ChannelMap channelMap, int channelIndex, String channelName) {
-		postData(channelMap, channelIndex, channelName, -1, -1);
+	public void postData(ChannelMap channelMap) {
+		postData(channelMap, -1, -1);
 	}
 
-	public void postData(ChannelMap channelMap, int channelIndex, String channelName, double startTime, double duration) {
-		try {					
+	public void postData(ChannelMap channelMap, double startTime, double duration) {
+		try {
+			int channelIndex = channelMap.GetIndex(channelName);
+			
+			//See if there is an data for us in the channel map
+			if (channelIndex == -1) {
+				log.error("Got channel map with no data for us (looking for channel " + channelName + ". This shouldn't happen.");
+				return;
+			}
+			
 			if (channelMap.GetType(channelIndex) != ChannelMap.TYPE_BYTEARRAY) {
 				log.error("Expected byte array for JPEG data in channel " + channelName + ".");
 				return;
@@ -251,11 +259,11 @@ public class JPEGDataPanel implements DataPanel2, PlayerChannelListener, PlayerT
 
  				image.update(imageData[imageIndex]);
 			} else{
-				log.error("Data array empty for channel: " + channelName + ".");	 
+				log.error("Data array empty for channel " + channelName + ".");	 
 			}
 
 		} catch (Exception e) {
-			log.error("Failed to receive data for channel: " + channelName + " (" + channelIndex + ")");
+			log.error("Failed to receive data for channel " + channelName + ".");
 			e.printStackTrace();
 		}
 

@@ -370,7 +370,7 @@ public class DataViewer extends JFrame implements DomainListener {
  			}			
  		};
  
- 		addStringDataPanelAction = new DataViewerAction("Add String Data Panel", "", KeyEvent.VK_S) {
+ 		addStringDataPanelAction = new DataViewerAction("Add Text Data Panel", "", KeyEvent.VK_S) {
  			public void actionPerformed(ActionEvent ae) {
  				StringDataPanel panel = new StringDataPanel(dataPanelContainer, rbnb);
  				addDataPanel(panel);
@@ -637,7 +637,9 @@ public class DataViewer extends JFrame implements DomainListener {
 		} else if (mime.equals("image/jpeg")) {		
 			panel = new JPEGDataPanel(dataPanelContainer, rbnb);
 		} else if (mime.equals("application/octet-stream")) {		
-			panel = new JFreeChartDataPanel(dataPanelContainer, rbnb);	
+			panel = new JFreeChartDataPanel(dataPanelContainer, rbnb);
+		}else  if (mime.equals("text/plain")) {
+			panel = new StringDataPanel(dataPanelContainer, rbnb);
 		} else {
 			log.error("Unsupported data type for channel " + channelName + ".");
 			return;
