@@ -1,4 +1,7 @@
-1.1.0
+1.1.1
+-Added command line option (-s or --time-scale) to set the time scale.
+
+1.1.0 - March 22, 2005
 -Expanded domain slider to include usecond and day time values
 -Improved channel list to keep expansion and selection state on refresh
 -Added ability to hide channel list, control panel, and status panel

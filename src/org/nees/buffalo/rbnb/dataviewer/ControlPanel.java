@@ -459,6 +459,42 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	public double getDomain() {
 		return domain;
 	}
+	
+	public double setDomain(double domain) {
+		double oldDomain = this.domain;
+		int index = -1;
+		if (domain < domains[0]) {
+			this.domain = domains[0];
+			index = 0;
+		} else if (domain > domains[domains.length-1]) {
+			this.domain = domains[domains.length-1];
+			index = domains.length-1;
+		} else {	
+			for (int i=0; i<domains.length-1; i++) {
+				if (domain >= domains[i] && domain <= domains[i+1]) {
+					double down = domain - domains[i];
+					double up = domains[i+1] - domain;
+					if (up <= down) {
+						this.domain = domains[i+1];
+						index = i+1;
+					} else {
+						this.domain = domains[i];
+						index = i;
+					}
+				}
+			}
+		}
+		
+		if (this.domain != oldDomain && index != -1) {
+			log.info("Setting time scale to " + this.domain);
+			domainScrollBar.setValue(index);
+			fireDomainChanged(this.domain);
+		} else if (index == -1) {
+			log.error("Did not set proper domain.");
+		}
+		
+		return this.domain;
+	}
 
 	private void domainChange() {
 		double oldDomain = domain;
