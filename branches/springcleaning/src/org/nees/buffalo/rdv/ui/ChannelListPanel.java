@@ -35,10 +35,10 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.Channel;
-import org.nees.buffalo.rdv.ChannelListListener;
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.PlayerSubscriptionListener;
+import org.nees.buffalo.rdv.rbnb.Channel;
+import org.nees.buffalo.rdv.rbnb.ChannelListListener;
+import org.nees.buffalo.rdv.rbnb.PlayerSubscriptionListener;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;

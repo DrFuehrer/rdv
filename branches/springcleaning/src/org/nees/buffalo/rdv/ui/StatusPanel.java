@@ -8,11 +8,11 @@ import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.DomainListener;
-import org.nees.buffalo.rdv.PlayerStateListener;
-import org.nees.buffalo.rdv.PlayerTimeListener;
-import org.nees.buffalo.rdv.RBNBController;
-import org.nees.buffalo.rdv.TimeScaleListener;
+import org.nees.buffalo.rdv.rbnb.DomainListener;
+import org.nees.buffalo.rdv.rbnb.PlayerStateListener;
+import org.nees.buffalo.rdv.rbnb.PlayerTimeListener;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 
 /**
  * @author Jason P. Hanley

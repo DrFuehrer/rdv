@@ -1,7 +1,7 @@
 /*
  * Created on Feb 5, 2005
  */
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.rbnb;
 
 /**
  * A class to describe a channel containing data and the metadata associated with it.

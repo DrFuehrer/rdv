@@ -25,8 +25,8 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.nees.buffalo.rdv.Channel;
-import org.nees.buffalo.rdv.Player;
+import org.nees.buffalo.rdv.rbnb.Channel;
+import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import jnt.FFT.RealDoubleFFT;

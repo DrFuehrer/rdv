@@ -7,7 +7,7 @@ import java.util.Iterator;
 
 import javax.swing.JComponent;
 
-import org.nees.buffalo.rdv.Player;
+import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;

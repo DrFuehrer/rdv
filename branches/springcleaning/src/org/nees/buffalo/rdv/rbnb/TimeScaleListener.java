@@ -1,4 +1,4 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.rbnb;
 
 /**
  * Post the current time scale of the player.

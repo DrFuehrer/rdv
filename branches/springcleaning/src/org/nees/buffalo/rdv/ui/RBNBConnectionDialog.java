@@ -21,7 +21,7 @@ import javax.swing.JTextField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.RBNBController;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 /**
  * @author Jason P. Hanley

@@ -1,7 +1,7 @@
 /*
  * Created on Feb 4, 2005
  */
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.rbnb;
 
 import java.util.ArrayList;
 import java.util.HashMap;

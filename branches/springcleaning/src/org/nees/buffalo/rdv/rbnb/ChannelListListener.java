@@ -1,4 +1,4 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.rbnb;
 
 import com.rbnb.sapi.ChannelMap;
 

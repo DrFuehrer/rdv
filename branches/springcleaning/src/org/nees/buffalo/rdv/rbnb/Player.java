@@ -1,4 +1,4 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.rbnb;
 
 /**
  * An interface to define a player which is capable of playback data from the 

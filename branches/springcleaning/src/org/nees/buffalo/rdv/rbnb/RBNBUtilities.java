@@ -1,7 +1,7 @@
 /*
  * Created on Mar 28, 2005
  */
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.rbnb;
 
 import com.rbnb.sapi.ChannelMap;
 

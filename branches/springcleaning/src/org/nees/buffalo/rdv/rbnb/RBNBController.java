@@ -1,10 +1,11 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.rbnb;
 
 import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataViewer;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.SAPIException;

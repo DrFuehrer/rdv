@@ -38,12 +38,11 @@ import javax.swing.event.MouseInputAdapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.Channel;
-import org.nees.buffalo.rdv.Player;
-import org.nees.buffalo.rdv.PlayerChannelListener;
-import org.nees.buffalo.rdv.PlayerStateListener;
-import org.nees.buffalo.rdv.PlayerTimeListener;
-import org.nees.buffalo.rdv.Time;
+import org.nees.buffalo.rdv.rbnb.Channel;
+import org.nees.buffalo.rdv.rbnb.Player;
+import org.nees.buffalo.rdv.rbnb.PlayerChannelListener;
+import org.nees.buffalo.rdv.rbnb.PlayerStateListener;
+import org.nees.buffalo.rdv.rbnb.PlayerTimeListener;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
@@ -495,49 +494,6 @@ public abstract class AbstractDataPanel implements DataPanel2, PlayerChannelList
 	
 	public void dragExit(DropTargetEvent e) {}
 	
-	class TimeIndex {
-		public int startIndex;
-		public int endIndex;
-		
-		public TimeIndex(int startIndex, int endIndex) {
-			this.startIndex = startIndex;
-			this.endIndex = endIndex;
-		}
-	}
-	
-	public TimeIndex getTimeIndex(double[] times, Time time) {
-		double startTime = time.location;
-		double duration = time.duration;
-		
-		int startIndex = -1;
-		int endIndex = -1;
-
-		if (!time.isUnspecified()) {
-			for (int i=0; i<times.length; i++) {
-				if (times[i] >= startTime) {
-					startIndex = i;
-					break;
-				}
-			}
-			
-			if (startIndex != -1) {
-				double endTime = startTime + duration;
-				for (int i=startIndex; i<times.length; i++) {
-					if (times[i] < endTime) {
-						endIndex = i;
-					} else {
-						break;
-					}
-				}
-			}
-		} else {
-			startIndex = 0;
-			endIndex = times.length-1;
-		}
-		
-		return new TimeIndex(startIndex, endIndex);
-	}
-			
 	class ControlBarBorder extends AbstractBorder {
 		
 		public boolean isBorderOpaque() {

@@ -1,4 +1,4 @@
-package org.nees.buffalo.rdv;
+package org.nees.buffalo.rdv.rbnb;
 
 /**
  * A listener interface to notify listeners when a channel has
