@@ -101,7 +101,7 @@
 	
 	<!-- Make applet -->
 	<target name="applet" depends="jar" description="Build applet">
-		
+		<copy file="${build.lib}/${package.name}.jar" todir="applet" overwrite="true"/>
 	</target>
 	
 	<target name="javadoc" description="Build documentation">
