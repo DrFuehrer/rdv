@@ -14,7 +14,7 @@ import com.rbnb.sapi.Sink;
 /**
  * @author Jason P. Hanley
  */
-public class RBNBController implements Player, PlaybackRateListener, DomainListener, MetadataListener {
+public class RBNBController implements Player, PlaybackRateListener, TimeScaleListener, MetadataListener {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
 
@@ -43,7 +43,7 @@ public class RBNBController implements Player, PlaybackRateListener, DomainListe
 	//FIXME should be -1, but breaks stuff
 	private double location = System.currentTimeMillis()/1000d;
 	private double playbackRate = 1;
-	private double domain = 1;
+	private double timeScale = 1;
 	
 	private int STATE_RECONNECT = 100;
 	
@@ -385,13 +385,13 @@ public class RBNBController implements Player, PlaybackRateListener, DomainListe
 			return false;
 		}
 		
-		double requestDomain;
+		double requestTimeScale;
 		if (isVideo(metaDataChannelMap, channelName)) {
-			requestDomain = 0;
+			requestTimeScale = 0;
 		} else {
-			requestDomain = domain;
+			requestTimeScale = timeScale;
 		}
-		if (!requestData(location-requestDomain, requestDomain)) {
+		if (!requestData(location-requestTimeScale, requestTimeScale)) {
 			requestedChannels = realRequestedChannels;
 			return false;
 		}
@@ -399,7 +399,7 @@ public class RBNBController implements Player, PlaybackRateListener, DomainListe
 		updateDataMonitoring();
 		updateTimeListeners(location);
 		
-		log.info("Loaded " + DataViewer.formatSeconds(domain) + " of data for channel " + channelName + " at " + DataViewer.formatDate(location) + ".");
+		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data for channel " + channelName + " at " + DataViewer.formatDate(location) + ".");
 		
 		requestedChannels = realRequestedChannels;
 		
@@ -430,8 +430,8 @@ public class RBNBController implements Player, PlaybackRateListener, DomainListe
 		
 		if (imageChannels.NumberOfChannels() > 0) {
 			requestedChannels = imageChannels;
-			double smallDomain = 0;
-			if (!requestData(location-smallDomain, smallDomain)) {
+			double smallTimeScale = 0;
+			if (!requestData(location-smallTimeScale, smallTimeScale)) {
 				requestedChannels = realRequestedChannels;
 				return;
 			}
@@ -441,7 +441,7 @@ public class RBNBController implements Player, PlaybackRateListener, DomainListe
 		
 		if (otherChannels.NumberOfChannels() > 0) {
 			requestedChannels = otherChannels;
-			if (!requestData(location-domain, domain)) {
+			if (!requestData(location-timeScale, timeScale)) {
 				requestedChannels = realRequestedChannels;
 				return;
 			}
@@ -452,7 +452,7 @@ public class RBNBController implements Player, PlaybackRateListener, DomainListe
 		requestedChannels = realRequestedChannels;
 		changeStateSafe(STATE_STOPPED);
 		
-		log.info("Loaded " + DataViewer.formatSeconds(domain) + " of data for all channels at " + DataViewer.formatDate(location) + ".");
+		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data for all channels at " + DataViewer.formatDate(location) + ".");
 	}
 	
 	
@@ -1015,8 +1015,8 @@ public class RBNBController implements Player, PlaybackRateListener, DomainListe
 		setPlaybackRate(playbackRate);
 	}
 
-	public void domainChanged(double domain) {
-		this.domain = domain;
+	public void timeScaleChanged(double timeScale) {
+		this.timeScale = timeScale;
 		
 		if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
  			changeState(STATE_LOADING);

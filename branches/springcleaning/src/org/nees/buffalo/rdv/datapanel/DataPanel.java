@@ -92,10 +92,10 @@ public interface DataPanel {
 	 * The data panel does not have to use this value, and only needs
 	 * to take it into consideration. 
 	 * 
-	 * @param domain  The length of time to display (in seconds)
-	 * @since         1.0
+	 * @param timeScale  The length of time to display (in seconds)
+	 * @since            1.0
 	 */
-	public void setDomain(double domain);
+	public void setTimeScale(double timeScale);
 	
 	/**
 	 * Close the data panel and release all associated resources.

@@ -61,7 +61,7 @@ public abstract class AbstractDataPanel implements DataPanel, PlayerChannelListe
 	Hashtable units;
 	
 	double time;
-	double domain;
+	double timeScale;
 
 	JPanel component;
 	JComponent dataComponent;
@@ -99,7 +99,7 @@ public abstract class AbstractDataPanel implements DataPanel, PlayerChannelListe
 		units = new Hashtable();
 		
 		time = 0;
-		domain = 1;
+		timeScale = 1;
 		
 		component = new JPanel();
 		
@@ -232,8 +232,8 @@ public abstract class AbstractDataPanel implements DataPanel, PlayerChannelListe
 		this.time = time;
 	}
 	
-	public void setDomain(double domain) {
-		this.domain = domain;
+	public void setTimeScale(double timeScale) {
+		this.timeScale = timeScale;
 	}
 	
 	public void postState(int newState, int oldState) {

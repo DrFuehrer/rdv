@@ -8,7 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.rbnb.DomainListener;
+import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 import org.nees.buffalo.rdv.rbnb.PlayerStateListener;
 import org.nees.buffalo.rdv.rbnb.PlayerTimeListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
@@ -17,14 +17,14 @@ import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 /**
  * @author Jason P. Hanley
  */
-public class StatusPanel extends JPanel implements PlayerTimeListener, PlaybackRateListener, PlayerStateListener, DomainListener {
+public class StatusPanel extends JPanel implements PlayerTimeListener, PlaybackRateListener, PlayerStateListener, TimeScaleListener {
 
 	private DataViewer dataViewer;
 
 	private JLabel locationLabel;
 	private JLabel playbackRateLabel;
 	private JLabel stateLabel;
-	private JLabel domainLabel;
+	private JLabel timeScaleLabel;
 	
 	public StatusPanel(DataViewer dataViewer) {
 		super();
@@ -54,7 +54,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, PlaybackR
 		c.anchor = GridBagConstraints.WEST;		
 		add(locationLabel, c);	
 	
-		domainLabel = new JLabel();
+		timeScaleLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0.5;
 		c.weighty = 0;
@@ -66,7 +66,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, PlaybackR
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.EAST;		
-		add(domainLabel, c);
+		add(timeScaleLabel, c);
 				
 		stateLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
@@ -111,7 +111,7 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, PlaybackR
 		stateLabel.setText("state: " + stateString);
 	}
 
-	public void domainChanged(double domain) {
-		domainLabel.setText("Time Scale: " + DataViewer.formatSeconds(domain));
+	public void timeScaleChanged(double timeScale) {
+		timeScaleLabel.setText("Time Scale: " + DataViewer.formatSeconds(timeScale));
 	}
 }

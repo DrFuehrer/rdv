@@ -47,7 +47,7 @@ import org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel;
 import org.nees.buffalo.rdv.datapanel.StringDataPanel;
 import org.nees.buffalo.rdv.datapanel.TabularDataPanel;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.DomainListener;
+import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.AboutDialog;
@@ -61,7 +61,7 @@ import org.nees.buffalo.rdv.ui.StatusPanel;
 /**
  * @author Jason P. Hanley
  */
-public class DataViewer extends JFrame implements DomainListener {
+public class DataViewer extends JFrame implements TimeScaleListener {
 	
 	static Log log = LogFactory.getLog(DataViewer.class.getName());
 
@@ -209,9 +209,9 @@ public class DataViewer extends JFrame implements DomainListener {
 		controlPanel.addPlaybackRateListener(rbnb);
 		controlPanel.addPlaybackRateListener(statusPanel);
 		
-		controlPanel.addDomainListener(rbnb);
-  		controlPanel.addDomainListener(statusPanel);
-  		controlPanel.addDomainListener(this);
+		controlPanel.addTimeScaleListener(rbnb);
+  		controlPanel.addTimeScaleListener(statusPanel);
+  		controlPanel.addTimeScaleListener(this);
   
  		if (rbnbHostName != null) {
  			rbnb.connect();
@@ -698,7 +698,7 @@ public class DataViewer extends JFrame implements DomainListener {
 	}
 	
 	private void addDataPanel(DataPanel dataPanel) {
-		dataPanel.setDomain(controlPanel.getDomain());
+		dataPanel.setTimeScale(controlPanel.getTimeScale());
 		dataPanelContainer.addDataPanel(dataPanel);
 		dataPanels.add(dataPanel);
 	}
@@ -711,16 +711,16 @@ public class DataViewer extends JFrame implements DomainListener {
 		}
 	}
 	
-	public void domainChanged(double domain) {
+	public void timeScaleChanged(double timeScale) {
 		DataPanel dataPanel;
 		for (int i=0; i<dataPanels.size(); i++) {
 			dataPanel = (DataPanel)dataPanels.get(i);
-			dataPanel.setDomain(domain);
+			dataPanel.setTimeScale(timeScale);
 		}		
 	}
 	
-	public void setDomain(double domain) {
-		controlPanel.setDomain(domain);
+	public void setTimeScale(double timeScale) {
+		controlPanel.setTimeScale(timeScale);
 	}
 
 	public void exit() {
@@ -961,7 +961,7 @@ public class DataViewer extends JFrame implements DomainListener {
 		}
 		
 		if (timeScale != -1) {
-			dataViewer.setDomain(timeScale);
+			dataViewer.setTimeScale(timeScale);
 		}
 		
 		if (channels != null && hostName != null) {

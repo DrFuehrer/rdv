@@ -115,7 +115,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			}
 		} else {
 			TimeSeries data = new TimeSeries(seriesName, FixedMillisecond.class);
-			data.setHistoryCount((int)(domain*1000*2));
+			data.setHistoryCount((int)(timeScale*1000*2));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
 		}
 		
@@ -179,19 +179,19 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		return seriesName;
 	}
 		
-	public void setDomain(double domain) {
-		super.setDomain(domain);
+	public void setTimeScale(double timeScale) {
+		super.setTimeScale(timeScale);
 			
 		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
 			if (xyMode) {
 				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
 				XYSeries data = dataCollection.getSeries(i);
 				//TODO add correspoding code for XYSeries
-				data.setMaximumItemCount((int)(256*domain*2));
+				data.setMaximumItemCount((int)(256*timeScale*2));
 			} else {
 				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
 				TimeSeries data = dataCollection.getSeries(i);
-				data.setHistoryCount((int)(domain*1000*2));
+				data.setHistoryCount((int)(timeScale*1000*2));
 			}
 		}
 		
@@ -432,7 +432,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		
 		XYPlot xyPlot = (XYPlot)chart.getPlot();
 		DateAxis dateAxis = (DateAxis)xyPlot.getDomainAxis();
-		dateAxis.setRange((time-domain)*1000, time*1000);
+		dateAxis.setRange((time-timeScale)*1000, time*1000);
 	}	
 	
 	void clearData() {
