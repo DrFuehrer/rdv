@@ -1,0 +1,55 @@
+1.0.2
+-Expanded domain slider to include usecond and day time values
+-Improved channel list to keep expansion and selection state on refresh
+-Added ability to hide channel list, control panel, and status panel
+-Added menu items for control of playback
+-Added key binding (F5) to refresh channel list
+-Added full screen mode for the application. Press F11 to enter and ESC to leave.
+-Fixed bug in closing empty JPEG Data Panel
+-Added key bindings for common operations (see docs/keyboard_shortcuts.txt)
+-Removed the channel update button.
+-Removed the unused play in reverse button and reorder other buttons
+-Added key bindings for connection dialog
+-Improved elapsed time formatting
+-Reorganized import statements
+-Simplified build/versioning system (removed build number and date)
+-Added switch to ant run target to enable direct draw hardware scaling on windows
+-Added hardware scaling to JPEG data panels, all images will sclae automatically now
+-Changed JPEG panels background to black
+-Changed layout of data panels, they should all be the same size now
+ and tile in a symmetric fashion
+-Added small control panel to top of each image visible when mouse is over any part of the image
+ -Click pin to toggle control panel stickyness
+ -Click snpashot to toggle freezing of the image
+ -Click up arrow to detach/attach image panel
+ -Click maximize to toggle fullscreen video
+ -Click close to close window
+-Commented out useless XML metadata display
+-More readable channel sizes
+-Added TODO file
+-Added JNLP file and ant build support
+-Added initial layout custimization support. Can choose horizontal
+ or vertical layout. Only works for 2 data panels currently
+-Fixed subsecond time display
+-Added timezone to location display
+-Added full support for x vs. y plotting
+-Much better labeling for charts (legend)
+-Set autoscaling to always include 0
+-Fixed time axis to always be duration with (even without enough data)
+
+1.0.1 - September 23, 2004
+-Add tooltips for control panel buttons
+-Fixed bug is behaviour when switching from stopped to loading after monitoring
+-Added better indicator for domain in status bar
+-Made more sensible choice for possible domain bar values
+-In JPEGDataPanel added ability change text color to white or black. Click the
+ upper left hand corner of the panel to toggle the color.
+-Implemented rudimentary image scaling in JPEGDataPanel. Will resize image (by 1/2, 1, or 2) based on panel size.
+-Better cleanup of server connection on exit
+-Fixed startup bug when no server is specified
+
+1.0.0 - September 21, 2004
+-Initial public release
+
+0.9.9 - September 16, 2004
+-Internal beta release
