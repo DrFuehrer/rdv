@@ -92,11 +92,11 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 
 	public void postTime(double time) {
 		String locationString = DataViewer.formatDate(time);
-		locationLabel.setText("location: " + locationString);		
+		locationLabel.setText("Time: " + locationString);		
 	}
 
 	public void timeScaleChanged(double timeScale) {
-		timeScaleLabel.setText("time scale: " + Double.toString(timeScale));		
+		timeScaleLabel.setText("Playback Rate: " + Double.toString(timeScale));		
 	}
 
 	public void postState(int newState, int oldState) {
@@ -105,6 +105,6 @@ public class StatusPanel extends JPanel implements PlayerTimeListener, TimeScale
 	}
 
 	public void domainChanged(double domain) {
-		domainLabel.setText("domain: " + DataViewer.formatSeconds(domain));
+		domainLabel.setText("Time Scale: " + DataViewer.formatSeconds(domain));
 	}
 }
