@@ -169,6 +169,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		if (!initRBNB()) {
 			closeRBNB();
 			disconnect();
+			updatingChannelList = false;
 			return false;
 		}
 		
@@ -178,6 +179,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			log.error("Failed to request channel listing.");
 			closeRBNB();
 			disconnect();
+			updatingChannelList = false;
 			return false;
 		}
 
@@ -188,6 +190,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			log.error("Failed to fetch list of available channels.");
 			closeRBNB();
 			disconnect();
+			updatingChannelList = false;
 			return false;
 		}
 		
