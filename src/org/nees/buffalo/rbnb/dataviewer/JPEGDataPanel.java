@@ -63,7 +63,17 @@ public class JPEGDataPanel extends AbstractDataPanel {
 
 	public boolean supportsMultipleChannels() {
 		return false;
-	}	
+	}
+	
+	public boolean setChannel(Channel channel) {
+		if (super.setChannel(channel)) {
+			image.clear();			
+			return true;
+		} else {
+			return false;
+		}
+		
+	}
 	
 	public void postData(ChannelMap channelMap) {
 		super.postData(channelMap);
