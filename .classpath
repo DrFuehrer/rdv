@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="C:/Program Files/RBNB/V2.4.4/bin/rbnb.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart-0.9.21.jar"/>
 	<classpathentry kind="lib" path="lib/jcommon-0.9.7.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

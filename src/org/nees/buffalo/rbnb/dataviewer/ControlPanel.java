@@ -392,6 +392,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, PlayerTi
 	}
 
 	private void locationChange() {
+		if (playerState == Player.STATE_MONITORING || playerState == Player.STATE_PLAYING) {
+			return;
+		}
+		
 		int sliderLocation = locationScrollBar.getValue();
 		
 		if (this.sliderLocation != sliderLocation) {

@@ -29,6 +29,15 @@ import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.OptionGroup;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -567,6 +576,16 @@ public class DataViewer extends JFrame implements DomainListener {
 		
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 	}
+	
+	public boolean viewChannel(String channelName) {
+		Channel channel = channelListPanel.getChannel(channelName);
+		if (channel != null) {
+			viewChannel(channel);
+			return true;
+		} else {
+			return false;
+		}
+	}
 		
 	public void viewChannel(Channel channel) {
 		String channelName = channel.getName();
@@ -682,6 +701,10 @@ public class DataViewer extends JFrame implements DomainListener {
 			}
 		}
 	}
+ 	
+ 	public Player getPlayer() {
+ 		return rbnb;
+ 	}
 
 	public static String getRBNBHostName() {
 		return rbnbHostName;
@@ -750,15 +773,110 @@ public class DataViewer extends JFrame implements DomainListener {
  	}
 
 	public static void main(String[] args) {
-		if (args.length == 0) {
-			new DataViewer();
-		} else if (args.length == 1) {
-			String[] connectionString = args[0].split(":");
-			String rbnbHostName = connectionString[0];
-			int rbnbPort = Integer.parseInt(connectionString[1]);
-			new DataViewer(rbnbHostName, rbnbPort);
+		Options options = new Options();
+		Option hostNameOption = OptionBuilder.withArgName("host name")
+											 .hasArg()
+											 .withDescription("The host name of the RBNB server")
+											 .withLongOpt("host")
+											 .create('h');
+		Option portNumberOption = OptionBuilder.withArgName("port number")
+											   .hasArg()
+											   .withDescription("The port number of the RBBB server")
+											   .withLongOpt("port")
+											   .create('p');
+		Option channelsOption = OptionBuilder.withArgName("channels")
+											 .hasArgs()
+											 .withDescription("Channels to subscribe to")
+											 .withLongOpt("channels")
+											 .create('c');
+		Option playOption = OptionBuilder.withDescription("Start playing back data") 
+										 .withLongOpt("play")
+										 .create();
+		Option realTimeOption = OptionBuilder.withDescription("Start viewing data in real time") 
+		 									 .withLongOpt("real-time")
+											 .create();
+		Option helpOption = new Option("?", "help", false, "Display usage");
+		options.addOption(hostNameOption);
+		options.addOption(portNumberOption);
+		options.addOption(channelsOption);
+		options.addOption(playOption);
+		options.addOption(realTimeOption);			
+		options.addOption(helpOption);
+				
+		String hostName = null;
+		int portNumber = -1;
+		String[] channels = null;
+		boolean play = false;
+		boolean realTime = false;
+		
+		CommandLineParser parser = new PosixParser();
+		
+		try {
+	    	CommandLine line = parser.parse(options, args);
+	    	
+	    	if (line.hasOption('?')) {
+	    		HelpFormatter formatter = new HelpFormatter();
+	    		formatter.printHelp("DataViewer", options, true);
+	    		return;
+	    	}
+	    	
+	    	if (line.hasOption('h')) {
+	    		hostName = line.getOptionValue('h');
+	    		log.info("Set host name to " + hostName + ".");
+	    	}
+	    	
+	    	if (line.hasOption('p')) {
+	    		String value = line.getOptionValue('p');
+	    		portNumber = Integer.parseInt(value);
+	    		log.info("Set port number to " + portNumber + ".");
+	    	}
+	    	
+	    	if (line.hasOption('c')) {
+	    		channels = line.getOptionValues('c');
+	    	}
+	    	
+	    	if (line.hasOption("play")) {
+	    		play = true;
+	    	} else if (line.hasOption("real-time")) {
+	    		realTime = true;
+	    	}
+		} catch( ParseException e) {
+			log.error("Command line arguments invalid: " + e.getMessage());
+			return;
+	    }
+		
+		DataViewer dataViewer;
+		if (hostName == null && portNumber != -1) {
+			log.error("You must specify a host name if a port number is given.");
+			return;
+		} else if (hostName != null && portNumber == -1) {
+			log.info("Starting data viewer connected to " + hostName + ".");
+			dataViewer = new DataViewer(hostName);
+		} else if (hostName != null && portNumber != -1) {
+			log.info("Starting data viewer connected to " + hostName + ":" + portNumber + ".");
+			dataViewer = new DataViewer(hostName, portNumber);
 		} else {
-			log.error("Invalid arguments passed.");
+			log.info("Starting data viewer in disconnected state.");
+			dataViewer = new DataViewer();
+		}
+		
+		if (channels != null && hostName != null) {
+			for (int i=0; i<channels.length; i++) {
+				String channel = channels[i];
+				log.info("Viewing channel " + channel + ".");
+				if (!dataViewer.viewChannel(channel)) {
+					log.error("Failed to view channel " + channel + ".");
+				}
+			}
+		}
+		
+		Player player = dataViewer.getPlayer();
+		if (play) {
+			log.info("Starting data playback.");
+			player.play();
+		} else if (realTime) {
+			log.info("Viewing data in real time.");
+			player.monitor();
 		}
 	}
 
