@@ -41,6 +41,8 @@
 -Fix retry connection logic
 -Fix full screen mode and add support for platforms that don't support it
 -Put icons in jar file for applet and jnlp to load
+-Fixed bug in channel list when sources are added/removed
+-Remove uneeded connections to server when removing a channel for viewing
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

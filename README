@@ -2,21 +2,34 @@ RBNB Data Viewer
 by Jason P. Hanley <jphanley@buffalo.edu>
 
 
-Introduction
-------------
-
-
 Release
 -------
 Version: 1.1.0
 Date: ?
 
 
+Introduction
+------------
+
+
+Requirements
+------------
+The following software is required to build and run the application:
+Java SDK 1.4
+Ant
+RBNB 2.4
+
+
 Building
 --------
-Set JAVA_HOME
-Set RBNB_HOME
+Set the following environmental variables:
+JAVA_HOME                root of JDK instalation
+ANT_HOME                 root of Ant installation
+RBNB_HOME                root of RBNB instalation
 
+Add JAVA_HOME/bin and ANT_HOME/bin to your path.
+
+To compile, execute the following command from the root directory of the distribution:
 > ant compile
 
 
@@ -43,7 +56,11 @@ its own window. To reattach the data panel just click it again.
 
 Distribution
 ------------
+To create a standalone package:
 > ant zip
+
+To create a Java Web Start (JNLP) package:
+> ant jnlp
 
 
 Copyright
