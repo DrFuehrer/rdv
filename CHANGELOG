@@ -24,6 +24,9 @@
  -Click up arrow to detach/attach image panel
  -Click maximize to toggle fullscreen video
  -Click close to close window
+-Commented out useless XML metadata display
+-More readable channel sizes
+-Added TODO file
 
 1.0.1 - September 23, 2004
 -Add tooltips for control panel buttons

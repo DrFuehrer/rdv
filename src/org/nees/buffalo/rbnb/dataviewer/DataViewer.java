@@ -718,6 +718,24 @@ public class DataViewer extends JFrame implements DomainListener {
  		return secondsString;
  	}
  	
+ 	public static String formatBytes(int bytes) {
+ 		String bytesString;
+ 		if (bytes < 1024) {
+ 			bytesString = Integer.toString(bytes) + " B";
+ 		} else if (bytes < 1024*1024) {
+ 			bytesString = Double.toString(round(bytes/1024d)) + " KB";
+ 		} else if (bytes < 1024*1024*1024) {
+ 			bytesString = Double.toString(round(bytes/1024d)) + " MB";
+ 		} else {
+ 			bytesString = Double.toString(round(bytes/1024d)) + " GB";
+ 		}
+ 		return bytesString;
+ 	}
+ 	
+ 	public static float round(float f) {
+ 		return (long)(f*100)/100f;
+ 	}
+ 	 	
  	public static double round(double d) {
  		return (long)(d*100)/100d;
  	}
