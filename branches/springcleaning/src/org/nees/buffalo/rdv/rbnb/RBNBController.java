@@ -16,7 +16,7 @@ import com.rbnb.sapi.Sink;
 /**
  * @author Jason P. Hanley
  */
-public class RBNBController implements Player, PlaybackRateListener, TimeScaleListener {
+public class RBNBController implements Player, TimeScaleListener {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
 
@@ -41,6 +41,7 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 	private Vector timeListeners;
 	private Vector stateListeners;
 	private Vector subscriptionListeners;
+	private ArrayList playbackRateListeners;
 	
 	private ChannelMap preFetchChannelMap;
 	private Object preFetchLock = new Object();
@@ -80,7 +81,8 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		timeListeners = new Vector();
 		stateListeners = new Vector();
 		subscriptionListeners = new Vector();
-		
+		playbackRateListeners = new ArrayList();
+
 		initMetadataListener();
 		
 		run();
@@ -206,6 +208,8 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 			}
 			preFetchData(location, playbackRate);
 		}
+		
+		firePlaybackRateChanged(playbackRate);
 	}	
 		
 	private void changeState(int newState) {
@@ -855,6 +859,14 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		}		
 	}
 	
+	private void firePlaybackRateChanged(double playbackRate) {
+		PlaybackRateListener listener;
+		for (int i=0; i<playbackRateListeners.size(); i++) {
+			listener = (PlaybackRateListener)playbackRateListeners.get(i);
+			listener.playbackRateChanged(playbackRate);
+		}
+	}	
+
 	
 	// Utility (Static) Methods
 	
@@ -1008,7 +1020,16 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 	public void removeTimeListener(TimeListener timeListener) {
 		timeListeners.remove(timeListener);
 	}	
+
+	public void addPlaybackRateListener(PlaybackRateListener listener) {
+		listener.playbackRateChanged(playbackRate);
+		playbackRateListeners.add(listener);
+	}
 	
+	public void removePlaybackRateListener(PlaybackRateListener listener) {
+		playbackRateListeners.remove(listener);
+	}
+
 	
 	// Public Methods
 	
@@ -1052,10 +1073,6 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		changeState(STATE_RECONNECT);
 	}
 	
-	public void playbackRateChanged(double playbackRate) {
-		setPlaybackRate(playbackRate);
-	}
-
 	public void timeScaleChanged(double timeScale) {
 		this.timeScale = timeScale;
 		
@@ -1146,6 +1163,8 @@ public class RBNBController implements Player, PlaybackRateListener, TimeScaleLi
 		updatingMetadata = false;
 		
 		units = new HashMap();
+		
+		ctree = ChannelTree.EMPTY_TREE;
 	}	
 	
 	public boolean updateMetadataBackground() {

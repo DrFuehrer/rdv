@@ -14,8 +14,6 @@ import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -35,18 +33,16 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
-import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
-import com.rbnb.sapi.SAPIException;
-import com.rbnb.sapi.Sink;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 
 /**
@@ -56,7 +52,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
 	static Log log = LogFactory.getLog(ChannelListPanel.class.getName());
 
-	private ApplicationFrame applicationFrame;
+	private DataPanelManager dataPanelManager;
 	private RBNBController rbnb;
 	
 	private ChannelTree ctree;
@@ -78,10 +74,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	
 	private static final String NEWLINE = "\r\n";
 
-	public ChannelListPanel(ApplicationFrame applicationFrame, RBNBController rbnb) {
+	public ChannelListPanel(DataPanelManager dataPanelManager, RBNBController rbnb) {
 		super();
 		
-		this.applicationFrame = applicationFrame;
+		this.dataPanelManager = dataPanelManager;
 		this.rbnb = rbnb;
 		
 		root = "";
@@ -399,7 +395,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 						String mime = node.getMime();
 						String unit = rbnb.getUnit(channelName);
 						Channel channel = new Channel(channelName, mime, unit);
-						applicationFrame.viewChannel(channel);
+						dataPanelManager.viewChannel(channel);
 					}
 				}
 			}

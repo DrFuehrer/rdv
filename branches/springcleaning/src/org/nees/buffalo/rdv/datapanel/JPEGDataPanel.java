@@ -18,7 +18,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.Player;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
@@ -37,8 +37,8 @@ public class JPEGDataPanel extends AbstractDataPanel {
  	
  	double displayedImageTime;
  	 	
-	public JPEGDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
-		super(dataPanelManager, dataPanelContainer, player);
+	public JPEGDataPanel() {
+		super();
 		
 		keepAspectRatio = true;
 		
@@ -47,8 +47,6 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		initImage();
 
 		setDataComponent(panel);
-		setControlBar(true);
-		setDropTarget(true);
 	}
 			
 	private void initImage() {

@@ -9,10 +9,7 @@ import javax.swing.JTextArea;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.rbnb.Player;
-import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -29,16 +26,13 @@ public class StringDataPanel extends AbstractDataPanel {
 	
 	double lastTimeDisplayed;
 	
-	public StringDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
-		super(dataPanelManager, dataPanelContainer, player);
+	public StringDataPanel() {
+		super();
 		
 		lastTimeDisplayed = -1;
 				
 		initPanel();
 		setDataComponent(panel);
-		
-		setControlBar(true);
-		setDropTarget(true);
 	}
 	
 	private void initPanel() {

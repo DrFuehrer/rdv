@@ -33,13 +33,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.datapanel.DataPanel;
 import org.nees.buffalo.rdv.datapanel.JFreeChartDataPanel;
 import org.nees.buffalo.rdv.datapanel.JPEGDataPanel;
 import org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel;
 import org.nees.buffalo.rdv.datapanel.StringDataPanel;
 import org.nees.buffalo.rdv.datapanel.TabularDataPanel;
-import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 /**
@@ -154,8 +152,7 @@ public class ApplicationFrame extends JFrame {
 		rbnb.addMetadataListener(channelListPanel);
 		rbnb.addMetadataListener(controlPanel);
 		
-		controlPanel.addPlaybackRateListener(rbnb);
-		controlPanel.addPlaybackRateListener(statusPanel);
+		rbnb.addPlaybackRateListener(statusPanel);
 		
 		controlPanel.addTimeScaleListener(rbnb);
   		controlPanel.addTimeScaleListener(statusPanel);
@@ -315,43 +312,43 @@ public class ApplicationFrame extends JFrame {
  		
  		addJPEGDataPanelAction = new DataViewerAction("Add Video/Photo Data Panel", "", KeyEvent.VK_J) {
  			public void actionPerformed(ActionEvent ae) {
- 				JPEGDataPanel panel = new JPEGDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel);
+ 				/* JPEGDataPanel panel = new JPEGDataPanel(dataPanelManager, dataPanelContainer, rbnb);
+ 				dataPanelManager.addDataPanel(panel); */
  			}			
  		};
  		
  		addTimeSeriesChartDataPanelAction = new DataViewerAction("Add Time Series Data Panel", "", KeyEvent.VK_C) {
  			public void actionPerformed(ActionEvent ae) {
- 				JFreeChartDataPanel panel = new JFreeChartDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel);
+ 				/* JFreeChartDataPanel panel = new JFreeChartDataPanel(dataPanelManager, dataPanelContainer, rbnb);
+ 				dataPanelManager.addDataPanel(panel); */
  			}			
  		};
  		
  		addXYChartDataPanelAction = new DataViewerAction("Add XY Data Panel", "", KeyEvent.VK_C) {
  			public void actionPerformed(ActionEvent ae) {
- 				JFreeChartDataPanel panel = new JFreeChartDataPanel(dataPanelManager, dataPanelContainer, rbnb, true);
- 				dataPanelManager.addDataPanel(panel);
+ 				/* JFreeChartDataPanel panel = new JFreeChartDataPanel(dataPanelManager, dataPanelContainer, rbnb, true);
+ 				dataPanelManager.addDataPanel(panel); */
  			}			
  		};
  
  		addStringDataPanelAction = new DataViewerAction("Add Text Data Panel", "", KeyEvent.VK_S) {
  			public void actionPerformed(ActionEvent ae) {
- 				StringDataPanel panel = new StringDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel);
+ 				/* StringDataPanel panel = new StringDataPanel(dataPanelManager, dataPanelContainer, rbnb);
+ 				dataPanelManager.addDataPanel(panel); */
  			}			
  		};
  		
  		addTabularDataPanelAction = new DataViewerAction("Add Tabular Data Panel", "", KeyEvent.VK_S) {
  			public void actionPerformed(ActionEvent ae) {
- 				TabularDataPanel panel = new TabularDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel);
+ 				/* TabularDataPanel panel = new TabularDataPanel(dataPanelManager, dataPanelContainer, rbnb);
+ 				dataPanelManager.addDataPanel(panel); */
  			}			
  		};
  		
  		addSpectrumAnalyzerDataPanelAction = new DataViewerAction("Add Spectrum Analyzer Data Panel", "", KeyEvent.VK_A) {
  			public void actionPerformed(ActionEvent ae) {
- 				SpectrumAnalyzerDataPanel panel = new SpectrumAnalyzerDataPanel(dataPanelManager, dataPanelContainer, rbnb);
- 				dataPanelManager.addDataPanel(panel);
+ 				/* SpectrumAnalyzerDataPanel panel = new SpectrumAnalyzerDataPanel(dataPanelManager, dataPanelContainer, rbnb);
+ 				dataPanelManager.addDataPanel(panel); */
  			}
  		};
  
@@ -515,7 +512,7 @@ public class ApplicationFrame extends JFrame {
 	}
 			
 	private void initChannelListPanel() {
-		channelListPanel = new ChannelListPanel(this, rbnb);
+		channelListPanel = new ChannelListPanel(dataPanelManager, rbnb);
 		channelListPanel.setMinimumSize(new Dimension(0, 0));
 		
 		log.info("Created channel tree with initial channel list.");
@@ -546,7 +543,7 @@ public class ApplicationFrame extends JFrame {
 	}
 	
 	private void initDataPanelContainer() {
-		dataPanelContainer = new DataPanelContainer();
+		dataPanelContainer = dataPanelManager.getDataPanelContainer();
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1;
 		c.weighty = 1;
@@ -642,53 +639,6 @@ public class ApplicationFrame extends JFrame {
 			}
 		}
 	}
- 	
-	public boolean viewChannel(String channelName) {
-		Channel channel = rbnb.getChannel(channelName);
-		if (channel != null) {
-			viewChannel(channel);
-			return true;
-		} else {
-			return false;
-		}
-	}
-		
-	public void viewChannel(Channel channel) {
-		String channelName = channel.getName();
-		String mime = channel.getMimeType();
-		
-		log.info("Cretaing data panel for channel " + channelName + ".");
-		
-		DataPanel panel = null;
-		if (mime == null) {
-			log.warn("Unknown data type for channel " + channelName + ".");
-			if (channelName.endsWith(".jpg")) {
-				panel = new JPEGDataPanel(dataPanelManager, dataPanelContainer, rbnb);
-			} else {
-				panel = new JFreeChartDataPanel(dataPanelManager, dataPanelContainer, rbnb);
-			}
-		} else if (mime.equals("image/jpeg")) {		
-			panel = new JPEGDataPanel(dataPanelManager, dataPanelContainer, rbnb);
-		} else if (mime.equals("application/octet-stream")) {		
-			panel = new JFreeChartDataPanel(dataPanelManager, dataPanelContainer, rbnb);
-		} else  if (mime.equals("text/plain")) {
-			panel = new StringDataPanel(dataPanelManager, dataPanelContainer, rbnb);
-		} else {
-			log.error("Unsupported data type for channel " + channelName + ".");
-			return;
-		}
-		
-		try {
-			panel.setChannel(channel);	
-		} catch (Exception e) {
-			log.error("Failed to add chanel to data panel.");
-			e.printStackTrace();
-			return;
-		}
-		
-		dataPanelManager.addDataPanel(panel);
-	}
- 	
  	
  	class DataViewerAction extends AbstractAction {
  		boolean selected = false;

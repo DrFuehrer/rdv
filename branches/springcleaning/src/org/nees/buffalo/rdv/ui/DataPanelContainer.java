@@ -3,11 +3,11 @@ package org.nees.buffalo.rdv.ui;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.datapanel.DataPanel;
 
 /**
  * @author Jason P. Hanley
@@ -29,16 +29,16 @@ public class DataPanelContainer extends JPanel {
 		layout = HORIZONTAL_LAYOUT;
 	}
 	
-	public void addDataPanel(DataPanel dataPanel) {
-		dataPanels.add(dataPanel);
+	public void addDataPanel(JComponent component) {
+		dataPanels.add(component);
 		layoutDataPanels();
 		
 		log.info("Added data panel to container (total=" + dataPanels.size() + ").");
 	}
 
-	public void removeDataPanel(DataPanel dataPanel) {
-		remove(dataPanel.getComponent());
-		dataPanels.remove(dataPanel);
+	public void removeDataPanel(JComponent component) {
+		remove(component);
+		dataPanels.remove(component);
 		layoutDataPanels();
 		
 		log.info("Removed data panel container (total=" + dataPanels.size() + ").");
@@ -62,12 +62,12 @@ public class DataPanelContainer extends JPanel {
 			
 			setLayout(new GridLayout(rows, columns));
 			
-			DataPanel dataPanel;
+			JComponent component;
 			int channelIndex = 0;
 			for (int i=0; i<numberOfDataPanels; i++) {
-				dataPanel = (DataPanel)dataPanels.get(i);
-				remove(dataPanel.getComponent());
-				add(dataPanel.getComponent());			
+				component = (JComponent)dataPanels.get(i);
+				remove(component);
+				add(component);			
 				channelIndex++;			
 			}
 		}

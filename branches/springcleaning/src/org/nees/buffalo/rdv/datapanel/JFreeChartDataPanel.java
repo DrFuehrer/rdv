@@ -23,7 +23,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.Player;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
@@ -45,12 +45,12 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	
 	int lastXYDataIndex;
 
-	public JFreeChartDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
-		this(dataPanelManager, dataPanelContainer, player, false);
+	public JFreeChartDataPanel() {
+		this(false);
 	}
 		
-	public JFreeChartDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player, boolean xyMode) {
-		super(dataPanelManager, dataPanelContainer, player);
+	public JFreeChartDataPanel(boolean xyMode) {
+		super();
 		
 		this.xyMode = xyMode;
 		
@@ -59,8 +59,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		initChart();
 		
 		setDataComponent(chartPanelPanel);
-		setControlBar(true);
-		setDropTarget(true);
 	}
 		
 	private void initChart() {

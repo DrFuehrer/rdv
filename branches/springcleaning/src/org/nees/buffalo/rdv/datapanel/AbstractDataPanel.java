@@ -42,6 +42,7 @@ import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.DataListener;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
@@ -49,7 +50,10 @@ import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import com.rbnb.sapi.ChannelMap;
 
 /**
- * @author Jason P. Hanley
+ * 
+ * 
+ * @since   1.1
+ * @author  Jason P. Hanley
  */
 public abstract class AbstractDataPanel implements DataPanel, DataListener, TimeListener, StateListener, DropTargetListener {
 
@@ -57,7 +61,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	
 	DataPanelManager dataPanelManager;
 	DataPanelContainer dataPanelContainer;
-	Player player;
+	RBNBController rbnbController;
 	
 	HashSet channels;
 	Hashtable units;
@@ -93,20 +97,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 	ChannelMap channelMap;
 
-	public AbstractDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
-		this.dataPanelManager = dataPanelManager;
-		this.dataPanelContainer = dataPanelContainer;
-		this.player = player;
-			
+	public AbstractDataPanel() {		
 		channels = new HashSet();
 		units = new Hashtable();
 		
 		time = 0;
 		timeScale = 1;
-		
-		component = new JPanel();
-		
-		controlBarBorder = new ControlBarBorder();
 		
 		attached = true;
 		
@@ -121,9 +117,28 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		if (!iconsLoaded) {
 			loadIcons();
 		}
-						
-		player.addTimeListener(this);
-		player.addStateListener(this);
+	}
+	
+	public void openPanel(DataPanelManager dataPanelManager) {
+		this.dataPanelManager = dataPanelManager;
+		this.dataPanelContainer = dataPanelManager.getDataPanelContainer();
+		this.rbnbController = dataPanelManager.getRBNBController();
+		
+		component = new JPanel();
+		controlBarBorder = new ControlBarBorder();
+		component.setBorder(new EtchedBorder());		
+		component.setLayout(new BorderLayout());
+				
+		dataComponent.setBorder(controlBarBorder);
+		component.add(dataComponent, BorderLayout.CENTER);
+		
+		dataPanelContainer.addDataPanel(component);
+		
+		initControlBar();
+		initDropTarget();
+
+		rbnbController.addTimeListener(this);
+		rbnbController.addStateListener(this);
 	}
 
 	public boolean setChannel(Channel channel) {
@@ -147,7 +162,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			return false;
 		}
 		
-		player.subscribe(channelName, this);
+		rbnbController.subscribe(channelName, this);
 
 		channels.add(channelName);
 		if (unit != null) {
@@ -171,7 +186,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		channels.remove(channelName);
 		units.remove(channelName);
 		
-		player.unsubscribe(channelName, this);
+		rbnbController.unsubscribe(channelName, this);
 
 		if (!attached) {
 			frame.setTitle(getTitle());
@@ -191,22 +206,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 	void setDataComponent(JComponent dataComponent) {
 		this.dataComponent = dataComponent;
-		
-		if (pinned) {
-			dataComponent.setBorder(controlBarBorder);
-		}
-		
-		component.setBorder(new EtchedBorder());
-				
-		component.setLayout(new BorderLayout());
-		component.add(dataComponent, BorderLayout.CENTER);
-		
-		dataPanelContainer.addDataPanel(this);
 	}
-	
-	public JComponent getComponent() {
-		return component;
-	}	
 	
 	/*
 	 * Clear the data displayed on the data panel.
@@ -237,6 +237,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		this.time = time;
 	}
 	
+	//FIXME convert to listener
 	public void setTimeScale(double timeScale) {
 		this.timeScale = timeScale;
 	}
@@ -251,7 +252,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		}
 	}
 	
-	private void loadIcons() {
+	void loadIcons() {
 		ClassLoader cl = getClass().getClassLoader();
 		
 		windowPinImage = new ImageIcon(cl.getResource(windowPinFileName)).getImage();
@@ -262,47 +263,50 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		iconsLoaded = true;
 	}
-	
-	void setControlBar(boolean enable) {
-		if (enable) {
-			component.addMouseListener(new MouseInputAdapter() {
-				public void mouseClicked(MouseEvent e) {
-					if (e.getButton() == MouseEvent.BUTTON1) {
-	 					int x = e.getX();
-	 					int y = e.getY();
-	 
-	 					int componentWidth = component.getWidth();
-	 					int componentHeight = component.getHeight();
-	 					
-	 					if (x < 16 && y < 16) {
-	 						pinned = !pinned;
-	 					} else if (x >= 16 && x < 32 && y < 16) {
-	 						togglePause();
-	 					} else if (x >= componentWidth-16 && y < 16) {
-							closePanel();
-	 					} else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
-							toggleMaximize();
-						} else if (x <  componentWidth-32 && x >= componentWidth-48 && y < 16) {
-							toggleDetach(); 												
-						}
+
+	/**
+	 * 
+	 *
+	 * @since  1.2
+	 */
+	void initControlBar() {
+		component.addMouseListener(new MouseInputAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
+ 					int x = e.getX();
+ 					int y = e.getY();
+ 
+ 					int componentWidth = component.getWidth();
+ 					int componentHeight = component.getHeight();
+ 					
+ 					if (x < 16 && y < 16) {
+ 						pinned = !pinned;
+ 					} else if (x >= 16 && x < 32 && y < 16) {
+ 						togglePause();
+ 					} else if (x >= componentWidth-16 && y < 16) {
+						closePanel();
+ 					} else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
+						toggleMaximize();
+					} else if (x <  componentWidth-32 && x >= componentWidth-48 && y < 16) {
+						toggleDetach(); 												
 					}
 				}
-				
-				public void mouseEntered(MouseEvent e) {
-					hasFocus = true;
-					if (!pinned) {
-						dataComponent.setBorder(controlBarBorder);
-					}
+			}
+			
+			public void mouseEntered(MouseEvent e) {
+				hasFocus = true;
+				if (!pinned) {
+					dataComponent.setBorder(controlBarBorder);
 				}
-				
-				public void mouseExited(MouseEvent e) {
-					hasFocus = false;
-					if (!pinned) {
-						dataComponent.setBorder(null);
-					}
+			}
+			
+			public void mouseExited(MouseEvent e) {
+				hasFocus = false;
+				if (!pinned) {
+					dataComponent.setBorder(null);
 				}
-			});
-		}
+			}
+		});
 	}
 
 	void togglePause() {
@@ -311,9 +315,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			String channelName = (String)i.next();
 			
 			if (paused) {
-				player.subscribe(channelName, this);
+				rbnbController.subscribe(channelName, this);
 			} else {
-				player.unsubscribe(channelName, this);
+				rbnbController.unsubscribe(channelName, this);
 			}
 		}
 		
@@ -328,13 +332,13 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		} else if (!attached) {
 			attachPanel(false);		 			
  		} else if (attached) {
-			dataPanelContainer.removeDataPanel(this);
+			dataPanelContainer.removeDataPanel(component);
  		}
  		
  		dataPanelManager.removeDataPanel(this);
  		
-		player.removeStateListener(this);
-		player.removeTimeListener(this);
+ 		rbnbController.removeStateListener(this);
+ 		rbnbController.removeTimeListener(this);
 	}
 	
 	void toggleDetach() {
@@ -351,7 +355,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	
 	void detachPanel() {
 		attached = false;
-		dataPanelContainer.removeDataPanel(this);
+		dataPanelContainer.removeDataPanel(component);
 		
 		frame = new JFrame(getTitle());
 		frame.addWindowListener(new WindowAdapter() {
@@ -376,7 +380,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		if (addToContainer) {
 			attached = true;
-			dataPanelContainer.addDataPanel(this);
+			dataPanelContainer.addDataPanel(component);
 		}
 	}
 	
@@ -401,7 +405,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			GraphicsDevice device = devices[i];
 			if (device.isFullScreenSupported() && device.getFullScreenWindow() == null) {			
 				maximized = true;
-				dataPanelContainer.removeDataPanel(this);
+				dataPanelContainer.removeDataPanel(component);
 
 				frame = new JFrame(getTitle());
 				frame.setUndecorated(true);				
@@ -442,7 +446,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 				maximized = false;
 				
 				if (addToContainer) {
-					dataPanelContainer.addDataPanel(this);
+					dataPanelContainer.addDataPanel(component);
 				}
 				
 				break;
@@ -450,12 +454,13 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		}
 	}	
 	
-	void setDropTarget(boolean enable) {
-		if (enable) {
-			new DropTarget(component, DnDConstants.ACTION_LINK, this);
-		} else {
-			
-		}
+	/**
+	 * 
+	 *
+	 * @since  1.2
+	 */
+	void initDropTarget() {
+		new DropTarget(component, DnDConstants.ACTION_LINK, this);
 	}
 
 	public void dragEnter(DropTargetDragEvent e) {}

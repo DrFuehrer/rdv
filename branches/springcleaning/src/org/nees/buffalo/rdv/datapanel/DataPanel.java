@@ -1,7 +1,6 @@
 package org.nees.buffalo.rdv.datapanel;
 
-import javax.swing.JComponent;
-
+import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
 
 /**
@@ -16,12 +15,17 @@ import org.nees.buffalo.rdv.rbnb.Channel;
  */
 public interface DataPanel {
 	/**
-	 * Get the UI component that will display the data
+	 * Initializes the data panel with the given data panel manager.
 	 * 
-	 * @return  the UI component
-	 * @since   1.0
+	 * This method is called shortly after the data panel has been
+	 * instantiated by the data panel manager.
+	 * 
+	 * Clients must not call this method.
+	 * 
+	 * @param dataPanelManager  the data panel manager
+	 * @since                   1.2
 	 */
-	public JComponent getComponent();
+	public void openPanel(DataPanelManager dataPanelManager);
 	
 	/**
 	 * Get the MIME types that this data panel supports.
@@ -86,20 +90,11 @@ public interface DataPanel {
 	public boolean removeChannel(String channelName);
 	
 	/**
-	 * Tell the data panel the length of time the user has requested
-	 * the application to display.
-	 * 
-	 * The data panel does not have to use this value, and only needs
-	 * to take it into consideration. 
-	 * 
-	 * @param timeScale  The length of time to display (in seconds)
-	 * @since            1.0
-	 */
-	public void setTimeScale(double timeScale);
-	
-	/**
 	 * Close the data panel and release all associated resources.
 	 * 
+	 * Clients must not call this method.
+	 * 
+	 * @see    DataPanelManager.closeDataPanel(DataPanel)
 	 * @since  1.0
 	 */
 	public void closePanel();

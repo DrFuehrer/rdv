@@ -33,20 +33,12 @@ public class DataViewer {
 	
 	public DataViewer() {
 		rbnb = new RBNBController();
-		dataPanelManager = new DataPanelManager();
+		dataPanelManager = new DataPanelManager(rbnb);
 		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager);
 	}		
 		
-	/* public void timeScaleChanged(double timeScale) {
-		DataPanel dataPanel;
-		for (int i=0; i<dataPanels.size(); i++) {
-			dataPanel = (DataPanel)dataPanels.get(i);
-			dataPanel.setTimeScale(timeScale);
-		}		
-	} */
-	
 	public void setTimeScale(double timeScale) {
-		/* controlPanel.setTimeScale(timeScale); */
+		/* rbnb.setTimeScale(timeScale); */
 	}
 
 	public void exit() {
@@ -63,6 +55,10 @@ public class DataViewer {
  	
  	public RBNBController getRBNBController() {
  		return rbnb;
+ 	}
+ 	
+ 	public DataPanelManager getDataPanelManager() {
+ 		return dataPanelManager;
  	}
  	
  	public ApplicationFrame getApplicationFrame() {
@@ -213,23 +209,28 @@ public class DataViewer {
 		log.info("Starting data viewer in disconnected state.");
 		DataViewer dataViewer = new DataViewer();
 		
-		if (hostName != null) {
-			dataViewer.getRBNBController().setRBNBHostName(hostName);
-		}
-		
-		if (portNumber != -1) {
-			dataViewer.getRBNBController().setRBNBPortNumber(portNumber);
-		}
-		
 		if (timeScale != -1) {
 			dataViewer.setTimeScale(timeScale);
 		}
+		
+		RBNBController rbnbController = dataViewer.getRBNBController();
+				
+		if (portNumber != -1) {
+			rbnbController.setRBNBPortNumber(portNumber);
+		}
+		
+		if (hostName != null) {
+			rbnbController.setRBNBHostName(hostName);
+			rbnbController.connect();
+		}
+		
+		//FIXME need to wait for metadata before adding channels
 		
 		if (channels != null && hostName != null) {
 			for (int i=0; i<channels.length; i++) {
 				String channel = channels[i];
 				log.info("Viewing channel " + channel + ".");
-				if (!dataViewer.getApplicationFrame().viewChannel(channel)) {
+				if (!dataViewer.getDataPanelManager().viewChannel(channel)) {
 					log.error("Failed to view channel " + channel + ".");
 				}
 			}

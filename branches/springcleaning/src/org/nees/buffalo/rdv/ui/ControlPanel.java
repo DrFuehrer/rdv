@@ -62,7 +62,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	
 	ChannelMap channelMap;
 	
-	ArrayList playbackRateListeners;
 	ArrayList timeScaleChangeListeners;
 
 	public ControlPanel(Player player) {
@@ -78,7 +77,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		initPanel();
 		
-		playbackRateListeners = new ArrayList();
 		timeScaleChangeListeners = new ArrayList();
 		
 		locationScrollBar.removeAdjustmentListener(this);
@@ -450,7 +448,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 
 		if (playbackRate != oldPlaybackRate) {
-			firePlaybackRateChanged(playbackRate);
+			player.setPlaybackRate(playbackRate);
 			
 			log.debug("Playback rate slider changed to " + playbackRate + ".");
 			
@@ -515,26 +513,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			log.debug("Time scale slider changed to " + timeScale + ".");
 		}
 	}
-	
-	
-	// Playback Rate Listener Methods
-
-	public void addPlaybackRateListener(PlaybackRateListener listener) {
-		listener.playbackRateChanged(playbackRate);
-		playbackRateListeners.add(listener);
-	}
-	
-	public void removePlaybackRateListener(PlaybackRateListener listener) {
-		playbackRateListeners.remove(listener);
-	}
-	
-	private void firePlaybackRateChanged(double playbackRate) {
-		PlaybackRateListener listener;
-		for (int i=0; i<playbackRateListeners.size(); i++) {
-			listener = (PlaybackRateListener)playbackRateListeners.get(i);
-			listener.playbackRateChanged(playbackRate);
-		}
-	}	
 	
 	
 	// Time Scale Listener Methods

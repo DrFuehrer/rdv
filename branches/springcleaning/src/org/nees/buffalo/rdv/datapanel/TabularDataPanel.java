@@ -10,10 +10,7 @@ import java.util.Iterator;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.Player;
-import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -27,16 +24,14 @@ public class TabularDataPanel extends AbstractDataPanel {
 	
 	private Hashtable rows;
 	
-	public TabularDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
-		super(dataPanelManager, dataPanelContainer, player);
+	public TabularDataPanel() {
+		super();
 		
 		rows = new Hashtable();
 		
 		initComponents();
 		
 		setDataComponent(tabularDataPanel);
-		setControlBar(true);
-		setDropTarget(true);
 	}
 	
 	private void initComponents() {

@@ -7,7 +7,6 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.swing.JCheckBox;
@@ -25,10 +24,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.Player;
-import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
 import jnt.FFT.RealDoubleFFT;
 import jnt.FFT.RealDoubleFFT_Radix2;
@@ -64,8 +60,8 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 	JTextField dataPointsTextField;
 	JCheckBox useHanningWindowCheckBox;
 	
-	public SpectrumAnalyzerDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
-		super(dataPanelManager, dataPanelContainer, player);
+	public SpectrumAnalyzerDataPanel() {
+		super();
 		
 		sampleRate = 256;
 		numberOfSamples = 512;
@@ -81,8 +77,6 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		initComponents();
 		
 		setDataComponent(panel);
-		setControlBar(true);
-		setDropTarget(true);
 	}
 	
 	private void initComponents() {

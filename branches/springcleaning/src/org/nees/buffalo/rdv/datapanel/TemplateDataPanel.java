@@ -7,12 +7,6 @@ import java.util.Iterator;
 
 import javax.swing.JComponent;
 
-import org.nees.buffalo.rdv.DataPanelManager;
-import org.nees.buffalo.rdv.rbnb.Player;
-import org.nees.buffalo.rdv.ui.DataPanelContainer;
-
-import com.rbnb.sapi.ChannelMap;
-
 /**
  * @author Jason P. Hanley
  */
@@ -24,13 +18,10 @@ public class TemplateDataPanel extends AbstractDataPanel {
 	 * @param dataPanelContainer
 	 * @param player
 	 */
-	public TemplateDataPanel(DataPanelManager dataPanelManager, DataPanelContainer dataPanelContainer, Player player) {
-		super(dataPanelManager, dataPanelContainer, player);
+	public TemplateDataPanel() {
+		super();
 
 		initDataComponent();
-		
-		setControlBar(true);
-		setDropTarget(true);
 	}
 	
 	private void initDataComponent() {
@@ -53,8 +44,7 @@ public class TemplateDataPanel extends AbstractDataPanel {
 		return false;
 	}
 
-	//FIXME to new interface (change to postTime)
-	/* public void postData(ChannelMap channelMap, Time time) {
+	public void postTime(double time) {
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -66,5 +56,5 @@ public class TemplateDataPanel extends AbstractDataPanel {
 				// TODO display the data in your data component
 			}
 		}
-	} */
+	}
 }
