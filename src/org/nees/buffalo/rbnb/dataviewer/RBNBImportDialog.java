@@ -131,6 +131,7 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 		getContentPane().add(panel);
 		
 		importProgressBar = new JProgressBar(0, 100000);
+		importProgressBar.setStringPainted(true);
 		importProgressBar.setValue(0);
 		importProgressBar.setVisible(false);
 		getContentPane().add(importProgressBar);
@@ -163,8 +164,8 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
  		}
  	}
 	
- 	public void postStatus(double percentage) {
- 		importProgressBar.setValue((int)(percentage*1000));
+ 	public void postStatus(double statusRatio) {
+ 		importProgressBar.setValue((int)(statusRatio*100000));
  	}
 	
 	public static boolean importData(String rbnbHostName, int rbnbPortNumber, String sourceName, File dataFile, RBNBImportDialog rbnbImportDialog) {
@@ -189,8 +190,8 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 			BufferedReader fileReader = new BufferedReader(new FileReader(dataFile));
 			String line = fileReader.readLine();
 			if (line != null) {
+				bytesRead += line.length() + 2;
 				line = line.trim();
-				bytesRead += line.length() + 1;
 				String[] tokens = line.split(delimiters);
 				numberOfChannels = tokens.length-1;
 				channels = new int[numberOfChannels];
@@ -205,8 +206,8 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 			}
 						
 			while ((line = fileReader.readLine()) != null) {
+				bytesRead += line.length() + 2;
 				line = line.trim();
-				bytesRead += line.length() + 1;
 				String[] tokens = line.split(delimiters);
 				if (tokens.length != numberOfChannels+1) {
 					log.error("Skipping this line of data: " + line);
@@ -223,10 +224,7 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 						cmap.PutDataAsFloat64(channels[i], data);
 					}
 					
-					//log.info("Put data for time " + time + ": " + dataString + ".");
-					
 					if (++bufferSize == bufferCapacity) {
-						log.info("Flushing data (" + bufferSize + ").");
 						source.Flush(cmap, true);
 						bufferSize = 0;
 						if (++flushes == archiveSize) {
@@ -239,16 +237,17 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 					continue;
 				}
 				
-				double percentComplete = ((double)bytesRead)/((double)fileLength)*100;
-				//log.info("Percentage complete: " + percentComplete + " (" + bytesRead + "/" + fileLength + ")");
-				rbnbImportDialog.postStatus(percentComplete);
+				double statusRatio = ((double)bytesRead)/((double)fileLength);
+				rbnbImportDialog.postStatus(statusRatio);
 			}
 			
 			if (bufferSize > 0) {
 				source.Flush(cmap, true);
 			}
 			
-			rbnbImportDialog.postStatus(100);
+			log.info("Final status: " + ((double)bytesRead)/((double)fileLength)*100 + "%");
+			
+			rbnbImportDialog.postStatus(1);
 			
 			fileReader.close();
 			
