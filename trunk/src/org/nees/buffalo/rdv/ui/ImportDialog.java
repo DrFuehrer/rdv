@@ -27,7 +27,6 @@ import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 import com.rbnb.sapi.ChannelMap;
@@ -36,10 +35,10 @@ import com.rbnb.sapi.Source;
 /**
  * @author Jason P. Hanley
  */
-public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
-	static Log log = LogFactory.getLog(RBNBImportDialog.class.getName());
+public class ImportDialog extends JDialog implements KeyEventDispatcher {
+	static Log log = LogFactory.getLog(ImportDialog.class.getName());
 	
-	RBNBImportDialog dialog;
+	ImportDialog dialog;
 	
 	RBNBController rbnb;
 	
@@ -55,7 +54,7 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
 	
 	JProgressBar importProgressBar;
 	
-	public RBNBImportDialog(JFrame owner, RBNBController rbnb) {
+	public ImportDialog(JFrame owner, RBNBController rbnb) {
 		super(owner);
 		
 		dialog = this;
@@ -174,7 +173,7 @@ public class RBNBImportDialog extends JDialog implements KeyEventDispatcher {
  		importProgressBar.setValue((int)(statusRatio*100000));
  	}
 	
-	public static boolean importData(String rbnbHostName, int rbnbPortNumber, String sourceName, File dataFile, RBNBImportDialog rbnbImportDialog) {
+	public static boolean importData(String rbnbHostName, int rbnbPortNumber, String sourceName, File dataFile, ImportDialog rbnbImportDialog) {
 		String delimiters = "\t";
 		int[] channels;
 		int numberOfChannels;
