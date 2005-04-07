@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.VolatileImage;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.swing.ImageIcon;
@@ -16,6 +17,7 @@ import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.rbnb.Channel;
 
 import com.rbnb.sapi.ChannelMap;
@@ -61,13 +63,33 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	}
 	
 	public boolean setChannel(String channelName) {
+		if (!isChannelSupported(channelName)) {
+			return false;
+		}
+		
 		if (super.setChannel(channelName)) {
 			clearImage();
 			return true;
 		} else {
 			return false;
+		}		
+	}
+	
+	private boolean isChannelSupported(String channelName) {
+		Channel channel = rbnbController.getChannel(channelName);
+		String mimeType = channel.getMimeType();
+		Extension extension = dataPanelManager.getExtension(this.getClass());
+		if (extension != null) {
+			ArrayList mimeTypes = extension.getMimeTypes();
+			for (int i=0; i<mimeTypes.size(); i++) {
+				String mime = (String)mimeTypes.get(i);
+				if (mime.equals(mimeType)) {
+					return true;
+				}
+			}
 		}
 		
+		return false;
 	}
 	
 	public void postData(ChannelMap channelMap) {

@@ -121,6 +121,23 @@ public class DataPanelManager {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * Return the registered extension specified by the given class.
+	 * 
+	 * @param extensionClass  the class of the desired extension
+	 * @return                the extension, or null if the class wasn't found
+	 */
+	public Extension getExtension(Class extensionClass) {
+		for (int i=0; i<extensions.size(); i++) {
+			Extension extension = (Extension)extensions.get(i);
+			if (extension.getID().equals(extensionClass.getName())) {
+				return extension;
+			}
+		}
+		
+		return null;
+	}
 	
 	/**
 	 * Return a list of registered extensions.
