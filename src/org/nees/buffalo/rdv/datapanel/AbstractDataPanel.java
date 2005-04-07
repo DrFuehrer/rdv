@@ -653,15 +653,15 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 				String channelName = (String)tr.getTransferData(stringFlavor);
 				e.acceptDrop(DnDConstants.ACTION_LINK);
 				e.dropComplete(true);
-				
-				try {
-					if (supportsMultipleChannels()) {
-						addChannel(channelName);
-					} else {
-						setChannel(channelName);
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
+
+				boolean status;
+				if (supportsMultipleChannels()) {
+					status = addChannel(channelName);
+				} else {
+					status = setChannel(channelName);
+				}
+				if (!status) {
+					//TODO display an error in the UI
 				}
 			} else {
 				e.rejectDrop();
