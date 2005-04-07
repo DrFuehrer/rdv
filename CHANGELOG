@@ -4,6 +4,9 @@
 -Fix text data panel
 -Hide hidden channels by default. Add option to view menu.
 -Enable dynamic layout during application resize
+-Refactor entire code base to new package structure
+-Create data panel interface for dynamic loading and registration via an xml configuration file
+-Add error dialog when connection to RBNB server fails
 
 1.1.0 - March 22, 2005
 -Expanded domain slider to include usecond and day time values

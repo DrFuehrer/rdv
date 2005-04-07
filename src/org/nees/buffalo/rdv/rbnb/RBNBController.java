@@ -20,7 +20,7 @@ public class RBNBController implements Player {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
 
-	private final String rbnbSinkName = "RBNBDataViewer";
+	private final String rbnbSinkName = "RDV";
 
  	private int state;
  	
@@ -43,6 +43,7 @@ public class RBNBController implements Player {
 	private Vector subscriptionListeners;
 	private ArrayList playbackRateListeners;
 	private ArrayList timeScaleChangeListeners;
+	private ArrayList messageListeners;
 	
 	private ChannelMap preFetchChannelMap;
 	private Object preFetchLock = new Object();
@@ -87,7 +88,8 @@ public class RBNBController implements Player {
 		subscriptionListeners = new Vector();
 		playbackRateListeners = new ArrayList();
 		timeScaleChangeListeners = new ArrayList();
-
+		messageListeners = new ArrayList();
+		
 		initMetadataListener();
 		
 		run();
@@ -232,6 +234,7 @@ public class RBNBController implements Player {
 				return false;
 			}
 			if (!initRBNB()) {
+				//FIXME we need to clear the channel list in this case
 				return false;
 			}
 		}
@@ -280,7 +283,8 @@ public class RBNBController implements Player {
 		try {
 			sink.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, rbnbSinkName);
 		} catch (SAPIException e) {
-			log.error("Failed to connect to RBNB server.");
+			log.error("Failed to connect to the RBNB server.");
+			fireErrorMessage("Failed to connect to the RBNB server.");
 			closeRBNB();
 			return false;	
 		}
@@ -1121,6 +1125,30 @@ public class RBNBController implements Player {
 	}
 
 	
+	//Message Methods
+	
+	private void fireErrorMessage(String errorMessage) {
+		for (int i=0; i<messageListeners.size(); i++) {
+			MessageListener messageListener = (MessageListener)messageListeners.get(i);
+			messageListener.postError(errorMessage);
+		}
+	}
+	
+	private void fireStatusMessage(String statusMessage) {
+		for (int i=0; i<messageListeners.size(); i++) {
+			MessageListener messageListener = (MessageListener)messageListeners.get(i);
+			messageListener.postStatus(statusMessage);
+		}		
+	}
+	
+	public void addMessageListener(MessageListener messageListener) {
+		messageListeners.add(messageListener);
+	}
+	
+	public void removeMessageListener(MessageListener messageListener) {
+		messageListeners.remove(messageListener);
+	}
+	
 	//Public Static Methods
 
 	public static String getStateName(int state) {
@@ -1222,6 +1250,7 @@ public class RBNBController implements Player {
 			metadataSink.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, "RDVMetadataListener");
 		} catch (SAPIException e) {
 			log.error("Failed to connect to RBNB server.");
+			fireErrorMessage("Failed to connect to the RBNB server.");
 			metadataSink.CloseRBNBConnection();
 			updatingMetadata = false;
 			return false;	
