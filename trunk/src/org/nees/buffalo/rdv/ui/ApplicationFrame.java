@@ -24,6 +24,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
@@ -35,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
+import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 /**
@@ -43,7 +45,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
  * @author  Jason P. Hanley
  * @since   1.2
  */
-public class ApplicationFrame extends JFrame {
+public class ApplicationFrame extends JFrame implements MessageListener {
 	
 	static Log log = LogFactory.getLog(ApplicationFrame.class.getName());
 	
@@ -145,7 +147,9 @@ public class ApplicationFrame extends JFrame {
 		
 		rbnb.addPlaybackRateListener(statusPanel);
 		
-  		rbnb.addTimeScaleListener(statusPanel);
+  	rbnb.addTimeScaleListener(statusPanel);
+  	
+  	rbnb.addMessageListener(this);
    
  		frame.pack();
   		frame.setVisible(true);
@@ -588,6 +592,14 @@ public class ApplicationFrame extends JFrame {
 		}
 	}
  	
+	public void postError(String errorMessage) {
+		JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
+	}
+
+	public void postStatus(String statusMessage) {
+		JOptionPane.showMessageDialog(this, statusMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+	}
+ 	
  	class DataViewerAction extends AbstractAction {
  		boolean selected = false;
  		
@@ -627,5 +639,5 @@ public class ApplicationFrame extends JFrame {
  		public void setSelected(boolean selected) {
  			this.selected = selected;
  		}
- 	} 	
+ 	}
 }
