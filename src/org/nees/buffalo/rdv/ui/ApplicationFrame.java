@@ -177,7 +177,7 @@ public class ApplicationFrame extends JFrame implements MessageListener {
  		
  		importAction = new DataViewerAction("Import", "Import local data to RBNB server", KeyEvent.VK_I) {
  			public void actionPerformed(ActionEvent ae) {
- 				new RBNBImportDialog(frame, rbnb);
+ 				new ImportDialog(frame, rbnb);
  			}			
  		}; 		
  
