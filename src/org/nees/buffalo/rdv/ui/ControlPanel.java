@@ -46,7 +46,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	private JScrollBar timeScaleScrollBar;
 
  	private double timeScales[] = {1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
-
+ 	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
+ 	
 	private double startTime;
 	private double endTime;
 	private double location;
@@ -263,7 +264,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		container.add(playbackRateLabel, c);		
 		
 		int playbackRateIndex = getPlaybackRateIndex(playbackRate);
- 		playbackRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, playbackRateIndex, 1, -9, 10);
+ 		playbackRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, playbackRateIndex, 1, 0, playbackRates.length);
 		playbackRateScrollBar.addAdjustmentListener(this);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
@@ -414,9 +415,30 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	}
 	
 	private int getPlaybackRateIndex(double playbackRate) {
-		int index = -1;
-		
-		return index;
+    int index = -1;
+    if (playbackRate < playbackRates[0]) {
+        this.playbackRate = playbackRates[0];
+        index = 0;
+    } else if (playbackRate > playbackRates[playbackRates.length-1]) {
+        this.playbackRate = playbackRates[playbackRates.length-1];
+        index = playbackRates.length-1;
+    } else {    
+        for (int i=0; i<playbackRates.length-1; i++) {
+            if (playbackRate >= playbackRates[i] && playbackRate <= playbackRates[i+1]) {
+                double down = playbackRate - playbackRates[i];
+                double up = playbackRates[i+1] - playbackRate;
+                if (up <= down) {
+                    this.playbackRate = playbackRates[i+1];
+                    index = i+1;
+                } else {
+                    this.playbackRate = playbackRates[i];
+                    index = i;
+                }
+            }
+        }
+    }
+
+    return index;
 	}
 	
 	private void playbackRateChange() {
@@ -424,31 +446,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		int value = playbackRateScrollBar.getValue();
 			
-		if (value >= 0) {
-			int quotient = value / 3;
-			int mod = value % 3;
-			
-			if (mod == 0) {
-				playbackRate = 1*Math.pow(10, quotient);
-			} else if (mod == 1) {
-				playbackRate = 2*Math.pow(10, quotient);
-			} else if (mod == 2) {
-				playbackRate = 5*Math.pow(10, quotient);
-			}				
-		} else {
-			value = value - 2;
-			int quotient = value / 3;
-			int mod = value % 3;			
-			
-			if (mod == 0) {
-				playbackRate = 5*Math.pow(10, quotient);
-			} else if (mod == -1) {
-				playbackRate = 2*Math.pow(10, quotient);
-			} else if (mod == -2) {
-				playbackRate = 1*Math.pow(10, quotient);
-			}				
-		}
-
+		playbackRate = playbackRates[value];
+        
 		if (playbackRate != oldPlaybackRate) {
 			rbnbController.setPlaybackRate(playbackRate);
 			
