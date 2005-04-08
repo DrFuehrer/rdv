@@ -8,7 +8,6 @@
 	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jnt.FFT.jar"/>
 	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="lib/xmlParserAPIs.jar"/>
 	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
 	<classpathentry kind="lib" path="lib/jcommon-1.0.0-pre2.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart-1.0.0-pre2.jar"/>
