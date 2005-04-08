@@ -3,6 +3,9 @@
  */
 package org.nees.buffalo.rdv.rbnb;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.rbnb.sapi.ChannelMap;
 
 /**
@@ -13,7 +16,9 @@ import com.rbnb.sapi.ChannelMap;
  * @author   Jason P. Hanley
  * @since    1.2
  */
-public final class RBNBUtilities {
+public final class RBNBUtilities {	
+	static Log log = LogFactory.getLog(RBNBUtilities.class.getName());
+
 	
 	/**
 	 * This class can not be instantiated and it's constructor
