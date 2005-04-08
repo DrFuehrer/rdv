@@ -43,7 +43,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 	JButton cancelButton;
 	
 	public RBNBConnectionDialog(JFrame owner, RBNBController rbnbController) {
-		super(owner);
+		super(owner, true);
 		
 		this.rbnb = rbnbController;
 		
