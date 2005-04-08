@@ -249,14 +249,14 @@ public class DataViewer {
 			rbnbController.setRBNBHostName(hostName);
 			rbnbController.connect();
 			
-			//FIXME this nees to be done better
+			//FIXME this needs to be done better
 			int tries = 0;
-			int numberOfTries = 20;
-			while (rbnbController.getState() == Player.STATE_DISCONNECTED && tries++ < numberOfTries) {
+			int maxTries = 20;
+			while (rbnbController.getState() == Player.STATE_DISCONNECTED && tries++ < maxTries) {
 				try { Thread.sleep(1000); } catch (Exception e) {}
 			}
 			
-			if (tries < numberOfTries) {	
+			if (tries < maxTries) {	
 				if (channels != null && hostName != null) {
 					for (int i=0; i<channels.length; i++) {
 						String channel = channels[i];
