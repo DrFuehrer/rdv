@@ -4,7 +4,8 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.KeyEventDispatcher;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -12,15 +13,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
@@ -28,18 +28,18 @@ import javax.swing.JTextField;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
-
-import com.rbnb.sapi.ChannelMap;
-import com.rbnb.sapi.Source;
+import org.nees.buffalo.rdv.rbnb.RBNBImport;
+import org.nees.buffalo.rdv.rbnb.RBNBImportListener;
 
 /**
  * @author Jason P. Hanley
  */
-public class ImportDialog extends JDialog implements KeyEventDispatcher {
+public class ImportDialog extends JDialog implements KeyEventDispatcher, RBNBImportListener {
 	static Log log = LogFactory.getLog(ImportDialog.class.getName());
 	
 	ImportDialog dialog;
 	
+	JFrame owner;
 	RBNBController rbnb;
 	
 	JTextField sourceNameTextField;
@@ -54,12 +54,21 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher {
 	
 	JProgressBar importProgressBar;
 	
+	RBNBImport rbnbImport;
+	boolean importing;
+	
 	public ImportDialog(JFrame owner, RBNBController rbnb) {
 		super(owner);
 		
-		dialog = this;
-		
+		this.owner = owner;
 		this.rbnb = rbnb;
+
+		dialog = this;
+
+		String rbnbHostName = rbnb.getRBNBHostName();
+		int rbnbPortNumber = rbnb.getRBNBPortNumber();
+		rbnbImport = new RBNBImport(rbnbHostName, rbnbPortNumber);
+		importing = false;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
@@ -77,24 +86,65 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher {
 	}
 	
 	private void initComponents() {
-		setLayout(new GridLayout(4,1));
+		getContentPane().setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		c.weighty = 1;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(10,10,10,10);
+
+		JLabel headerLabel = new JLabel("Please specify the desired source name and the data file to import.");
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0;
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.anchor = GridBagConstraints.NORTHEAST;
+		getContentPane().add(headerLabel, c);
 		
-		JPanel panel = new JPanel();
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.NORTHEAST;
+		c.insets = new java.awt.Insets(0,10,10,5);
+		getContentPane().add(new JLabel("Source name: "), c);
 		
-		panel.setLayout(new FlowLayout());
-		panel.add(new JLabel("Source name: "));
-		sourceNameTextField = new JTextField(15);
-		panel.add(sourceNameTextField);
-		getContentPane().add(panel);
+		sourceNameTextField = new JTextField();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.gridx = 1;
+		c.gridy = 1;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.anchor = GridBagConstraints.NORTHWEST;
+		c.insets = new java.awt.Insets(0,0,10,10);
+		getContentPane().add(sourceNameTextField, c);
 		
-		panel = new JPanel();
-		panel.setLayout(new FlowLayout());
-		panel.add(new JLabel("Data file: "));
-		dataFileTextField = new JTextField(25);
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.NORTHEAST;
+		c.insets = new java.awt.Insets(0,10,10,5);
+		getContentPane().add(new JLabel("Data file: "), c);
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.gridx = 1;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.NORTHWEST;		
+		dataFileTextField = new JTextField(20);
 		dataFileTextField.setEditable(false);
-		panel.add(dataFileTextField);
+		c.insets = new java.awt.Insets(0,0,10,5);
+		getContentPane().add(dataFileTextField, c);
+		
 		dataFileChooser = new JFileChooser();
-		dataFileButton = new JButton("Choose data file");
+		dataFileButton = new JButton("Browse");
 		dataFileButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				int status = dataFileChooser.showSaveDialog(dialog);
@@ -104,42 +154,61 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher {
 				}
 			}
 		});
-		panel.add(dataFileButton);
-		getContentPane().add(panel);
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.gridx = 2;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.NORTHWEST;
+		c.insets = new java.awt.Insets(0,10,10,10);
+		getContentPane().add(dataFileButton, c);
 		
-		panel = new JPanel();
+		importProgressBar = new JProgressBar(0, 100000);
+		importProgressBar.setStringPainted(true);
+		importProgressBar.setValue(0);
+		importProgressBar.setVisible(false);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0.5;
+		c.gridx = 0;
+		c.gridy = 3;
+		c.gridwidth = GridBagConstraints.REMAINDER;;
+		c.anchor = GridBagConstraints.CENTER;
+		getContentPane().add(importProgressBar, c);		
+		
+		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout());
 		importButton = new JButton("Import");
 		importButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				final String rbnbHostName = rbnb.getRBNBHostName();
-				final int rbnbPortNumber = rbnb.getRBNBPortNumber();
 				final String sourceName = sourceNameTextField.getText();
 				importProgressBar.setVisible(true);
-				
-				new Thread() {
-					public void run() {
-						importData(rbnbHostName, rbnbPortNumber, sourceName, dataFile, dialog);
-					}
-				}.start();
-				
+				disableUI();
+				pack();
+				importing = true;
+				rbnbImport.startImport(sourceName, dataFile, dialog);
 			}
 		});	
 		panel.add(importButton);
 		cancelButton = new JButton("Cancel");
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				dispose();
+				if (importing) {
+					rbnbImport.cancelImport();
+				} else {
+					dispose();
+				}
 			}
 		});		
 		panel.add(cancelButton);
-		getContentPane().add(panel);
 		
-		importProgressBar = new JProgressBar(0, 100000);
-		importProgressBar.setStringPainted(true);
-		importProgressBar.setValue(0);
-		importProgressBar.setVisible(false);
-		getContentPane().add(importProgressBar);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0.5;
+		c.gridx = 0;
+		c.gridy = 4;
+		c.gridwidth = GridBagConstraints.REMAINDER;;
+		c.anchor = GridBagConstraints.CENTER;
+		c.insets = new java.awt.Insets(0,0,10,10);
+		getContentPane().add(panel, c);
 		
 		pack();
 		setVisible(true);
@@ -168,100 +237,38 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher {
  			return false;
  		}
  	}
-	
- 	public void postStatus(double statusRatio) {
- 		importProgressBar.setValue((int)(statusRatio*100000));
+ 	
+ 	private void disableUI() {
+ 		importButton.setEnabled(false);
+ 		sourceNameTextField.setEnabled(false);
+ 		dataFileButton.setEnabled(false);
+ 	}
+ 	
+ 	private void enableUI() {
+ 		importButton.setEnabled(true);
+ 		sourceNameTextField.setEnabled(true);
+ 		dataFileButton.setEnabled(true); 		
  	}
 	
-	public static boolean importData(String rbnbHostName, int rbnbPortNumber, String sourceName, File dataFile, ImportDialog rbnbImportDialog) {
-		String delimiters = "\t";
-		int[] channels;
-		int numberOfChannels;
-		
-		int bufferCapacity = 256;
-		int bufferSize = 0;
-		
-		int archiveSize = bufferCapacity * 1000;
-		int flushes = 0;
-		
-		long fileLength = dataFile.length();
-		long bytesRead = 0;
-		
-		try {
-			Source source = new Source(1, "create", archiveSize);
-			source.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, sourceName);
-			ChannelMap cmap = new ChannelMap();
-			
-			BufferedReader fileReader = new BufferedReader(new FileReader(dataFile));
-			String line = fileReader.readLine();
-			if (line != null) {
-				bytesRead += line.length() + 2;
-				line = line.trim();
-				String[] tokens = line.split(delimiters);
-				numberOfChannels = tokens.length-1;
-				channels = new int[numberOfChannels];
-				for (int i=0; i<numberOfChannels; i++) {
-					String channelName = tokens[i+1].trim();
-					channels[i] = cmap.Add(channelName);
-					cmap.PutMime(channels[i], "application/octet-stream");
-				}
-			} else {
-				log.error("Error reading data file header");
-				return false;
-			}
-						
-			while ((line = fileReader.readLine()) != null) {
-				bytesRead += line.length() + 2;
-				line = line.trim();
-				String[] tokens = line.split(delimiters);
-				if (tokens.length != numberOfChannels+1) {
-					log.error("Skipping this line of data: " + line);
-					continue;
-				}
-				
-				try {
-					double time = Double.parseDouble(tokens[0].trim());
-					cmap.PutTime(time, 0);
-					String dataString = "";
-					for (int i=0; i<numberOfChannels; i++) {
-						double[] data = {Double.parseDouble(tokens[i+1].trim()) };
-						dataString += data[0] + ", ";
-						cmap.PutDataAsFloat64(channels[i], data);
-					}
-					
-					if (++bufferSize == bufferCapacity) {
-						source.Flush(cmap, true);
-						bufferSize = 0;
-						if (++flushes == archiveSize) {
-							log.error("The file is too large for the archive size.");
-							return false;
-						}
-					}
-				} catch (NumberFormatException nfe) {
-					log.error("Skipping this line of data: " + line);
-					continue;
-				}
-				
-				double statusRatio = ((double)bytesRead)/((double)fileLength);
-				rbnbImportDialog.postStatus(statusRatio);
-			}
-			
-			if (bufferSize > 0) {
-				source.Flush(cmap, true);
-			}
-			
-			log.info("Final status: " + ((double)bytesRead)/((double)fileLength)*100 + "%");
-			
-			rbnbImportDialog.postStatus(1);
-			
-			fileReader.close();
-			
-			source.Detach();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
+	public void postProgress(double progress) {
+		if (progress > 1) {
+			progress = 1;
 		}
+ 		importProgressBar.setValue((int)(progress*100000));		
+	}
 
-		return true;
+	public void postCompletion() {
+		importing = false;
+		rbnb.updateMetadataBackground();
+		dispose();
+		JOptionPane.showMessageDialog(owner, "Import complete.", "Import complete", JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	public void postError(String errorMessage) {
+		importing = false;
+		rbnb.updateMetadataBackground();
+		importProgressBar.setValue(0);
+		enableUI();
+		JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
 	}
 }
