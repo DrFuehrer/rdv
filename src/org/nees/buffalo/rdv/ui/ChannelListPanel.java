@@ -117,12 +117,14 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		ChannelTree oldChannelTree = ctree;
  		cmap = newChannelMap;
  		ctree = ChannelTree.createFromChannelMap(cmap);
-  		
+ 		
  		if (!root.equals(rbnb.getRBNBConnectionString())) {
  				root = rbnb.getRBNBConnectionString();
  				fireRootChanged();
  				clearMetadata();
 		} else {
+			TreePath[] paths = tree.getSelectionPaths();
+			
 			boolean channelListChanged = false;
 			
 			String[] newChannelList = cmap.GetChannelList();
@@ -159,15 +161,23 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			}			
 			
 			if (channelListChanged) {
-				fireRootChanged();
+				tree.clearSelection();
 				clearMetadata();
+				fireRootChanged();
+				
+		 		if (paths != null) {
+		 			for (int i=0; i<paths.length; i++) {
+			 			Object o = paths[i].getLastPathComponent();
+			 			if (o instanceof ChannelTree.Node) {
+			 				ChannelTree.Node node = (ChannelTree.Node)o;
+			 				selectNode(node.getFullName());
+			 			} else if (o instanceof String) {
+			 				selectRootNode();
+			 			}
+		 			}
+		 		}
 			}
-		}
- 		
- 		TreePath path = tree.getSelectionPath();
- 		if (path != null) {
- 			showMetadata(path.getLastPathComponent());
- 		}		
+		} 		
 	}
 	
 	public void showHiddenChannels(boolean showHiddenChannels) {
@@ -211,6 +221,25 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   		}
   	}
 	
+ 	private void selectRootNode() {
+ 		tree.addSelectionPath(new TreePath(root));
+ 	}
+ 	
+ 	private void selectNode(String nodeName) {
+ 		ChannelTree.Node node = ctree.findNode(nodeName);
+ 		if (node != null) {
+ 			int depth = node.getDepth();
+ 			Object[] path = new Object[depth+2];
+ 			path[0] = root;
+ 			for (int i=path.length-1; i>0; i--) {
+ 				path[i] = node;
+ 				node = node.getParent();
+ 			}
+ 			
+ 			tree.addSelectionPath(new TreePath(path));
+ 		}
+ 	}
+ 	
 	public Object getRoot() {
 		return root;
 	}
