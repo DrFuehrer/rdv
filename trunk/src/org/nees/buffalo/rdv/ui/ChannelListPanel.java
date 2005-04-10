@@ -35,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
@@ -81,7 +80,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		this.rbnb = rbnb;
 		
 		root = "";
-		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
+		cmap = new ChannelMap();
+		ctree = ChannelTree.createFromChannelMap(cmap);
 		
 		initPanel();
 	}
@@ -112,58 +112,57 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		dragSource.createDefaultDragGestureRecognizer(tree, DnDConstants.ACTION_LINK, this);		
 	}
 	
-	public void channelListUpdated(ChannelMap cmap) {
-		ChannelMap oldChannelMap = this.cmap;
+	public void channelListUpdated(ChannelMap newChannelMap) {
+		ChannelMap oldChannelMap = cmap;
  		ChannelTree oldChannelTree = ctree;
- 		this.cmap = cmap;
+ 		cmap = newChannelMap;
  		ctree = ChannelTree.createFromChannelMap(cmap);
   		
- 		if (oldChannelMap != null) {
- 			if (!root.equals(rbnb.getRBNBConnectionString())) {
+ 		if (!root.equals(rbnb.getRBNBConnectionString())) {
  				root = rbnb.getRBNBConnectionString();
  				fireRootChanged();
- 			} else {
- 				boolean channelListChanged = false;
- 				
- 				String[] newChannelList = cmap.GetChannelList();
- 				String[] oldChannelList = oldChannelMap.GetChannelList();
-  		
- 				//find channels added
- 				Iterator newIterator = ctree.iterator();
- 				while (newIterator.hasNext()) {
- 					ChannelTree.Node node = (ChannelTree.Node)newIterator.next();
- 					NodeTypeEnum type = node.getType();
- 					if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
- 						if (oldChannelTree.findNode(node.getFullName()) == null) {
- 							log.info("Found new node: " + node.getFullName() + ".");
- 							channelListChanged = true;
- 							break;
- 						}
- 					}
- 				}
- 				
- 				//find channels removed
- 				Iterator oldIterator = oldChannelTree.iterator();
- 				while (oldIterator.hasNext()) {
- 					ChannelTree.Node node = (ChannelTree.Node)oldIterator.next();
- 					NodeTypeEnum type = node.getType();
- 					if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
- 						if (ctree.findNode(node.getFullName()) == null) {
- 							log.info("Found deleted node: " + node.getFullName() + ".");
- 							channelListChanged = true;
- 							break;
- 						}
- 					}
- 				} 				
- 				
- 				if (channelListChanged) {
- 					fireRootChanged();
- 				}
- 			}
- 		} else {
- 			root = rbnb.getRBNBConnectionString();
- 			fireRootChanged();			
-  		}
+ 				clearMetadata();
+		} else {
+			boolean channelListChanged = false;
+			
+			String[] newChannelList = cmap.GetChannelList();
+			String[] oldChannelList = oldChannelMap.GetChannelList();
+	
+			//find channels added
+			Iterator newIterator = ctree.iterator();
+			while (newIterator.hasNext()) {
+				ChannelTree.Node node = (ChannelTree.Node)newIterator.next();
+				NodeTypeEnum type = node.getType();
+				if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
+					if (oldChannelTree.findNode(node.getFullName()) == null) {
+						log.info("Found new node: " + node.getFullName() + ".");
+						channelListChanged = true;
+						break;
+					}
+				}
+			}
+			
+			if (!channelListChanged) {
+				//find channels removed
+				Iterator oldIterator = oldChannelTree.iterator();
+				while (oldIterator.hasNext()) {
+					ChannelTree.Node node = (ChannelTree.Node)oldIterator.next();
+					NodeTypeEnum type = node.getType();
+					if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
+						if (ctree.findNode(node.getFullName()) == null) {
+							log.info("Found deleted node: " + node.getFullName() + ".");
+							channelListChanged = true;
+							break;
+						}
+					}
+				} 				
+			}			
+			
+			if (channelListChanged) {
+				fireRootChanged();
+				clearMetadata();
+			}
+		}
  		
  		TreePath path = tree.getSelectionPath();
  		if (path != null) {
@@ -184,18 +183,18 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		}
  		
  		log.info("Clearing channel list.");
- 		
-  		root = "";
-  		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
+
+ 		root = "";
+ 		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
   		
  		fireRootChanged();
-  	}
+  }
  	 	
  	private void fireRootChanged() {
-  		TreeModelEvent e = new TreeModelEvent(this, new Object[] {root});
- 		for (int i = 0; i < treeModelListeners.size(); i++) {
- 			((TreeModelListener)treeModelListeners.elementAt(i)).treeStructureChanged(e);
- 		}		
+ 		TreeModelEvent e = new TreeModelEvent(this, new Object[] {root});
+  	for (int i = 0; i < treeModelListeners.size(); i++) {
+  		((TreeModelListener)treeModelListeners.elementAt(i)).treeStructureChanged(e);
+  	}		
  	}
  	
  	private void fireChannelAdded(Object[] path, Object child) {
@@ -311,7 +310,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		if (o == null) {
 			return;
 		} else if (o.equals(root)) {
-			infoTextArea.append("Server: " + root);
+			infoTextArea.append("Type: Server" + NEWLINE);
+			infoTextArea.append("Host: " + rbnb.getRBNBHostName() + NEWLINE);
+			infoTextArea.append("Port: " + rbnb.getRBNBPortNumber());
 		} else {
 			node = (ChannelTree.Node)o;
 			node = ctree.findNode(node.getFullName());
@@ -417,6 +418,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	public void postState(int newState, int oldState) {
 		if (newState == Player.STATE_DISCONNECTED) {
 			clearChannelList();
+			clearMetadata();
 		}
 	}
 }
