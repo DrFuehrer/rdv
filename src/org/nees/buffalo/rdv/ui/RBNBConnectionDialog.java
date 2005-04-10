@@ -88,9 +88,6 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		getContentPane().add(rbnbHostNameLabel, c);
 		
 		rbnbHostNameTextField = new JTextField(rbnb.getRBNBHostName(), 25);
-		rbnbHostNameTextField.requestFocusInWindow();
- 		rbnbHostNameTextField.setSelectionStart(0);
- 		rbnbHostNameTextField.setSelectionEnd(rbnbHostNameTextField.getText().length());
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
@@ -145,9 +142,21 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		setVisible(true);
 	}
 	
+	public void setVisible(boolean visible) {
+		if (visible) {
+			rbnbHostNameTextField.requestFocusInWindow();
+	 		rbnbHostNameTextField.setSelectionStart(0);
+	 		rbnbHostNameTextField.setSelectionEnd(rbnbHostNameTextField.getText().length());			
+		}
+		super.setVisible(visible);
+	}
+	
 	private void connect() {
+		String rbnbHostName;
+		int rbnbPortNumber;
+		
 		try {
-			rbnb.setRBNBPortNumber(Integer.parseInt(rbnbPortTextField.getText()));
+			rbnbPortNumber = Integer.parseInt(rbnbPortTextField.getText());
 		} catch (NumberFormatException e) {
 			rbnbPortLabel.setForeground(Color.RED);
 			rbnbPortTextField.setText(Integer.toString(rbnb.getRBNBPortNumber()));
@@ -155,14 +164,21 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 			return;
 		}
 		
-		rbnb.setRBNBHostName(rbnbHostNameTextField.getText());
+		rbnbPortLabel.setForeground(Color.BLACK);
+		
+		rbnbHostName = rbnbHostNameTextField.getText();
 		
 		dispose();
 		
-		if (rbnb.isConnected()) {
-			rbnb.reconnect();
-		} else {
-			rbnb.connect();
+		if (!(rbnbHostName.equals(rbnb.getRBNBHostName()) && rbnbPortNumber == rbnb.getRBNBPortNumber() && rbnb.isConnected())) {
+			rbnb.setRBNBHostName(rbnbHostName);
+			rbnb.setRBNBPortNumber(rbnbPortNumber);
+			
+			if (rbnb.isConnected()) {
+				rbnb.reconnect();
+			} else {
+				rbnb.connect();
+			}
 		}
 	}
 	
