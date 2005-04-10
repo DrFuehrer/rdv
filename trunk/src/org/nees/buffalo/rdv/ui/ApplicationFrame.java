@@ -36,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
+import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
@@ -45,13 +46,15 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
  * @author  Jason P. Hanley
  * @since   1.2
  */
-public class ApplicationFrame extends JFrame implements MessageListener {
+public class ApplicationFrame extends JFrame implements MessageListener, ConnectionListener {
 	
 	static Log log = LogFactory.getLog(ApplicationFrame.class.getName());
 	
 	private DataViewer dataViewer;
 	private RBNBController rbnb;
 	private DataPanelManager dataPanelManager;
+	
+ 	private BusyDialog busyDialog;
 	
 	private JFrame frame;
 	private GridBagConstraints c;
@@ -97,13 +100,15 @@ public class ApplicationFrame extends JFrame implements MessageListener {
  	
  	private Action helpAction;
  	private Action aboutAction;
-	
+ 		
 	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager) {
 		super();
 		
 		this.dataViewer = dataViewer;
 		this.rbnb = rbnb;
 		this.dataPanelManager = dataPanelManager;
+		
+		busyDialog = null;
 		
 		initFrame();
 	}
@@ -150,6 +155,8 @@ public class ApplicationFrame extends JFrame implements MessageListener {
   	rbnb.addTimeScaleListener(statusPanel);
   	
   	rbnb.addMessageListener(this);
+  	
+  	rbnb.addConnectionListener(this);
    
  		frame.pack();
   		frame.setVisible(true);
@@ -640,4 +647,19 @@ public class ApplicationFrame extends JFrame implements MessageListener {
  			this.selected = selected;
  		}
  	}
+
+ 	public void connecting() {
+ 		busyDialog = new BusyDialog(this);
+ 		busyDialog.start();
+	}
+
+	public void connected() {
+		busyDialog.close();
+		busyDialog = null;
+	}
+
+	public void connectionFailed() {
+		busyDialog.close();
+		busyDialog = null;
+	}
 }

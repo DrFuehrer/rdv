@@ -44,6 +44,7 @@ public class RBNBController implements Player {
 	private ArrayList playbackRateListeners;
 	private ArrayList timeScaleChangeListeners;
 	private ArrayList messageListeners;
+	private ArrayList connectionListeners;
 	
 	private ChannelMap preFetchChannelMap;
 	private Object preFetchLock = new Object();
@@ -89,6 +90,7 @@ public class RBNBController implements Player {
 		playbackRateListeners = new ArrayList();
 		timeScaleChangeListeners = new ArrayList();
 		messageListeners = new ArrayList();
+		connectionListeners = new ArrayList();
 		
 		initMetadataListener();
 		
@@ -230,13 +232,17 @@ public class RBNBController implements Player {
 			log.error("Can not transition out of exiting state to " + getStateName(state) + " state.");
 			return false;
  		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING && newState != STATE_DISCONNECTED) {
+ 			fireConnecting();
 			if (!updateMetadata()) {
+				fireConnectionFailed();
 				return false;
 			}
 			if (!initRBNB()) {
 				//FIXME we need to clear the channel list in this case
+				fireConnectionFailed();
 				return false;
 			}
+			fireConnected();
 		}
 		
 		switch (newState) {
@@ -1147,6 +1153,38 @@ public class RBNBController implements Player {
 	
 	public void removeMessageListener(MessageListener messageListener) {
 		messageListeners.remove(messageListener);
+	}
+	
+	
+	// Connection Listener Methods
+	
+	private void fireConnecting() {
+		for (int i=0; i<connectionListeners.size(); i++) {
+			ConnectionListener connectionListener = (ConnectionListener)connectionListeners.get(i);
+			connectionListener.connecting();
+		}
+	}
+	
+	private void fireConnected() {
+		for (int i=0; i<connectionListeners.size(); i++) {
+			ConnectionListener connectionListener = (ConnectionListener)connectionListeners.get(i);
+			connectionListener.connected();
+		}		
+	}
+	
+	private void fireConnectionFailed() {
+		for (int i=0; i<connectionListeners.size(); i++) {
+			ConnectionListener connectionListener = (ConnectionListener)connectionListeners.get(i);
+			connectionListener.connectionFailed();
+		}		
+	}
+	
+	public void addConnectionListener(ConnectionListener connectionListener) {
+		connectionListeners.add(connectionListener);
+	}
+	
+	public void removeConnectionListener(ConnectionListener connectionListener) {
+		connectionListeners.remove(connectionListener);
 	}
 	
 	//Public Static Methods
