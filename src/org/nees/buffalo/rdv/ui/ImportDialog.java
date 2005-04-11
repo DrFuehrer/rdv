@@ -211,8 +211,34 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher, RBNBImp
 		getContentPane().add(panel, c);
 		
 		pack();
+		centerOnOwner();
 		setVisible(true);
 	}
+
+	/**
+	 * Center the dialog box on the owner frame.
+	 *
+	 * @since  1.2
+	 */
+	private void centerOnOwner() {
+		int frameX = owner.getX();
+		int frameY = owner.getY();
+		int frameWidth = owner.getWidth();
+		int frameHeight = owner.getHeight();
+		int dialogWidth = getWidth();
+		int dialogHeight = getHeight();
+		
+		int dialogX = frameX + (frameWidth/2) - (dialogWidth/2);
+		if (dialogX < 0) {
+			dialogX = 0;
+		}
+		int dialogY = frameY + (frameHeight/2) - (dialogHeight/2);
+		if (dialogY < 0) {
+			dialogY = 0;
+		}
+		setLocation(dialogX, dialogY);
+	}
+
 	
 	private void bindKeys() {
  		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
