@@ -539,7 +539,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	
 	private void initSplitPane() {
  		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, channelListPanel, rightPanel);
-		splitPane.setResizeWeight(0);
+		splitPane.setResizeWeight(0.1);
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setContinuousLayout(true);
 		

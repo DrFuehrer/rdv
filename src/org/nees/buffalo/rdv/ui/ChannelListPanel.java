@@ -2,6 +2,7 @@ package org.nees.buffalo.rdv.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.datatransfer.StringSelection;
 import java.awt.dnd.DnDConstants;
@@ -97,6 +98,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		tree.addMouseListener(this);
 		
 		treeView = new JScrollPane(tree);
+		treeView.setPreferredSize(new Dimension(0, 200));
 
 		infoTextArea = new JTextArea(6, 5);
 		infoTextArea.setEditable(false);
@@ -107,6 +109,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		splitPane.setOneTouchExpandable(true);
 		splitPane.setContinuousLayout(true);
 		add(splitPane, BorderLayout.CENTER);
+		
+		setPreferredSize(new Dimension(150, 0));
 			
 		DragSource dragSource = DragSource.getDefaultDragSource();
 		dragSource.createDefaultDragGestureRecognizer(tree, DnDConstants.ACTION_LINK, this);		
