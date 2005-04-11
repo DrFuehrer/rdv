@@ -8,14 +8,13 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 
 /**
- * A dialog to to show that the application is busy with a progress bar
+ * A dialog to to show that the application is busy with a progress bar.
  * 
  * @author  Jason P. Hanley
  * @since   1.2
@@ -54,37 +53,34 @@ public class BusyDialog extends JDialog {
 	 * @since  1.2
 	 */
 	private void initComponents() {
-		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 		
 		setTitle("Connecting");
 		
 		Container container = getContentPane();
 		container.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.anchor = GridBagConstraints.CENTER;
 		c.weightx = 0.5;
 		c.weighty = 0.5;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
 		c.gridx = 0;
-		c.anchor = GridBagConstraints.CENTER;
+		c.insets = new java.awt.Insets(5,5,5,5);		
 
 		JLabel messageLabel = new JLabel("Connecting to server...");
-		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridy = 0;
+		c.insets = new java.awt.Insets(5,5,5,5);
 		container.add(messageLabel, c);
 		
-		busyProgressBar = new JProgressBar(0, 100);
+		busyProgressBar = new JProgressBar(0, 1);
 		busyProgressBar.setPreferredSize(new Dimension(250, 17));
 		c.gridy = 1;
+		c.insets = new java.awt.Insets(0,5,5,5);
 		container.add(busyProgressBar, c);
-		
-		/* JButton cancelButton = new JButton("Cancel");
-		c.fill = GridBagConstraints.NONE;
-		c.gridy = 2;
-		container.add(cancelButton, c); */
 		
 		pack();
 		centerOnOwner();
@@ -115,17 +111,17 @@ public class BusyDialog extends JDialog {
 	 * @since  1.2
 	 */
 	public void start() {
-		
 		busyProgressBar.setIndeterminate(true);
 	}
 	
 	/**
-	 * Set the progress bar to no status
+	 * Set the progress bar to 0 progress.
 	 *
 	 * @since  1.2
 	 */
 	public void stop() {
-		busyProgressBar.setIndeterminate(true);
+		busyProgressBar.setIndeterminate(false);
+		busyProgressBar.setValue(0);
 	}
 	
 	/**
