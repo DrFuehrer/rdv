@@ -1,26 +1,33 @@
 <?xml version="1.0"?>
 
-<project default="compile" basedir=".">
+<project name="RDV" default="compile" basedir=".">
 	
-	<property name="package.name" value="RBNBDataViewer" />
+	<!-- name of the application -->
+	<property name="package.name" value="RDV"/>
 	
-	<!-- debug -->
+	<!-- compile with debugging information -->
 	<property name="debug" value="on"/>
 	
-	<!-- version information -->
+	<!-- get version information -->
 	<property file="build.properties"/>
 	<property name="version" value="${version.major}.${version.minor}.${version.release}${version.build}"/>
 			
-	<!-- src dir -->
+	<!-- source directory -->
 	<property name="src.dir" value="src"/>
 	
-	<!-- lib dir -->
+	<!-- library dir -->
 	<property name="lib.dir" value="lib"/>
 	
-	<!-- Documentation directory -->
-	<property name ="doc.dir" value="docs"/>
+	<!-- documentation directory -->
+	<property name="doc.dir" value="docs"/>
 	
-	<!-- temp build dir -->
+	<!-- config directory -->
+	<property name="config.dir" value="config"/>
+	
+	<!-- icons directory -->
+	<property name="icons.dir" value="icons"/>
+	
+	<!-- temporary build dir -->
 	<property name="build.dir" value="build"/>
 	<property name="build.classes" value="${build.dir}/classes"/>
 	<property name="build.lib" value="${build.dir}/lib"/>
@@ -72,22 +79,23 @@
 		
 	<!-- Package (jar) target -->
 	<target name="jar" depends="compile" description="Build jar">
-		<jar jarfile="${build.lib}/${package.name}.jar" basedir="${build.classes}">
+		<jar destfile="${build.lib}/${package.name}.jar">
+		  <zipfileset dir="${build.classes}"/>
+		  <zipfileset dir="${config.dir}" prefix="${config.dir}"/>
+		  <zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>		  
 			<manifest>
-				<attribute name="Class-Path" value="lib/${package.name}-icons.jar lib/commons-cli-1.0.jar lib/commons-logging.jar lib/jcommon-0.9.7.jar lib/jfreechart-0.9.21.jar lib/rbnb.jar"/>
+				<attribute name="Class-Path" value="lib/commons-cli-1.0.jar lib/commons-logging.jar lib/jcommon-1.0.0-pre2.jar lib/jfreechart-1.0.0-pre2.jar lib/jnt.FFT.jar lib/xercesImpl.jar lib/xml-apis.jar lib/rbnb.jar"/>
 				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
 			</manifest>
 		</jar>
-		<jar jarfile="${build.lib}/${package.name}-icons.jar" basedir="." includes="icons/*.gif"/>
 	</target>
 	
 	<!-- Package distribution file -->
 	<target name="zip" depends="jar" description="Build zip">
 		<zip destfile="../${package.name}-${version}.zip">
 			<zipfileset dir="${build.lib}" includes="${package.name}.jar" prefix="${package.name}-${version}"/>
-			<zipfileset dir="${build.lib}" includes="${package.name}-icons.jar" prefix="${package.name}-${version}/lib"/>			
-			<zipfileset dir="${lib.dir}" excludes="log4j-1.2.8.jar" prefix="${package.name}-${version}/lib"/>
-			<zipfileset dir="${rbnb.home}/bin" includes="rbnb.jar" prefix="${package.name}-${version}/lib"/>
+			<zipfileset dir="${lib.dir}" excludes="log4j-1.2.8.jar" prefix="${package.name}-${version}/${lib.dir}"/>
+			<zipfileset dir="${rbnb.home}/bin" includes="rbnb.jar" prefix="${package.name}-${version}/${lib.dir}"/>
 		</zip>
 	</target>
 	
@@ -95,10 +103,9 @@
 	<target name="jnlp" depends="jar" description="Build JNLP zip distribution for webserver">
 		<zip destfile="../${package.name}-JNLP-${version}.zip">
 			<zipfileset dir="${build.lib}" includes="${package.name}.jar"/>
-			<zipfileset dir="${build.lib}" includes="${package.name}-icons.jar"/>			
 			<zipfileset dir="${lib.dir}" excludes="log4j-1.2.8.jar"/>
 			<zipfileset dir="${rbnb.home}/bin" includes="rbnb.jar"/>
-			<zipfileset file="jnlp/RBNBDataViewer.jnlp"/>
+			<zipfileset file="jnlp/RDV.jnlp"/>
 		</zip>	
 	</target>
 		

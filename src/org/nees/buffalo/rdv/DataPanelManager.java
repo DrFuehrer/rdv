@@ -58,6 +58,11 @@ public class DataPanelManager {
 	 */
 	private ArrayList extensions;
 	
+	/**
+	 * The name of the extensions configuration file
+	 */
+	private static String extensionsConfigFileName = "config/extensions.xml";
+	
 	/** 
 	 * The constructor for the data panel manager. This initializes the
 	 * data panel container and the list of registered data panels.
@@ -85,7 +90,8 @@ public class DataPanelManager {
 	private void loadExtenionManifest() {
 		DOMParser xmlParser = new DOMParser();
 		try {
-			xmlParser.parse("config/extensions.xml");
+			ClassLoader cl = getClass().getClassLoader();
+			xmlParser.parse(cl.getResource(extensionsConfigFileName).toExternalForm());
 			Document xmlDocument = xmlParser.getDocument();
 			NodeList extensionNodes = xmlDocument.getElementsByTagName("extension");
 			for (int i=0; i<extensionNodes.getLength(); i++) {
