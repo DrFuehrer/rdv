@@ -14,16 +14,15 @@
 	</security>
 	<resources>
 		<j2se version="1.4+" initial-heap-size="64m" max-heap-size="256m"/>
-		<jar href="RBNBDataViewer.jar" main="true"/>
-		<jar href="RBNBDataViewer-icons.jar"/>		
-		<jar href="rbnb.jar"/>
+		<jar href="RDV.jar" main="true"/>
 		<jar href="commons-cli-1.0.jar"/>
 		<jar href="commons-logging.jar"/>
-		<jar href="jnt.FFT.jar"/>
-		<jar href="sercesImpl.jar"/>
-		<jar href="xml-apis.jar"/>
 		<jar href="jcommon-1.0.0-pre2.jar"/>
-		<jar href="jfreechart-1.0.0-pre2.jar"/>
+		<jar href="jfreechart-1.0.0-pre2.jar"/>		
+		<jar href="jnt.FFT.jar"/>
+		<jar href="xercesImpl.jar"/>
+		<jar href="xml-apis.jar"/>
+		<jar href="rbnb.jar"/>		
 	</resources>
 	<application-desc main-class="org.nees.buffalo.rdv.DataViewer">
 		<property name="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.NoOpLog"/>
