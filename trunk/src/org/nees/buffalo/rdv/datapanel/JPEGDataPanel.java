@@ -78,12 +78,18 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	private boolean isChannelSupported(String channelName) {
 		Channel channel = rbnbController.getChannel(channelName);
 		String mimeType = channel.getMimeType();
+    
+    //make broken apps work
+    if (mimeType == null) {
+      return true;
+    }
+        
 		Extension extension = dataPanelManager.getExtension(this.getClass());
 		if (extension != null) {
 			ArrayList mimeTypes = extension.getMimeTypes();
 			for (int i=0; i<mimeTypes.size(); i++) {
 				String mime = (String)mimeTypes.get(i);
-				if (mime.equals(mimeType)) {
+        if (mime.equals(mimeType)) {
 					return true;
 				}
 			}
