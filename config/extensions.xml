@@ -42,8 +42,10 @@
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>
 	</extension>	
+	<!--
 	<extension>
 		<id>org.nees.buffalo.rdv.datapanel.HelloWorldDataPanel</id>
 		<name>Hello World Data Panel</name>
-	</extension>		
+	</extension>
+	-->
 </extensions>

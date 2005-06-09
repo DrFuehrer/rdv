@@ -20,7 +20,7 @@ public final class Version {
 	 * 
 	 * @since  1.0 
 	 */
-	public static final int minor = 1;
+	public static final int minor = 2;
 	
 	/**
 	 * The release number.
@@ -34,7 +34,7 @@ public final class Version {
 	 *
 	 * @since  1.2
 	 */
-	public static final String build = "_alpha1";
+	public static final String build = "_beta1";
 	
 	/**
 	 * This class can not be instantiated and it's constructor

@@ -20,6 +20,7 @@ import javax.swing.JTextField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 /**
@@ -30,6 +31,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
  	static Log log = LogFactory.getLog(RBNBConnectionDialog.class.getName());
 	
 	RBNBController rbnb;
+  DataPanelManager dataPanelManager;
 	
 	JLabel headerLabel;
 	
@@ -42,10 +44,11 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 	JButton connectButton;
 	JButton cancelButton;
 	
-	public RBNBConnectionDialog(JFrame owner, RBNBController rbnbController) {
+	public RBNBConnectionDialog(JFrame owner, RBNBController rbnbController, DataPanelManager dataPanelManager) {
 		super(owner, true);
 		
 		this.rbnb = rbnbController;
+    this.dataPanelManager = dataPanelManager;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
@@ -171,6 +174,10 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		dispose();
 		
 		if (!(rbnbHostName.equals(rbnb.getRBNBHostName()) && rbnbPortNumber == rbnb.getRBNBPortNumber() && rbnb.isConnected())) {
+      if (rbnb.isConnected()) {
+        dataPanelManager.closeAllDataPanels(); 
+      }
+            
 			rbnb.setRBNBHostName(rbnbHostName);
 			rbnb.setRBNBPortNumber(rbnbPortNumber);
 			

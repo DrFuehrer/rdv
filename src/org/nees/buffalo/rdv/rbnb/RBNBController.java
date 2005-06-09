@@ -52,8 +52,7 @@ public class RBNBController implements Player {
 	
 	ChannelMap metaDataChannelMap;
 	
-	//FIXME should be -1, but breaks stuff
-	private double location = System.currentTimeMillis()/1000d;
+	private double location;
 	private double playbackRate;
 	private double timeScale;
 	
@@ -61,15 +60,14 @@ public class RBNBController implements Player {
 	
 	private double updateLocation = -1;
 	private double updatePlaybackRate = -1;
-	private int updateState = -1;
+  private ArrayList stateChangeRequests = new ArrayList();	
 	private ArrayList updateSubscriptionRequests = new ArrayList();
 
  	private boolean dropData;
 	
 	static final double PLAYBACK_REFRESH_RATE = 0.05;
 	
-	public RBNBController(double playbackRate, double timeScale) {
-		//initial state is disconnected
+	public RBNBController(double location, double playbackRate, double timeScale) {
 		state = STATE_DISCONNECTED;
 		
 		rbnbHostName = DEFAULT_RBNB_HOST_NAME;
@@ -79,6 +77,7 @@ public class RBNBController implements Player {
 		
 		dropData = true;
 		
+    this.location = location;
 		this.playbackRate = playbackRate;
 		this.timeScale = timeScale;
 		
@@ -169,8 +168,9 @@ public class RBNBController implements Player {
 
 	private synchronized void processPlayerRequests() {
 		if (updateLocation != -1) {
-			setLocationSafe(updateLocation);
-			updateLocation = -1;
+      double l = updateLocation;
+      updateLocation = -1;
+			setLocationSafe(l);
 		}
 		
 		if (updatePlaybackRate != -1) {
@@ -178,15 +178,20 @@ public class RBNBController implements Player {
 			updatePlaybackRate = -1;
 		}
 		
-		if (updateState != -1 && state != STATE_LOADING) {
-			if (updateState == STATE_RECONNECT) {
-				changeStateSafe(STATE_DISCONNECTED);
-				changeStateSafe(STATE_STOPPED);
-			} else {
-				changeStateSafe(updateState);
-			}
-			
-			updateState = -1;
+		if (stateChangeRequests.size() > 0 && state != STATE_LOADING) {
+      synchronized (stateChangeRequests) {
+          for (int i=0; i<stateChangeRequests.size(); i++) {
+              int updateState = ((Integer)stateChangeRequests.get(i)).intValue();
+        			if (updateState == STATE_RECONNECT) {
+        				changeStateSafe(STATE_DISCONNECTED);
+        				changeStateSafe(STATE_STOPPED);
+        			} else {
+        				changeStateSafe(updateState);
+        			}
+        			
+        			stateChangeRequests.clear();
+          }
+      }
 		}		
 	}
 	
@@ -222,7 +227,9 @@ public class RBNBController implements Player {
 	}	
 		
 	private void changeState(int newState) {
-		updateState = newState;
+		synchronized (stateChangeRequests) {
+      stateChangeRequests.add(new Integer(newState));
+    }
 	}
 	
 	private boolean changeStateSafe(int newState) {
@@ -564,7 +571,7 @@ public class RBNBController implements Player {
 		long playbackStartTime = System.currentTimeMillis();
 		
 		int i = 0;
-		while (i<playbackSteps && updateState == -1 && updateLocation == -1 && updatePlaybackRate == -1) {			
+		while (i<playbackSteps && stateChangeRequests.size() == 0 && updateLocation == -1 && updatePlaybackRate == -1) {			
 			double timeDifference = (playbackRefreshRate*(i+1)) - ((System.currentTimeMillis() - playbackStartTime)/1000d);
  			if (dropData && timeDifference < -playbackRefreshRate) {
 				int stepsToSkip = (int)((timeDifference*-1) / playbackRefreshRate);
@@ -998,6 +1005,10 @@ public class RBNBController implements Player {
 	public void setLocation(final double location) {
 		updateLocation = location;
 	}
+    
+  public double getRequestedLocation() {
+    return updateLocation; 
+  }
 	
 	public double getPlaybackRate() {
 		return playbackRate;
@@ -1053,8 +1064,7 @@ public class RBNBController implements Player {
 	
 	public void addTimeListener(TimeListener timeListener) {
 		timeListeners.add(timeListener);
-		//FIXME listners expect data now when this is called
-		//timeListener.postTime(location);
+		timeListener.postTime(location);
 	}
 	
 	public void removeTimeListener(TimeListener timeListener) {

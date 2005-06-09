@@ -200,11 +200,10 @@ public class DataPanelManager {
 	 */
 	public void closeAllDataPanels() {
 		DataPanel dataPanel;
-		for (int i=0; i<dataPanels.size(); i++) {
+		for (int i=dataPanels.size()-1; i>=0; i--) {
 			dataPanel = (DataPanel)dataPanels.get(i);
-			dataPanel.closePanel();
+			closeDataPanel(dataPanel);
 		}
-		dataPanels.clear();
 	}
 	
 	/**
