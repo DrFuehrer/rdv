@@ -77,6 +77,11 @@ public class StringDataPanel extends AbstractDataPanel {
 	}
 
 	private void postDataText(String channelName, int channelIndex) {
+    //We only know how to display strings
+    if (channelMap.GetType(channelIndex) != ChannelMap.TYPE_STRING) {
+      return;   
+    }
+        
 		String[] data = channelMap.GetDataAsString(channelIndex);
 		double[] times = channelMap.GetTimes(channelIndex);
 

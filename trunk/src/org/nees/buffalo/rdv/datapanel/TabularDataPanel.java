@@ -10,8 +10,6 @@ import java.util.Iterator;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.nees.buffalo.rdv.DataViewer;
-
 import com.rbnb.sapi.ChannelMap;
 
 /**

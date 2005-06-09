@@ -376,13 +376,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 	
 	public void postState(int newState, int oldState) {
-		switch (newState) {
-			case Player.STATE_LOADING:
-			case Player.STATE_MONITORING:
-			case Player.STATE_REALTIME:
-				clearData();
-				break;
-		}
+    if (newState == Player.STATE_LOADING || (newState == Player.STATE_MONITORING && oldState != Player.STATE_MONITORING)) {
+      clearData();  
+    }
 	}
 	
 	/**
@@ -408,6 +404,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.2
 	 */
 	void initControlBar() {
+    final DataPanel dataPanel = this;
 		component.addMouseListener(new MouseInputAdapter() {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getButton() == MouseEvent.BUTTON1) {
@@ -417,15 +414,16 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
  					int componentWidth = component.getWidth();
  					int componentHeight = component.getHeight();
  					
- 					if (x < 16 && y < 16) {
+ 					/* if (x < 16 && y < 16) {
  						pinned = !pinned;
  					} else if (x >= 16 && x < 32 && y < 16) {
  						togglePause();
- 					} else if (x >= componentWidth-16 && y < 16) {
-						closePanel();
- 					} else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
-						toggleMaximize();
-					} else if (x <  componentWidth-32 && x >= componentWidth-48 && y < 16) {
+ 					} else */
+          if (x >= componentWidth-16 && y < 16) {
+						dataPanelManager.closeDataPanel(dataPanel);
+ 					/* } else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
+						toggleMaximize(); */
+					} else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
 						toggleDetach(); 												
 					}
 				}
@@ -692,11 +690,11 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			g.setColor(Color.BLACK);
 			g.fillRect(0, 0, componentWidth, 16);
 			g.setColor(Color.WHITE);
-			g.drawString(getTitle(), 36, 12);
-			g.drawImage(windowPinImage, 0, 0, null);
-			g.drawImage(windowSnapshotImage, 16, 0, null);
-			g.drawImage(windowDetachImage, componentWidth-48, 0, null);
-			g.drawImage(windowMaximizeImage, componentWidth-32, 0, null);
+			g.drawString(getTitle(), 2, 12);
+			//g.drawImage(windowPinImage, 0, 0, null);
+			//g.drawImage(windowSnapshotImage, 16, 0, null);
+			g.drawImage(windowDetachImage, componentWidth-32, 0, null);
+			//g.drawImage(windowMaximizeImage, componentWidth-32, 0, null);
 			g.drawImage(windowCloseImage, componentWidth-16, 0, null);
 		}
 	}

@@ -80,7 +80,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		String mimeType = channel.getMimeType();
     
     //make broken apps work
-    if (mimeType == null) {
+    if (mimeType == null && channelName.endsWith(".jpg")) {
       return true;
     }
         

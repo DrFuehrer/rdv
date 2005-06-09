@@ -29,15 +29,21 @@ public class DataViewer {
 	private DataPanelManager dataPanelManager;
 	private ApplicationFrame applicationFrame;
 
+  private double location;
 	private double playbackRate;
 	private double timeScale;
 	
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
 	
 	public DataViewer() {
+    location = System.currentTimeMillis()/1000d;;
 		playbackRate = 1;
 		timeScale = 1;
-	}		
+	}
+    
+  public void setLocation(double location) {
+    this.location = location; 
+  }
 	
 	public void setPlaybackRate(double playbackRate) {
 		this.playbackRate = playbackRate;
@@ -48,7 +54,7 @@ public class DataViewer {
 	}
 	
 	public void initialize() {
-		rbnb = new RBNBController(playbackRate, timeScale);
+		rbnb = new RBNBController(location, playbackRate, timeScale);
 		dataPanelManager = new DataPanelManager(rbnb);
 		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager);		
 	}

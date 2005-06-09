@@ -1,15 +1,19 @@
-When monitoring and then you disconnect, the player only transitions
-to the stopped state and not disconnected.
+The bugs here are categorized into two categories. Stable for bugs affecting the
+current release, or code that will be released soon. And development for code
+that is not ready for public released.
 
-Snapshot doesn't work for time series data panel.
-
-When the jfreechart data panels are unpinned, they
-don't always show the icons with a mouseover.
-
-When the channel list is manually resized to 0, it
-is in effect hidden, and the view menu item should
-indicate this.
-
-Location bar is still jumpy
-
-The data panels still refresh data when they don't need too.
+------
+Stable
+------
+-The data panels still refresh data when they don't need too.
+-The time series data panel doesn't display correctly when the time scale is
+ smaller than the playback rate (doesn't affect RT mode)
+-When a data panel is closed it is not releasing its memory. Or maybe better yet
+ the VM isn't releasing memory back to the OS.
+ 
+-----------
+Development
+-----------
+-Snapshot doesn't work for time series data panel.
+-When the jfreechart data panels are unpinned, they don't always show the icons
+ with a mouseover.

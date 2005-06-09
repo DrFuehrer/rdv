@@ -361,7 +361,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	}
 		
 	public void setSliderLocation(double location) {
-		if (!locationScrollBar.getValueIsAdjusting()) {
+		if (rbnbController.getRequestedLocation() == -1 && !locationScrollBar.getValueIsAdjusting()) {
 			int sliderLocation = (int)((location-startTime)*1000);
 			if (this.sliderLocation != sliderLocation) {
 				this.location = location;

@@ -30,6 +30,8 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +40,9 @@ import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
+import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.StateListener;
 
 /**
  * Main frame fro the application
@@ -46,7 +50,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
  * @author  Jason P. Hanley
  * @since   1.2
  */
-public class ApplicationFrame extends JFrame implements MessageListener, ConnectionListener {
+public class ApplicationFrame extends JFrame implements MessageListener, ConnectionListener, StateListener {
 	
 	static Log log = LogFactory.getLog(ApplicationFrame.class.getName());
 	
@@ -100,6 +104,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	
  	private Action helpAction;
  	private Action aboutAction;
+    
+  private JCheckBoxMenuItem showChannelListMenuItem;
  		
 	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager) {
 		super();
@@ -124,6 +130,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 	
 		frame.getContentPane().setLayout(new BorderLayout());
+    
+    frame.setBounds(0, 0, 800, 600);
+    frame.setLocationByPlatform(true);
 
 		frame.setTitle("RDV");
 		
@@ -146,6 +155,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		rbnb.addStateListener(channelListPanel);
 		rbnb.addStateListener(statusPanel);
 		rbnb.addStateListener(controlPanel);
+    rbnb.addStateListener(this);
 
 		rbnb.addMetadataListener(channelListPanel);
 		rbnb.addMetadataListener(controlPanel);
@@ -157,9 +167,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	rbnb.addMessageListener(this);
   	
   	rbnb.addConnectionListener(this);
-   
- 		frame.pack();
-  		frame.setVisible(true);
+
+ 		frame.setVisible(true);
 	}
   	
  	private void initActions() {
@@ -168,7 +177,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				if (rbnbConnectionDialog == null) {
- 					rbnbConnectionDialog = new RBNBConnectionDialog(frame, rbnb);
+ 					rbnbConnectionDialog = new RBNBConnectionDialog(frame, rbnb, dataPanelManager);
  				} else {
  					rbnbConnectionDialog.setVisible(true);
  				}			
@@ -240,20 +249,22 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
  		
  		viewAction = new DataViewerAction("View", "View Menu", KeyEvent.VK_V);
- 
+
  		showChannelListAction = new DataViewerAction("Show Channel List", "", KeyEvent.VK_L) {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				boolean selected = menuItem.isSelected();
  				if (selected) {
  					int dividerLocation = splitPane.getLastDividerLocation();
- 					if (dividerLocation <= 1) {
- 						dividerLocation = 150;
+ 					if (dividerLocation <= 5) {
+ 						dividerLocation = 180;
  					}
  					splitPane.setDividerLocation(dividerLocation);
+          splitPane.setDividerLocation(dividerLocation);
  				} else {
  					splitPane.setDividerLocation(0);
- 				} 				
+          splitPane.setDividerLocation(0);
+ 				}
  			}			
  		};
  
@@ -331,10 +342,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  
  	}
  	
-  	private void initMenuBar() {
-  		menuBar = new JMenuBar();
+  private void initMenuBar() {
+  	menuBar = new JMenuBar();
   
-  		JMenuItem menuItem;
+  	JMenuItem menuItem;
   		
  		JMenu fileMenu = new JMenu(fileAction);
   		
@@ -346,15 +357,18 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		fileMenu.addSeparator();	
  		
- 		menuItem = new JMenuItem(importAction);
- 		fileMenu.add(menuItem);
- 		
- 		fileMenu.addSeparator();
+ 		/*
+     * Not ready for prime time yet
+     *
+     * menuItem = new JMenuItem(importAction);
+ 		 * fileMenu.add(menuItem);
+ 		 * fileMenu.addSeparator();
+     */
  		
  		menuItem = new JMenuItem(exitAction);
-  		fileMenu.add(menuItem);
+  	fileMenu.add(menuItem);
   		
-  		menuBar.add(fileMenu);
+  	menuBar.add(fileMenu);
   		
  		JMenu controlMenu = new JMenu(controlAction);
  
@@ -389,8 +403,21 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		controlMenu.add(menuItem);
  		
  		JMenu viewMenu = new JMenu(viewAction);
+    viewMenu.addMenuListener(new MenuListener() {
+      public void menuSelected(MenuEvent arg0) {
+        int dividerLocation = splitPane.getLastDividerLocation();
+        if (dividerLocation <= 5) {
+          showChannelListMenuItem.setState(false); 
+        } else {
+          showChannelListMenuItem.setState(true);   
+        }
+      }
+      public void menuDeselected(MenuEvent arg0) {}
+    	public void menuCanceled(MenuEvent arg0) {}    
+    });
  		
- 		menuItem = new JCheckBoxMenuItem(showChannelListAction);
+ 		showChannelListMenuItem = new JCheckBoxMenuItem(showChannelListAction);
+    menuItem = showChannelListMenuItem;
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
  		
@@ -540,7 +567,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private void initSplitPane() {
  		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, channelListPanel, rightPanel);
 		splitPane.setResizeWeight(0.1);
-		splitPane.setOneTouchExpandable(true);
 		splitPane.setContinuousLayout(true);
 		
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
@@ -662,4 +688,17 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		busyDialog.close();
 		busyDialog = null;
 	}
+    
+  public void postState(int newState, int oldState) {
+    if (newState == Player.STATE_DISCONNECTED) {
+      controlAction.setEnabled(false);
+      disconnectAction.setEnabled(false);
+      importAction.setEnabled(false);
+    } else if (newState != Player.STATE_EXITING) {
+      controlAction.setEnabled(true);
+      disconnectAction.setEnabled(true);
+      importAction.setEnabled(true);
+    }
+  }
+  
 }
