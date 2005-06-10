@@ -132,7 +132,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		frame.getContentPane().setLayout(new BorderLayout());
     
     frame.setBounds(0, 0, 800, 600);
-    frame.setLocationByPlatform(true);
 
 		frame.setTitle("RDV");
 		
