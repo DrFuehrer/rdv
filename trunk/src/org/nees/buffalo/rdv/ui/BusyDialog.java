@@ -121,7 +121,6 @@ public class BusyDialog extends JDialog {
 	 */
 	public void stop() {
 		busyProgressBar.setIndeterminate(false);
-		busyProgressBar.setValue(0);
 	}
 	
 	/**
@@ -131,6 +130,7 @@ public class BusyDialog extends JDialog {
 	 */
 	public void close() {
 		setVisible(false);
+    stop();        
 		dispose();
 	}
 }
