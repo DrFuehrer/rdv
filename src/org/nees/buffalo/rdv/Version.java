@@ -34,7 +34,7 @@ public final class Version {
 	 *
 	 * @since  1.2
 	 */
-	public static final String build = "_beta2";
+	public static final String build = "_beta3";
 	
 	/**
 	 * This class can not be instantiated and it's constructor
