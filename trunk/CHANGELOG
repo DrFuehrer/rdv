@@ -23,6 +23,7 @@
 -Tweak the channel list show/hide/resize code to work in a more consistent
  manner
 -Fixed bug in J2RE's < 1.5 that would hang the application on exit
+-Fix bug when RT mode would not work in rare cases
 
 1.1.0 - March 22, 2005
 -Expanded domain slider to include usecond and day time values
