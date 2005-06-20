@@ -188,9 +188,8 @@ public class RBNBController implements Player {
         			} else {
         				changeStateSafe(updateState);
         			}
-        			
-        			stateChangeRequests.clear();
           }
+          stateChangeRequests.clear();
       }
 		}		
 	}
