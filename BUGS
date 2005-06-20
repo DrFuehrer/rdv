@@ -5,11 +5,12 @@ that is not ready for public released.
 ------
 Stable
 ------
--The data panels still refresh data when they don't need too.
 -The time series data panel doesn't display correctly when the time scale is
  smaller than the playback rate (doesn't affect RT mode)
 -When a data panel is closed it is not releasing its memory. Or maybe better yet
  the VM isn't releasing memory back to the OS.
+-When dragging a channel onto an existing data panel the state doesn't change to
+ loading when the data is being fetched.
  
 -----------
 Development
