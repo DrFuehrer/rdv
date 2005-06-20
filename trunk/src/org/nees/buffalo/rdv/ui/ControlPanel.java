@@ -374,7 +374,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				}
 						
 				this.sliderLocation = sliderLocation;
-				locationScrollBar.removeAdjustmentListener(this);
+        while (locationScrollBar.getAdjustmentListeners().length != 0) {
+        	locationScrollBar.removeAdjustmentListener(this);
+        }
 				locationScrollBar.setValue(sliderLocation);
 				locationScrollBar.addAdjustmentListener(this);
 			}
