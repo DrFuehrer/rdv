@@ -285,14 +285,14 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher, RBNBImp
 
 	public void postCompletion() {
 		importing = false;
-		rbnb.updateMetadataBackground();
+		rbnb.updateMetadata();
 		dispose();
 		JOptionPane.showMessageDialog(owner, "Import complete.", "Import complete", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	public void postError(String errorMessage) {
 		importing = false;
-		rbnb.updateMetadataBackground();
+		rbnb.updateMetadata();
 		importProgressBar.setValue(0);
 		enableUI();
 		JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);

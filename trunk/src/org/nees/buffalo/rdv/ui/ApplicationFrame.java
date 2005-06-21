@@ -157,8 +157,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		rbnb.addStateListener(controlPanel);
     rbnb.addStateListener(this);
 
-		rbnb.addMetadataListener(channelListPanel);
-		rbnb.addMetadataListener(controlPanel);
+		rbnb.getMetadataManager().addMetadataListener(channelListPanel);
+		rbnb.getMetadataManager().addMetadataListener(controlPanel);
 		
 		rbnb.addPlaybackRateListener(statusPanel);
 		
@@ -243,7 +243,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  
  		updateChannelListAction = new DataViewerAction("Update Channel List", "Update the channel list", KeyEvent.VK_U, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "toolbarButtonGraphics/general/Refresh16.gif") {
  			public void actionPerformed(ActionEvent ae) {
- 				rbnb.updateMetadataBackground();
+ 				rbnb.updateMetadata();
  			}			
  		};
  
