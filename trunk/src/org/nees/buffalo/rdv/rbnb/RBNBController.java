@@ -56,10 +56,15 @@ public class RBNBController implements Player {
 	private double playbackRate;
 	private double timeScale;
 	
-	private int STATE_RECONNECT = 100;
-	
 	private double updateLocation = -1;
+  private Object updateLocationLock = new Object();
+  
+  private double updateTimeScale = -1;
+  private Object updateTimeScaleLock = new Object();
+  
 	private double updatePlaybackRate = -1;
+  private Object updatePlaybackRateLock = new Object();
+    
   private ArrayList stateChangeRequests = new ArrayList();	
 	private ArrayList updateSubscriptionRequests = new ArrayList();
 
@@ -112,8 +117,10 @@ public class RBNBController implements Player {
 		while (state != STATE_EXITING) {
 			
 			processSubscriptionRequests();
-			
-			processPlayerRequests();
+      processLocationUpdate();       
+      processTimeScaleUpdate();
+      processPlaybackRateUpdate();
+      processStateChangeRequests();
 					
 			switch (state) {
 				case STATE_LOADING:
@@ -166,68 +173,75 @@ public class RBNBController implements Player {
 		}
 	}
 
-	private synchronized void processPlayerRequests() {
-		if (updateLocation != -1) {
-      double l = updateLocation;
-      updateLocation = -1;
-			setLocationSafe(l);
-		}
-		
-		if (updatePlaybackRate != -1) {
-			setPlaybackRateSafe(updatePlaybackRate);
-			updatePlaybackRate = -1;
-		}
-		
-		if (stateChangeRequests.size() > 0 && state != STATE_LOADING) {
-      synchronized (stateChangeRequests) {
-          for (int i=0; i<stateChangeRequests.size(); i++) {
-              int updateState = ((Integer)stateChangeRequests.get(i)).intValue();
-        			if (updateState == STATE_RECONNECT) {
-        				changeStateSafe(STATE_DISCONNECTED);
-        				changeStateSafe(STATE_STOPPED);
-        			} else {
-        				changeStateSafe(updateState);
-        			}
-          }
-          stateChangeRequests.clear();
+	private void processLocationUpdate() {
+    if (updateLocation != -1) {
+      synchronized (updateLocationLock) {
+        location = updateLocation;
+        updateLocation = -1;
       }
-		}		
-	}
-	
-	private void setLocationSafe(double location) {
-		log.info("Setting location to " + DataViewer.formatDate(location) + ".");
-	
-		this.location = location;
 
-		if (requestedChannels.NumberOfChannels() > 0) {
-			changeStateSafe(STATE_LOADING);
-		}
+      log.info("Setting location to " + DataViewer.formatDate(location) + ".");
+
+      if (requestedChannels.NumberOfChannels() > 0) {
+        changeStateSafe(STATE_LOADING);
+      }
+    }
 	}
+    
+  private void processTimeScaleUpdate() {
+    if (updateTimeScale != -1 && timeScale != updateTimeScale) {
+      synchronized (updateTimeScaleLock) {
+        timeScale = updateTimeScale;
+        updateTimeScale = -1;
+      }
+      
+      log.info("Setting time scale to " + timeScale + ".");
+    
+      //TODO make this loading smarter
+      if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
+        changeStateSafe(STATE_LOADING);
+      }
+      
+      fireTimeScaleChanged(timeScale);
+    }    
+  }
 	
-	private void setPlaybackRateSafe(double playbackRate) {
-		if (this.playbackRate == playbackRate) {
-			//the playback rate hasn't changed
-			return;
-		}
+	private void processPlaybackRateUpdate() {
+    if (updatePlaybackRate != -1 && playbackRate != updatePlaybackRate) {
+      synchronized (updatePlaybackRateLock) {
+      	playbackRate = updatePlaybackRate;
+        updatePlaybackRate = -1;
+      }
+
+      log.info("Setting playback rate to " + playbackRate + " seconds.");
+    
+      if (state == STATE_PLAYING) {
+        if (!preFetchDone) {
+          //wait for last prefetch to finish
+          getPreFetchChannelMap(-1);
+        }
+        preFetchData(location, playbackRate);
+      }
+    
+      firePlaybackRateChanged(playbackRate);
+    }     
+	}
+    
+  private void processStateChangeRequests() {
+    if (stateChangeRequests.size() > 0 && state != STATE_LOADING) {
+      synchronized (stateChangeRequests) {
+        for (int i=0; i<stateChangeRequests.size(); i++) {
+          int updateState = ((Integer)stateChangeRequests.get(i)).intValue();
+          changeStateSafe(updateState);
+        }
+        stateChangeRequests.clear();
+      }
+    }
+  }
 		
-		log.info("Setting playback rate to " + playbackRate + " seconds.");
-		
-		this.playbackRate = playbackRate;
-		
-		if (state == STATE_PLAYING) {
-			if (!preFetchDone) {
-				//wait for last prefetch to finish
-				getPreFetchChannelMap(-1);
-			}
-			preFetchData(location, playbackRate);
-		}
-		
-		firePlaybackRateChanged(playbackRate);
-	}	
-		
-	private void changeState(int newState) {
+	private void requestStateChange(int state) {
 		synchronized (stateChangeRequests) {
-      stateChangeRequests.add(new Integer(newState));
+      stateChangeRequests.add(new Integer(state));
     }
 	}
 	
@@ -570,7 +584,7 @@ public class RBNBController implements Player {
 		long playbackStartTime = System.currentTimeMillis();
 		
 		int i = 0;
-		while (i<playbackSteps && stateChangeRequests.size() == 0 && updateLocation == -1 && updatePlaybackRate == -1) {			
+		while (i<playbackSteps && stateChangeRequests.size() == 0 && updateLocation == -1 && updateTimeScale == -1 && updatePlaybackRate == -1) {			
 			double timeDifference = (playbackRefreshRate*(i+1)) - ((System.currentTimeMillis() - playbackStartTime)/1000d);
  			if (dropData && timeDifference < -playbackRefreshRate) {
 				int stepsToSkip = (int)((timeDifference*-1) / playbackRefreshRate);
@@ -976,19 +990,19 @@ public class RBNBController implements Player {
 	}
 
  	public void monitor() {
-		changeState(STATE_MONITORING);
+    requestStateChange(STATE_MONITORING);
 	}
 	
 	public void play() {
-		changeState(STATE_PLAYING);
+		requestStateChange(STATE_PLAYING);
 	}
 	
 	public void pause() {
-		changeState(STATE_STOPPED);
+		requestStateChange(STATE_STOPPED);
 	}
 	
 	public void exit() {
-		changeState(STATE_EXITING);
+		requestStateChange(STATE_EXITING);
 		
 		//wait for thread to finish
  		int count = 0;
@@ -1002,7 +1016,9 @@ public class RBNBController implements Player {
 	}
 		
 	public void setLocation(final double location) {
-		updateLocation = location;
+    synchronized (updateLocationLock) {
+    	updateLocation = location;
+    }
 	}
     
   public double getRequestedLocation() {
@@ -1014,7 +1030,9 @@ public class RBNBController implements Player {
 	}
 
 	public void setPlaybackRate(final double playbackRate) {
-		updatePlaybackRate = playbackRate;
+    synchronized (updatePlaybackRateLock) {
+    	updatePlaybackRate = playbackRate;
+    }
 	}
 	
 	public double getTimeScale() {
@@ -1022,14 +1040,9 @@ public class RBNBController implements Player {
 	}
 	
 	public void setTimeScale(double timeScale) {
-		this.timeScale = timeScale;
-		
-		fireTimeScaleChanged(timeScale);
-		
-		//TODO make this loading smarter
-		if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
- 			changeState(STATE_LOADING);
-		}		
+    synchronized (updateTimeScaleLock) {
+      updateTimeScale = timeScale;
+    }
 	}
 	
 	public boolean subscribe(String channelName, DataListener listener) {
@@ -1120,15 +1133,16 @@ public class RBNBController implements Player {
 	}
 		
 	public void connect() {
-		changeState(STATE_STOPPED);
+		requestStateChange(STATE_STOPPED);
 	}
 	
 	public void disconnect() {
-		changeState(STATE_DISCONNECTED);
+		requestStateChange(STATE_DISCONNECTED);
 	}
 	
 	public void reconnect() {
-		changeState(STATE_RECONNECT);
+		requestStateChange(STATE_DISCONNECTED);
+    requestStateChange(STATE_STOPPED);
 	}
 	
 	public void addSubscriptionListener(SubscriptionListener subscriptionListener) {
