@@ -1,4 +1,4 @@
-1.2.0
+1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
 -Added tabular data panel
 -Fix text data panel
