@@ -311,7 +311,7 @@ public class RBNBController implements Player {
 		} catch (SAPIException e) {
 			log.error("Failed to connect to the RBNB server.");
 			fireErrorMessage("Failed to connect to the RBNB server.");
-			closeRBNB();
+			closeRBNB(true);
 			return false;	
 		}
 		
@@ -320,10 +320,6 @@ public class RBNBController implements Player {
 		return true;
 	}
 
-	private boolean closeRBNB() {
- 		return closeRBNB(true);
- 	}
- 	
  	private boolean closeRBNB(boolean changeState) {
 		if (sink == null) return true;
 			
