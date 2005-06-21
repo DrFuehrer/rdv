@@ -36,6 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
@@ -358,7 +359,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 				double start = cmap.GetTimeStart(channelIndex);
 				double duration = cmap.GetTimeDuration(channelIndex);
 				int size = node.getSize();
-				String unit = rbnb.getUnit(channelName);
+				String unit = ((Channel)rbnb.getChannel(channelName)).getUnit();
 
 				infoTextArea.append("Start: " + DataViewer.formatDate(start) + NEWLINE);
 				infoTextArea.append("Duration: " + DataViewer.formatSeconds(duration));
