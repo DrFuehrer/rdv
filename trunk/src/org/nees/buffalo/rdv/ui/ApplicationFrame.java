@@ -255,7 +255,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				boolean selected = menuItem.isSelected();
  				if (selected) {
  					int dividerLocation = splitPane.getLastDividerLocation();
- 					if (dividerLocation <= 5) {
+ 					if (dividerLocation <= 15) {
  						dividerLocation = 180;
  					}
  					splitPane.setDividerLocation(dividerLocation);
@@ -405,7 +405,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     viewMenu.addMenuListener(new MenuListener() {
       public void menuSelected(MenuEvent arg0) {
         int dividerLocation = splitPane.getLastDividerLocation();
-        if (dividerLocation <= 5) {
+        log.info("Divider location: " + dividerLocation);
+        if (dividerLocation >= 0 && dividerLocation <= 15) {
           showChannelListMenuItem.setState(false); 
         } else {
           showChannelListMenuItem.setState(true);   
