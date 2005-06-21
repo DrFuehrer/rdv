@@ -1,0 +1,106 @@
+1.2.0 - June 21, 2005
+-Added command line option (-s or --time-scale) to set the time scale
+-Added tabular data panel
+-Fix text data panel
+-Hide hidden channels by default. Add option to view menu.
+-Enable dynamic layout during application resize
+-Refactor entire code base to new package structure
+-Create data panel interface for dynamic loading and registration via an xml
+ configuration file
+-Add error dialog when connection to RBNB server fails
+-Added queue for state change requests, should fix a few issues with lost state
+ changes
+-Correctly cleanup data panels when connecting to another server while viewing
+ data
+-Made the location bar not jump around when a drag is finished and large amounts
+ of data are being fetched
+-Made the string data panel only accept string data and throw out anything else
+-Fixed issue when data panels would clear in RT mode when adding channels
+-Notify time listeners when they are added as this doesn't seem to break things
+ andy more
+-Let the window manager choose the location of the frame
+-Hard code the initial size of the window to 800x600
+-Tweak the channel list show/hide/resize code to work in a more consistent
+ manner
+-Fixed bug in J2RE's < 1.5 that would hang the application on exit
+-Fix bug when RT mode would not work in rare cases
+
+1.1.0 - March 22, 2005
+-Expanded domain slider to include usecond and day time values
+-Improved channel list to keep expansion and selection state on refresh
+-Added ability to hide channel list, control panel, and status panel
+-Added menu items for control of playback
+-Added key binding (F5) to refresh channel list
+-Added full screen mode for the application. Press F11 to enter and ESC to
+ leave.
+-Fixed bug in closing empty JPEG Data Panel
+-Added key bindings for common operations (see docs/keyboard_shortcuts.txt)
+-Removed the channel update button.
+-Removed the unused play in reverse button and reorder other buttons
+-Added key bindings for connection dialog
+-Improved elapsed time formatting
+-Reorganized import statements
+-Simplified build/versioning system (removed build number and date)
+-Added switch to ant run target to enable direct draw hardware scaling on
+ windows
+-Added hardware scaling to JPEG data panels, all images will sclae automatically
+ now
+-Changed JPEG panels background to black
+-Changed layout of data panels, they should all be the same size now
+ and tile in a symmetric fashion
+-Added small control panel to top of each image visible when mouse is over any
+ part of the image
+ -Click pin to toggle control panel stickyness
+ -Click snpashot to toggle freezing of the image
+ -Click up arrow to detach/attach image panel
+ -Click maximize to toggle fullscreen video
+ -Click close to close window
+-Commented out useless XML metadata display
+-More readable channel sizes
+-Added TODO file
+-Added JNLP file and ant build support
+-Added initial layout custimization support. Can choose horizontal
+ or vertical layout. Only works for 2 data panels currently
+-Fixed subsecond time display
+-Added timezone to location display
+-Added full support for x vs. y plotting
+-Much better labeling for charts (legend)
+-Set autoscaling to always include 0
+-Fixed time axis to always be duration with (even without enough data)
+-Created base data panel class with common control bar for all data panels
+-Complete redesign of data backend. Completely thread safe and better
+ performance.
+-Fix retry connection logic
+-Fix full screen mode and add support for platforms that don't support it
+-Put icons in jar file for applet and jnlp to load
+-Fixed bug in channel list when sources are added/removed
+-Remove uneeded connections to server when removing a channel for viewing
+-Added warnings when try to add channels when the viewer doesn't support them
+ (or that many)
+-Fixed JFreeChart panel behaviour when adding the same channel
+-Removed non functional menus and changed some key bindings (see KEYBOARD)
+-Added command line parameters
+-Fixed cases where control panel would set the player location when it shouldn't
+-Fix more spurious ineraction of control panel and player
+-Better performance when viewing video and dragging location bar with a large
+ domain.
+-Fix data loss bug when starting and stopping playback.
+-Fix issue with playback stoping when time scale is set too small.
+
+1.0.1 - September 23, 2004
+-Add tooltips for control panel buttons
+-Fixed bug is behaviour when switching from stopped to loading after monitoring
+-Added better indicator for domain in status bar
+-Made more sensible choice for possible domain bar values
+-In JPEGDataPanel added ability change text color to white or black. Click the
+ upper left hand corner of the panel to toggle the color.
+-Implemented rudimentary image scaling in JPEGDataPanel. Will resize image
+ (by 1/2, 1, or 2) based on panel size.
+-Better cleanup of server connection on exit
+-Fixed startup bug when no server is specified
+
+1.0.0 - September 21, 2004
+-Initial public release
+
+0.9.9 - September 16, 2004
+-Internal beta release

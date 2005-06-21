@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.8.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jnt.FFT.jar"/>
+	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon-1.0.0-pre2.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.0.0-pre2.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files/RBNB/V2.5B5/bin/rbnb.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>
