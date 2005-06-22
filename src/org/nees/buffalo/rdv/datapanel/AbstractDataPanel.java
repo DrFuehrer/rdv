@@ -3,14 +3,8 @@
  */
 package org.nees.buffalo.rdv.datapanel;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Insets;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -20,7 +14,8 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
-import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -28,13 +23,14 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.swing.border.AbstractBorder;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
-import javax.swing.event.MouseInputAdapter;
+import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,6 +44,7 @@ import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
 
 /**
@@ -134,14 +131,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.1
 	 */
 	JComponent dataComponent;
-	
-	/**
-	 * The toolbar UI component.
-	 * 
-	 * @since  1.1
-	 */
-	ControlBarBorder controlBarBorder;
-	
+		
 	/**
 	 * The frame used when the UI component is detached or full screen.
 	 * 
@@ -164,31 +154,15 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	boolean maximized;
 	
  	static boolean iconsLoaded = false;
- 	static Image windowPinImage;
- 	static Image windowSnapshotImage;
- 	static Image windowDetachImage;
- 	static Image windowMaximizeImage;
- 	static Image windowCloseImage;
+ 	static Icon windowSnapshotIcon;
+ 	static Icon windowDetachIcon;
+ 	static Icon windowMaximizeIcon;
+ 	static Icon windowCloseIcon;
  	
- 	static String windowPinFileName = "icons/window_pin.gif";
  	static String windowSnapshotFileName = "icons/window_snapshot.gif";
  	static String windowDetachFileName = "icons/window_detach.gif";
  	static String windowMaximizeFileName = "icons/window_maximize.gif";
  	static String windowCloseFileName = "icons/window_close.gif";
- 	
- 	/**
- 	 * Indicating if the UI component has mouse focus.
- 	 * 
- 	 * @since  1.1
- 	 */
- 	boolean hasFocus;
- 	
- 	/**
- 	 * Indicating if the toolbar is pinned.
- 	 * 
- 	 * @since  1.1
- 	 */
- 	boolean pinned;
  	
  	/**
  	 * Indicating if the data panel has been paused by the snaphsot button in the
@@ -221,10 +195,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		maximized = false;
 
-		hasFocus = false;
-		
-		pinned = true;
-		
 		paused = false;
 
 		if (!iconsLoaded) {
@@ -232,22 +202,35 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		}
 	}
 	
-	public void openPanel(DataPanelManager dataPanelManager) {
+	public void openPanel(final DataPanelManager dataPanelManager) {
 		this.dataPanelManager = dataPanelManager;
 		this.dataPanelContainer = dataPanelManager.getDataPanelContainer();
 		this.rbnbController = dataPanelManager.getRBNBController();
 		
-		component = new JPanel();
-		controlBarBorder = new ControlBarBorder();
-		component.setBorder(new EtchedBorder());		
-		component.setLayout(new BorderLayout());
-				
-		dataComponent.setBorder(controlBarBorder);
-		component.add(dataComponent, BorderLayout.CENTER);
+    final DataPanel dataPanel = this;
+        
+    JToolBar toolBar = new JToolBar();
+    JButton button = new JButton(windowDetachIcon);
+    button.setBorder(new EmptyBorder(2, 0, 2, 2));
+    button.addActionListener(new ActionListener() {
+		  public void actionPerformed(ActionEvent arg0) {
+        toggleDetach();
+      }
+    });
+    toolBar.add(button);
+    button = new JButton(windowCloseIcon);
+    button.setBorder(new EmptyBorder(2, 0, 2, 2));
+    button.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent arg0) {
+        dataPanelManager.closeDataPanel(dataPanel);
+      }
+    });    
+    toolBar.add(button);    
+        
+    component = new SimpleInternalFrame("", toolBar, dataComponent);
 		
 		dataPanelContainer.addDataPanel(component);
 		
-		initControlBar();
 		initDropTarget();
 
 		rbnbController.addTimeListener(this);
@@ -275,6 +258,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		rbnbController.subscribe(channelName, this);
 
 		channels.add(channelName);
+        
+    ((SimpleInternalFrame)component).setTitle(getTitle());
 		
 		String unit = channel.getUnit();
 		if (unit != null) {
@@ -283,8 +268,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		if (!attached) {
 			frame.setTitle(getTitle());
-		} else if (pinned) {
-			component.repaint();
 		}
 		
 		return true;
@@ -302,8 +285,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 		if (!attached) {
 			frame.setTitle(getTitle());
-		} else if (pinned) {
-			component.repaint();
 		}
 		
 		return true;
@@ -388,61 +369,13 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 */
 	void loadIcons() {
 		ClassLoader cl = getClass().getClassLoader();
-		
-		windowPinImage = new ImageIcon(cl.getResource(windowPinFileName)).getImage();
-		windowSnapshotImage = new ImageIcon(cl.getResource(windowSnapshotFileName)).getImage();
-		windowDetachImage = new ImageIcon(cl.getResource(windowDetachFileName)).getImage();
-		windowMaximizeImage = new ImageIcon(cl.getResource(windowMaximizeFileName)).getImage();
-		windowCloseImage = new ImageIcon(cl.getResource(windowCloseFileName)).getImage();
+
+		windowSnapshotIcon = new ImageIcon(cl.getResource(windowSnapshotFileName));
+		windowDetachIcon = new ImageIcon(cl.getResource(windowDetachFileName));
+		windowMaximizeIcon = new ImageIcon(cl.getResource(windowMaximizeFileName));
+		windowCloseIcon = new ImageIcon(cl.getResource(windowCloseFileName));
 		
 		iconsLoaded = true;
-	}
-
-	/**
-	 * Setup the mouselistener for the toolbar.
-	 *
-	 * @since  1.2
-	 */
-	void initControlBar() {
-    final DataPanel dataPanel = this;
-		component.addMouseListener(new MouseInputAdapter() {
-			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1) {
- 					int x = e.getX();
- 					int y = e.getY();
- 
- 					int componentWidth = component.getWidth();
- 					int componentHeight = component.getHeight();
- 					
- 					/* if (x < 16 && y < 16) {
- 						pinned = !pinned;
- 					} else if (x >= 16 && x < 32 && y < 16) {
- 						togglePause();
- 					} else */
-          if (x >= componentWidth-16 && y < 16) {
-						dataPanelManager.closeDataPanel(dataPanel);
- 					/* } else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
-						toggleMaximize(); */
-					} else if (x <  componentWidth-16 && x >= componentWidth-32 && y < 16) {
-						toggleDetach(); 												
-					}
-				}
-			}
-			
-			public void mouseEntered(MouseEvent e) {
-				hasFocus = true;
-				if (!pinned) {
-					dataComponent.setBorder(controlBarBorder);
-				}
-			}
-			
-			public void mouseExited(MouseEvent e) {
-				hasFocus = false;
-				if (!pinned) {
-					dataComponent.setBorder(null);
-				}
-			}
-		});
 	}
 
 	/**
@@ -672,30 +605,4 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 	
 	public void dragExit(DropTargetEvent e) {}
-	
-	class ControlBarBorder extends AbstractBorder {
-		
-		public boolean isBorderOpaque() {
-			return true;
-		}
-		
-		public Insets getBorderInsets(Component c) {
-				return new Insets(16, 0, 0, 0);			
-		}
-		
-		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-			int componentWidth = c.getWidth();
-			int componentHeight = c.getHeight();
-			
-			g.setColor(Color.BLACK);
-			g.fillRect(0, 0, componentWidth, 16);
-			g.setColor(Color.WHITE);
-			g.drawString(getTitle(), 2, 12);
-			//g.drawImage(windowPinImage, 0, 0, null);
-			//g.drawImage(windowSnapshotImage, 16, 0, null);
-			g.drawImage(windowDetachImage, componentWidth-32, 0, null);
-			//g.drawImage(windowMaximizeImage, componentWidth-32, 0, null);
-			g.drawImage(windowCloseImage, componentWidth-16, 0, null);
-		}
-	}
 }

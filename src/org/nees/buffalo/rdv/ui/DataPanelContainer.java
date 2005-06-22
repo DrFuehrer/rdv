@@ -123,7 +123,7 @@ public class DataPanelContainer extends JPanel {
 				rows = 1;
 			}
 			
-			setLayout(new GridLayout(rows, columns));
+			setLayout(new GridLayout(rows, columns, 8, 8));
 			
 			JComponent component;
 			int channelIndex = 0;

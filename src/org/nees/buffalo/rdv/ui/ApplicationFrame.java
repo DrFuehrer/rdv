@@ -47,7 +47,6 @@ import org.nees.buffalo.rdv.rbnb.StateListener;
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import com.jgoodies.uif_lite.component.Factory;
-import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 
 /**
  * Main frame fro the application
@@ -533,7 +532,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,0,5,5);
+		c.insets = new java.awt.Insets(8,0,8,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(controlPanel, c);
 		
@@ -542,8 +541,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	
 	private void initDataPanelContainer() {
 		dataPanelContainer = dataPanelManager.getDataPanelContainer();
-    SimpleInternalFrame dataPanelContainerFrame = new SimpleInternalFrame();
-    dataPanelContainerFrame.add(dataPanelContainer);
 
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1;
@@ -554,9 +551,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(0,0,0,5);
+		c.insets = new java.awt.Insets(0,0,0,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
-		rightPanel.add(dataPanelContainerFrame, c);
+		rightPanel.add(dataPanelContainer, c);
 		
 		log.info("Added data panel container.");
 	}
@@ -572,7 +569,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,0,5,5);
+		c.insets = new java.awt.Insets(8,0,8,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(statusPanel, c);
 		
