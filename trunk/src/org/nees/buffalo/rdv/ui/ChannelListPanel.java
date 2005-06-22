@@ -124,7 +124,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
                              0.65f);
     splitPane.setContinuousLayout(true);
     add(splitPane, BorderLayout.CENTER);
-    setBorder(new EmptyBorder(5, 5, 5, 0));
+    setBorder(new EmptyBorder(8, 8, 8, 0));
 		
 		setPreferredSize(new Dimension(150, 0));
 			
