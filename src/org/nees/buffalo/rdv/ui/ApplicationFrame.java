@@ -44,6 +44,11 @@ import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 
+import com.jgoodies.looks.HeaderStyle;
+import com.jgoodies.looks.Options;
+import com.jgoodies.uif_lite.component.Factory;
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
+
 /**
  * Main frame fro the application
  * 
@@ -350,6 +355,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	
   private void initMenuBar() {
   	menuBar = new JMenuBar();
+    menuBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.SINGLE);
   
   	JMenuItem menuItem;
   		
@@ -527,7 +533,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,10,5,10);
+		c.insets = new java.awt.Insets(5,0,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(controlPanel, c);
 		
@@ -536,6 +542,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	
 	private void initDataPanelContainer() {
 		dataPanelContainer = dataPanelManager.getDataPanelContainer();
+    SimpleInternalFrame dataPanelContainerFrame = new SimpleInternalFrame();
+    dataPanelContainerFrame.add(dataPanelContainer);
+
 		c.fill = GridBagConstraints.BOTH;
 		c.weightx = 1;
 		c.weighty = 1;
@@ -545,9 +554,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,10,5,10);
+		c.insets = new java.awt.Insets(0,0,0,5);
 		c.anchor = GridBagConstraints.NORTHWEST;
-		rightPanel.add(dataPanelContainer, c);
+		rightPanel.add(dataPanelContainerFrame, c);
 		
 		log.info("Added data panel container.");
 	}
@@ -563,7 +572,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,10,10,10);
+		c.insets = new java.awt.Insets(5,0,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(statusPanel, c);
 		
@@ -571,10 +580,12 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
 	
 	private void initSplitPane() {
- 		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, channelListPanel, rightPanel);
-		splitPane.setResizeWeight(0.1);
+    splitPane = Factory.createStrippedSplitPane(
+                  JSplitPane.HORIZONTAL_SPLIT,
+                  channelListPanel,
+                  rightPanel,
+                  0.2f);
 		splitPane.setContinuousLayout(true);
-		
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 	}
 	

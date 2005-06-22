@@ -1,6 +1,7 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.Adjustable;
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -12,7 +13,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
-import javax.swing.border.EtchedBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,6 +24,7 @@ import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
 
 /**
@@ -82,10 +83,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	}
 	
 	private void initPanel() {
-		setLayout(new GridBagLayout());
+    setBorder(null);
+    setLayout(new BorderLayout());
+    
+    JPanel p = new JPanel();
+    p.setBorder(null);
+    p.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		
-		setBorder(new EtchedBorder());
 		
  		monitorButton = new JButton("RT");
  		monitorButton.setToolTipText("Real Time");
@@ -105,7 +109,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
- 		add(monitorButton, c);		
+ 		p.add(monitorButton, c);		
 		
  		beginButton = new JButton("<<");
  		beginButton.setToolTipText("Go to beginning");
@@ -125,7 +129,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
- 		add(beginButton, c);		
+ 		p.add(beginButton, c);		
 		
 		pauseButton = new JButton("=");
  		pauseButton.setToolTipText("Pause");
@@ -145,7 +149,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
-		add(pauseButton, c);
+		p.add(pauseButton, c);
 		
 		startButton = new JButton(">");
  		startButton.setToolTipText("Play");
@@ -165,7 +169,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
-		add(startButton, c);
+		p.add(startButton, c);
 		
 		endButton = new JButton(">>");
  		endButton.setToolTipText("Go to end");
@@ -185,7 +189,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
-		add(endButton, c);
+		p.add(endButton, c);
 
 		JPanel container = new JPanel();
 		container.setLayout(new GridBagLayout());		
@@ -290,7 +294,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(0,0,0,0);
 		c.anchor = GridBagConstraints.NORTHWEST;
-		add(container, c);		
+		p.add(container, c);
+        
+    SimpleInternalFrame sif = new SimpleInternalFrame("Control Panel");
+    sif.add(p);
+
+    add(sif, BorderLayout.CENTER);        
 		
 		log.info("Initialized control panel.");
 	}
