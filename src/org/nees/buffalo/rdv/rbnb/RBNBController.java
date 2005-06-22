@@ -252,6 +252,7 @@ public class RBNBController implements Player, MetadataListener {
  		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING && newState != STATE_DISCONNECTED) {
  			fireConnecting();
 			if (!metadataManager.updateMetadata()) {
+        fireErrorMessage("Failed to connect to the RBNB server.");
 				fireConnectionFailed();
 				return false;
 			}
@@ -1193,6 +1194,7 @@ public class RBNBController implements Player, MetadataListener {
 		for (int i=0; i<connectionListeners.size(); i++) {
 			ConnectionListener connectionListener = (ConnectionListener)connectionListeners.get(i);
 			connectionListener.connectionFailed();
+      log.info("Sent error to listener.");
 		}		
 	}
 	
