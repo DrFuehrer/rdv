@@ -4,6 +4,8 @@ import java.awt.Toolkit;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.swing.UIManager;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -17,6 +19,9 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
+
+import com.jgoodies.looks.LookUtils;
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 
 /**
  * @author Jason P. Hanley
@@ -135,6 +140,12 @@ public class DataViewer {
 		if (!toolkit.isDynamicLayoutActive()) {
 			toolkit.setDynamicLayout(true);
 		}
+        
+    //set L&F
+    UIManager.put("ClassLoader", LookUtils.class.getClassLoader());
+    try {
+      UIManager.setLookAndFeel(new PlasticLookAndFeel());
+    } catch (Exception e) {}
 		
 		Options options = new Options();
 		Option hostNameOption = OptionBuilder.withArgName("host name")

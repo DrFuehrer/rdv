@@ -23,6 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -42,6 +43,9 @@ import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 
+import com.jgoodies.looks.Options;
+import com.jgoodies.uif_lite.component.Factory;
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
@@ -68,7 +72,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	private Vector treeModelListeners = new Vector();
 
 	private JTree tree;
- 	private JScrollPane treeView;
 	private JTextArea infoTextArea;
 
  	private boolean showHiddenChannels = false;
@@ -92,24 +95,36 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		setLayout(new BorderLayout());
 
 		tree = new JTree(this);
+    tree.putClientProperty(Options.TREE_LINE_STYLE_KEY, Options.TREE_LINE_STYLE_NONE_VALUE);
 		tree.setExpandsSelectedPaths(true);
 		tree.setCellRenderer(new ChannelTreeCellRenderer());
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
 		tree.addTreeSelectionListener(this);
 		tree.addMouseListener(this);
-		
-		treeView = new JScrollPane(tree);
-		treeView.setPreferredSize(new Dimension(0, 200));
+    tree.setBorder(new EmptyBorder(4, 4, 4, 4));
+    JScrollPane treeView = new JScrollPane(tree);
+    treeView.setBorder(null);
+    SimpleInternalFrame treeViewFrame = new SimpleInternalFrame("Channels");
+    treeViewFrame.setPreferredSize(new Dimension(150, 200));
+    treeViewFrame.add(treeView);
 
-		infoTextArea = new JTextArea(6, 5);
+		infoTextArea = new JTextArea();
 		infoTextArea.setEditable(false);
+    infoTextArea.setBorder(new EmptyBorder(4, 4, 4, 4));
 		JScrollPane infoView = new JScrollPane(infoTextArea);
-
-		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, treeView, infoView);
-		splitPane.setResizeWeight(0.75);
-		splitPane.setOneTouchExpandable(true);
-		splitPane.setContinuousLayout(true);
-		add(splitPane, BorderLayout.CENTER);
+    infoView.setBorder(null);
+    SimpleInternalFrame infoViewFrame = new SimpleInternalFrame("Metadata");
+    infoViewFrame.setPreferredSize(new Dimension(150, 75));
+    infoViewFrame.add(infoView);
+        
+    JSplitPane splitPane = Factory.createStrippedSplitPane(
+                             JSplitPane.VERTICAL_SPLIT,
+                             treeViewFrame,
+                             infoViewFrame,
+                             0.65f);
+    splitPane.setContinuousLayout(true);
+    add(splitPane, BorderLayout.CENTER);
+    setBorder(new EmptyBorder(5, 5, 5, 0));
 		
 		setPreferredSize(new Dimension(150, 0));
 			

@@ -59,6 +59,10 @@ public class DataPanelContainer extends JPanel {
 	 * @since  1.1
 	 */
 	public DataPanelContainer() {
+    super();
+    
+    setBorder(null);
+    
 		dataPanels = new ArrayList();
 		
 		layout = HORIZONTAL_LAYOUT;

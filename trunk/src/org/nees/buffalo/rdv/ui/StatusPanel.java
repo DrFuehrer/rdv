@@ -1,11 +1,11 @@
 package org.nees.buffalo.rdv.ui;
 
+import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
 
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
@@ -13,6 +13,8 @@ import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
+
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 
 /**
  * @author Jason P. Hanley
@@ -31,10 +33,13 @@ public class StatusPanel extends JPanel implements TimeListener, PlaybackRateLis
 	}
 	
 	private void initPanel() {
-		setLayout(new GridBagLayout());
+    setBorder(null);
+    setLayout(new BorderLayout());
+    
+    JPanel p = new JPanel();
+    p.setBorder(null);
+		p.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		
-		setBorder(new EtchedBorder());
 		
 		locationLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
@@ -48,7 +53,7 @@ public class StatusPanel extends JPanel implements TimeListener, PlaybackRateLis
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.WEST;		
-		add(locationLabel, c);	
+		p.add(locationLabel, c);	
 	
 		timeScaleLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
@@ -62,7 +67,7 @@ public class StatusPanel extends JPanel implements TimeListener, PlaybackRateLis
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.EAST;		
-		add(timeScaleLabel, c);
+		p.add(timeScaleLabel, c);
 				
 		stateLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
@@ -76,7 +81,7 @@ public class StatusPanel extends JPanel implements TimeListener, PlaybackRateLis
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.WEST;		
-		add(stateLabel, c);
+		p.add(stateLabel, c);
 		
 		playbackRateLabel = new JLabel();
 		c.fill = GridBagConstraints.NONE;
@@ -90,7 +95,12 @@ public class StatusPanel extends JPanel implements TimeListener, PlaybackRateLis
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.EAST;		
-		add(playbackRateLabel, c);
+		p.add(playbackRateLabel, c);
+        
+    SimpleInternalFrame sif = new SimpleInternalFrame("Status Panel");
+    sif.add(p);
+
+    add(sif, BorderLayout.CENTER);
 	}
 
 	public void postTime(double time) {
@@ -104,7 +114,7 @@ public class StatusPanel extends JPanel implements TimeListener, PlaybackRateLis
 
 	public void postState(int newState, int oldState) {
 		String stateString = RBNBController.getStateName(newState);
-		stateLabel.setText("state: " + stateString);
+		stateLabel.setText("State: " + stateString);
 	}
 
 	public void timeScaleChanged(double timeScale) {
