@@ -34,6 +34,7 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
+import javax.swing.border.LineBorder;
 
 import com.jgoodies.looks.LookUtils;
 
@@ -296,7 +297,7 @@ public class SimpleInternalFrame extends JPanel {
         headerPanel = new JPanel(new BorderLayout());
         headerPanel.add(gradientPanel, BorderLayout.CENTER);
         setToolBar(bar);
-        headerPanel.setBorder(new RaisedHeaderBorder());
+        headerPanel.setBorder(new BottomLineBorder());
         headerPanel.setOpaque(false);
         return headerPanel;
     }
@@ -399,6 +400,21 @@ public class SimpleInternalFrame extends JPanel {
             g.translate(-x, -y);
         }
     }
+    
+    // A custom border for the raised header pseudo 3D effect.
+    private static class BottomLineBorder extends AbstractBorder {
+
+        private static final Insets INSETS = new Insets(0, 0, 1, 0);
+
+        public Insets getBorderInsets(Component c) { return INSETS; }
+
+        public void paintBorder(Component c, Graphics g,
+            int x, int y, int w, int h) {
+                
+            g.setColor(UIManager.getColor("controlShadow"));
+            g.fillRect(x, y+h-1, w, 1);
+        }
+    }    
 
     // A custom border that has a shadow on the right and lower sides.
     private static class ShadowBorder extends AbstractBorder {
