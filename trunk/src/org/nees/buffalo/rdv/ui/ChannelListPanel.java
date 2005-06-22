@@ -105,17 +105,15 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     JScrollPane treeView = new JScrollPane(tree);
     treeView.setBorder(null);
     SimpleInternalFrame treeViewFrame = new SimpleInternalFrame("Channels");
-    treeViewFrame.setPreferredSize(new Dimension(150, 200));
     treeViewFrame.add(treeView);
 
 		infoTextArea = new JTextArea();
+    infoTextArea.setMinimumSize(new Dimension(0, 0));
 		infoTextArea.setEditable(false);
     infoTextArea.setBorder(new EmptyBorder(4, 4, 4, 4));
-		JScrollPane infoView = new JScrollPane(infoTextArea);
-    infoView.setBorder(null);
     SimpleInternalFrame infoViewFrame = new SimpleInternalFrame("Metadata");
-    infoViewFrame.setPreferredSize(new Dimension(150, 75));
-    infoViewFrame.add(infoView);
+    infoViewFrame.setPreferredSize(new Dimension(150, 150));
+    infoViewFrame.add(infoTextArea);
         
     JSplitPane splitPane = Factory.createStrippedSplitPane(
                              JSplitPane.VERTICAL_SPLIT,
