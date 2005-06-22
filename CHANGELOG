@@ -4,6 +4,7 @@
 -Move metadata code to MetadataManager class
 -Make UI pretty with L&F from JGoodies
 -Fix bug where UI didn't show error when connection failed
+-Upgrade to JFreeChart 1.0.0-rc1
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
