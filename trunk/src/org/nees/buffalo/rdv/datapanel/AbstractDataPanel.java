@@ -154,14 +154,10 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	boolean maximized;
 	
  	static boolean iconsLoaded = false;
- 	static Icon windowSnapshotIcon;
  	static Icon windowDetachIcon;
- 	static Icon windowMaximizeIcon;
  	static Icon windowCloseIcon;
  	
- 	static String windowSnapshotFileName = "icons/window_snapshot.gif";
  	static String windowDetachFileName = "icons/window_detach.gif";
- 	static String windowMaximizeFileName = "icons/window_maximize.gif";
  	static String windowCloseFileName = "icons/window_close.gif";
  	
  	/**
@@ -370,9 +366,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	void loadIcons() {
 		ClassLoader cl = getClass().getClassLoader();
 
-		windowSnapshotIcon = new ImageIcon(cl.getResource(windowSnapshotFileName));
 		windowDetachIcon = new ImageIcon(cl.getResource(windowDetachFileName));
-		windowMaximizeIcon = new ImageIcon(cl.getResource(windowMaximizeFileName));
 		windowCloseIcon = new ImageIcon(cl.getResource(windowCloseFileName));
 		
 		iconsLoaded = true;

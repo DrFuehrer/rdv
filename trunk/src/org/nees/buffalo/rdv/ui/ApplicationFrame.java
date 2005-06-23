@@ -17,10 +17,13 @@ import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -30,6 +33,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -111,6 +115,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action aboutAction;
     
   private JCheckBoxMenuItem showChannelListMenuItem;
+  
+  private JLabel throbber;
+  private Icon throbberStop;
+  private Icon throbberAnim;
  		
 	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager) {
 		super();
@@ -178,7 +186,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private void initActions() {
  		fileAction = new DataViewerAction("File", "File Menu", KeyEvent.VK_F);
  		
- 		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK), "toolbarButtonGraphics/development/Host16.gif") {
+ 		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				if (rbnbConnectionDialog == null) {
  					rbnbConnectionDialog = new RBNBConnectionDialog(frame, rbnb, dataPanelManager);
@@ -195,13 +203,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  		
- 		importAction = new DataViewerAction("Import", "Import local data to RBNB server", KeyEvent.VK_I, "toolbarButtonGraphics/general/Import16.gif") {
+ 		importAction = new DataViewerAction("Import", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				new ImportDialog(frame, rbnb);
  			}			
  		};
         
-    exportAction = new DataViewerAction("Export", "Export data on server to local computer", KeyEvent.VK_E, "toolbarButtonGraphics/general/Export16.gif") {
+    exportAction = new DataViewerAction("Export", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
         public void actionPerformed(ActionEvent ae) {
             
         }
@@ -215,37 +223,37 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		controlAction = new DataViewerAction("Control", "Control Menu", KeyEvent.VK_C);
  
- 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "toolbarButtonGraphics/media/Movie16.gif") {
+ 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "icons/rt.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.monitor();
  			}			
  		};
  		
- 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "toolbarButtonGraphics/media/Play16.gif") {
+ 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.play();
  			}			
  		};
  
- 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "toolbarButtonGraphics/media/Pause16.gif") {
+ 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.pause();
  			}			
  		};
  
- 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0), "toolbarButtonGraphics/media/Rewind16.gif") {
+ 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
 				controlPanel.setLocationBegin();
  			}			
  		};
  
- 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), "toolbarButtonGraphics/media/FastForward16.gif") {
+ 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), "icons/end.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				controlPanel.setLocationEnd();
  			}			
  		};
  
- 		updateChannelListAction = new DataViewerAction("Update Channel List", "Update the channel list", KeyEvent.VK_U, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "toolbarButtonGraphics/general/Refresh16.gif") {
+ 		updateChannelListAction = new DataViewerAction("Update Channel List", "Update the channel list", KeyEvent.VK_U, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "icons/refresh.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.updateMetadata();
  			}			
@@ -294,13 +302,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
  		dataPanelAction = new DataViewerAction("Data Panel", "Data Panel Sub-Menu", KeyEvent.VK_D);
  		
-		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Layout", "", -1, "toolbarButtonGraphics/general/AlignJustifyHorizontal16.gif") {
+		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Layout", "", -1, "icons/horizontal.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.HORIZONTAL_LAYOUT);
  			}			
  		}; 		
  		
-		dataPanelVerticalLayoutAction = new DataViewerAction("Vertical Layout", "", -1, "toolbarButtonGraphics/general/AlignJustifyVertical16.gif") {
+		dataPanelVerticalLayoutAction = new DataViewerAction("Vertical Layout", "", -1, "icons/vertical.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.VERTICAL_LAYOUT);
  			}			
@@ -340,7 +348,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
  
- 		aboutAction = new DataViewerAction("About RDV", "", KeyEvent.VK_A, "toolbarButtonGraphics/general/About16.gif") {
+ 		aboutAction = new DataViewerAction("About RDV", "", KeyEvent.VK_A) {
  			public void actionPerformed(ActionEvent ae) {
  				if (aboutDialog == null) {
  					aboutDialog = new AboutDialog(frame);
@@ -504,6 +512,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   		helpMenu.add(menuItem);		
   		
   		menuBar.add(helpMenu);
+      
+    menuBar.add(Box.createHorizontalGlue());
+    throbberStop = new ImageIcon(getClass().getClassLoader().getResource("icons/throbber.png"));
+    throbberAnim = new ImageIcon(getClass().getClassLoader().getResource("icons/throbber_anim.gif"));
+    throbber = new JLabel(throbberStop);
+    throbber.setBorder(new EmptyBorder(0,0,0,4));
+    menuBar.add(throbber, BorderLayout.EAST);
 		
 		frame.setJMenuBar(menuBar);
 	}
@@ -532,7 +547,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(8,0,8,8);
+		c.insets = new java.awt.Insets(8,0,0,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(controlPanel, c);
 		
@@ -551,7 +566,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(0,0,0,8);
+		c.insets = new java.awt.Insets(8,0,8,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(dataPanelContainer, c);
 		
@@ -569,7 +584,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(8,0,8,8);
+		c.insets = new java.awt.Insets(0,0,8,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(statusPanel, c);
 		
@@ -705,16 +720,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	public void connecting() {
  		busyDialog = new BusyDialog(this);
  		busyDialog.start();
+    startThrobber();
 	}
 
 	public void connected() {
 		busyDialog.close();
 		busyDialog = null;
+    stopThrobber();
 	}
 
 	public void connectionFailed() {
 		busyDialog.close();
 		busyDialog = null;
+    stopThrobber();
 	}
     
   public void postState(int newState, int oldState) {
@@ -729,6 +747,20 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       importAction.setEnabled(true);
       exportAction.setEnabled(true);
     }
+    
+    if (newState == Player.STATE_LOADING || newState == Player.STATE_PLAYING || newState == Player.STATE_MONITORING) {
+      startThrobber(); 
+    } else {
+      stopThrobber();
+    }
+  }
+  
+  private void startThrobber() {
+    throbber.setIcon(throbberAnim);
+  }
+  
+  private void stopThrobber() {
+    throbber.setIcon(throbberStop);
   }
   
 }
