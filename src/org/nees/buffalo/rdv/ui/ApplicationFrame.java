@@ -632,7 +632,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		log.warn("No screens available or full screen exclusive mode is unsupported on your platform.");
     
-    postError("Full screen mode is not supported on your platform");
+    postError("Full screen mode is not supported on your platform.");
 		
 		return false;
  	}
