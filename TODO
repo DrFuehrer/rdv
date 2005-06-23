@@ -5,3 +5,4 @@
 -export selected channels to file
 -export selected channels to repository
 -load/save current state of viewer
+-change layout of data panels via drag-n-drop of header

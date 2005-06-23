@@ -34,7 +34,6 @@ import java.awt.*;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
-import javax.swing.border.LineBorder;
 
 import com.jgoodies.looks.LookUtils;
 

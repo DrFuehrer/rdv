@@ -13,15 +13,21 @@ import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Iterator;
 import java.util.Vector;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
+import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeModelEvent;
@@ -73,6 +79,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
 	private JTree tree;
 	private JTextArea infoTextArea;
+  
+  private JButton metadataUpdateButton;
 
  	private boolean showHiddenChannels = false;
 	
@@ -104,13 +112,43 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     tree.setBorder(new EmptyBorder(4, 4, 4, 4));
     JScrollPane treeView = new JScrollPane(tree);
     treeView.setBorder(null);
-    SimpleInternalFrame treeViewFrame = new SimpleInternalFrame("Channels");
-    treeViewFrame.add(treeView);
+    
+    JToolBar channelToolBar = new JToolBar();
+    ClassLoader cl = getClass().getClassLoader();
+
+    Icon icon = new ImageIcon(cl.getResource("icons/collapseall.gif"));
+    JButton button = new JButton(icon);
+    button.setToolTipText("Collapse channel list");
+    button.setBorder(new EmptyBorder(2, 0, 2, 2));
+    button.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        for (int i=tree.getRowCount()-1; i>=0; i--) {
+          tree.collapseRow(i);  
+        }
+        tree.expandRow(0);
+      }
+    });
+    channelToolBar.add(button);
+    
+    icon = new ImageIcon(cl.getResource("icons/refresh.gif"));
+    metadataUpdateButton = new JButton(icon);
+    metadataUpdateButton.setEnabled(false);
+    metadataUpdateButton.setToolTipText("Update channel list");
+    metadataUpdateButton.setBorder(new EmptyBorder(2, 0, 2, 2));
+    metadataUpdateButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        rbnb.updateMetadata();
+      }
+    });
+    channelToolBar.add(metadataUpdateButton);    
+    
+    SimpleInternalFrame treeViewFrame = new SimpleInternalFrame("Channels", channelToolBar, treeView);
 
 		infoTextArea = new JTextArea();
     infoTextArea.setMinimumSize(new Dimension(0, 0));
 		infoTextArea.setEditable(false);
     infoTextArea.setBorder(new EmptyBorder(4, 4, 4, 4));
+    
     SimpleInternalFrame infoViewFrame = new SimpleInternalFrame("Metadata");
     infoViewFrame.setPreferredSize(new Dimension(150, 150));
     infoViewFrame.add(infoTextArea);
@@ -195,7 +233,13 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		 			}
 		 		}
 			}
-		} 		
+		}
+    
+    TreePath tp = tree.getSelectionPath();
+    if (tp != null) {
+      Object o = tp.getLastPathComponent();
+      showMetadata(o);
+    }
 	}
 	
 	public void showHiddenChannels(boolean showHiddenChannels) {
@@ -463,9 +507,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	}
 
 	public void postState(int newState, int oldState) {
-		if (newState == Player.STATE_DISCONNECTED) {
+		if (newState == Player.STATE_DISCONNECTED || newState == Player.STATE_EXITING) {
 			clearChannelList();
 			clearMetadata();
-		}
+      metadataUpdateButton.setEnabled(false);
+		} else {
+      metadataUpdateButton.setEnabled(true);
+    }
 	}
 }

@@ -8,6 +8,12 @@
 -Change Eclipse build to use Classpath Variable (RBNB_HOME) instead of hard
  coding RBNB jar
 -Removed scrool bars for metadata panel and tweaked layout
+-Ditched SUN's icon library for Eclipse's
+ -Added icons to control panel
+ -Updated icons in Abstract Data Panel header
+-Use throbber from Firefox for busy indication
+-Add toolbar for channel list
+-Fixed bug where metadata panel wouldn't update
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

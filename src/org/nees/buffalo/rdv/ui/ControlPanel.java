@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -86,18 +87,20 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     setBorder(null);
     setLayout(new BorderLayout());
     
+    ClassLoader cl = getClass().getClassLoader();
+    
     JPanel p = new JPanel();
     p.setBorder(null);
     p.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
- 		monitorButton = new JButton("RT");
- 		monitorButton.setToolTipText("Real Time");
- 		monitorButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				rbnbController.monitor();
-			}
-		});
+    beginButton = new JButton("Begining", new ImageIcon(cl.getResource("icons/begin.gif")));
+    beginButton.setToolTipText("Go to beginning");
+    beginButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        setLocationBegin();
+      }
+    });
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
 		c.weighty = 0;
@@ -109,15 +112,15 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
- 		p.add(monitorButton, c);		
+ 		p.add(beginButton, c);		
 		
- 		beginButton = new JButton("<<");
- 		beginButton.setToolTipText("Go to beginning");
- 		beginButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
- 				setLocationBegin();
-			}
- 		});
+    pauseButton = new JButton("Pause", new ImageIcon(cl.getResource("icons/pause.gif")));
+    pauseButton.setToolTipText("Pause");
+    pauseButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        rbnbController.pause();
+      }
+    });    
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
 		c.weighty = 0;
@@ -129,15 +132,15 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
- 		p.add(beginButton, c);		
+ 		p.add(pauseButton, c);		
 		
-		pauseButton = new JButton("=");
- 		pauseButton.setToolTipText("Pause");
-		pauseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				rbnbController.pause();
-			}
-		});
+    monitorButton = new JButton("Real Time", new ImageIcon(cl.getResource("icons/rt.gif")));
+    monitorButton.setToolTipText("Real Time");
+    monitorButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        rbnbController.monitor();
+      }
+    });
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
 		c.weighty = 0;
@@ -149,9 +152,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
-		p.add(pauseButton, c);
+		p.add(monitorButton, c);
 		
-		startButton = new JButton(">");
+		startButton = new JButton("Play", new ImageIcon(cl.getResource("icons/play.gif")));
  		startButton.setToolTipText("Play");
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -171,7 +174,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;				
 		p.add(startButton, c);
 		
-		endButton = new JButton(">>");
+		endButton = new JButton("End", new ImageIcon(cl.getResource("icons/end.gif")));
  		endButton.setToolTipText("Go to end");
 		endButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
