@@ -23,14 +23,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
-import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,6 +40,7 @@ import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
+import org.nees.buffalo.rdv.ui.ToolBarButton;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
@@ -153,12 +151,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 */
 	boolean maximized;
 	
- 	static boolean iconsLoaded = false;
- 	static Icon windowDetachIcon;
- 	static Icon windowCloseIcon;
- 	
- 	static String windowDetachFileName = "icons/window_detach.gif";
- 	static String windowCloseFileName = "icons/window_close.gif";
+ 	static String detachIconFileName = "icons/detach.gif";
+ 	static String closeIconFileName = "icons/close.gif";
  	
  	/**
  	 * Indicating if the data panel has been paused by the snaphsot button in the
@@ -192,38 +186,14 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		maximized = false;
 
 		paused = false;
-
-		if (!iconsLoaded) {
-			loadIcons();
-		}
 	}
 	
 	public void openPanel(final DataPanelManager dataPanelManager) {
 		this.dataPanelManager = dataPanelManager;
 		this.dataPanelContainer = dataPanelManager.getDataPanelContainer();
-		this.rbnbController = dataPanelManager.getRBNBController();
-		
-    final DataPanel dataPanel = this;
+		this.rbnbController = dataPanelManager.getRBNBController();    
         
-    JToolBar toolBar = new JToolBar();
-    JButton button = new JButton(windowDetachIcon);
-    button.setBorder(new EmptyBorder(2, 0, 2, 2));
-    button.addActionListener(new ActionListener() {
-		  public void actionPerformed(ActionEvent arg0) {
-        toggleDetach();
-      }
-    });
-    toolBar.add(button);
-    button = new JButton(windowCloseIcon);
-    button.setBorder(new EmptyBorder(2, 0, 2, 2));
-    button.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent arg0) {
-        dataPanelManager.closeDataPanel(dataPanel);
-      }
-    });    
-    toolBar.add(button);    
-        
-    component = new SimpleInternalFrame("", toolBar, dataComponent);
+    component = new SimpleInternalFrame("", createToolBar(), dataComponent);
 		
 		dataPanelContainer.addDataPanel(component);
 		
@@ -233,6 +203,29 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		rbnbController.addStateListener(this);
 		rbnbController.addTimeScaleListener(this);
 	}
+  
+  private JToolBar createToolBar() {
+    JToolBar toolBar = new JToolBar();
+    
+    final DataPanel dataPanel = this;
+    
+    JButton button = new ToolBarButton(detachIconFileName, "Detach data panel");
+    button.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        toggleDetach();
+      }
+    });
+    toolBar.add(button);
+    button = new ToolBarButton(closeIconFileName, "Close data panel");
+    button.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        dataPanelManager.closeDataPanel(dataPanel);
+      }
+    });    
+    toolBar.add(button);    
+
+    return toolBar;
+  }
 
 	public boolean setChannel(String channelName) {
 		if (channels.size() == 1 && channels.contains(channelName)) {
@@ -358,20 +351,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     }
 	}
 	
-	/**
-	 * Load icons needed for the toolbar.
-	 * 
-	 * @since  1.1
-	 */
-	void loadIcons() {
-		ClassLoader cl = getClass().getClassLoader();
-
-		windowDetachIcon = new ImageIcon(cl.getResource(windowDetachFileName));
-		windowCloseIcon = new ImageIcon(cl.getResource(windowCloseFileName));
-		
-		iconsLoaded = true;
-	}
-
 	/**
 	 * Toggle pausing of the data panel. Pausing is freezing the data display and
 	 * stopping listeners for data. When a channel is unpaused it will again

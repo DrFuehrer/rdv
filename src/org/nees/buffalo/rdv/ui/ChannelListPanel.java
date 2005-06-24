@@ -20,13 +20,11 @@ import java.awt.event.MouseListener;
 import java.util.Iterator;
 import java.util.Vector;
 
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
@@ -78,7 +76,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	private Vector treeModelListeners = new Vector();
 
 	private JTree tree;
-	private JTextArea infoTextArea;
+	private JEditorPane infoTextArea;
   
   private JButton metadataUpdateButton;
 
@@ -113,43 +111,23 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     JScrollPane treeView = new JScrollPane(tree);
     treeView.setBorder(null);
     
-    JToolBar channelToolBar = new JToolBar();
-    ClassLoader cl = getClass().getClassLoader();
-
-    Icon icon = new ImageIcon(cl.getResource("icons/collapseall.gif"));
-    JButton button = new JButton(icon);
-    button.setToolTipText("Collapse channel list");
-    button.setBorder(new EmptyBorder(2, 0, 2, 2));
-    button.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        for (int i=tree.getRowCount()-1; i>=0; i--) {
-          tree.collapseRow(i);  
-        }
-        tree.expandRow(0);
-      }
-    });
-    channelToolBar.add(button);
+    JToolBar channelToolBar = createToolBar();
     
-    icon = new ImageIcon(cl.getResource("icons/refresh.gif"));
-    metadataUpdateButton = new JButton(icon);
-    metadataUpdateButton.setEnabled(false);
-    metadataUpdateButton.setToolTipText("Update channel list");
-    metadataUpdateButton.setBorder(new EmptyBorder(2, 0, 2, 2));
-    metadataUpdateButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        rbnb.updateMetadata();
-      }
-    });
-    channelToolBar.add(metadataUpdateButton);    
-    
-    SimpleInternalFrame treeViewFrame = new SimpleInternalFrame("Channels", channelToolBar, treeView);
+    SimpleInternalFrame treeViewFrame = new SimpleInternalFrame(
+        DataViewer.getIcon("icons/channels.gif"),
+        "Channels",
+        channelToolBar,
+        treeView);
 
-		infoTextArea = new JTextArea();
+		infoTextArea = new JEditorPane();
+    infoTextArea.setEditable(false);
+    infoTextArea.setContentType("text/html");
     infoTextArea.setMinimumSize(new Dimension(0, 0));
-		infoTextArea.setEditable(false);
     infoTextArea.setBorder(new EmptyBorder(4, 4, 4, 4));
     
-    SimpleInternalFrame infoViewFrame = new SimpleInternalFrame("Metadata");
+    SimpleInternalFrame infoViewFrame = new SimpleInternalFrame(
+        DataViewer.getIcon("icons/properties.gif"),
+        "Properties");
     infoViewFrame.setPreferredSize(new Dimension(150, 150));
     infoViewFrame.add(infoTextArea);
         
@@ -167,6 +145,43 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		DragSource dragSource = DragSource.getDefaultDragSource();
 		dragSource.createDefaultDragGestureRecognizer(tree, DnDConstants.ACTION_LINK, this);		
 	}
+  
+  private JToolBar createToolBar() {
+    JToolBar channelToolBar = new JToolBar();
+
+    JButton button = new ToolBarButton(
+        "icons/expandall.gif",
+        "Expand channel list");
+    button.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        expandTree();
+      }
+    });
+    channelToolBar.add(button);
+
+    button = new ToolBarButton(
+        "icons/collapseall.gif",
+        "Collapse channel list");
+    button.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        collapseTree();
+      }
+    });
+    channelToolBar.add(button);
+    
+    metadataUpdateButton = new ToolBarButton(
+        "icons/refresh.gif",
+        "Update channel list");
+    metadataUpdateButton.setEnabled(false);
+    metadataUpdateButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        rbnb.updateMetadata();
+      }
+    });
+    channelToolBar.add(metadataUpdateButton);
+    
+    return channelToolBar;
+  }
 	
 	public void channelListUpdated(ChannelMap newChannelMap) {
 		ChannelMap oldChannelMap = cmap;
@@ -260,6 +275,19 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		ctree = ChannelTree.createFromChannelMap(new ChannelMap());
   		
  		fireRootChanged();
+  }
+  
+  private void expandTree() {
+    for (int i=0; i<tree.getRowCount(); i++) {
+      tree.expandRow(i);  
+    }
+  }
+  
+  private void collapseTree() {
+    for (int i=tree.getRowCount()-1; i>=0; i--) {
+      tree.collapseRow(i);  
+    }
+    tree.expandRow(0);
   }
  	 	
  	private void fireRootChanged() {
@@ -401,16 +429,32 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		if (o == null) {
 			return;
 		} else if (o.equals(root)) {
-			infoTextArea.append("Type: Server" + NEWLINE);
-			infoTextArea.append("Host: " + rbnb.getRBNBHostName() + NEWLINE);
-			infoTextArea.append("Port: " + rbnb.getRBNBPortNumber());
+      StringBuffer s = new StringBuffer();
+      s.append("<strong>" + rbnb.getRBNBHostName() + ":" + rbnb.getRBNBPortNumber() + "</strong><br>");
+			s.append("<em>Data Server</em>");
+      int sources = getChildCount(root);
+      s.append("<p style=\"font-size: 10px\">" + sources + " Data Source");
+      if (sources == 0 || sources > 1) {
+        s.append("s");
+      }
+      s.append("</p>");
+      infoTextArea.setText(s.toString());
 		} else {
+      StringBuffer s = new StringBuffer();
 			node = (ChannelTree.Node)o;
 			node = ctree.findNode(node.getFullName());
-			infoTextArea.append("Type: " + node.getType() + NEWLINE);
-			infoTextArea.append("Name: " + node.getFullName() + NEWLINE);
-			if (node.getType() == ChannelTree.CHANNEL) {
-				String channelName = node.getFullName();
+      String channelName = node.getFullName();
+      if (node.getType() == ChannelTree.SOURCE) {
+        s.append("<strong>" + channelName + "</strong><br>");        
+        s.append("<em>Data Source</em>");
+        
+        int channels = getChildCount(o);
+        s.append("<p style=\"font-size: 10px\">" + channels + " Channel");
+        if (channels == 0 || channels > 1) {
+          s.append("s");
+        }
+        s.append("</p>");        
+      } else if (node.getType() == ChannelTree.CHANNEL) {
 				int channelIndex = cmap.GetIndex(channelName);
 				String mime = node.getMime();
 				double start = cmap.GetTimeStart(channelIndex);
@@ -418,28 +462,30 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 				int size = node.getSize();
 				String unit = ((Channel)rbnb.getChannel(channelName)).getUnit();
 
-				infoTextArea.append("Start: " + DataViewer.formatDate(start) + NEWLINE);
-				infoTextArea.append("Duration: " + DataViewer.formatSeconds(duration));
-				if (mime != null) {
-					infoTextArea.append(NEWLINE + "Mime: " + mime);
-				}
-				if (unit != null) {
-					infoTextArea.append(NEWLINE + "Unit: " + unit);
-				}
+        s.append("<strong>" + channelName + "</strong>");
+        if (unit != null) {
+          s.append(" (" + unit + ")");
+        }
+        s.append("<br>");
+        
+        if (mime != null) {
+          if (mime.equals("application/octet-stream")) {
+            s.append("<em>Numeric Data</em><br>");
+          } else if (mime.equals("image/jpeg")) {
+            s.append("<em>JPEG Images</em><br>");
+          } else if (mime.equals("video/jpeg")) {
+            s.append("<em>JPEG Video</em><br>");
+          }
+        }
+        
+				s.append("<p style=\"font-size: 10px\">Starts at " + DataViewer.formatDateSmart(start) + "<br>");
+				s.append("Lasts " + DataViewer.formatSeconds(duration) + "<br>");
 				if (size != -1) {
-					infoTextArea.append(NEWLINE + "Size: " + DataViewer.formatBytes(size));
+					s.append(NEWLINE + "Size: " + DataViewer.formatBytes(size));
 				}
-				
-				/* infoTextArea.append(NEWLINE + NEWLINE);
-				try {
-					String[] metaData = cmap.GetDataAsString(channelIndex);					
-					for (int j=0; j<metaData.length; j++) {
-						infoTextArea.append(metaData[j] + NEWLINE);
-					}
-				} catch (ClassCastException cce) {
-					log.warn("Failed to get metadata for channel " + channelName);
-				} */
+        s.append("</p>");
 			}
+      infoTextArea.setText(s.toString());
 		}
 		
 		infoTextArea.setCaretPosition(0);
