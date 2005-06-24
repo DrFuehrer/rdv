@@ -340,7 +340,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		windowAction = new DataViewerAction("Window", "Window Menu", KeyEvent.VK_W);
  		
- 		closeAllDataPanelsAction = new DataViewerAction("Close all data panels", "", KeyEvent.VK_C) {
+ 		closeAllDataPanelsAction = new DataViewerAction("Close all data panels", "", KeyEvent.VK_C, "icons/closeall.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();				
  			}			
@@ -668,44 +668,35 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		boolean selected = false;
  		
  		public DataViewerAction(String text) {
- 			this(text, null, -1, null, (ImageIcon)null);
+ 			this(text, null, -1, null, null);
  		}
  
  		public DataViewerAction(String text, String desc) {
- 			this(text, desc, -1, null, (ImageIcon)null);
+ 			this(text, desc, -1, null, null);
  		}
  		
 		public DataViewerAction(String text, int mnemonic) {
- 			this(text, null, mnemonic, null, (ImageIcon)null);
+ 			this(text, null, mnemonic, null, null);
  		}
  		
  		public DataViewerAction(String text, String desc, int mnemonic) {
- 			this(text, desc, mnemonic, null, (ImageIcon)null);
+ 			this(text, desc, mnemonic, null, null);
  		}
         
     public DataViewerAction(String text, String desc, int mnemonic, String iconFileName) {
-      this(text, desc, mnemonic, null, (ImageIcon)null);
-      ClassLoader cl = getClass().getClassLoader();
-      ImageIcon icon = new ImageIcon(cl.getResource(iconFileName));
-      putValue(SMALL_ICON, icon);
+      this(text, desc, mnemonic, null, iconFileName);
     }      
  		
  		public DataViewerAction(String text, String desc, int mnemonic, KeyStroke accelerator) {
- 			this(text, desc, mnemonic, accelerator, (ImageIcon)null);
+ 			this(text, desc, mnemonic, accelerator, null);
 		}
 
     public DataViewerAction(String text, String desc, int mnemonic, KeyStroke accelerator, String iconFileName) {
-      this(text, desc, mnemonic, accelerator, (ImageIcon)null);
-      ClassLoader cl = getClass().getClassLoader();
-      ImageIcon icon = new ImageIcon(cl.getResource(iconFileName));
-      putValue(SMALL_ICON, icon);
-    }              
- 		
- 	  public DataViewerAction(String text, String desc, int mnemonic, KeyStroke accelerator, ImageIcon icon) {
- 	    super(text, icon);
+ 	    super(text);
  	    putValue(SHORT_DESCRIPTION, desc);
  	    putValue(MNEMONIC_KEY, new Integer(mnemonic));
  	    putValue(ACCELERATOR_KEY, accelerator);
+ 	    putValue(SMALL_ICON, DataViewer.getIcon(iconFileName));
  	  }
  	    
  		public void actionPerformed(ActionEvent ae) {}
@@ -763,6 +754,5 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   
   private void stopThrobber() {
     throbber.setIcon(throbberStop);
-  }
-  
+  }  
 }

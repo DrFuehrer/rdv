@@ -1,9 +1,12 @@
 package org.nees.buffalo.rdv;
 
 import java.awt.Toolkit;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 
 import org.apache.commons.cli.CommandLine;
@@ -38,7 +41,10 @@ public class DataViewer {
 	private double playbackRate;
 	private double timeScale;
 	
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
+	private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
+  private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("E, M d, yyyy h:mm a");
+  private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("E h:mm a");
+  private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss a");
 	
 	public DataViewer() {
     location = System.currentTimeMillis()/1000d;;
@@ -85,12 +91,24 @@ public class DataViewer {
  	}
 
 	public static String formatDate(double date) {
-		return DATE_FORMAT.format(new Date(((long)(date*1000))));
+		return ISO_DATE_FORMAT.format(new Date(((long)(date*1000))));
 	}
 	
 	public static String formatDate(long date) {
-		return DATE_FORMAT.format(new Date(date));
+		return ISO_DATE_FORMAT.format(new Date(date));
 	}
+  
+  public static String formatDateSmart(double dateDouble) {
+    long dateLong = (long)(dateDouble*1000);
+    double difference = (System.currentTimeMillis()/1000d) - dateDouble;
+    if (difference < 60*60*24) {
+      return TIME_DATE_FORMAT.format(new Date(dateLong));
+    } else if (difference < 60*60*24*7) {
+      return DAY_DATE_FORMAT.format(new Date(dateLong));
+    } else {
+      return FULL_DATE_FORMAT.format(new Date(dateLong));
+    }
+  }
 
 	public static String formatSeconds(double seconds) {
 		String secondsString;
@@ -101,13 +119,13 @@ public class DataViewer {
  		} else if (seconds < 1 && seconds != 0) {
 			secondsString = Double.toString(round(seconds*1000)) + " ms";
  		} else if (seconds < 60) {
- 		 	secondsString = Double.toString(round(seconds)) + " s";
+ 		 	secondsString = Double.toString(round(seconds)) + " seconds";
  		} else if (seconds < 60*60) {
-			secondsString = Double.toString(round(seconds/60)) + " m";
+			secondsString = Double.toString(round(seconds/60)) + " minutes";
  		} else if (seconds < 60*60*24){
- 			secondsString = Double.toString(round(seconds/(60*60))) + " h";
+ 			secondsString = Double.toString(round(seconds/(60*60))) + " hours";
  		} else {
- 			secondsString = Double.toString(round(seconds/(60*60*24))) + " d";
+ 			secondsString = Double.toString(round(seconds/(60*60*24))) + " days";
  		}
  		return secondsString;
  	}
@@ -115,7 +133,7 @@ public class DataViewer {
  	public static String formatBytes(int bytes) {
  		String bytesString;
  		if (bytes < 1024) {
- 			bytesString = Integer.toString(bytes) + " B";
+ 			bytesString = Integer.toString(bytes) + " bytes";
  		} else if (bytes < 1024*1024) {
  			bytesString = Double.toString(round(bytes/1024d)) + " KB";
  		} else if (bytes < 1024*1024*1024) {
@@ -127,12 +145,23 @@ public class DataViewer {
  	}
  	
  	public static float round(float f) {
- 		return (long)(f*100)/100f;
+ 		return (long)(f*10)/10f;
  	}
  	 	
  	public static double round(double d) {
- 		return (long)(d*100)/100d;
+ 		return (long)(d*10)/10d;
  	}
+  
+  public static Icon getIcon(String iconFileName) {
+    ImageIcon icon = null;
+    if (iconFileName != null) {
+      URL iconURL = ClassLoader.getSystemResource(iconFileName);    
+      if (iconURL != null) {
+        icon = new ImageIcon(iconURL);
+      }
+    }
+    return icon;
+  }  
 
 	public static void main(String[] args) {
 		//enable dynamic layout during application resize
