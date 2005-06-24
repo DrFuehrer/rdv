@@ -11,6 +11,7 @@ Stable
  the VM isn't releasing memory back to the OS.
 -When dragging a channel onto an existing data panel the state doesn't change to
  loading when the data is being fetched.
+-The time slider location doesn't update when the underlying time bounds change.
  
 -----------
 Development
