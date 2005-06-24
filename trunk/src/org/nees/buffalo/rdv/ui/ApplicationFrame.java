@@ -73,6 +73,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private JMenuBar menuBar;
 	private JToolBar toolBar;
 	private ChannelListPanel channelListPanel;
+  private MetadataPanel metadataPanel;
+  private JSplitPane leftPanel;
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
 	private StatusPanel statusPanel;
@@ -100,6 +102,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	
  	private Action viewAction;
  	private Action showChannelListAction;
+  private Action showMetadataPanelAction;
  	private Action showControlPanelAction;
  	private Action showStatusPanelAction;
  	private Action dataPanelAction;
@@ -113,8 +116,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	
  	private Action helpAction;
  	private Action aboutAction;
-    
-  private JCheckBoxMenuItem showChannelListMenuItem;
   
   private JLabel throbber;
   private Icon throbberStop;
@@ -152,12 +153,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
  		initActions();	
  		initMenuBar();
-		initChannelListPanel();
+    
+    initChannelListPanel();
+    initMetadataPanel();
+		initLeftPanel();
+    
 		initRightPanel();
 		initControls();
 		initDataPanelContainer();		
 		initStatus();
+    
 		initSplitPane();
+    
+    channelListPanel.addChannelSelectionListener(metadataPanel);
 		
 		rbnb.addSubscriptionListener(controlPanel);
 		
@@ -170,6 +178,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     rbnb.addStateListener(this);
 
 		rbnb.getMetadataManager().addMetadataListener(channelListPanel);
+    rbnb.getMetadataManager().addMetadataListener(metadataPanel);
 		rbnb.getMetadataManager().addMetadataListener(controlPanel);
 		
 		rbnb.addPlaybackRateListener(statusPanel);
@@ -268,23 +277,21 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		viewAction = new DataViewerAction("View", "View Menu", KeyEvent.VK_V);
 
- 		showChannelListAction = new DataViewerAction("Show Channel List", "", KeyEvent.VK_L) {
+ 		showChannelListAction = new DataViewerAction("Show Channels", "", KeyEvent.VK_L, "icons/channels.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
- 				boolean selected = menuItem.isSelected();
- 				if (selected) {
- 					int dividerLocation = splitPane.getLastDividerLocation();
- 					if (dividerLocation <= 15) {
- 						dividerLocation = 180;
- 					}
- 					splitPane.setDividerLocation(dividerLocation);
-          splitPane.setDividerLocation(dividerLocation);
- 				} else {
- 					splitPane.setDividerLocation(0);
-          splitPane.setDividerLocation(0);
- 				}
+        channelListPanel.setVisible(menuItem.isSelected());
+        leftPanel.resetToPreferredSizes();
  			}			
  		};
+    
+    showMetadataPanelAction = new DataViewerAction("Show Properties", "", KeyEvent.VK_P, "icons/properties.gif") {
+      public void actionPerformed(ActionEvent ae) {
+        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
+        metadataPanel.setVisible(menuItem.isSelected());
+        leftPanel.resetToPreferredSizes();
+      }     
+    };    
  
  		showControlPanelAction = new DataViewerAction("Show Control Panel", "", KeyEvent.VK_C) {
  			public void actionPerformed(ActionEvent ae) {
@@ -422,23 +429,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		controlMenu.add(menuItem);
  		
  		JMenu viewMenu = new JMenu(viewAction);
-    viewMenu.addMenuListener(new MenuListener() {
-      public void menuSelected(MenuEvent arg0) {
-        int dividerLocation = splitPane.getLastDividerLocation();
-        if (dividerLocation >= 0 && dividerLocation <= 15) {
-          showChannelListMenuItem.setState(false); 
-        } else {
-          showChannelListMenuItem.setState(true);   
-        }
-      }
-      public void menuDeselected(MenuEvent arg0) {}
-    	public void menuCanceled(MenuEvent arg0) {}    
-    });
  		
- 		showChannelListMenuItem = new JCheckBoxMenuItem(showChannelListAction);
-    menuItem = showChannelListMenuItem;
+ 		menuItem = new JCheckBoxMenuItem(showChannelListAction);
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
+    
+    menuItem = new JCheckBoxMenuItem(showMetadataPanelAction);
+    menuItem.setSelected(true);
+    viewMenu.add(menuItem);   
  		
  		menuItem = new JCheckBoxMenuItem(showControlPanelAction);
  		menuItem.setSelected(true);
@@ -522,13 +520,31 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		frame.setJMenuBar(menuBar);
 	}
-			
+  			
 	private void initChannelListPanel() {
 		channelListPanel = new ChannelListPanel(dataPanelManager, rbnb);
 		channelListPanel.setMinimumSize(new Dimension(0, 0));
 		
-		log.info("Created channel tree with initial channel list.");
+		log.info("Created channel list panel.");
 	}
+  
+  private void initMetadataPanel() {
+    metadataPanel = new MetadataPanel(rbnb);
+    
+    log.info("Created metadata panel");
+  }
+  
+  private void initLeftPanel() {
+    leftPanel = Factory.createStrippedSplitPane(
+        JSplitPane.VERTICAL_SPLIT,
+        channelListPanel,
+        metadataPanel,
+        0.65f);
+    leftPanel.setContinuousLayout(true);
+    leftPanel.setBorder(new EmptyBorder(8, 8, 8, 0));
+    
+    log.info("Created left panel");
+  }
 	
 	private void initRightPanel() {
 		rightPanel = new JPanel();
@@ -594,7 +610,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private void initSplitPane() {
     splitPane = Factory.createStrippedSplitPane(
                   JSplitPane.HORIZONTAL_SPLIT,
-                  channelListPanel,
+                  leftPanel,
                   rightPanel,
                   0.2f);
 		splitPane.setContinuousLayout(true);
