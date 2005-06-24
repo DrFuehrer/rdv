@@ -107,15 +107,15 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
         if (unit != null) {
           s.append(" (" + unit + ")");
         }
-        s.append("<br>");
         
         if (mime != null) {
+          s.append("<br>");
           if (mime.equals("application/octet-stream")) {
-            s.append("<em>Numeric Data</em><br>");
+            s.append("<em>Numeric Data</em>");
           } else if (mime.equals("image/jpeg")) {
-            s.append("<em>JPEG Images</em><br>");
+            s.append("<em>JPEG Images</em>");
           } else if (mime.equals("video/jpeg")) {
-            s.append("<em>JPEG Video</em><br>");
+            s.append("<em>JPEG Video</em>");
           }
         }
         
