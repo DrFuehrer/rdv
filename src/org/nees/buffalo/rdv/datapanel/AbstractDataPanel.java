@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -271,6 +272,10 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		units.remove(channelName);
 		
 		rbnbController.unsubscribe(channelName, this);
+    
+    ((SimpleInternalFrame)component).setTitle(getTitle());
+    
+    units.remove(channelName);
 
 		if (!attached) {
 			frame.setTitle(getTitle());
@@ -388,6 +393,18 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
  		rbnbController.removeTimeListener(this);
  		rbnbController.removeTimeScaleListener(this);
 	}
+  
+  public int subscribedChannelCount() {
+    return channels.size();
+  }
+  
+  public Set subscribedChannels() {
+    return channels;
+  }
+  
+  public boolean isChannelSubscribed(String channelName) {
+    return channels.contains(channelName);
+  }
 	
 	/**
 	 * Toggle detaching the UI component from the data panel container.

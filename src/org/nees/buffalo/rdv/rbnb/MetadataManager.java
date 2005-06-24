@@ -150,6 +150,10 @@ public class MetadataManager {
 		
 		return true;
 	}
+  
+  public ChannelTree getMetadataChannelTree() {
+    return ctree;
+  }
 	
 	public Channel getChannel(String channelName) {
 		ChannelTree.Node node = ctree.findNode(channelName);

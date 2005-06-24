@@ -21,7 +21,6 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.nees.buffalo.rdv.rbnb.Channel;
 
 import com.rbnb.sapi.ChannelMap;
 

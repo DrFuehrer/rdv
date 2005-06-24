@@ -4,6 +4,7 @@
 package org.nees.buffalo.rdv;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,6 +16,8 @@ import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.rbnb.sapi.ChannelTree;
 
 /**
  * A class to manage all the data panels.
@@ -155,6 +158,56 @@ public class DataPanelManager {
 	public ArrayList getExtensions() {
 		return extensions;
 	}
+  
+  /**
+   * Return a list of extension that support the channel.
+   * 
+   * @param channelName  the channel to support
+   * @return             a list of supported extensions
+   * @since              1.3
+   */
+  public ArrayList getExtensions(String channelName) {
+    Channel channel = rbnbController.getChannel(channelName);
+    
+    String mime = null;
+    if (channel != null) {
+      mime = channel.getMimeType();
+    }
+    mime = fixMime(mime, channelName);
+    
+    ArrayList usefulExtensions = new ArrayList();
+    for (int i=0; i<extensions.size(); i++) {
+      Extension extension = (Extension)extensions.get(i);
+      ArrayList mimeTypes = extension.getMimeTypes();
+      for (int j=0; j<mimeTypes.size(); j++) {
+        String mimeType = (String)mimeTypes.get(j);
+        if (mimeType.equals(mime)) {
+          usefulExtensions.add(extension);
+        }
+      }
+    }
+    
+    return usefulExtensions;
+  }
+  
+  /**
+   * Return the default extension for the channel or null if there is none.
+   * 
+   * @param channelName  the channel to use 
+   * @return             the default extension or null if there is none
+   * @since              1.3
+   */
+  public Extension getDefaultExtension(String channelName) {
+    Channel channel = rbnbController.getChannel(channelName);
+    String mime = null;
+    if (channel != null) {
+      mime = channel.getMimeType();
+    }
+
+    mime = fixMime(mime, channelName);
+
+    return findExtension(mime);
+  }
 	
 	/**
 	 * Returns the RBNB controller.
@@ -215,37 +268,44 @@ public class DataPanelManager {
 	 * unless the channel ends with .jpg, in which case it is assumed to
 	 * be image or video data.
 	 * 
-	 * @param channelName  the name of the channe to view
+	 * @param channelName  the name of the channel to view
 	 * @since              1.2
 	 */
 	public void viewChannel(String channelName) {
-		Channel channel = rbnbController.getChannel(channelName);
-		String mime = null;
-		if (channel != null) {
-			mime = channel.getMimeType();
-		}
-
-		if (mime == null && channelName.endsWith(".jpg")) {
-			mime = "image/jpeg";
-		} else if (mime == null) {
-			mime = "application/octet-stream";
-		}
-
-		Extension extension = findExtension(mime);
-		if (extension != null) {
-			log.info("Creating data panel for channel " + channelName + " with extension " + extension.getName() + ".");
-			try {
-				DataPanel dataPanel = createDataPanel(extension);
-				dataPanel.setChannel(channelName);	
-			} catch (Exception e) {
-				log.error("Failed to create data panel and add channel.");
-				e.printStackTrace();
-				return;
-			}			
-		} else {
-			log.warn("Failed to find data panel extension for channel " + channelName + ".");
-		}
+    viewChannel(channelName, getDefaultExtension(channelName));
 	}
+  
+  /**
+   * View the channel given by the channel name with the specified extension.
+   * 
+   * @param channelName  the name of the channel to view
+   * @param extension    the extension to view the channel with
+   * @since              1.3
+   */
+  public void viewChannel(String channelName, Extension extension) {
+    if (extension != null) {
+      log.info("Creating data panel for channel " + channelName + " with extension " + extension.getName() + ".");
+      try {
+        DataPanel dataPanel = createDataPanel(extension);
+        dataPanel.setChannel(channelName);  
+      } catch (Exception e) {
+        log.error("Failed to create data panel and add channel.");
+        e.printStackTrace();
+        return;
+      }     
+    } else {
+      log.warn("Failed to find data panel extension for channel " + channelName + ".");
+    }    
+  }
+  
+  private String fixMime(String mime, String channelName) {
+    if (mime == null && channelName.endsWith(".jpg")) {
+      mime = "image/jpeg";
+    } else if (mime == null) {
+      mime = "application/octet-stream";
+    }
+    return mime;
+  }
 	
 	/**
 	 * Return an extension that is capable of viewing the
@@ -294,4 +354,130 @@ public class DataPanelManager {
 		
 		return dataPanel;
 	}
+  
+  /**
+   * See if any data panels are subscribed to channels of this source.
+   * 
+   * @param sourceName  the source to check
+   * @return            true if a data panel is subscribed to a channel of this
+   *                    source, false otherwise
+   * @since             1.3
+   */
+  public boolean isSourceSubscribed(String sourceName) {
+    boolean subscribed = false;
+    ChannelTree ctree = rbnbController.getMetadataManager().getMetadataChannelTree();
+    ChannelTree.Node source = ctree.findNode(sourceName);
+    if (source != null) {
+      Iterator i = source.getChildren().iterator();
+      while (i.hasNext()) {
+        ChannelTree.Node node = (ChannelTree.Node)i.next(); 
+        if (node.getType() == ChannelTree.CHANNEL) {
+          String channelName = node.getFullName();
+          if (isChannelSubscribed(channelName)) {
+            subscribed = true;
+            break;
+          }
+        }
+      }
+    }
+    return subscribed;
+  }
+  
+  /**
+   * See if any data panel is subscribed to this channel
+   * 
+   * @param channelName  the channel name to check with
+   * @return             true if any data panel is subscribed to the channel,
+   *                     false otherwise
+   * @since              1.3
+   */
+  public boolean isChannelSubscribed(String channelName) {
+    boolean subscribed = false;
+    Iterator i = dataPanels.iterator();    
+    while (i.hasNext()) {
+      DataPanel dp = (DataPanel)i.next();
+      if (dp.isChannelSubscribed(channelName)) {
+        subscribed = true;
+        break;
+      }
+    }
+    return subscribed;
+  }
+  
+  public void unsubscribeSource(String sourceName) {
+    unsubscribeSource(sourceName, false);
+  }
+  
+  /**
+   * Unsubscribe data panels from all channels that are a part of this sorce. If
+   * closeIfEmpty is set, data panels that aren't subscribed to any channels
+   * will be closed.
+   * 
+   * @param sourceName    the source containing the channels to unsubscribe from
+   * @param closeIfEmpty  close a data panel if it contains no more channels
+   * @since               1.3
+   */
+  public void unsubscribeSource(String sourceName, boolean closeIfEmpty) {
+    ChannelTree ctree = rbnbController.getMetadataManager().getMetadataChannelTree();
+    ChannelTree.Node source = ctree.findNode(sourceName);
+    if (source != null) {
+      Iterator i = source.getChildren().iterator();
+      while (i.hasNext()) {
+        ChannelTree.Node node = (ChannelTree.Node)i.next(); 
+        if (node.getType() == ChannelTree.CHANNEL) {
+          String channelName = node.getFullName();
+          unsubscribeChannel(channelName, false);
+        }
+      }
+    }   
+    
+    if (closeIfEmpty) {
+      closeEmptyDataPanels();
+    }    
+  }
+  
+  /**
+   * Unsubscribe all data panels from this channel. If closeIfEmpty is set, data
+   * panels that aren't subscribed to any channels will be closed.
+   * 
+   * @param channelName  the channel to unsubscribe
+   * @since              1.3
+   */
+  public void unsubscribeChannel(String channelName) {
+    unsubscribeChannel(channelName, false);
+  }
+  
+  /**
+   * Unsubscribe all data panels from this channel. If closeIfEmpty is set, the
+   * data panel will be closed if it is subscribed to no additional channels.
+   * 
+   * @param channelName   the channel to unsubscribe
+   * @param closeIfEmpty  close a data panel if it contains no more channels
+   * @since               1.3
+   */
+  public void unsubscribeChannel(String channelName, boolean closeIfEmpty) {
+    Iterator i = dataPanels.iterator();  
+    while (i.hasNext()) {
+      DataPanel dp = (DataPanel)i.next();
+      dp.removeChannel(channelName);
+    }
+    
+    if (closeIfEmpty) {
+      closeEmptyDataPanels();
+    }
+  }
+  
+  /**
+   * Close data panels that aren't subscribed to any channels.
+   * 
+   * @since  1.3
+   */
+  private void closeEmptyDataPanels() {
+    for (int i=dataPanels.size()-1; i>=0; i--) {
+      DataPanel dp = (DataPanel)dataPanels.get(i);
+      if (dp.subscribedChannelCount() == 0) {
+        closeDataPanel(dp);
+      }
+    }
+  }
 }

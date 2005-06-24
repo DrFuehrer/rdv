@@ -1,5 +1,7 @@
 package org.nees.buffalo.rdv.datapanel;
 
+import java.util.Set;
+
 import org.nees.buffalo.rdv.DataPanelManager;
 
 /**
@@ -114,4 +116,29 @@ public interface DataPanel {
 	 * @since  1.0
 	 */
 	public void closePanel();
+  
+  /**
+   * Returns the number of channels that this data panel is subscribed too.
+   * 
+   * @return  the number of subscribed channels
+   * @since   1.3
+   */
+  public int subscribedChannelCount();
+  
+  /**
+   * Returns a set of channel names that this data panel is subscribed too.
+   * 
+   * @return  a set of subscribed channels
+   * @since   1.3
+   */
+  public Set subscribedChannels();
+  
+  /**
+   * Checks if this data panel is subscribed to the given channel.
+   * 
+   * @param channelName  the channel to check
+   * @return             true if subscribed to the channel, false otherwise
+   * @since              1.3
+   */
+  public boolean isChannelSubscribed(String channelName);
 }
