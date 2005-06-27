@@ -145,8 +145,6 @@ public class TabularDataPanel extends AbstractDataPanel {
 			return;
 		}
 		
-    double lastTime = lastTimeDisplayed;
-        
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -155,17 +153,14 @@ public class TabularDataPanel extends AbstractDataPanel {
 
       //if there is data for channel, post it
 			if (channelIndex != -1) {
-        double channelLastTime = postDataTabular(channelName, channelIndex);
-        if (channelLastTime != -1) {
-        	Math.max(lastTime, channelLastTime);
-        }
+        postDataTabular(channelName, channelIndex);
 			}
 		}
         
-    lastTimeDisplayed = lastTime;
+    lastTimeDisplayed = time;
 	}
 	
-	private double postDataTabular(String channelName, int channelIndex) {
+	private void postDataTabular(String channelName, int channelIndex) {
     double[] times = channelMap.GetTimes(channelIndex);
         
     int startIndex = -1;
@@ -179,7 +174,7 @@ public class TabularDataPanel extends AbstractDataPanel {
     
     //see if there is no data in the time range we are loooking at
     if (startIndex == -1) {
-        return -1;
+        return;
     }       
     
     int endIndex = startIndex;
@@ -219,13 +214,11 @@ public class TabularDataPanel extends AbstractDataPanel {
       case ChannelMap.TYPE_UNKNOWN:
       case ChannelMap.TYPE_BYTEARRAY:
       default:
-      	return -1;
+      	return;
       }
 
       tableModel.updateData(channelName, data);
     }
-    
-    return times[endIndex];
 	}
 	
 	public String toString() {

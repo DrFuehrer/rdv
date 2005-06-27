@@ -1,11 +1,12 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
+import java.util.Hashtable;
 import java.util.Iterator;
 
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,8 +22,12 @@ public class StringDataPanel extends AbstractDataPanel {
 	static Log log = LogFactory.getLog(StringDataPanel.class.getName());
 		
 	JPanel panel;
-	JTextArea messages;
+	JEditorPane messages;
 	JScrollPane scrollPane;
+  StringBuffer messageBuffer;
+  
+  String[] AVAILABLE_COLORS = {"blue", "green", "maroon", "purple", "red", "olive"};
+  Hashtable colors;
 	
 	double lastTimeDisplayed;
 	
@@ -30,6 +35,9 @@ public class StringDataPanel extends AbstractDataPanel {
 		super();
 		
 		lastTimeDisplayed = -1;
+    messageBuffer = new StringBuffer();
+    
+    colors = new Hashtable();
 				
 		initPanel();
 		setDataComponent(panel);
@@ -40,15 +48,36 @@ public class StringDataPanel extends AbstractDataPanel {
 		
 		panel.setLayout(new BorderLayout());
 				
-		messages = new JTextArea();
+		messages = new JEditorPane();
 		messages.setEditable(false);
+    messages.setContentType("text/html");
 		messages.setDropTarget(null);
-		scrollPane = new JScrollPane(messages);
+		scrollPane = new JScrollPane(messages,
+        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		panel.add(scrollPane, BorderLayout.CENTER);
 	}
+  
+  public boolean addChannel(String channelName) {
+    if (super.addChannel(channelName)) {
+      colors.put(channelName, AVAILABLE_COLORS[(channels.size()-1)%AVAILABLE_COLORS.length]);
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+  public boolean removeChannel(String channelName) {
+    if (super.removeChannel(channelName)) {
+     colors.remove(channelName);
+     return true;
+    } else {
+      return false;
+    }
+  }
 	
 	public boolean supportsMultipleChannels() {
-		return false;
+		return true;
 	}
 	
 	public void postData(ChannelMap channelMap) {
@@ -61,8 +90,8 @@ public class StringDataPanel extends AbstractDataPanel {
 		if (channelMap == null) {
 			//no data to display yet
 			return;
-		}		
-
+		}
+    
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -71,9 +100,11 @@ public class StringDataPanel extends AbstractDataPanel {
 			
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
-				postDataText(channelName, channelIndex);
+        postDataText(channelName, channelIndex);
 			}
 		}
+    
+    lastTimeDisplayed = time;
 	}
 
 	private void postDataText(String channelName, int channelIndex) {
@@ -81,7 +112,9 @@ public class StringDataPanel extends AbstractDataPanel {
     if (channelMap.GetType(channelIndex) != ChannelMap.TYPE_STRING) {
       return;   
     }
-        
+
+    String shortChannelName = channelName.substring(channelName.lastIndexOf('/')+1);
+    String channelColor = (String)colors.get(channelName);
 		String[] data = channelMap.GetDataAsString(channelIndex);
 		double[] times = channelMap.GetTimes(channelIndex);
 
@@ -107,19 +140,19 @@ public class StringDataPanel extends AbstractDataPanel {
 				break;
 			}
 		}
-				
+
 		for (int i=startIndex; i<=endIndex; i++) {
-			messages.append(channelName + " (" + DataViewer.formatDate(times[i])+ ") : " + data[i] + "\n");
+			messageBuffer.append("<strong style=\"color: " + channelColor + "\">" + shortChannelName + "</strong> (<em>" + DataViewer.formatDateSmart(times[i])+ "</em>): " + data[i] + "<br>");
 		}
-		
-		int maximum = scrollPane.getHorizontalScrollBar().getMaximum();
-		scrollPane.getHorizontalScrollBar().setValue(maximum);
-		
-		lastTimeDisplayed = times[endIndex];
+    messages.setText(messageBuffer.toString());
+
+    int max = scrollPane.getVerticalScrollBar().getMaximum();
+    scrollPane.getVerticalScrollBar().setValue(max);
 	}
 	
 	void clearData() {
 		messages.setText(null);
+    messageBuffer.delete(0, messageBuffer.length());
 		lastTimeDisplayed = -1;
 	}
 	

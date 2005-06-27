@@ -19,9 +19,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -94,7 +94,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since  1.1
 	 */
-	HashSet channels;
+	LinkedHashSet channels;
 	
 	/**
 	 * A list of units for channels.
@@ -176,7 +176,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.1
 	 */
 	public AbstractDataPanel() {		
-		channels = new HashSet();
+		channels = new LinkedHashSet();
 		units = new Hashtable();
 		
 		time = 0;
