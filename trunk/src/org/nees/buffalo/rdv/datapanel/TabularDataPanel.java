@@ -3,12 +3,17 @@
  */
 package org.nees.buffalo.rdv.datapanel;
 
-import java.awt.GridLayout;
-import java.util.Hashtable;
+import java.awt.BorderLayout;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
 import java.util.Iterator;
 
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+import javax.swing.table.AbstractTableModel;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -22,25 +27,25 @@ import com.rbnb.sapi.ChannelMap;
 public class TabularDataPanel extends AbstractDataPanel {
 
   /**
-   * The container for all the channel rows.
+   * The main panel
    * 
-   * @since  1.2
+   * @since  1.3
    */
-	private JPanel tabularDataPanel;
-    
+  private JPanel mainPanel;
+  
   /**
-   * The layout manager for the container.
+   * The data model for the table
    * 
-   * @since  1.2
+   * @since  1.3
    */
-	private GridLayout gridLayout;
-	
+	private DataTableModel tableModel;
+  
   /**
-   * A hshtable to lookup the TabularDataRow for a channel.
+   * The table
    * 
-   * @since  1.2
+   * @since  1.3
    */
-	private Hashtable rows;
+  private JTable table;
 
   /**
    * The last time data was displayed in the UI
@@ -58,13 +63,11 @@ public class TabularDataPanel extends AbstractDataPanel {
 	public TabularDataPanel() {
     super();
     
-    rows = new Hashtable();
-    
     lastTimeDisplayed = -1;
     
     initComponents();
     
-    setDataComponent(tabularDataPanel);
+    setDataComponent(mainPanel);
 	}
 	
   /**
@@ -73,20 +76,25 @@ public class TabularDataPanel extends AbstractDataPanel {
    * @since  1.2
    */
 	private void initComponents() {
-		tabularDataPanel = new JPanel();
-		gridLayout = new GridLayout(1, 1);
-		tabularDataPanel.setLayout(gridLayout);
-    TabularDataRow header = new TabularDataRowHeader();
-    tabularDataPanel.add(header);
+    mainPanel = new JPanel();
+    mainPanel.setLayout(new BorderLayout());
+    
+    tableModel = new DataTableModel();
+    table = new JTable(tableModel);
+    table.setDropTarget(new DropTarget(component, DnDConstants.ACTION_LINK, this));
+    table.addComponentListener(new ComponentAdapter() {
+      public void componentResized(ComponentEvent e) {
+        updateRowHeight();
+      }
+    });
+    
+    mainPanel.add(table.getTableHeader(), BorderLayout.NORTH);
+    mainPanel.add(table, BorderLayout.CENTER);
 	}
+  
 
 	void clearData() {
-		Iterator i = channels.iterator();
-		while (i.hasNext()) {
-			String channelName = (String)i.next();
-			TabularDataRow row = (TabularDataRow)rows.get(channelName);
-			row.clearData();
-		}
+    tableModel.clearData();
     lastTimeDisplayed = -1;
 	}
 
@@ -106,11 +114,9 @@ public class TabularDataPanel extends AbstractDataPanel {
 			labelText += "(" + unit + ")";
 		}
 		
-		gridLayout.setRows(gridLayout.getRows()+1);
-		TabularDataRow row = new TabularDataRow(labelText);
-		tabularDataPanel.add(row);
-		rows.put(channelName, row);
-		
+		tableModel.addRow(channelName);
+    updateRowHeight();
+    
 		return true;
 	}
 	
@@ -119,12 +125,17 @@ public class TabularDataPanel extends AbstractDataPanel {
 			return false;
 		}
 		
-		TabularDataRow row = (TabularDataRow)rows.get(channelName);
-		rows.remove(channelName);
-		tabularDataPanel.remove(row);
-		
+		tableModel.deleteRow(channelName);
+    updateRowHeight();
+    
 		return true;
 	}
+  
+  private void updateRowHeight() {
+    if (channels.size() > 0) {
+      table.setRowHeight(table.getHeight()/channels.size());
+    }
+  }
 	
 	public void postTime(double time) {
 		super.postTime(time);
@@ -211,8 +222,7 @@ public class TabularDataPanel extends AbstractDataPanel {
       	return -1;
       }
 
-      TabularDataRow row = (TabularDataRow)rows.get(channelName);
-      row.setData(data);
+      tableModel.updateData(channelName, data);
     }
     
     return times[endIndex];
@@ -221,70 +231,117 @@ public class TabularDataPanel extends AbstractDataPanel {
 	public String toString() {
 		return "Tabular Data Panel";
 	}
-	
-	class TabularDataRow extends JPanel {
-		JLabel label;
-		JLabel data;
-		JLabel min;
-		JLabel max;
-		
-		double minData;
-		double maxData;
-		
-		boolean gotData;
-        
-		public TabularDataRow(String labelText) {
-			this(labelText, null);
-		}
-			
-		public TabularDataRow(String labelText, String dataText) {
-			label = new JLabel(labelText);
-			data = new JLabel(dataText);
-			min = new JLabel();
-			max = new JLabel();
-			
-			setLayout(new GridLayout(1,4));
-			add(label);
-			add(data);
-			add(min);
-			add(max);
-			
-			gotData = false;
-		}
-		
-		public void setLabel(String labelText) {
-			label.setText(labelText);
-		}
-		
-		public void setData(double value) {
-			if (!gotData) {
-				gotData = true;
-				minData = maxData = value;
-			} else {
-				minData = Math.min(minData, value);
-				maxData = Math.max(maxData, value);
-			}
-			
-			String dataText = Double.toString(value);
-			data.setText(dataText);
-			min.setText(Double.toString(minData));
-			max.setText(Double.toString(maxData));
-		}
-		
-    public void clearData() {
-			gotData = false;
-			data.setText(null);
-			min.setText(null);
-			max.setText(null);
-		}
- 	}
+  
+  private class DataTableModel extends AbstractTableModel {
+    private String[] columnNames = {
+        "Name",
+        "Value",
+        "Min",
+        "Max"};
     
-    public class TabularDataRowHeader extends TabularDataRow {
-    	public TabularDataRowHeader() {
-    		super("Channel Name");
-        data.setText("Data");
-        min.setText("Minimum");
-        max.setText("Maximum");
-    	}
+    private ArrayList rows;
+    
+    private boolean cleared;
+    
+    public DataTableModel() {
+      super();
+      rows = new ArrayList();
+      cleared = true;
     }
+    
+    public void addRow(String name) {
+      DataRow dataRow = new DataRow(name);
+      rows.add(dataRow);
+      int row = rows.size()-1;
+      fireTableRowsInserted(row, row);
+    }
+    
+    public void deleteRow(String name) {
+      for (int i=0; i<rows.size(); i++) {
+        DataRow dataRow = (DataRow)rows.get(i);
+        if (dataRow.name.equals(name)) {
+          rows.remove(dataRow);
+          this.fireTableRowsDeleted(i, i);
+          break;
+        }
+      }
+    }
+    
+    public void updateData(String name, double data) {
+      cleared = false;
+      for (int i=0; i<rows.size(); i++) {
+        DataRow dataRow = (DataRow)rows.get(i);
+        if (dataRow.name.equals(name)) {
+          dataRow.setData(data);
+          fireTableDataChanged();
+          break;
+        }
+      }
+    }
+    
+    public void clearData() {
+      cleared = true;
+      for (int i=0; i<rows.size(); i++) {
+        DataRow dataRow = (DataRow)rows.get(i);
+        dataRow.clearData();
+      }
+      fireTableDataChanged();
+    }
+
+    public int getRowCount() {
+      return rows.size();
+    }
+
+    public int getColumnCount() {
+      return columnNames.length;
+    }
+    
+    public String getColumnName(int col) {
+      return columnNames[col];
+    }
+
+    public Object getValueAt(int row, int col) {
+      if (col != 0 && cleared) {
+        return new String();
+      }
+      
+      DataRow dataRow = (DataRow)rows.get(row);
+      switch (col) {
+        case 0:
+          return dataRow.name;  
+        case 1:
+          return new Double(dataRow.value);
+        case 2:
+          return new Double(dataRow.min);
+        case 3:
+          return new Double(dataRow.max);
+        default:
+          return null;
+      }
+    }    
+  }
+  
+  private class DataRow {
+    String name;
+    double value;
+    double min;
+    double max;
+    
+    public DataRow(String name) {
+      this.name = name;
+      clearData();
+    }
+    
+    public void setData(double data) {
+      value = data;
+      min = min==-1? data:Math.min(min, data);
+      max = max==-1? data:Math.max(max, data);
+    }
+    
+    public void clearData() {
+      value = 0;
+      min = -1;
+      max = -1;      
+    }
+  }
 }
