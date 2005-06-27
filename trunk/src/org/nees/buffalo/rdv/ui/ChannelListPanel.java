@@ -18,8 +18,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -123,6 +127,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   
   private JComponent createTree() {
     tree = new JTree(this);
+    tree.setRootVisible(false);
+    tree.setShowsRootHandles(true);
     tree.putClientProperty(Options.TREE_LINE_STYLE_KEY,Options.TREE_LINE_STYLE_NONE_VALUE);
     tree.setExpandsSelectedPaths(true);
     tree.setCellRenderer(new ChannelTreeCellRenderer());
@@ -312,7 +318,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     for (int i=tree.getRowCount()-1; i>=0; i--) {
       tree.collapseRow(i);  
     }
-    tree.expandRow(0);
   }
  	 	
  	private void fireRootChanged() {
@@ -360,77 +365,64 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	}
 
 	public Object getChild(Object n, int index) {
-		Iterator it;
-		
-		if (n.equals(root)) {
-			it = ctree.rootIterator();
-		} else {
-			node = (ChannelTree.Node)n;
-			it = node.getChildren().iterator();
-		}
-		
-		int i=0;
-		while (i<=index && it.hasNext()) {
-			node = (ChannelTree.Node)it.next();
-			if (node.getType() == ChannelTree.SERVER || (node.getType() == ChannelTree.SOURCE && (showHiddenChannels || !node.getName().startsWith("_"))) || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
-				i++;
-			}
-		}
-		
-		return node;
+    Object[] children = getSortedChildren(n);
+    return children[index]; 
 	}
 
 	public int getChildCount(Object n) {
-		Iterator it;
-		
-		if (n.equals(root)) {
-			it = ctree.rootIterator();
-		} else {
-			node = (ChannelTree.Node)n;
-			it = node.getChildren().iterator();
-		}
-		
-		int i=0;
-		while (it.hasNext()) {
-			node = (ChannelTree.Node)it.next();
-			if (node.getType() == ChannelTree.SERVER || (node.getType() == ChannelTree.SOURCE && (showHiddenChannels || !node.getName().startsWith("_"))) || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
-				i++;
-			}
-		}		
-		
-		return i;
-	}
+    Object[] children = getSortedChildren(n);
+    return children.length;
+  }
 
 	public boolean isLeaf(Object n) {	
-		boolean isLeaf = (getChildCount(n) == 0) ? true : false;
-		
+    boolean isLeaf = false;
+    if (!n.equals(root)) {
+      node = (ChannelTree.Node)n;
+      if (node.getType() == ChannelTree.CHANNEL) {
+        isLeaf = true;
+      }
+    }
 		return isLeaf;
 	}
 
 	public void valueForPathChanged(TreePath path, Object n) {}
 
 	public int getIndexOfChild(Object n, Object child) {
-		Iterator it;
-		
-		if (n.equals(root)) {
-			it = ctree.rootIterator();
-		} else {
-			node = (ChannelTree.Node)n;
-			it = node.getChildren().iterator();
-		}
-		
-		int i=0;
-		while (it.hasNext()) {
-			node = (ChannelTree.Node)it.next();
-			if (node.getType() == ChannelTree.SERVER || (node.getType() == ChannelTree.SOURCE && (showHiddenChannels || !node.getName().startsWith("_"))) || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
-				if (node.equals(child)) {
-					return i;
-				}
-			}
-		}			
+    Object[] children = getSortedChildren(n);
+    for (int i=0; i<children.length; i++) {
+      node = (ChannelTree.Node)children[i];
+      if (node.equals(child)) {
+        return i;
+      }
+    }
 
 		return -1;		
 	}
+  
+  private Object[] getSortedChildren(Object n) {
+    ArrayList list = new ArrayList();
+    
+    Iterator it;
+    
+    if (n.equals(root)) {
+      it = ctree.rootIterator();
+    } else {
+      node = (ChannelTree.Node)n;
+      it = node.getChildren().iterator();
+    }
+    
+    while (it.hasNext()) {
+      node = (ChannelTree.Node)it.next();
+      if (node.getType() == ChannelTree.SERVER || (node.getType() == ChannelTree.SOURCE && (showHiddenChannels || !node.getName().startsWith("_"))) || node.getType() == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER) {
+        list.add(node);
+      }
+    }      
+    
+    Object[] children = list.toArray();
+    Arrays.sort(children, new HumanComparator());
+    
+    return children;
+  }
 
 	public void addTreeModelListener(TreeModelListener l) {
 		treeModelListeners.addElement(l);
@@ -618,6 +610,36 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		
 	}
 
+  private class HumanComparator implements Comparator {
+    private Pattern p;
+    
+    public HumanComparator() {
+      p = Pattern.compile("(\\D*)(\\d+)(\\D*)");  
+    }
+    
+    public int compare(Object o1, Object o2) {      
+      String s1 = ((ChannelTree.Node)o1).getName();
+      String s2 = ((ChannelTree.Node)o2).getName();
+      
+      if (s1.equals(s2)) {
+        return 0;  
+      }
+      
+      Matcher m1 = p.matcher(s1);
+      Matcher m2 = p.matcher(s2);
+      
+      if (m1.matches() && m2.matches() &&
+          m1.group(1).equals(m2.group(1)) &&
+          m1.group(3).equals(m2.group(3))) {
+        long l1 = Long.parseLong(m1.group(2));
+        long l2 = Long.parseLong(m2.group(2));
+        return l1<l2?-1:1;
+      } else {
+        return s1.compareTo(s2);
+      }
+    }    
+  }
+  
 	public void postState(int newState, int oldState) {
 		if (newState == Player.STATE_DISCONNECTED || newState == Player.STATE_EXITING) {
 			clearChannelList();
