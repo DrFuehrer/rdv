@@ -23,6 +23,7 @@
 -Broke metadata panel into it's own class and added listener interface for
  channel selection events in the channel list
 -Reworked tabular data panel to use a table
+-Enabled import menus for channel list right click
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
