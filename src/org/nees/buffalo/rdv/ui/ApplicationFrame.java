@@ -34,8 +34,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -214,7 +212,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		importAction = new DataViewerAction("Import", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
  			public void actionPerformed(ActionEvent ae) {
- 				new ImportDialog(frame, rbnb);
+ 				showImportDialog();
  			}			
  		};
         
@@ -522,7 +520,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
   			
 	private void initChannelListPanel() {
-		channelListPanel = new ChannelListPanel(dataPanelManager, rbnb);
+		channelListPanel = new ChannelListPanel(dataPanelManager, rbnb, this);
 		channelListPanel.setMinimumSize(new Dimension(0, 0));
 		
 		log.info("Created channel list panel.");
@@ -679,6 +677,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	public void postStatus(String statusMessage) {
 		JOptionPane.showMessageDialog(this, statusMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
 	}
+  
+  public void showImportDialog() {
+    showImportDialog(null);
+  }
+  
+  public void showImportDialog(String sourceName) {
+    new ImportDialog(frame, rbnb, sourceName);
+  }
  	
  	class DataViewerAction extends AbstractAction {
  		boolean selected = false;

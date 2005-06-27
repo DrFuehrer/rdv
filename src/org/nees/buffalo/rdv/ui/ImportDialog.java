@@ -58,6 +58,10 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher, RBNBImp
 	boolean importing;
 	
 	public ImportDialog(JFrame owner, RBNBController rbnb) {
+    this(owner, rbnb, null);
+  }
+   
+  public ImportDialog(JFrame owner, RBNBController rbnb, String sourceName) {
 		super(owner);
 		
 		this.owner = owner;
@@ -83,6 +87,8 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher, RBNBImp
 		setTitle("Data file import");
 		
 		initComponents();
+    
+    sourceNameTextField.setText(sourceName);
 	}
 	
 	private void initComponents() {

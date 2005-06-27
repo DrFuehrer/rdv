@@ -64,6 +64,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
 	private DataPanelManager dataPanelManager;
 	private RBNBController rbnb;
+  private ApplicationFrame frame;
 	
 	private ChannelTree ctree;
 	private ChannelMap cmap;
@@ -84,11 +85,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
  	private boolean showHiddenChannels = false;
 
-	public ChannelListPanel(DataPanelManager dataPanelManager, RBNBController rbnb) {
+	public ChannelListPanel(DataPanelManager dataPanelManager, RBNBController rbnb, ApplicationFrame frame) {
 		super();
 		
 		this.dataPanelManager = dataPanelManager;
 		this.rbnb = rbnb;
+    this.frame = frame;
 		
 		root = "";
     
@@ -512,7 +514,11 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       Object o = treePath.getLastPathComponent();
       if (o.equals(root)) {
         menuItem = new JMenuItem("Import data...", DataViewer.getIcon("icons/import.gif"));
-        menuItem.setEnabled(false);
+        menuItem.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent arg0) {
+            frame.showImportDialog();
+          }
+        });
         popup.add(menuItem);
         menuItem = new JMenuItem("Export data...", DataViewer.getIcon("icons/import.gif"));
         popup.add(menuItem);
@@ -534,7 +540,11 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
           }
           
           menuItem = new JMenuItem("Import data to source...", DataViewer.getIcon("icons/import.gif"));
-          menuItem.setEnabled(false);
+          menuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+              frame.showImportDialog(name);
+            }
+          });
           popup.add(menuItem);
           menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/import.gif"));
           menuItem.setEnabled(false);
