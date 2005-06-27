@@ -618,8 +618,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     }
     
     public int compare(Object o1, Object o2) {      
-      String s1 = ((ChannelTree.Node)o1).getName();
-      String s2 = ((ChannelTree.Node)o2).getName();
+      String s1 = ((ChannelTree.Node)o1).getName().toLowerCase();
+      String s2 = ((ChannelTree.Node)o2).getName().toLowerCase();
       
       if (s1.equals(s2)) {
         return 0;  
