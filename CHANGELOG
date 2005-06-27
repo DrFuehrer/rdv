@@ -24,6 +24,7 @@
  channel selection events in the channel list
 -Reworked tabular data panel to use a table
 -Enabled import menus for channel list right click
+-Display channel list using smart sorting
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

@@ -121,7 +121,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
           }
         }
         
-        s.append("<p style=\"font-size: 10px\">Starts at " + DataViewer.formatDateSmart(start) + "<br>");
+        s.append("<p style=\"font-size: 10px\">Started " + DataViewer.formatDateSmart(start) + "<br>");
         s.append("Lasts " + DataViewer.formatSeconds(duration) + "<br>");
         if (size != -1) {
           s.append("Size: " + DataViewer.formatBytes(size));
