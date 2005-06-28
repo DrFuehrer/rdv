@@ -576,24 +576,24 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       });            
       popup.add(menuItem);
       popup.addSeparator();
-    }
-    
-    Iterator i = extensions.iterator();
-    while (i.hasNext()) {
-      final Extension extension = (Extension)i.next();
-      if (extension != defaultExtension) {
-        menuItem = new JMenuItem("View with " + extension.getName());
-        menuItem.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent ae) {
-            dataPanelManager.viewChannel(channelName, extension);
-          }                
-        });
-        popup.add(menuItem);
-      }
-    }
-    
-    if (extensions.size() > 1) {
-      popup.addSeparator();
+      
+      if (extensions.size() > 1) {
+        Iterator i = extensions.iterator();
+        while (i.hasNext()) {
+          final Extension extension = (Extension)i.next();
+          if (extension != defaultExtension) {
+            menuItem = new JMenuItem("View with " + extension.getName());
+            menuItem.addActionListener(new ActionListener() {
+              public void actionPerformed(ActionEvent ae) {
+                dataPanelManager.viewChannel(channelName, extension);
+              }                
+            });
+            popup.add(menuItem);
+          }
+        }
+      
+        popup.addSeparator();
+      }      
     }
     
     if (dataPanelManager.isChannelSubscribed(channelName)) {
