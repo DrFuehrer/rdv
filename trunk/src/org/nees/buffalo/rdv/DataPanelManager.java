@@ -5,6 +5,7 @@ package org.nees.buffalo.rdv;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -295,6 +296,61 @@ public class DataPanelManager {
       }     
     } else {
       log.warn("Failed to find data panel extension for channel " + channelName + ".");
+    }    
+  }
+  
+  /**
+   * View the list of channels with the specified extension. If the channel
+   * supports multiple channels, all the channels will be viewed in the same
+   * instance. Otherwise a new instance will be created for each channel.
+   * 
+   * If adding a channel to the same instance of an extension fails, a new
+   * instance of the extension will be created and the channel will be added
+   * this this.
+   * 
+   * @param channels   the list of channels to view
+   * @param extension  the extension to view these channels with
+   * @since            1.3
+   */
+  public void viewChannels(List channels, Extension extension) {
+    DataPanel dataPanel = null;
+    try {
+      dataPanel = createDataPanel(extension);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return;
+    }
+    boolean supportsMultipleChannels = dataPanel.supportsMultipleChannels();
+    
+    Iterator it = channels.iterator();
+    while (it.hasNext()) {
+      String channelName = ((ChannelTree.Node)it.next()).getFullName();
+      if (supportsMultipleChannels) {
+        boolean subscribed = dataPanel.addChannel(channelName);
+
+        if (!subscribed) {
+          try {
+            dataPanel = createDataPanel(extension);
+          } catch (Exception e) {
+            e.printStackTrace();
+            return;
+          }
+          
+          dataPanel.addChannel(channelName);
+        }
+      } else {
+        if (dataPanel == null) {
+          try {
+            dataPanel = createDataPanel(extension);
+          } catch (Exception e) {
+            e.printStackTrace();
+            return;
+          }
+        }
+        
+        dataPanel.setChannel(channelName);
+        dataPanel = null;
+      }
     }    
   }
   

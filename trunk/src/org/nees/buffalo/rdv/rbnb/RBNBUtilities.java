@@ -3,10 +3,19 @@
  */
 package org.nees.buffalo.rdv.rbnb;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.rbnb.sapi.ChannelMap;
+import com.rbnb.sapi.ChannelTree;
 
 /**
  * RBNBUtilities is a utility class to provide static methods for dealing with RBNB.
@@ -119,4 +128,101 @@ public final class RBNBUtilities {
 		
 		return end;
 	}
+  
+  /**
+   * Returns a list of sorted children for the root of the Channel Tree.
+   * 
+   * @param ctree  the chanel tree to find the children in
+   * @return       a sorted list of children of the root element
+   * @since        1.3
+   */
+  public static List getSortedChildren(ChannelTree ctree) {
+    return getSortedChildren(ctree, true);
+  }
+  
+  /**
+   * Returns a list of sorted children for the root of the Channel Tree. If
+   * showHiddenChildren is set, children starting with '_' will be omitted.
+   * 
+   * @param ctree               the chanel tree to find the children in
+   * @param showHiddenChildren  include/discard hidden children
+   * @return                    a sorted list of children of the root element
+   * @since                     1.3
+   */
+  public static List getSortedChildren(ChannelTree ctree, boolean showHiddenChildren) {
+    return getSortedChildren(ctree.rootIterator(), showHiddenChildren);
+  }
+  
+  /**
+   * Returns a list of sorted children for this node.
+   * 
+   * @param node  the parent to find the children
+   * @return      a sorted list of children
+   * @since       1.3
+   */
+  public static List getSortedChildren(ChannelTree.Node node) {
+    return getSortedChildren(node, true);
+  }
+  
+  /**
+   * Returns a list of sorted children for this node. If showHiddenChildren is
+   * set, children starting with '_' will be omitted.
+   * 
+   * @param node                the parent to find the children
+   * @param showHiddenChildren  include/discard hidden children
+   * @return                    a sorted list of children
+   * @since                     1.3
+   */
+  public static List getSortedChildren(ChannelTree.Node node, boolean showHiddenChildren) {
+    return getSortedChildren(node.getChildren().iterator(), showHiddenChildren);
+  }  
+  
+  private static List getSortedChildren(Iterator it, boolean showHiddenChildren) {
+    List list = new ArrayList();
+
+    while (it.hasNext()) {
+      ChannelTree.Node node = (ChannelTree.Node)it.next();
+      boolean isHidden = node.getName().startsWith("_");
+      ChannelTree.NodeTypeEnum nodeType = node.getType();
+      if ((showHiddenChildren || !isHidden) &&
+          (nodeType == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER ||
+           nodeType == ChannelTree.SERVER || nodeType == ChannelTree.SOURCE)) {
+        list.add(node);
+      }
+    }
+    
+    Collections.sort(list, new HumanComparator());
+
+    return list;
+  }
+  
+  private static class HumanComparator implements Comparator {
+    private Pattern p;
+    
+    public HumanComparator() {
+      p = Pattern.compile("(\\D*)(\\d+)(\\D*)");  
+    }
+    
+    public int compare(Object o1, Object o2) {      
+      String s1 = ((ChannelTree.Node)o1).getName().toLowerCase();
+      String s2 = ((ChannelTree.Node)o2).getName().toLowerCase();
+      
+      if (s1.equals(s2)) {
+        return 0;  
+      }
+      
+      Matcher m1 = p.matcher(s1);
+      Matcher m2 = p.matcher(s2);
+      
+      if (m1.matches() && m2.matches() &&
+          m1.group(1).equals(m2.group(1)) &&
+          m1.group(3).equals(m2.group(3))) {
+        long l1 = Long.parseLong(m1.group(2));
+        long l2 = Long.parseLong(m2.group(2));
+        return l1<l2?-1:1;
+      } else {
+        return s1.compareTo(s2);
+      }
+    }    
+  }  
 }
