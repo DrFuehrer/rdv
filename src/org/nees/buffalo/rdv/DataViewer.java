@@ -169,6 +169,9 @@ public class DataViewer {
 		if (!toolkit.isDynamicLayoutActive()) {
 			toolkit.setDynamicLayout(true);
 		}
+    
+    //disable default drop target for swing components
+    System.setProperty("suppressSwingDropSupport", "true");
         
     //set L&F
     UIManager.put("ClassLoader", LookUtils.class.getClassLoader());
