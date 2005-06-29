@@ -1,9 +1,13 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.util.Iterator;
 
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,7 +25,9 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.nees.buffalo.rdv.datapanel.AbstractDataPanel.ChannelTitle;
 
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
 
 /**
@@ -141,6 +147,28 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			return super.getTitle();
 		}
 	}
+  
+  JComponent getTitleComponent() {
+    if (xyMode && channels.size() == 2) {
+      JPanel titleBar = new JPanel();
+      titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+      titleBar.setOpaque(false);
+      
+      Iterator i = channels.iterator();
+      titleBar.add(new ChannelTitle((String)i.next()));
+      
+      JLabel label = new JLabel("vs.");
+      label.setBorder(new EmptyBorder(0, 0, 0, 5));
+      label.setForeground(SimpleInternalFrame.getTextForeground(true));
+      titleBar.add(label);
+      
+      titleBar.add(new ChannelTitle((String)i.next()));
+      
+      return titleBar;
+    } else {
+      return super.getTitleComponent();
+    }
+  }  
 	
 	private void setAxisName() {	
 		if (xyMode) {

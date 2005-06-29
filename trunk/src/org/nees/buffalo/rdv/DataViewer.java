@@ -42,7 +42,7 @@ public class DataViewer {
 	private double timeScale;
 	
 	private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
-  private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy");
+  private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm a");
   private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm a");
   private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss a");
 	
