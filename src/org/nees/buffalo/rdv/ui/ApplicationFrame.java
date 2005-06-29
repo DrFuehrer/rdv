@@ -291,14 +291,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       }     
     };    
  
- 		showControlPanelAction = new DataViewerAction("Show Control Panel", "", KeyEvent.VK_C) {
+ 		showControlPanelAction = new DataViewerAction("Show Control Panel", "", KeyEvent.VK_C, "icons/control.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				controlPanel.setVisible(menuItem.isSelected());
  			}			
  		};
  
- 		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S) {
+ 		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S, "icons/info.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				statusPanel.setVisible(menuItem.isSelected());

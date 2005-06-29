@@ -22,4 +22,8 @@ public class ToolBarButton extends JButton {
     setToolTipText(toolTip);
     setBorder(new EmptyBorder(2, 0, 2, 2));
   }
+  
+  public void setIcon(String iconFileName) {
+    setIcon(DataViewer.getIcon(iconFileName));
+  }
 }

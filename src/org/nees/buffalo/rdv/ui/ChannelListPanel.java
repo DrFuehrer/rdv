@@ -636,8 +636,30 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 			if (!value.equals(root)) {
-				ChannelTree.Node node = (ChannelTree.Node)value;
+        ChannelTree.Node node = (ChannelTree.Node)value;
+        
+        ChannelTree.NodeTypeEnum type = node.getType();
+        String mime = RBNBUtilities.fixMime(node.getMime(), node.getFullName());
+        
 				setText(node.getName());
+        if (type == ChannelTree.FOLDER || type == ChannelTree.SOURCE) {
+          if (expanded) {
+            setIcon(DataViewer.getIcon("icons/folder_open.gif"));
+          } else {
+            setIcon(DataViewer.getIcon("icons/folder.gif"));
+          }
+        } else if (type == ChannelTree.CHANNEL) {
+          if (mime.equals("application/octet-stream")) {
+            setIcon(DataViewer.getIcon("icons/data.gif"));
+          } else if (mime.equals("image/jpeg") || mime.equals("video/jpeg")) {
+            setIcon(DataViewer.getIcon("icons/jpeg.gif"));
+          } else if (mime.equals("text/plain")) {
+            setIcon(DataViewer.getIcon("icons/text.gif"));
+          } else {
+            setIcon(DataViewer.getIcon("icons/file.gif"));
+          }
+        }
+        
  			} else if (value.equals(EMPTY_ROOT)) {
  				setIcon(null);
 			}
