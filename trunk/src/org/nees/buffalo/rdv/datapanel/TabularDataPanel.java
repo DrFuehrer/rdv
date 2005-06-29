@@ -81,7 +81,6 @@ public class TabularDataPanel extends AbstractDataPanel {
     
     tableModel = new DataTableModel();
     table = new JTable(tableModel);
-    table.setDropTarget(new DropTarget(component, DnDConstants.ACTION_LINK, this));
     table.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
         updateRowHeight();

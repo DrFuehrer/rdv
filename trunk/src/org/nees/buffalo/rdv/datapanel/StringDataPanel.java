@@ -51,7 +51,6 @@ public class StringDataPanel extends AbstractDataPanel {
 		messages = new JEditorPane();
 		messages.setEditable(false);
     messages.setContentType("text/html");
-		messages.setDropTarget(null);
 		scrollPane = new JScrollPane(messages,
         JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
