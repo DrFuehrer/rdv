@@ -3,6 +3,8 @@
  */
 package org.nees.buffalo.rdv.datapanel;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.datatransfer.DataFlavor;
@@ -27,12 +29,15 @@ import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
+import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.DataListener;
@@ -122,7 +127,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since  1.1
 	 */
-	JPanel component;
+	SimpleInternalFrame component;
   
   /**
    * The attach/detach button.
@@ -213,7 +218,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		rbnbController.addTimeScaleListener(this);
 	}
   
-  private JToolBar createToolBar() {
+  JToolBar createToolBar() {
     JToolBar toolBar = new JToolBar();
     
     final DataPanel dataPanel = this;
@@ -257,7 +262,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 		channels.add(channelName);
         
-    ((SimpleInternalFrame)component).setTitle(getTitle());
+    component.setTitle(getTitleComponent());
 		
 		String unit = channel.getUnit();
 		if (unit != null) {
@@ -281,7 +286,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		rbnbController.unsubscribe(channelName, this);
     
-    ((SimpleInternalFrame)component).setTitle(getTitle());
+    component.setTitle(getTitleComponent());
     
     units.remove(channelName);
 
@@ -345,6 +350,30 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 		return titleString;
 	}
+  
+  /**
+   * Get a component for displaying the title in top bar. This implementation
+   * includes a button to remove a specific channel.
+   * 
+   * Subclasses should overide this method if they don't want the default
+   * implementation.
+   * 
+   * @return  A component for the top bar
+   * @since   1.3
+   */
+  JComponent getTitleComponent() {
+    JPanel titleBar = new JPanel();
+    titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    titleBar.setOpaque(false);
+    
+    Iterator i = channels.iterator();
+    while (i.hasNext()) {
+      String channelName = (String)i.next();
+      titleBar.add(new ChannelTitle(channelName));
+    }
+    
+    return titleBar;
+  }
 	
 	public void postData(ChannelMap channelMap) {
 		this.channelMap = channelMap;
@@ -608,4 +637,27 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 	
 	public void dragExit(DropTargetEvent e) {}
+  
+  class ChannelTitle extends JPanel {
+    public ChannelTitle(final String channelName) {
+      setLayout(new BorderLayout());
+      setBorder(new EmptyBorder(0, 0, 0, 5));
+      setOpaque(false);
+      
+      JLabel text = new JLabel(channelName);
+      text.setForeground(SimpleInternalFrame.getTextForeground(true));
+      add(text, BorderLayout.CENTER);
+      
+      JButton closeButton = new JButton(DataViewer.getIcon("icons/close_channel.gif"));
+      closeButton.setToolTipText("Remove channel");
+      closeButton.setBorder(null);
+      closeButton.setOpaque(false);
+      closeButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent arg0) {
+          removeChannel(channelName);
+        }
+      });
+      add(closeButton, BorderLayout.EAST);
+    }
+  }
 }

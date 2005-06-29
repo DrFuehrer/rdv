@@ -65,7 +65,7 @@ import com.jgoodies.looks.LookUtils;
 
 public class SimpleInternalFrame extends JPanel {
 
-    private JLabel        titleLabel;
+    private JComponent    title;
     private GradientPanel gradientPanel;
     private JPanel        headerPanel;
     private boolean       selected;
@@ -73,13 +73,6 @@ public class SimpleInternalFrame extends JPanel {
     
     // Instance Creation ****************************************************
 
-    /**
-     * Constructs a SimpleInternalFrame with no title.
-     */    
-    public SimpleInternalFrame() {
-      this(null, null, null, null);
-    }    
-    
     /**
      * Constructs a SimpleInternalFrame with the specified title.
      * The title is intended to be non-blank, or in other words
@@ -91,6 +84,9 @@ public class SimpleInternalFrame extends JPanel {
         this(null, title, null, null);
     }
     
+    public SimpleInternalFrame(JComponent title) {
+        this(title, null, null);
+    }
     
     /**
      * Constructs a SimpleInternalFrame with the specified 
@@ -116,6 +112,9 @@ public class SimpleInternalFrame extends JPanel {
         this(null, title, bar, content);
     }
     
+    public SimpleInternalFrame(Icon icon, String title, JToolBar bar, JComponent content) {
+      this(new JLabel(title, icon, SwingConstants.LEADING), bar, content);
+    }
 
     /**
      * Constructs a SimpleInternalFrame with the specified 
@@ -127,21 +126,20 @@ public class SimpleInternalFrame extends JPanel {
      * @param content     the initial content pane
      */
     public SimpleInternalFrame(
-        Icon icon,
-        String title,
+        JComponent title,
         JToolBar bar,
         JComponent content) {
         super(new BorderLayout());
+        this.title = title;
         this.selected = false;
-        this.titleLabel = new JLabel(title, icon, SwingConstants.LEADING);
-        JPanel top = buildHeader(titleLabel, bar);
+        
+        JPanel top = buildHeader(title, bar);
+      	add(top, BorderLayout.NORTH);
 
-        if (title != null) {
-        	add(top, BorderLayout.NORTH);
-        }
         if (content != null) {
             setContent(content);
         }
+        
         setBorder(new ShadowBorder());
         setSelected(true);
         updateHeader();
@@ -151,42 +149,28 @@ public class SimpleInternalFrame extends JPanel {
     // Public API ***********************************************************
 
     /**
-     * Returns the frame's icon.
-     * 
-     * @return the frame's icon
-     */
-    public Icon getFrameIcon() {
-        return titleLabel.getIcon();
-    }
-    
-
-    /**
-     * Sets a new frame icon.
-     * 
-     * @param newIcon   the icon to be set
-     */
-    public void setFrameIcon(Icon newIcon) {
-        Icon oldIcon = getFrameIcon();
-        titleLabel.setIcon(newIcon);
-        firePropertyChange("frameIcon", oldIcon, newIcon);
-    }
-    
-
-    /**
      * Returns the frame's title text.
      *      * @return String   the current title text     */
-    public String getTitle() {
-        return titleLabel.getText();
+    public JComponent getTitle() {
+        return title;
     }
     
     
     /**
      * Sets a new title text.
      *      * @param newText  the title text tp be set     */
-    public void setTitle(String newText) {
-        String oldText = getTitle();
-        titleLabel.setText(newText);
-        firePropertyChange("title", oldText, newText);
+    public void setTitle(JComponent newTitle) {
+        if (title != null) {
+          gradientPanel.remove(title);
+        }
+        
+        if (newTitle != null) {
+          gradientPanel.add(newTitle, BorderLayout.WEST);
+        }
+        
+        this.title = newTitle;
+        gradientPanel.validate();
+        updateHeader();
     }
     
     
@@ -285,7 +269,7 @@ public class SimpleInternalFrame extends JPanel {
      * @param bar     the panel's tool bar
      * @return the panel's built header area
      */
-    private JPanel buildHeader(JLabel label, JToolBar bar) {
+    private JPanel buildHeader(JComponent label, JToolBar bar) {
         gradientPanel =
             new GradientPanel(new BorderLayout(), getHeaderBackground());
         label.setOpaque(false);
@@ -307,7 +291,7 @@ public class SimpleInternalFrame extends JPanel {
     private void updateHeader() {
         gradientPanel.setBackground(getHeaderBackground());
         gradientPanel.setOpaque(isSelected());
-        titleLabel.setForeground(getTextForeground(isSelected()));
+        title.setForeground(getTextForeground(isSelected()));
         headerPanel.repaint();
     }
     
@@ -318,7 +302,7 @@ public class SimpleInternalFrame extends JPanel {
      */
     public void updateUI() {
         super.updateUI();
-        if (titleLabel != null) {
+        if (title != null) {
             updateHeader();
         }
     }
@@ -342,7 +326,7 @@ public class SimpleInternalFrame extends JPanel {
      * @param isSelected   true to lookup the active color, false for the inactive
      * @return the color of the foreground text
      */
-    protected Color getTextForeground(boolean isSelected) {
+    public static Color getTextForeground(boolean isSelected) {
         Color c =
             UIManager.getColor(
                 isSelected
@@ -365,7 +349,7 @@ public class SimpleInternalFrame extends JPanel {
      * 
      * @return the color of the header's background
      */
-    protected Color getHeaderBackground() {
+    public static Color getHeaderBackground() {
         Color c =
             UIManager.getColor("SimpleInternalFrame.activeTitleBackground");
         if (c != null)
