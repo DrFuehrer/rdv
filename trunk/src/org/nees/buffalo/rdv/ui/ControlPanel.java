@@ -299,8 +299,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;
 		p.add(container, c);
         
-    SimpleInternalFrame sif = new SimpleInternalFrame("Control Panel");
-    sif.add(p);
+    SimpleInternalFrame sif = new SimpleInternalFrame(
+        DataViewer.getIcon("icons/control.gif"),
+        "Control Panel",
+        null,
+        p);
 
     add(sif, BorderLayout.CENTER);        
 		

@@ -97,8 +97,11 @@ public class StatusPanel extends JPanel implements TimeListener, PlaybackRateLis
 		c.anchor = GridBagConstraints.EAST;		
 		p.add(playbackRateLabel, c);
         
-    SimpleInternalFrame sif = new SimpleInternalFrame("Status Panel");
-    sif.add(p);
+    SimpleInternalFrame sif = new SimpleInternalFrame(
+        DataViewer.getIcon("icons/info.gif"),
+        "Status Panel",
+        null,
+        p);
 
     add(sif, BorderLayout.CENTER);
 	}

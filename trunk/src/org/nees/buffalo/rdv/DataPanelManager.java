@@ -13,6 +13,7 @@ import org.apache.xerces.parsers.DOMParser;
 import org.nees.buffalo.rdv.datapanel.DataPanel;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -174,7 +175,7 @@ public class DataPanelManager {
     if (channel != null) {
       mime = channel.getMimeType();
     }
-    mime = fixMime(mime, channelName);
+    mime = RBNBUtilities.fixMime(mime, channelName);
     
     ArrayList usefulExtensions = new ArrayList();
     for (int i=0; i<extensions.size(); i++) {
@@ -205,7 +206,7 @@ public class DataPanelManager {
       mime = channel.getMimeType();
     }
 
-    mime = fixMime(mime, channelName);
+    mime = RBNBUtilities.fixMime(mime, channelName);
 
     return findExtension(mime);
   }
@@ -352,15 +353,6 @@ public class DataPanelManager {
         dataPanel = null;
       }
     }    
-  }
-  
-  private String fixMime(String mime, String channelName) {
-    if (mime == null && channelName.endsWith(".jpg")) {
-      mime = "image/jpeg";
-    } else if (mime == null) {
-      mime = "application/octet-stream";
-    }
-    return mime;
   }
 	
 	/**

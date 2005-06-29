@@ -123,6 +123,13 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.1
 	 */
 	JPanel component;
+  
+  /**
+   * The attach/detach button.
+   * 
+   * @since 1.3
+   */
+  ToolBarButton achButton;
 	
 	/**
 	 * The subclass UI component.
@@ -152,7 +159,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 */
 	boolean maximized;
 	
- 	static String detachIconFileName = "icons/detach.gif";
+ 	static String attachIconFileName = "icons/attach.gif";
+  static String detachIconFileName = "icons/detach.gif";
  	static String closeIconFileName = "icons/close.gif";
  	
  	/**
@@ -210,14 +218,14 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     
     final DataPanel dataPanel = this;
     
-    JButton button = new ToolBarButton(detachIconFileName, "Detach data panel");
-    button.addActionListener(new ActionListener() {
+    achButton = new ToolBarButton(detachIconFileName, "Detach data panel");
+    achButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         toggleDetach();
       }
     });
-    toolBar.add(button);
-    button = new ToolBarButton(closeIconFileName, "Close data panel");
+    toolBar.add(achButton);
+    JButton button = new ToolBarButton(closeIconFileName, "Close data panel");
     button.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         dataPanelManager.closeDataPanel(dataPanel);
@@ -431,6 +439,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	void detachPanel() {
 		attached = false;
 		dataPanelContainer.removeDataPanel(component);
+    
+    achButton.setIcon(attachIconFileName);
 		
 		frame = new JFrame(getTitle());
 		frame.addWindowListener(new WindowAdapter() {
@@ -461,6 +471,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		if (addToContainer) {
 			attached = true;
+      
+      achButton.setIcon(detachIconFileName);
+      
 			dataPanelContainer.addDataPanel(component);
 		}
 	}

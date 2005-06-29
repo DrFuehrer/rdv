@@ -14,6 +14,7 @@ import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
@@ -97,7 +98,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
         s.append("</p>");        
       } else if (node.getType() == ChannelTree.CHANNEL) {
         int channelIndex = cmap.GetIndex(channelName);
-        String mime = node.getMime();
+        String mime = RBNBUtilities.fixMime(node.getMime(), node.getFullName());
         double start = cmap.GetTimeStart(channelIndex);
         double duration = cmap.GetTimeDuration(channelIndex);
         int size = node.getSize();
