@@ -69,7 +69,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private JFrame frame;
 	private GridBagConstraints c;
 	private JMenuBar menuBar;
-	private JToolBar toolBar;
 	private ChannelListPanel channelListPanel;
   private MetadataPanel metadataPanel;
   private JSplitPane leftPanel;
@@ -266,7 +265,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  
- 		dropDataAction = new DataViewerAction("Drop Data", "Drop data if plaback can't keep up with data rate", KeyEvent.VK_D) {
+ 		dropDataAction = new DataViewerAction("Drop Data", "Drop data if plaback can't keep up with data rate", KeyEvent.VK_D, "icons/drop_data.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				rbnb.dropData(menuItem.isSelected());		
@@ -319,7 +318,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		}; 		
  		
- 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H) {
+ 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H, "icons/hidden.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				boolean selected = menuItem.isSelected();
