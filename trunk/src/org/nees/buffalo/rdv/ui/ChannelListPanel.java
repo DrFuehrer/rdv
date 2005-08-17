@@ -259,7 +259,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   }
   
   private void fireChannelSelected(Object o) {
-    boolean isRoot = o.equals(root);
+    boolean isRoot = (o == root);
     int children = getChildCount(o);
     String channelName = null;
     if (!isRoot) {
@@ -370,7 +370,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
 	public boolean isLeaf(Object n) {	
     boolean isLeaf = false;
-    if (!n.equals(root)) {
+    if (n != root) {
       node = (ChannelTree.Node)n;
       if (node.getType() == ChannelTree.CHANNEL) {
         isLeaf = true;
@@ -386,7 +386,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	}
   
   private List getSortedChildren(Object n) {
-    if (n.equals(root)) {
+    if (n == root) {
       return RBNBUtilities.getSortedChildren(ctree, showHiddenChannels);
     } else {
       node = (ChannelTree.Node)n;
@@ -415,7 +415,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		TreePath treePath = tree.getPathForLocation((int)p.getX(), (int)p.getY());
 		if (treePath != null) {
 			Object o = treePath.getLastPathComponent();
-			if (!o.equals(root)) {
+			if (o != root) {
 				ChannelTree.Node node = (ChannelTree.Node)o;
 				if (node.getType() == ChannelTree.CHANNEL) {
 					String channelName = node.getFullName();
@@ -456,7 +456,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
     if (treePath != null) {
       Object o = treePath.getLastPathComponent();
-      if (!o.equals(root)) {
+      if (o != root) {
         ChannelTree.Node node = (ChannelTree.Node)o;
         if (node.getType() == ChannelTree.CHANNEL) {
           String channelName = node.getFullName();
@@ -474,7 +474,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       JMenuItem menuItem;
       
       Object o = treePath.getLastPathComponent();
-      if (o.equals(root)) {
+      if (o == root) {
         popup = getRootPopup();
       } else {
         ChannelTree.Node node = (ChannelTree.Node)o;
@@ -635,7 +635,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	private class ChannelTreeCellRenderer extends DefaultTreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-			if (!value.equals(root)) {
+			if (value != root) {
         ChannelTree.Node node = (ChannelTree.Node)value;
         
         ChannelTree.NodeTypeEnum type = node.getType();

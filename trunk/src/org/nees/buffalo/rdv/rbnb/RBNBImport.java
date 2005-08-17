@@ -210,7 +210,7 @@ public class RBNBImport {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			listener.postError("Error import data file: " + e.getMessage());
+			listener.postError("Error importing data file: " + e.getMessage());
 			return;
 		}
 		

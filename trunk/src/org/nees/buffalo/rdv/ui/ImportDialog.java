@@ -300,6 +300,7 @@ public class ImportDialog extends JDialog implements KeyEventDispatcher, RBNBImp
 		importing = false;
 		rbnb.updateMetadata();
 		importProgressBar.setValue(0);
+        importProgressBar.setVisible(false);
 		enableUI();
 		JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
 	}

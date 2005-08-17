@@ -138,11 +138,36 @@ public class MetadataManager {
 					String channel = parent + "/" + tokens[0].trim();
 					String unit = tokens[1].trim();
 					units.put(channel, unit);
+                    log.info("Set unit (" + unit + ") for channel " + channel + "(the old way).");
 				} else {
 					log.error("Invalid unit string: " + channelTokens[j] + ".");
 				}
 			}
 		}
+        
+        //get units from channel metadata
+        for (int i=0; i<cmap.NumberOfChannels(); i++) {
+          String userMetadata = cmap.GetUserInfo(i);
+          if (userMetadata.length() > 0) {
+            String channelName = cmap.GetName(i);
+            log.info("User metadata for " + channelName + ": " + userMetadata + ".");
+            String[] userMetadataTokens = userMetadata.split("\t|,");
+            for (int j=0; j<userMetadataTokens.length; j++) {
+              String[] tokens = userMetadataTokens[j].split("=");
+              if (tokens.length == 2) {
+                if (tokens[0].equals("units")) {
+                  String unit = tokens[1].trim();
+                  units.put(channelName, unit);
+                  log.info("Set unit (" + unit + ") for channel " + channelName + ".");
+                } else {
+                  log.info("Received unknown user metadata element for channel " + channelName + ": " + userMetadataTokens[j]);
+                }
+              } else {
+                log.warn("Invalid user metadata element: " + userMetadataTokens[j] + ".");
+              }
+            }            
+          }
+        }        
 
 		fireMetadataUpdated(cmap);
 		
