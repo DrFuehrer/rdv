@@ -19,6 +19,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.data.LocalChannelManager;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
@@ -34,7 +35,6 @@ public class DataViewer {
 	static Log log = LogFactory.getLog(DataViewer.class.getName());
 	
 	private RBNBController rbnb;
-	private DataPanelManager dataPanelManager;
 	private ApplicationFrame applicationFrame;
 
   private double location;
@@ -66,8 +66,7 @@ public class DataViewer {
 	
 	public void initialize() {
 		rbnb = new RBNBController(location, playbackRate, timeScale);
-		dataPanelManager = new DataPanelManager(rbnb);
-		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager);		
+		applicationFrame = new ApplicationFrame(this, rbnb);		
 	}
 
 	public void exit() {
@@ -80,10 +79,6 @@ public class DataViewer {
  	
  	public RBNBController getRBNBController() {
  		return rbnb;
- 	}
- 	
- 	public DataPanelManager getDataPanelManager() {
- 		return dataPanelManager;
  	}
  	
  	public ApplicationFrame getApplicationFrame() {
@@ -310,7 +305,7 @@ public class DataViewer {
 					for (int i=0; i<channels.length; i++) {
 						String channel = channels[i];
 						log.info("Viewing channel " + channel + ".");
-						dataViewer.getDataPanelManager().viewChannel(channel);
+						dataViewer.getRBNBController().getDataPanelManager().viewChannel(channel);
 					}
 				}
 				

@@ -5,7 +5,9 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.data.LocalChannelManager;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.SAPIException;
@@ -29,6 +31,9 @@ public class RBNBController implements Player, MetadataListener {
  	
 	private static final String DEFAULT_RBNB_HOST_NAME = "localhost";
 	private static final int DEFAULT_RBNB_PORT_NUMBER = 3333; 	
+    
+    private final DataPanelManager dataPanelManager;
+    private final LocalChannelManager localChannelManager;
 	
 	private boolean requestIsMonitor;	
 	
@@ -75,6 +80,9 @@ public class RBNBController implements Player, MetadataListener {
 		
 		rbnbHostName = DEFAULT_RBNB_HOST_NAME;
 		rbnbPortNumber = DEFAULT_RBNB_PORT_NUMBER;
+        
+        dataPanelManager = new DataPanelManager(this);
+        localChannelManager = new LocalChannelManager(this);
 		
 		requestIsMonitor = false;
 		
@@ -100,6 +108,14 @@ public class RBNBController implements Player, MetadataListener {
 
 		run();
 	}
+    
+    public DataPanelManager getDataPanelManager() {
+      return dataPanelManager;
+    }
+    
+    public LocalChannelManager getLocalChannelManager() {
+      return localChannelManager;
+    }
 	
 	private void run() {
 		new Thread(new Runnable() {
