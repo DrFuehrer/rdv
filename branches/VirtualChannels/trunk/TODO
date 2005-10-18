@@ -1,8 +1,0 @@
-1.3 - August 2005
--add command line options for location
--create a basic 3d viewer so we can feed it data from our Krypton
--import data into RBNB
--export selected channels to file
--export selected channels to repository
--load/save current state of viewer
--change layout of data panels via drag-n-drop of header
