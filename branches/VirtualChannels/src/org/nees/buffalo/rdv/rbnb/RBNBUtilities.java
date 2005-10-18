@@ -203,9 +203,15 @@ public final class RBNBUtilities {
       p = Pattern.compile("(\\D*)(\\d+)(\\D*)");  
     }
     
-    public int compare(Object o1, Object o2) {      
-      String s1 = ((ChannelTree.Node)o1).getName().toLowerCase();
-      String s2 = ((ChannelTree.Node)o2).getName().toLowerCase();
+    public int compare(Object o1, Object o2) {
+      String s1, s2;
+      if (o1 instanceof String && o2 instanceof String) {
+        s1 = (String)o1;
+        s2 = (String)o2;
+      } else {
+        s1 = ((ChannelTree.Node)o1).getName().toLowerCase();
+        s2 = ((ChannelTree.Node)o2).getName().toLowerCase();
+      }
       
       if (s1.equals(s2)) {
         return 0;  
@@ -247,5 +253,26 @@ public final class RBNBUtilities {
       mime = "application/octet-stream";
     }
     return mime;
+  }
+  
+  public static List getChannelList(ChannelTree ctree) {
+    return getChannelList(ctree, false);  
+  }
+  
+  public static List getChannelList(ChannelTree ctree, boolean showHiddenChannels) {
+    List list = new ArrayList();
+    
+    Iterator i = ctree.iterator();
+    while (i.hasNext()) {
+      ChannelTree.Node node = (ChannelTree.Node)i.next();
+      boolean isHidden = node.getFullName().startsWith("_");
+      if (node.getType() == ChannelTree.CHANNEL && (showHiddenChannels || !isHidden)) {
+        list.add(node.getFullName());
+      }
+    }
+
+    Collections.sort(list, new HumanComparator());
+    
+    return list;
   }
 }

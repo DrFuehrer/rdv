@@ -14,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -40,10 +41,12 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
+import org.nees.buffalo.rdv.data.LocalChannelManager;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 
 import com.jgoodies.looks.HeaderStyle;
@@ -63,6 +66,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private DataViewer dataViewer;
 	private RBNBController rbnb;
 	private DataPanelManager dataPanelManager;
+  private LocalChannelManager localChannelManager;
 	
  	private BusyDialog busyDialog;
 	
@@ -84,6 +88,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action fileAction;
  	private Action connectAction;
  	private Action disconnectAction;
+  private Action addChannelAction;
  	private Action importAction;
   private Action exportAction;
  	private Action exitAction;
@@ -118,12 +123,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Icon throbberStop;
   private Icon throbberAnim;
  		
-	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager) {
+	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb) {
 		super();
 		
 		this.dataViewer = dataViewer;
 		this.rbnb = rbnb;
-		this.dataPanelManager = dataPanelManager;
+		this.dataPanelManager = rbnb.getDataPanelManager();
+        this.localChannelManager = rbnb.getLocalChannelManager();
 		
 		busyDialog = null;
 		
@@ -208,6 +214,12 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				rbnb.disconnect();
  			}			
  		};
+        
+        addChannelAction = new DataViewerAction("Add Channel", "Add a local channel", KeyEvent.VK_A, "icons/add.gif") {
+            public void actionPerformed(ActionEvent ae) {
+              startLocalChannelWizard();
+            }           
+        };        
  		
  		importAction = new DataViewerAction("Import", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
  			public void actionPerformed(ActionEvent ae) {
@@ -378,7 +390,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem = new JMenuItem(disconnectAction);
  		fileMenu.add(menuItem);
  		
- 		fileMenu.addSeparator();	
+ 		fileMenu.addSeparator();
+    
+    menuItem = new JMenuItem(addChannelAction);
+    fileMenu.add(menuItem);
+    fileMenu.addSeparator();
  		
     menuItem = new JMenuItem(importAction);
  		fileMenu.add(menuItem);
@@ -776,4 +792,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private void stopThrobber() {
     throbber.setIcon(throbberStop);
   }  
+  
+  private void startLocalChannelWizard() {
+    new LocalChannelWizard(this, localChannelManager);
+  }
 }
