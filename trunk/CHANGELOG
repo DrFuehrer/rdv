@@ -27,6 +27,7 @@
 -Display channel list using smart sorting
 -Improve text data panel to have better formating and support more than one
  channel
+-Upgrade jlooks, fix mac ui bug
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

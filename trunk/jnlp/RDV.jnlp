@@ -17,9 +17,10 @@
 		<jar href="RDV.jar" main="true"/>
 		<jar href="commons-cli-1.0.jar"/>
 		<jar href="commons-logging.jar"/>
-		<jar href="jcommon-1.0.0-pre2.jar"/>
-		<jar href="jfreechart-1.0.0-pre2.jar"/>		
+		<jar href="jcommon-1.0.0-rc1.jar"/>
+		<jar href="jfreechart-1.0.0-rc1.jar"/>		
 		<jar href="jnt.FFT.jar"/>
+		<jar href="looks-1.3.2.jar"/>
 		<jar href="xercesImpl.jar"/>
 		<jar href="xml-apis.jar"/>
 		<jar href="rbnb.jar"/>		

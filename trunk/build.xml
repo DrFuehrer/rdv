@@ -84,7 +84,7 @@
 		  <zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 		  <zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>		  
 			<manifest>
-				<attribute name="Class-Path" value="lib/commons-cli-1.0.jar lib/commons-logging.jar lib/jcommon-1.0.0-pre2.jar lib/jfreechart-1.0.0-pre2.jar lib/jnt.FFT.jar lib/xercesImpl.jar lib/xml-apis.jar lib/rbnb.jar"/>
+				<attribute name="Class-Path" value="lib/commons-cli-1.0.jar lib/commons-logging.jar lib/jcommon-1.0.0-rc1.jar lib/jfreechart-1.0.0-rc1.jar lib/jnt.FFT.jar lib/log4j-1.2.8.jar lib/looks-1.3.2 lib/xercesImpl.jar lib/xml-apis.jar lib/rbnb.jar"/>
 				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
 			</manifest>
 		</jar>
