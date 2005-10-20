@@ -398,14 +398,6 @@ public class RBNBController implements Player, MetadataListener {
 		
 		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
 		
-		double loadLocation;
-		if (location == -1) {
-			//set initial location to end time for channel
-			loadLocation = RBNBUtilities.getEndTime(metaDataChannelMap, channelName);
-		} else {
-			loadLocation = location;
-		}
-		
 		switch (state) {
 			case STATE_STOPPED:
 				loadData(channelName);
@@ -429,9 +421,8 @@ public class RBNBController implements Player, MetadataListener {
 			String[] channelList = requestedChannels.GetChannelList();
 			for (int i=0; i<channelList.length; i++) {
 				if (!channelName.equals(channelList[i])) {
-					int channelIndex = -1;
 					try {
-						channelIndex = newRequestedChannels.Add(channelList[i]);
+						newRequestedChannels.Add(channelList[i]);
 					} catch (SAPIException e) {
 						log.error("Failed to remove to channel " + channelName + ".");
 						e.printStackTrace();
@@ -634,11 +625,7 @@ public class RBNBController implements Player, MetadataListener {
 	private void preFetchData(final double location, final double duration) {
 		preFetchChannelMap = null;
 		preFetchDone = false;
-		
-		log.debug("Pre-fetching data at location " + DataViewer.formatDate(location) + " for " + duration + " seconds.");
-		
-		final long preFetchStartTime = System.currentTimeMillis();
-		
+
 		new Thread(new Runnable() {
 			public void run() {
 				boolean requestStatus = false;
@@ -661,8 +648,6 @@ public class RBNBController implements Player, MetadataListener {
 					preFetchChannelMap = null;
 				}
 					
-				//log.debug("Pre-fetching data took " + (System.currentTimeMillis() - preFetchStartTime)/1000d + " seconds.");
-				
 				synchronized(preFetchLock) {
 					preFetchDone = true;
 					preFetchLock.notify();
