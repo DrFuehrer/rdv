@@ -24,9 +24,9 @@
  * SOFTWARE.
  * 
  * $Name$
- * $Revision$
- * $Date$
- * $Author$
+ * $Revision: 313 $
+ * $Date: 2005-10-19 22:42:45 -0400 (Wed, 19 Oct 2005) $
+ * $Author: jphanley $
  */
 
 package org.nees.buffalo.rdv;
