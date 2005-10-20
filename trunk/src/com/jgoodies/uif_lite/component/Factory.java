@@ -46,7 +46,7 @@ import javax.swing.JSplitPane;
  * It consists only of static methods to create frequently used components.
  *
  * @author Karsten Lentzsch
- * @version $Revision: 1.4 $
+ * @version $Revision$
  */
 
 public final class Factory {
