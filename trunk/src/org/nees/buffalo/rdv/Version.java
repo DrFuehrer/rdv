@@ -65,7 +65,7 @@ public final class Version {
 	 *
 	 * @since  1.2
 	 */
-	public static final String build = " $Revision";
+	public static final String build = " svn";
 	
 	/**
 	 * This class can not be instantiated and it's constructor
