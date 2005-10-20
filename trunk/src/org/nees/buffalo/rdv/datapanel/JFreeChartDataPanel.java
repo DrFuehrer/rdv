@@ -2,6 +2,9 @@ package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.swing.JComponent;
@@ -13,19 +16,24 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.title.TextTitle;
+import org.jfree.chart.title.Title;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.nees.buffalo.rdv.datapanel.AbstractDataPanel.ChannelTitle;
+import org.jfree.ui.VerticalAlignment;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
@@ -46,6 +54,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	final boolean xyMode;
 	
 	int lastXYDataIndex;
+    
+    static Title emptyTitle = new TextTitle(" ");
 
 	public JFreeChartDataPanel() {
 		this(false);
@@ -78,7 +88,45 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		
 		chart.setAntiAlias(false);
 		chartPanel = new ChartPanel(chart, true);
-				
+        chartPanel.addMouseListener(new MouseAdapter() {
+          public void mouseEntered(MouseEvent e) {
+            chartPanel.setHorizontalAxisTrace(true);
+            chartPanel.setVerticalAxisTrace(true);
+          }
+          public void mouseExited(MouseEvent e) {
+            chartPanel.setHorizontalAxisTrace(false);
+            chartPanel.setVerticalAxisTrace(false);
+            chartPanel.repaint();
+          }
+        });
+
+        /* ArrayList subTitles = new ArrayList(1);
+        subTitles.add(emptyTitle);
+        chart.setSubtitles(subTitles);
+
+        chartPanel.addChartMouseListener(new ChartMouseListener() {
+          public void chartMouseClicked(ChartMouseEvent e) {}
+          public void chartMouseMoved(ChartMouseEvent e) {
+            Title subTitle;
+            if (e.getEntity() != null) {
+              XYItemEntity xyEntity = (XYItemEntity)e.getEntity();
+              double y = xyEntity.getDataset().getYValue(xyEntity.getSeriesIndex(), xyEntity.getItem());              
+              if (xyMode) {
+                double x = xyEntity.getDataset().getXValue(xyEntity.getSeriesIndex(), xyEntity.getItem());  
+                subTitle = new TextTitle(x + ", " + y);
+              } else {
+                String channelName = (String)((TimeSeriesCollection)dataCollection).getSeries(xyEntity.getSeriesIndex()).getKey();
+                subTitle = new TextTitle(channelName + ": " + y);
+              }
+            } else {
+              subTitle = emptyTitle;
+            }
+            ArrayList subTitles = new ArrayList(1);
+            subTitles.add(subTitle);
+            chart.setSubtitles(subTitles);
+          }         
+        }); */
+
 		chartPanelPanel = new JPanel();
 		chartPanelPanel.setLayout(new BorderLayout());
 		chartPanelPanel.add(chartPanel, BorderLayout.CENTER);
