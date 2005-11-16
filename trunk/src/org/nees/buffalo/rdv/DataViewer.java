@@ -95,10 +95,10 @@ public class DataViewer {
 		this.timeScale = timeScale;
 	}
 	
-	public void initialize() {
+	public void initialize(boolean isApplet) {
 		rbnb = new RBNBController(location, playbackRate, timeScale);
 		dataPanelManager = new DataPanelManager(rbnb);
-		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager);		
+		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);		
 	}
 
 	public void exit() {
@@ -317,7 +317,7 @@ public class DataViewer {
 			dataViewer.setTimeScale(timeScale);
 		}
 		
-		dataViewer.initialize();
+		dataViewer.initialize(false);
 		
 		RBNBController rbnbController = dataViewer.getRBNBController();
 				

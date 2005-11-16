@@ -145,7 +145,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Icon throbberStop;
   private Icon throbberAnim;
  		
-	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager) {
+	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager, boolean isApplet) {
 		super();
 		
 		this.dataViewer = dataViewer;
@@ -154,25 +154,27 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		busyDialog = null;
 		
-		initFrame();
+		initFrame(isApplet);
 	}
 	
-	private void initFrame() {
+	private void initFrame(boolean isApplet) {
 		frame = this;
-		
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				dataViewer.exit();
-			}
-		});
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-	
-		frame.getContentPane().setLayout(new BorderLayout());
-    
-    frame.setBounds(0, 0, 800, 600);
 
-		frame.setTitle("RDV");
-		
+		if (!isApplet) {
+			frame.addWindowListener(new WindowAdapter() {
+				public void windowClosing(WindowEvent e) {
+					dataViewer.exit();
+				}
+			});
+			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+			frame.getContentPane().setLayout(new BorderLayout());
+
+			frame.setBounds(0, 0, 800, 600);
+
+			frame.setTitle("RDV");
+		}
+
 		c = new GridBagConstraints();
 
  		initActions();	
@@ -213,7 +215,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	
   	rbnb.addConnectionListener(this);
 
- 		frame.setVisible(true);
+		if (!isApplet) { 
+			frame.setVisible(true);
+		}
 	}
   	
  	private void initActions() {

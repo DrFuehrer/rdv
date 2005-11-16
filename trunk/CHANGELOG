@@ -29,6 +29,8 @@
  channel
 -Upgrade jlooks, fix mac ui bug
 -Add initial trace implementation for charts
+-Add support for child RBNB servers
+-Add applet support (thanks to Beth Kirschner)
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
