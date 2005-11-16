@@ -38,24 +38,28 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
+import org.nees.buffalo.rdv.rbnb.ChannelManager;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
-import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 
 /**
  * @author Jason P. Hanley
  */
 public class MetadataPanel extends JPanel implements MetadataListener, ChannelSelectionListener {
-
+  
+  static Log log = LogFactory.getLog(ChannelManager.class.getName());
+  
   private RBNBController rbnb;
   
-  private ChannelMap cmap;
+  //private ChannelMap cmap;
   private ChannelTree ctree;
   
   private String channel;
@@ -67,7 +71,6 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
   public MetadataPanel(RBNBController rbnb) {
     this.rbnb = rbnb;
     
-    cmap = null;
     ctree = null;
     
     channel = null;
@@ -98,7 +101,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
   private void updatePanel() {
     clearPanel();
     
-    if (channel == null || cmap == null) {
+    if (channel == null || ctree == null) {
       return;
     } else if (channel == ROOT_CHANNEL) {
       StringBuffer s = new StringBuffer();
@@ -113,26 +116,33 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
     } else {
       StringBuffer s = new StringBuffer();
       ChannelTree.Node node = ctree.findNode(channel);
-      node = ctree.findNode(node.getFullName());
-      String channelName = node.getFullName();
       if (node.getType() == ChannelTree.SOURCE) {
-        s.append("<strong>" + channelName + "</strong><br>");        
+        s.append("<strong>" + channel + "</strong><br>");        
         s.append("<em>Data Source</em>");
         
         s.append("<p style=\"font-size: 10px\">" + children + " Channel");
         if (children == 0 || children > 1) {
           s.append("s");
         }
+        s.append("</p>");
+      } else if (node.getType() == ChannelTree.SERVER) {
+        s.append("<strong>" + channel + "</strong><br>");        
+        s.append("<em>Child Server</em>");
+        
+        s.append("<p style=\"font-size: 10px\">" + children + " Source");
+        if (children == 0 || children > 1) {
+          s.append("s");
+        }
         s.append("</p>");        
       } else if (node.getType() == ChannelTree.CHANNEL) {
-        int channelIndex = cmap.GetIndex(channelName);
         String mime = RBNBUtilities.fixMime(node.getMime(), node.getFullName());
-        double start = cmap.GetTimeStart(channelIndex);
-        double duration = cmap.GetTimeDuration(channelIndex);
+        double start = node.getStart();
+        double duration = node.getDuration();
         int size = node.getSize();
-        String unit = ((Channel)rbnb.getChannel(channelName)).getUnit();
+        Channel channelMetadata = (Channel)rbnb.getChannel(channel);
+        String unit = channelMetadata.getMetadata("units");
 
-        s.append("<strong>" + channelName + "</strong>");
+        s.append("<strong>" + channel + "</strong>");
         if (unit != null) {
           s.append(" (" + unit + ")");
         }
@@ -141,19 +151,43 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
           s.append("<br>");
           if (mime.equals("application/octet-stream")) {
             s.append("<em>Numeric Data</em>");
+            String sampleRate = channelMetadata.getMetadata("samplerate");
+            if (sampleRate != null) {
+              s.append("<br>" + sampleRate +" Hz");
+            }
           } else if (mime.equals("image/jpeg")) {
             s.append("<em>JPEG Images</em>");
+            String width = channelMetadata.getMetadata("width");
+            String height = channelMetadata.getMetadata("height");
+            if (width != null && height != null) {
+              s.append("<br>" + width + " x " + height);
+              String sampleRate = channelMetadata.getMetadata("framerate");
+              if (sampleRate != null) {
+                s.append(", " + sampleRate + " fps");
+              }
+            }
           } else if (mime.equals("video/jpeg")) {
-            s.append("<em>JPEG Video</em>");
+            s.append("<em>JPEG Video</em>");            
           } else if (mime.equals("text/plain")) {
             s.append("<em>Text</em>");
+          } else {
+            s.append("<em>" + mime + "</em>");
           }
         }
         
-        s.append("<p style=\"font-size: 10px\">Started " + DataViewer.formatDateSmart(start) + "<br>");
-        s.append("Lasts " + DataViewer.formatSeconds(duration) + "<br>");
+        s.append("<p style=\"font-size: 10px\">Begins " + DataViewer.formatDateSmart(start) + "<br>");
+        s.append("Lasts " + DataViewer.formatSeconds(duration));
         if (size != -1) {
-          s.append("Size: " + DataViewer.formatBytes(size));
+          s.append("<br>" + DataViewer.formatBytes(size));
+        }
+        if (mime != null) {
+          if (mime.equals("application/octet-stream")) {
+            String scale = channelMetadata.getMetadata("scale");
+            String offset = channelMetadata.getMetadata("offset");
+            if (scale != null && offset != null) {
+              s.append("<br>scale=" + scale + ", offset=" + offset);
+            }
+          }
         }
         s.append("</p>");
       }
@@ -167,9 +201,8 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
     infoTextArea.setText("");
   }
 
-  public void channelListUpdated(ChannelMap cmap) {
-    this.cmap = cmap;
-    ctree = ChannelTree.createFromChannelMap(cmap);
+  public void channelTreeUpdated(ChannelTree ctree) {
+    this.ctree = ctree;
     
     updatePanel();
   }

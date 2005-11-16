@@ -214,8 +214,9 @@ public final class RBNBUtilities {
       ChannelTree.NodeTypeEnum nodeType = node.getType();
       if ((showHiddenChildren || !isHidden) &&
           (nodeType == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER ||
-           nodeType == ChannelTree.SERVER || nodeType == ChannelTree.SOURCE)) {
-        list.add(node);
+           nodeType == ChannelTree.SERVER || nodeType == ChannelTree.SOURCE ||
+           nodeType == ChannelTree.PLUGIN)) {
+        list.add(node);       
       }
     }
     

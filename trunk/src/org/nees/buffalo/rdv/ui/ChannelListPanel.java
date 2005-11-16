@@ -99,7 +99,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   private ApplicationFrame frame;
 	
 	private ChannelTree ctree;
-	private ChannelMap cmap;
 	
 	private Object root;
   private final static Object EMPTY_ROOT = new Object();
@@ -124,8 +123,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		
 		root = EMPTY_ROOT;
     
-		cmap = new ChannelMap();
-		ctree = ChannelTree.createFromChannelMap(cmap);
+		ctree = ChannelTree.EMPTY_TREE;
     
     treeModelListeners = new ArrayList();
     channelSelectionListeners = new ArrayList();
@@ -207,11 +205,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     return channelToolBar;
   }
   
-	public void channelListUpdated(ChannelMap newChannelMap) {
-		ChannelMap oldChannelMap = cmap;
+	public void channelTreeUpdated(ChannelTree newChannelTree) {
  		ChannelTree oldChannelTree = ctree;
- 		cmap = newChannelMap;
- 		ctree = ChannelTree.createFromChannelMap(cmap);
+ 		ctree = newChannelTree;
  		
  		if (!root.equals(rbnb.getRBNBConnectionString())) {
  				root = rbnb.getRBNBConnectionString();
@@ -222,15 +218,14 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			
 			boolean channelListChanged = false;
 			
-			String[] newChannelList = cmap.GetChannelList();
-			String[] oldChannelList = oldChannelMap.GetChannelList();
-	
 			//find channels added
 			Iterator newIterator = ctree.iterator();
 			while (newIterator.hasNext()) {
 				ChannelTree.Node node = (ChannelTree.Node)newIterator.next();
 				NodeTypeEnum type = node.getType();
-				if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
+				if (type == ChannelTree.CHANNEL || type == ChannelTree.FOLDER ||
+                    type == ChannelTree.SERVER || type == ChannelTree.SOURCE ||
+                    type == ChannelTree.PLUGIN) {
 					if (oldChannelTree.findNode(node.getFullName()) == null) {
 						log.info("Found new node: " + node.getFullName() + ".");
 						channelListChanged = true;
@@ -245,7 +240,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 				while (oldIterator.hasNext()) {
 					ChannelTree.Node node = (ChannelTree.Node)oldIterator.next();
 					NodeTypeEnum type = node.getType();
-					if (type == ChannelTree.CHANNEL || type == ChannelTree.SOURCE) {
+					if (type == ChannelTree.CHANNEL || type == ChannelTree.FOLDER ||
+                        type == ChannelTree.SERVER || type == ChannelTree.SOURCE ||
+                        type == ChannelTree.PLUGIN) {
 						if (ctree.findNode(node.getFullName()) == null) {
 							log.info("Found deleted node: " + node.getFullName() + ".");
 							channelListChanged = true;
@@ -502,7 +499,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     tree.setSelectionPath(treePath);
     if (treePath != null) {
       JPopupMenu popup = null;
-      JMenuItem menuItem;
       
       Object o = treePath.getLastPathComponent();
       if (o == root) {
@@ -673,7 +669,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         String mime = RBNBUtilities.fixMime(node.getMime(), node.getFullName());
         
 				setText(node.getName());
-        if (type == ChannelTree.FOLDER || type == ChannelTree.SOURCE) {
+        if (type == ChannelTree.FOLDER || type == ChannelTree.SOURCE ||
+            type == ChannelTree.SERVER || type == ChannelTree.PLUGIN) {
           if (expanded) {
             setIcon(DataViewer.getIcon("icons/folder_open.gif"));
           } else {

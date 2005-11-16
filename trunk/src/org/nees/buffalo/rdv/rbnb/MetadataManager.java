@@ -33,6 +33,7 @@ package org.nees.buffalo.rdv.rbnb;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,185 +59,133 @@ public class MetadataManager {
   private ArrayList metadataListeners;
   private boolean updatingMetadata;
   
-  private HashMap units;
+  private HashMap channels;
   
   private ChannelTree ctree;
     
-	public MetadataManager(RBNBController rbnbController) {
+  public MetadataManager(RBNBController rbnbController) {
     this.rbnbController = rbnbController;
 
-		metadataListeners =  new ArrayList();
+    metadataListeners =  new ArrayList();
     addMetadataListener(rbnbController);
         
-		updatingMetadata = false;
+    updatingMetadata = false;
 		
-		units = new HashMap();
+    channels = new HashMap();
 		
-		ctree = ChannelTree.EMPTY_TREE;
-	}   
+    ctree = ChannelTree.EMPTY_TREE;
+  }   
 	
-	public boolean updateMetadataBackground() {
-		if (updatingMetadata) return true;
-		
-		new Thread(new Runnable() {
-			public void run() {
-				updateMetadata();
-			}
-		}, "MetadataManager").start();    
-		
-		return true;
-	}
-	
-	public boolean updateMetadata() {
-		if (updatingMetadata) return true;
-		
-		updatingMetadata = true;
-		
-		log.info("Updating channel listing.");
-		
-		Sink metadataSink = new Sink();
-		try {
-			metadataSink.OpenRBNBConnection(rbnbController.getRBNBConnectionString(), "RDVMetadata");
-		} catch (SAPIException e) {
-			log.error("Failed to connect to RBNB server.");
-			metadataSink.CloseRBNBConnection();
-			updatingMetadata = false;
-			return false;   
-		}
-		
-		try {
-			metadataSink.RequestRegistration();
-		} catch (SAPIException e) {
-			log.error("Failed to request channel listing.");
-			metadataSink.CloseRBNBConnection();
-			updatingMetadata = false;
-			return false;
-		}
-		
-		ChannelMap cmap = null;
-		try {
-			cmap = metadataSink.Fetch(0);
-		} catch (SAPIException e) {
-			log.error("Failed to fetch list of available channels.");
-			metadataSink.CloseRBNBConnection();
-			updatingMetadata = false;
-			return false;
-		}
-		
-		log.info("Received list of available channels.");
-		
-		//create metadata channel tree
-		ctree = ChannelTree.createFromChannelMap(cmap);
-		
-		//subscribe to all units channels
-		ChannelMap unitsChannelMap = new ChannelMap();
-		try {
-			unitsChannelMap.Add("_Units/*");
-		} catch (SAPIException e) {
-			e.printStackTrace();
-		}
-		
-		//get the latest unit information
-		try {
-			metadataSink.Request(unitsChannelMap, 0, 0, "newest");
-		} catch (SAPIException e) {
-			e.printStackTrace();
-		}
-		
-		//fetch the unit channel data
-		try {
-			unitsChannelMap = metadataSink.Fetch(-1);
-		} catch (SAPIException e) {
-			e.printStackTrace();
-		}
-		
-		metadataSink.CloseRBNBConnection();
-		
-		String[] channels = unitsChannelMap.GetChannelList();
-		for (int i=0; i<channels.length; i++) {
-			String channelName = channels[i];
-			String parent = channelName.substring(channelName.lastIndexOf("/")+1);
-			int channelIndex = unitsChannelMap.GetIndex(channelName);
-			String[] data = unitsChannelMap.GetDataAsString(channelIndex);
-			String newestData = data[data.length-1];
-			String[] channelTokens = newestData.split("\t|,");
-			for (int j=0; j<channelTokens.length; j++) {
-				String[] tokens = channelTokens[j].split("=");
-				if (tokens.length == 2) {
-					String channel = parent + "/" + tokens[0].trim();
-					String unit = tokens[1].trim();
-					units.put(channel, unit);
-                    log.info("Set unit (" + unit + ") for channel " + channel + "(the old way).");
-				} else {
-					log.error("Invalid unit string: " + channelTokens[j] + ".");
-				}
-			}
-		}
-        
-        //get units from channel metadata
-        for (int i=0; i<cmap.NumberOfChannels(); i++) {
-          String userMetadata = cmap.GetUserInfo(i);
-          if (userMetadata.length() > 0) {
-            String channelName = cmap.GetName(i);
-            log.info("User metadata for " + channelName + ": " + userMetadata + ".");
-            String[] userMetadataTokens = userMetadata.split("\t|,");
-            for (int j=0; j<userMetadataTokens.length; j++) {
-              String[] tokens = userMetadataTokens[j].split("=");
-              if (tokens.length == 2) {
-                if (tokens[0].equals("units")) {
-                  String unit = tokens[1].trim();
-                  units.put(channelName, unit);
-                  log.info("Set unit (" + unit + ") for channel " + channelName + ".");
-                } else {
-                  log.info("Received unknown user metadata element for channel " + channelName + ": " + userMetadataTokens[j]);
-                }
-              } else {
-                log.warn("Invalid user metadata element: " + userMetadataTokens[j] + ".");
-              }
-            }            
-          }
-        }        
+  public boolean updateMetadataBackground() {
+    if (updatingMetadata) return true;
+    
+    new Thread(new Runnable() {
+      public void run() {
+        updateMetadata();
+      }
+    }, "MetadataManager").start();
 
-		fireMetadataUpdated(cmap);
+    return true;
+  }
+	
+  public synchronized boolean updateMetadata() {
+    if (updatingMetadata) return true;
+
+    updatingMetadata = true;
+
+    log.info("Updating channel listing.");
+
+    Sink metadataSink = new Sink();
+    try {
+      metadataSink.OpenRBNBConnection(rbnbController.getRBNBConnectionString(), "RDVMetadata");
+    } catch (SAPIException e) {
+      log.error("Failed to connect to RBNB server.");
+      metadataSink.CloseRBNBConnection();
+      updatingMetadata = false;
+      return false;   
+    }
+
+    //clear channel metadata objects
+    channels.clear();
+
+    //create metadata channel tree
+    ctree = getChannelTree(metadataSink);
+
+    metadataSink.CloseRBNBConnection();
+
+    fireMetadataUpdated(ctree);
 		
-		updatingMetadata = false;
+    updatingMetadata = false;
 		
-		return true;
-	}
+    return true;
+  }
+    
+  private ChannelTree getChannelTree(Sink sink) {
+    return getChannelTree(sink, null);
+  }
+
+  private ChannelTree getChannelTree(Sink sink, String path) {
+    ChannelTree ctree = ChannelTree.EMPTY_TREE;
+    try {
+      ChannelMap cmap = new ChannelMap();
+      if (path != null) {
+        cmap.Add(path + "/...");
+      }
+      sink.RequestRegistration(cmap);
+
+      cmap = sink.Fetch(-1, cmap);
+      ctree = ChannelTree.createFromChannelMap(cmap);
+      
+      //store user metadata in channel objects
+      String[] channelList = cmap.GetChannelList();
+      for (int i=0; i<channelList.length; i++) {
+        int channelIndex = cmap.GetIndex(channelList[i]);
+        if (channelIndex != -1) {
+          ChannelTree.Node node = ctree.findNode(channelList[i]);
+          String userMetadata = cmap.GetUserInfo(channelIndex);
+          Channel channel = new Channel(node, userMetadata);
+          channels.put(channelList[i], channel);
+        }            
+      }
+      
+      // look for child servers and get their channels
+      Iterator it = ctree.iterator();
+      while (it.hasNext()) {
+        ChannelTree.Node node = (ChannelTree.Node)it.next();
+        if (node.getType() == ChannelTree.SERVER &&
+           (path == null || !path.startsWith(node.getFullName()))) {
+          ChannelTree childChannelTree = getChannelTree(sink, node.getFullName());
+          ctree = childChannelTree.merge(ctree);
+        }
+      }
+    
+    } catch (SAPIException e) {
+      log.error("Error retrieving metadata: " + e.getMessage());
+    }
+    return ctree;
+  }
   
-  public ChannelTree getMetadataChannelTree() {
+  public synchronized ChannelTree getMetadataChannelTree() {
     return ctree;
   }
 	
-	public Channel getChannel(String channelName) {
-		ChannelTree.Node node = ctree.findNode(channelName);
-		if (node != null) {
-			String mime = node.getMime();
-			String unit = getUnit(channelName);
-			Channel channel = new Channel(channelName, mime, unit);
-			return channel;
-		} else {
-			return null;
-		}
-	}   
-	
-	public String getUnit(String channel) {
-		return (String)units.get(channel);
-	}   
-	
-	public void addMetadataListener(MetadataListener listener) {
-		metadataListeners.add(listener);
-	}
-	
-	public void removeMetadataListener(MetadataListener listener) {
-		metadataListeners.remove(listener);
-	}
-	
-	private void fireMetadataUpdated(ChannelMap channelMap) {
-		MetadataListener listener;
-		for (int i=0; i<metadataListeners.size(); i++) {
-			listener = (MetadataListener)metadataListeners.get(i);
-			listener.channelListUpdated(channelMap);
-		}
-	}
+  public synchronized Channel getChannel(String channelName) {
+    return (Channel)channels.get(channelName);
+  }   
+
+  public void addMetadataListener(MetadataListener listener) {
+    metadataListeners.add(listener);
+  }
+
+  public void removeMetadataListener(MetadataListener listener) {
+    metadataListeners.remove(listener);
+  }
+
+  private void fireMetadataUpdated(ChannelTree channelTree) {
+    MetadataListener listener;
+    for (int i=0; i<metadataListeners.size(); i++) {
+      listener = (MetadataListener)metadataListeners.get(i);
+      listener.channelTreeUpdated(channelTree);
+    }
+  }
 }

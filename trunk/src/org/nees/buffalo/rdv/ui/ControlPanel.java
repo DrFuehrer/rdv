@@ -39,6 +39,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -58,6 +59,7 @@ import org.nees.buffalo.rdv.rbnb.TimeListener;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
+import com.rbnb.sapi.ChannelTree;
 
 /**
  * @author Jason P. Hanley
@@ -91,7 +93,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	
 	int playerState;
 	
-	ChannelMap channelMap;
+	ChannelTree ctree;
 
 	public ControlPanel(RBNBController rbnbController) {
 		super();
@@ -341,8 +343,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		log.info("Initialized control panel.");
 	}
 	
-	public void channelListUpdated(ChannelMap channelMap) {
-		this.channelMap = channelMap;
+	public void channelTreeUpdated(ChannelTree ctree) {
+		this.ctree = ctree;
 		
 		updateTimeBoundaries();
 		
@@ -353,13 +355,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		double startTime = -1;
 		double endTime = -1;
 		
-		String[] channels = channelMap.GetChannelList();
-		for (int i=0; i<channels.length; i++) {
-			String channelName = channels[i];
+		Iterator it = ctree.iterator();
+		while (it.hasNext()) {
+            ChannelTree.Node node = (ChannelTree.Node)it.next();
+			String channelName = node.getFullName();
 			if (rbnbController.isSubscribed(channelName)) {
-				int channelIndex = channelMap.GetIndex(channelName);
-				double channelStart = channelMap.GetTimeStart(channelIndex);
-				double channelDuration = channelMap.GetTimeDuration(channelIndex);
+				double channelStart = node.getStart();
+				double channelDuration = node.getDuration();
 				double channelEnd = channelStart+channelDuration;
 				if (startTime == -1 || channelStart < startTime) {
 					startTime = channelStart;

@@ -31,6 +31,12 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+
+import com.rbnb.sapi.ChannelTree;
+
 /**
  * A class to describe a channel containing data and the metadata associated with it.
  * 
@@ -44,39 +50,36 @@ public class Channel {
 	 */
 	String name;
 	
-	/**
-	 * The mime type of the data contained in the channel
-	 */
-	String mimeType;
-	
-	/**
-	 * The unit of measurement used for the data in the channel
-	 */
-	String unit;
-	
-	/**
-	 * Construct a channel with a name and no associated metadata.
-	 * 
-	 * @param name  The full name of the channel
-	 * @since       1.1
-	 */
-	public Channel(String name) {
-		this(name, null, null);
-	}
+    HashMap metadata;
 	
 	/**
 	 * Construct a channel with a name and assigning the mime type and
 	 * unit as metadata.
 	 * 
-	 * @param name      The full name of the channel
-	 * @param mimeType  The mime type of the data contained in the channel
-	 * @param unit      The unit of measurement used for the data in the channel
-	 * @since           1.1
+	 * @param node          The channel tree metadata node
+	 * @param userMetadata  The user metadata string (tab or comma delimited)
+	 * @since               1.3
 	 */
-	public Channel(String name, String mimeType, String unit) {
-		this.name = name;
-		this.mimeType = mimeType;
-		this.unit = unit;
+	public Channel(ChannelTree.Node node, String userMetadata) {
+		this.name = node.getFullName();
+        
+        metadata = new HashMap();
+        
+        metadata.put("mime", node.getMime());
+        metadata.put("start", Double.toString(node.getStart()));
+        metadata.put("duration", Double.toString(node.getDuration()));
+        metadata.put("size", Integer.toString(node.getSize()));
+        
+        if (userMetadata.length() > 0) {
+          String[] userMetadataTokens = userMetadata.split("\t|,");
+          for (int j=0; j<userMetadataTokens.length; j++) {
+            String[] tokens = userMetadataTokens[j].split("=");
+            if (tokens.length == 2) {
+              metadata.put(tokens[0].trim(), tokens[1].trim());
+            }
+          }
+        }
+
 	}
 	
 	/**
@@ -113,23 +116,36 @@ public class Channel {
 		return name.substring(0, name.lastIndexOf("/"));
 	}
 	
-	/**
-	 * Get the mime type of the data contained in the channel.
-	 * 
-	 * @return  the mime type for the channel
-	 * @since   1.1
-	 */
-	public String getMimeType() {
-		return mimeType;
-	}
-	
-	/**
-	 * Get the unit of measurement used for the data in the channel.
-	 * 
-	 * @return  the unit for the channel data
-	 * @since   1.1
-	 */
-	public String getUnit() {
-		return unit;
-	}
+    /**
+     * Return the metatadata string associated with the given key.
+     * 
+     * @param key  the key corresponding to the desired metadata string
+     * @return     the metadata string or null if the key was not found
+     * @since      1.3
+     */
+    public String getMetadata(String key) {
+      return (String)metadata.get(key);
+    }
+    
+    /**
+     * Return a string with the channel name and all metadata.
+     * 
+     * @return  a string representation of the channel and its metadata
+     */
+    public String toString() {
+      StringBuilder string = new StringBuilder(name);
+      if (metadata.size() > 0) {
+        string.append(": ");
+        Set keys = metadata.keySet();
+        Iterator it = keys.iterator();
+        while (it.hasNext()) {
+          String key = (String)it.next();
+          string.append(key + "=" + metadata.get(key));
+          if (it.hasNext()) {
+            string.append(", ");
+          }
+        }
+      }
+      return string.toString();
+    }
 }

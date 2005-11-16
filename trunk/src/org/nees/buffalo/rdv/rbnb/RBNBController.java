@@ -32,6 +32,7 @@
 package org.nees.buffalo.rdv.rbnb;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
@@ -39,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 
 import com.rbnb.sapi.ChannelMap;
+import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
 
@@ -64,7 +66,7 @@ public class RBNBController implements Player, MetadataListener {
 	private boolean requestIsMonitor;	
 	
 	private ChannelMap requestedChannels;
-  private ChannelMap metaDataChannelMap;
+  private ChannelTree metaDataChannelTree;
 
 	private ChannelManager channelManager;
   private MetadataManager metadataManager;
@@ -116,7 +118,7 @@ public class RBNBController implements Player, MetadataListener {
 		this.timeScale = timeScale;
 
     requestedChannels = new ChannelMap();
-    metaDataChannelMap = new ChannelMap();
+    metaDataChannelTree = ChannelTree.EMPTY_TREE;
 
 		channelManager = new ChannelManager();
     metadataManager = new MetadataManager(this);
@@ -461,7 +463,7 @@ public class RBNBController implements Player, MetadataListener {
 		}
 		
 		double requestTimeScale;
-		if (isVideo(metaDataChannelMap, channelName)) {
+		if (isVideo(metaDataChannelTree, channelName)) {
 			requestTimeScale = 0;
 		} else {
 			requestTimeScale = timeScale;
@@ -492,7 +494,7 @@ public class RBNBController implements Player, MetadataListener {
 		for (int i=0; i<allSubscribedChannels.length; i++) {
 			String channelName = allSubscribedChannels[i];
 			try {
-				if (isVideo(metaDataChannelMap, channelName)) {
+				if (isVideo(metaDataChannelTree, channelName)) {
 					imageChannels.Add(channelName);
 				} else {
 					otherChannels.Add(channelName);
@@ -579,7 +581,7 @@ public class RBNBController implements Player, MetadataListener {
 		String[] channelList = getmap.GetChannelList();
 
 		//stop if no data in fetch and past end time, most likely end of data
- 		if (channelList.length == 0 && !moreData(requestedChannels.GetChannelList(), metaDataChannelMap, location)) {
+ 		if (channelList.length == 0 && !moreData(requestedChannels.GetChannelList(), metaDataChannelTree, location)) {
 			log.warn("Received no data. Assuming end of channel.");
 			changeStateSafe(STATE_STOPPED);
 			return;
@@ -922,12 +924,14 @@ public class RBNBController implements Player, MetadataListener {
 	
 	// Utility (Static) Methods
 	
-	private static boolean moreData(String[] channels, ChannelMap metaDataChannelMap, double time) {
+	private static boolean moreData(String[] channels, ChannelTree ctree, double time) {
 		double endTime = -1;
 		
-		for (int i=0; i<channels.length; i++) {
-			String channelName = channels[i];
-			double channelEndTime = RBNBUtilities.getEndTime(metaDataChannelMap, channelName);
+        Iterator it = ctree.iterator();
+		while (it.hasNext()) {
+            ChannelTree.Node node = (ChannelTree.Node)it.next();
+			String channelName = node.getFullName();
+			double channelEndTime = node.getStart() + node.getDuration();
 			if (channelEndTime != -1) {
 				endTime = Math.max(endTime, channelEndTime);
 			}
@@ -940,21 +944,21 @@ public class RBNBController implements Player, MetadataListener {
 		}
 	}
 
-	private static boolean isVideo(ChannelMap channelMap, String channelName) {
+	private static boolean isVideo(ChannelTree channelTree, String channelName) {
 		if (channelName == null) {
 			log.error("Channel name is null for. Can't determine if is video.");
 			return false;
-		} else if (channelMap == null) {
+		} else if (channelTree == null) {
 			log.warn("Haven't received metadata yet, can't determine channel type.");
 			return false;
 		}
 		
-		int channelIndex = channelMap.GetIndex(channelName);
-		if (channelIndex == -1) {
+		ChannelTree.Node node = channelTree.findNode(channelName);
+		if (node == null) {
 			log.error("Unable to find channel in metadata.");
 			return false;
 		} else {
-			String mime = channelMap.GetMime(channelIndex);
+			String mime = node.getMime();
 			if (mime != null && mime.equals("image/jpeg")) {
 				return true;
 			} else if (channelName.endsWith(".jpg")){
@@ -1237,8 +1241,8 @@ public class RBNBController implements Player, MetadataListener {
     metadataManager.updateMetadataBackground(); 
   }
   
-  public void channelListUpdated(ChannelMap channelMap) {
-    metaDataChannelMap = channelMap;
+  public void channelTreeUpdated(ChannelTree ctree) {
+    metaDataChannelTree = ctree;
   }  
 	
 	//Public Static Methods

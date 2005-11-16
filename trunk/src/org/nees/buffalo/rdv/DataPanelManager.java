@@ -201,7 +201,7 @@ public class DataPanelManager {
     
     String mime = null;
     if (channel != null) {
-      mime = channel.getMimeType();
+      mime = channel.getMetadata("mime");
     }
     mime = RBNBUtilities.fixMime(mime, channelName);
     
@@ -231,7 +231,7 @@ public class DataPanelManager {
     Channel channel = rbnbController.getChannel(channelName);
     String mime = null;
     if (channel != null) {
-      mime = channel.getMimeType();
+      mime = channel.getMetadata("mime");
     }
 
     mime = RBNBUtilities.fixMime(mime, channelName);

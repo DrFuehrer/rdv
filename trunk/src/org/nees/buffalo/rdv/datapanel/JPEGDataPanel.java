@@ -108,7 +108,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
 	
 	private boolean isChannelSupported(String channelName) {
 		Channel channel = rbnbController.getChannel(channelName);
-		String mimeType = channel.getMimeType();
+		String mimeType = channel.getMetadata("mime");
     
     //make broken apps work
     if (mimeType == null && channelName.endsWith(".jpg")) {

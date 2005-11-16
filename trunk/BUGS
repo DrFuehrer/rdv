@@ -19,3 +19,16 @@ Development
 -Snapshot doesn't work for time series data panel.
 -When the jfreechart data panels are unpinned, they don't always show the icons
  with a mouseover.
+-Either make this not happen or handle these more gracefully. Currently we get
+ stuck in RT mode.
+ [java] 2005-10-23 11:04:43,972 [RBNB        ] INFO  ees.buffalo.rdv.rbnb.RBNBController  - Transitioned from state stopped to real time.
+ [java] Exception in thread "RBNB" java.lang.IllegalStateException: Need an active request to be able to fetch data.
+ [java]     at com.rbnb.api.bS.fetch(SourceFile:288)
+ [java]     at com.rbnb.sapi.Sink.Fetch(SourceFile:1061)
+ [java]     at com.rbnb.sapi.Sink.Fetch(SourceFile:1089)
+ [java]     at org.nees.buffalo.rdv.rbnb.RBNBController.updateDataMonitoring(RBNBController.java:730)
+ [java]     at org.nees.buffalo.rdv.rbnb.RBNBController.runRBNB(RBNBController.java:162)
+ [java]     at org.nees.buffalo.rdv.rbnb.RBNBController.access$000(RBNBController.java:48)
+ [java]     at org.nees.buffalo.rdv.rbnb.RBNBController$1.run(RBNBController.java:138)
+ [java]     at java.lang.Thread.run(Thread.java:595)
+

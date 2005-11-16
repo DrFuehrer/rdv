@@ -31,10 +31,10 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
-import com.rbnb.sapi.ChannelMap;
+import com.rbnb.sapi.ChannelTree;
 
 /**
- * A listener interface to receive the channel list and the associated metadata.
+ * A listener interface to receive the channel tree and the associated metadata.
  * 
  * @author  Jason P. Hanley
  * @since   1.0
@@ -44,10 +44,10 @@ public interface MetadataListener {
 	/**
 	 * Invoked when the channel list is updated. This will contain
 	 * an up-to-date list of channels and their associated metadata.
-	 * This information is encapsulated in the <code>ChannelMap</code>.
+	 * This information is encapsulated in the <code>ChannelTree</code>.
 	 * 
-	 * @param channelMap  The channel map
-	 * @since             1.0
+	 * @param channelTree  The channel tree
+	 * @since              1.3
 	 */
-	public void channelListUpdated(ChannelMap channelMap);
+	public void channelTreeUpdated(ChannelTree channelTree);
 }

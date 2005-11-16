@@ -292,7 +292,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
         
     component.setTitle(getTitleComponent());
 		
-		String unit = channel.getUnit();
+		String unit = channel.getMetadata("units");
 		if (unit != null) {
 			units.put(channelName, unit);
 		}
