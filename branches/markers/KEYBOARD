@@ -1,0 +1,14 @@
+Key				Command
+---     		-------
+Ctrl-Shift-C	Connect
+Ctrl-Shift-D	Disconnect
+Alt-F4			Exit
+
+Enter			Real Time
+Play			Space
+Escape			Stop
+Home			Go to begining
+End				Go to end
+F5				Update channel list
+
+F11				Full Screen
