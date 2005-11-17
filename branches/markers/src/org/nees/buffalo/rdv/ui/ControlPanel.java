@@ -33,6 +33,14 @@ package org.nees.buffalo.rdv.ui;
 
 import java.awt.Adjustable;
 import java.awt.BorderLayout;
+
+//LJM
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -40,6 +48,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.util.Iterator;
+
+//LJM
+import javax.swing.BorderFactory;
+import javax.swing.border.EtchedBorder;
+import javax.swing.JScrollPane;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -82,7 +95,15 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 
  	private double timeScales[] = {1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
- 	
+ 	// LJM
+   private double markerTimes[] = {1E6, 10E6, 20E6, 30E6};
+   /* Need these to have global scope in this class to interact with it between methods.
+      Perhaps the thing to do is make a trivial data structure class? */
+   private JPanel markerPanel = null;
+   private JLabel markerLabel = null;
+   /* Marker panel interval limits */
+   private double markerPanelStart, markerPanelEnd;
+   
 	private double startTime;
 	private double endTime;
 	private double location;
@@ -230,7 +251,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		JPanel container = new JPanel();
 		container.setLayout(new GridBagLayout());		
 		
-		JLabel locationLabel = new JLabel("Time");
+      // LJM - various Y gridbag coordinates incremented
+      markerLabel = new JLabel ("Event Markers");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.weighty = 0;
@@ -242,11 +264,38 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;				
-		container.add(locationLabel, c);
-		
-		locationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 1);
-		locationScrollBar.addAdjustmentListener(this);
-		c.fill = GridBagConstraints.HORIZONTAL;
+		container.add(markerLabel, c);
+      /** This defines how the marker display panel displays itself graphically. */
+      markerPanel = new JPanel () {
+            public void paintComponent (Graphics markerG) {
+               super.paintComponent (markerG);
+               markerG.setColor (Color.red);
+               int markerXcoordinate = 0;
+               for (int i=0; i<markerTimes.length; i++) {
+                  markerXcoordinate = (int)(markerTimes[i] * timeScale);
+                  markerG.fillRect (markerXcoordinate, 0, 3, 10);
+                  markerDebug (Integer.toString (markerXcoordinate));
+               } // for
+            } // paintComponent ()
+      }; // markerPanel
+      markerPanel.setBorder (BorderFactory.createEtchedBorder ());
+      markerPanel.addMouseListener ( new MouseAdapter () {
+         public void mouseClicked (MouseEvent e) { 
+            markerLabel.setText ("x:"+Integer.toString (e.getX ()) + " y:" + 
+                                 Integer.toString (e.getY ()));
+         }
+         public void mouseDragged	(MouseEvent e) {}
+         public void mouseEntered	(MouseEvent e) {}
+         public void mouseExited		(MouseEvent e) {
+            markerLabel.setText ("Event Markers");
+         }
+         public void mousePressed	(MouseEvent e) {}
+         public void mouseReleased	(MouseEvent e) {}
+      }
+                        );
+      
+           
+      c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
@@ -256,15 +305,45 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipadx = 0;
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;	
+      container.add (markerPanel /*new JScrollPane (markerPanel, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS)*/, c);
+      // LJM      
+      
+		JLabel locationLabel = new JLabel("Time");
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;				
+		container.add(locationLabel, c);
+		
+      locationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 1);
+		locationScrollBar.addAdjustmentListener(this);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
+		c.gridx = 1;
+		c.gridy = 1;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;		
-		container.add(locationScrollBar, c);
+      container.add(locationScrollBar, c);
 
 		JLabel timeScaleLabel = new JLabel("Time Scale");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -280,7 +359,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -294,7 +373,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -310,7 +389,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -342,7 +421,15 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		log.info("Initialized control panel.");
 	}
-	
+   
+   // LJM
+   public void markerDebug (String extMsg) {
+      this.log.info ("extMsg=" + extMsg + " now=" + this.location +
+                     " slider=" + this.locationScrollBar.getValue () +
+                     " startTime=" + this.startTime + " endTime=" +
+                     this.endTime);
+   }
+   
 	public void channelTreeUpdated(ChannelTree ctree) {
 		this.ctree = ctree;
 		
@@ -429,7 +516,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				locationScrollBar.addAdjustmentListener(this);
 			}
 		}
-	}
+   }
 	
 	public void setLocationBegin() {
 		log.info("Setting location to begining.");
@@ -462,7 +549,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				rbnbController.setLocation(location);
 			}
 		}
-	}
+	  // LJM 
+     this.markerPanel.repaint ();
+   }
 	
 	private int getPlaybackRateIndex(double playbackRate) {
     int index = -1;
@@ -547,7 +636,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		if (timeScale != oldTimeScale) {
 			rbnbController.setTimeScale(timeScale);
-			
+         // LJM
+         markerPanel.repaint ();
+
 			log.debug("Time scale slider changed to " + timeScale + ".");
 		}
 	}
