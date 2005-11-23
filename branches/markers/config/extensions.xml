@@ -48,4 +48,4 @@
 		<name>Hello World Data Panel</name>
 	</extension>
 	-->
-</extensions>
+<extension><name>Event Marker Data Panel</name><id>org.nees.buffalo.rdv.datapanel.EventMarkerDataPanel</id><mimeTypes><mimeType>text/plain</mimeType></mimeTypes></extension><extension><name>Event Marker Data Panel</name><id>org.nees.buffalo.rdv.datapanel.EventMarkerDataPanel</id><mimeTypes><mimeType>text/plain</mimeType></mimeTypes></extension></extensions>
