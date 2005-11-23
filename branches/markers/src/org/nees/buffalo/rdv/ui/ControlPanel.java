@@ -104,7 +104,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    private JLabel markerLabel = null;
    /* Marker panel interval limits */
    private double markerPanelStart, markerPanelEnd, markerPanelScaleFactor;
-   private int lastMarkerPanelMouseX; 
+   private int markerXcoordinate, maxMarkerXcoordinate=0;
    ///////////////////////////////////////////////////////////////////////// LJM
    
 	private double startTime;
@@ -256,7 +256,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
       ////////////////////////// LJM - various Y gridbag coordinates incremented
       markerLabel = new JLabel ("Event Markers");
-		c.fill = GridBagConstraints.NONE;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
@@ -273,7 +273,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       markerPanel = new JPanel () {
             public void paintComponent (Graphics markerG) {
                super.paintComponent (markerG);
-               int markerXcoordinate = 0;
                for (int i=0; i<markerTimes.length; i++) {
                   if (i==0 || i==markerTimes.length-1) {
                      markerG.setColor (Color.red); 
@@ -282,12 +281,19 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                   } // else
                   markerPanelScaleFactor = (markerPanel.getWidth () / endTime) / timeScale;
                   markerXcoordinate = (int)(markerTimes[i] * markerPanelScaleFactor);
+                  maxMarkerXcoordinate = (maxMarkerXcoordinate < markerXcoordinate)? markerXcoordinate: maxMarkerXcoordinate;
                   markerG.fillRect (markerXcoordinate, 0, 3, 10);
                   markerDebug (
+                                 "markerPanelScaleFactor=" + 
+                                 Double.toString (markerPanelScaleFactor) + "\n" + 
+                                 "maxMarkerXcoordinate=" +
+                                 Integer.toString (maxMarkerXcoordinate) + "\n" +
+                                 "markerXcoordinate=" +
+                                 Integer.toString (markerXcoordinate) + "\n" +  
                                  "width=" +
                                  Integer.toString (markerPanel.getWidth ()) + "\n" +
-                                 "markerXcoordinate=" + 
-                                 Integer.toString (markerXcoordinate)
+                                 "markerCount=" +
+                                 Integer.toString (i + 1)
                                );
                } // for
             } // paintComponent ()
@@ -295,13 +301,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       markerPanel.setBorder (BorderFactory.createEtchedBorder ());
       markerPanel.addMouseListener (new MouseAdapter () {
          public void mouseClicked (MouseEvent e) { 
-            markerLabel.setText ("x:" + Double.toString (e.getX () * timeScale * endTime));
-            lastMarkerPanelMouseX = e.getX ();
+            markerLabel.setText ("xTime:" + (e.getX () / markerPanel.getWidth ()) * endTime);
          }
          public void mouseDragged	(MouseEvent e) {}
          public void mouseEntered	(MouseEvent e) {}
          public void mouseExited		(MouseEvent e) {
-            markerLabel.setText ("Event Markers");
+            //markerLabel.setText ("Event Markers");
          }
          public void mousePressed	(MouseEvent e) {}
          public void mouseReleased	(MouseEvent e) {}
@@ -323,6 +328,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                      (markerPanel,
                       JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                       JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS),
+                      //JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
                      c);
       ////////////////////////////////////////////////////////////////////// LJM      
       
@@ -440,9 +446,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    
    ///////////////////////////////////////////////////////////////////////// LJM
    public void markerDebug (String extMsg) {
-      this.log.info ("\nnow=" + this.location +
-                     "\nextMsg=" + extMsg +
-                     "\nslider=" + this.locationScrollBar.getValue () +
+      this.log.info ("\nextMsg=" + extMsg +
+                     "\nnow=" + this.location +
+                     //"\nslider=" + this.locationScrollBar.getValue () +
                      "\nscaleFactor=" + this.timeScale +
                      "\nstartTime=" + this.startTime +
                      "\nendTime=" + this.endTime +
@@ -569,8 +575,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				rbnbController.setLocation(location);
 			}
 		}
-	  // LJM 
-     this.markerPanel.repaint ();
    }
 	
 	private int getPlaybackRateIndex(double playbackRate) {
@@ -656,9 +660,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		if (timeScale != oldTimeScale) {
 			rbnbController.setTimeScale(timeScale);
-         // LJM
-         markerPanel.repaint ();
-
+         /////////////////////////////////////////////////////////////////// LJM
+         this.maxMarkerXcoordinate = 0;
+         this.markerPanel.repaint ();
+         this.markerPanel.setPreferredSize (new Dimension (maxMarkerXcoordinate, markerPanel.getHeight ()));
+         //this.markerPanel.repaint ();
+         
 			log.debug("Time scale slider changed to " + timeScale + ".");
 		}
 	}
@@ -693,7 +700,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		pauseButton.setEnabled(false);
 		beginButton.setEnabled(false);
 		endButton.setEnabled(false);
-      // LJM
+      ////////////////////////////////////////////////////////////////////// LJM
       markerPanel.setEnabled (false);
 
 		locationScrollBar.setEnabled(false);
@@ -709,7 +716,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		pauseButton.setEnabled(true);
 		beginButton.setEnabled(true);
 		endButton.setEnabled(true);
-      // LJM
+      ////////////////////////////////////////////////////////////////////// LJM
       markerPanel.setEnabled (true);
 
 		locationScrollBar.setEnabled(true);
