@@ -2,14 +2,19 @@
  * Created on Feb 7, 2005
  */
 package org.nees.buffalo.rdv.datapanel;
-
-import org.nees.rbnb.marker.NeesEvent;
 import java.util.Iterator;
 import javax.swing.JComponent;
 import java.awt.BorderLayout;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+
+// LJM 051129
+import org.nees.rbnb.marker.NeesEvent;
+import java.io.IOException;
+import javax.xml.transform.TransformerException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A template for creating a data panel extension. This is the bare minumum
@@ -23,15 +28,17 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 	/**
 	 * The UI component to display the data in
 	 */
-	JComponent dataComponent;
-	double lastTimeDisplayed;
+	private JComponent dataComponent;
+	private double lastTimeDisplayed;
     
     // LJM 051021 - lifted from StringDataPanel
-   JPanel panel;
-	JEditorPane messages;
-	JScrollPane scrollPane;
-   StringBuffer messageBuffer;
-
+   private JPanel panel;
+	private JEditorPane messages;
+	private JScrollPane scrollPane;
+   private StringBuffer messageBuffer;
+   // LJM
+   private static Log log = LogFactory.getLog (EventMarkerDataPanel.class.getName ());
+   
 	/**
 	 * Initialize the object and UI
 	 */
@@ -52,7 +59,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 		panel.setLayout (new BorderLayout ());
 		messages = new JEditorPane ();
 		messages.setEditable (false);
-      messages.setContentType ("text/html");
+      messages.setContentType ("text/plain");
 		scrollPane = new JScrollPane (messages,
          JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -87,9 +94,9 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 			if (channelIndex != -1) {
 				// TODO display the data in your data component
             // LJM 051021 copied from StringDataPanel.java, line 148
-            String[] data = channelMap.GetDataAsString(channelIndex);
+            String[] data = channelMap.GetDataAsString (channelIndex);
             NeesEvent[] eventData = new NeesEvent[data.length];
-            double[] times = channelMap.GetTimes(channelIndex);
+            double[] times = channelMap.GetTimes (channelIndex);
 
             int startIndex = -1;
 		
@@ -119,11 +126,20 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                eventData[i] = new NeesEvent ();
                try {
                   eventData[i].setFromEventXml (data[i]);
-               } catch (Exception e) { e.printStackTrace ();}
-               messageBuffer.append("DataTurbineTime: " + times[i] +
-                                       eventData[i] + "\n");
+               } catch (Exception e) { e.printStackTrace (); }
+              // try {
+                  messageBuffer.append (
+                                        //eventData[i].get ("label") + "\n" +
+                                        "DataTurbineTime: " + times[i] + "\n"
+                                        );
+               //} catch (IOException ioe) {
+                 // messageBuffer.append ("Java IO Error\n" + ioe);
+               //} catch (TransformerException te) {
+                  //messageBuffer.append ("Java XML Display Error\n" + te);
+               //}
             } // for
-            messages.setText(messageBuffer.toString());
+            messages.setText (messageBuffer.toString ());
+            this.log.info ("****" + messageBuffer.toString ());
             
          } // if
 		} // while
