@@ -305,13 +305,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       markerPanel.setBorder (BorderFactory.createEtchedBorder ());
       markerPanel.addMouseListener (new MouseAdapter () {
          public void mouseClicked (MouseEvent e) { 
-            markerLabel.setText ("Time: " + Integer.toString (locationScrollBar.getValue ()));
+            markerLabel.setText ("Time: " + Double.toString (location));
          }
          public void mouseDragged	(MouseEvent e) {}
          public void mouseEntered	(MouseEvent e) {}
-         public void mouseExited		(MouseEvent e) {
-         markerLabel.setText (Integer.toString (locationScrollBar.getValue ()));
-         }
+         public void mouseExited		(MouseEvent e) {}
          public void mousePressed	(MouseEvent e) {}
          public void mouseReleased	(MouseEvent e) {}
       }
@@ -579,6 +577,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				this.location = location;
 				rbnbController.setLocation(location);
 			}
+         // LJM 051130
+         markerLabel.setText ("Time: " + Double.toString (location));
 		}
    }
 	

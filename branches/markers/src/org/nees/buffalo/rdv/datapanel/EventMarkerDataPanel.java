@@ -1,3 +1,4 @@
+// LJM 051129 - choking on panel and dataComponent
 /*
  * Created on Feb 7, 2005
  */
@@ -12,6 +13,7 @@ import javax.swing.JScrollPane;
 // LJM 051129
 import org.nees.rbnb.marker.NeesEvent;
 import java.io.IOException;
+import java.util.InvalidPropertiesFormatException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,14 +83,17 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 		return false;
 	}
 
-	public void postTime(double time) {
-		super.postTime(time);
+	/** LJM 051129
+      * A method to manage the graphical display of Event Markers.
+   */
+   public void postTime (double time) {
+		super.postTime (time);
 		
 		//loop over all channels and see if there is data for them
-		Iterator it = channels.iterator();
-		while (it.hasNext()) {
-			String channelName = (String)it.next();
-			int channelIndex = channelMap.GetIndex(channelName);
+		Iterator it = channels.iterator ();
+		while (it.hasNext ()) {
+			String channelName = (String)it.next ();
+			int channelIndex = channelMap.GetIndex (channelName);
 			
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
@@ -107,7 +112,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                } // if
             } // for
 		
-            //see if there is no data in the time range we are loooking at
+            // if there is no data in the time range we are looking at
             if (startIndex == -1) {
                return;
             } // if	
@@ -120,13 +125,22 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                   break;
                } // if
             } // for
-            // LJM here
+            // LJM actually display the marker
             StringBuffer messageBuffer = new StringBuffer ();
             for (int i=startIndex; i<=endIndex; i++) {
                eventData[i] = new NeesEvent ();
                try {
                   eventData[i].setFromEventXml (data[i]);
-               } catch (Exception e) { e.printStackTrace (); }
+               } catch (TransformerException te) { 
+                  log.error ("Java XML Error\n" + te);
+                  te.printStackTrace ();
+               } catch (InvalidPropertiesFormatException ipfe) {
+                  log.error ("Java XML Error\n" + ipfe);
+                  ipfe.printStackTrace ();
+               } catch (IOException ioe) {
+                  log.error ("Java IO Error\n" + ioe);
+                  ioe.printStackTrace ();
+               }
               // try {
                   messageBuffer.append (
                                         //eventData[i].get ("label") + "\n" +
@@ -138,7 +152,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                   //messageBuffer.append ("Java XML Display Error\n" + te);
                //}
             } // for
-            messages.setText (messageBuffer.toString ());
+            messages.setText ("hi daddy");//messageBuffer.toString ());
             this.log.info ("****" + messageBuffer.toString ());
             
          } // if
