@@ -578,7 +578,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				rbnbController.setLocation(location);
 			}
          // LJM 051130
-         markerLabel.setText ("Time: " + Double.toString (location));
+         //markerLabel.setText ("Time: " + Double.toString (location));
+         markerLabel.setText ("Markers");
 		}
    }
 	

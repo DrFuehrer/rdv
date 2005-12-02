@@ -12,6 +12,8 @@ import javax.swing.JScrollPane;
 
 // LJM 051129
 import org.nees.rbnb.marker.NeesEvent;
+import java.awt.Color;
+import java.awt.Font;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import javax.xml.transform.TransformerException;
@@ -30,7 +32,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 	/**
 	 * The UI component to display the data in
 	 */
-	private JComponent dataComponent;
+	//private JComponent dataComponent;
 	private double lastTimeDisplayed;
     
     // LJM 051021 - lifted from StringDataPanel
@@ -67,18 +69,20 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		panel.add (scrollPane, BorderLayout.CENTER);
 		
-		setDataComponent (dataComponent);
+		setDataComponent (panel);
 	}
 
 	void clearData() {
 		// TODO clear your data display
       // LJM 051021
-      messages.setText(null);
-      messageBuffer.delete(0, messageBuffer.length());
+      messages.setText (null);
+      messageBuffer.delete (0, messageBuffer.length ());
+      messages.setBackground (Color.white);
+      messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
 		lastTimeDisplayed = -1;
 	}
 
-	public boolean supportsMultipleChannels() {
+	public boolean supportsMultipleChannels () {
 		// TODO change if this data panel supports multiple channels
 		return false;
 	}
@@ -141,20 +145,33 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                   log.error ("Java IO Error\n" + ioe);
                   ioe.printStackTrace ();
                }
-              // try {
-                  messageBuffer.append (
-                                        //eventData[i].get ("label") + "\n" +
-                                        "DataTurbineTime: " + times[i] + "\n"
-                                        );
-               //} catch (IOException ioe) {
-                 // messageBuffer.append ("Java IO Error\n" + ioe);
-               //} catch (TransformerException te) {
-                  //messageBuffer.append ("Java XML Display Error\n" + te);
-               //}
+               try {
+                  if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Start") == 0 ) {
+                     messageBuffer.append ("Start\n\n");
+                     messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
+                     messages.setBackground (Color.green);
+                     messages.setFont (new Font ("Dialog", Font.BOLD, 24));
+                     
+                  } else if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Stop") == 0 ) {
+                     messageBuffer.append ("Stop\n\n");
+                     messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
+                     messages.setBackground (Color.red);
+                     messages.setFont (new Font ("Dialog", Font.BOLD, 24));
+                  } else { messageBuffer.append (eventData[i].toEventXmlString () + "\n" +
+                                                 "DataTurbineTime: " + times[i] + "\n");
+                     messages.setBackground (Color.white);
+                     messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
+                     
+                  }
+                  
+               } catch (IOException ioe) {
+                 messageBuffer.append ("Java IO Error\n" + ioe);
+               } catch (TransformerException te) {
+                  messageBuffer.append ("Java XML Display Error\n" + te);
+               }
             } // for
-            messages.setText ("hi daddy");//messageBuffer.toString ());
-            this.log.info ("****" + messageBuffer.toString ());
-            
+            messages.setText (messageBuffer.toString ());
+            this.log.info ("Setting Event Marker Data Panel:\n" + messageBuffer.toString ());
          } // if
 		} // while
 	} // postTime ()
