@@ -48,6 +48,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.util.Iterator;
+import java.util.Date;
+import java.util.TimeZone;
+import java.text.SimpleDateFormat;
 
 //LJM
 import javax.swing.BorderFactory;
@@ -105,6 +108,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    /* Marker panel interval limits */
    private double markerPanelStart, markerPanelEnd, markerPanelScaleFactor;
    private int markerXcoordinate, maxMarkerXcoordinate=0;
+   
+   private static final SimpleDateFormat TIME_FORMAT =                                             
+      new SimpleDateFormat ("MMM d, yyyy h:mm:ss.SSS aa");                                         
+   private static final TimeZone TZ = TimeZone.getTimeZone ("GMT");                                 
+   static {                                                                                        
+      TIME_FORMAT.setTimeZone (TZ);                                                                
+   }
    ///////////////////////////////////////////////////////////////////////// LJM
    
 	private double startTime;
@@ -287,7 +297,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                   markerXcoordinate = (int)(markerTimes[i] * markerPanelScaleFactor);
                   maxMarkerXcoordinate = (maxMarkerXcoordinate < markerXcoordinate)? markerXcoordinate: maxMarkerXcoordinate;
                   markerG.fillRect (markerXcoordinate, 0, 3, 10);
-                  markerDebug (
+                  /*markerDebug (
                                  "markerPanelScaleFactor=" + 
                                  Double.toString (markerPanelScaleFactor) + "\n" + 
                                  "maxMarkerXcoordinate=" +
@@ -298,14 +308,17 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                                  Integer.toString (markerPanel.getWidth ()) + "\n" +
                                  "markerCount=" +
                                  Integer.toString (i + 1)
-                               );
+                               );*/
                } // for
             } // paintComponent ()
       }; // markerPanel
       markerPanel.setBorder (BorderFactory.createEtchedBorder ());
       markerPanel.addMouseListener (new MouseAdapter () {
-         public void mouseClicked (MouseEvent e) { 
-            markerLabel.setText ("Time: " + Double.toString (location));
+         public void mouseClicked (MouseEvent e) {
+            //markerLabel.setText ("Time: " + DataViewer.formatDate (location));
+            markerDebug ("\nLocation: " + Double.toString (location + startTime) + "\n" +
+                         "Location: " + DataViewer.formatDate (location) + "\n" +
+                         "Panel Time: " + DataViewer.formatDate (e.getX () / markerPanelScaleFactor));
          }
          public void mouseDragged	(MouseEvent e) {}
          public void mouseEntered	(MouseEvent e) {}
@@ -450,11 +463,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    ///////////////////////////////////////////////////////////////////////// LJM
    public void markerDebug (String extMsg) {
       this.log.info ("\nextMsg=" + extMsg +
-                     "\nnow=" + this.location +
-                     //"\nslider=" + this.locationScrollBar.getValue () +
+                     /*"\nnow=" + this.location +
+                     "\nslider=" + this.locationScrollBar.getValue () +
                      "\nscaleFactor=" + this.timeScale +
-                     "\nstartTime=" + this.startTime +
-                     "\nendTime=" + this.endTime +
+                     "\nstartTime=" + DataViewer.formatDate (this.startTime) +
+                     "\nendTime=" + DataViewer.formatDate (this.endTime) +*/
                      "\n");
    }
    ///////////////////////////////////////////////////////////////////////// LJM
@@ -578,7 +591,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				rbnbController.setLocation(location);
 			}
          // LJM 051130
-         //markerLabel.setText ("Time: " + Double.toString (location));
          markerLabel.setText ("Markers");
 		}
    }
@@ -670,7 +682,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
          this.maxMarkerXcoordinate = 0;
          this.markerPanel.repaint ();
          this.markerPanel.setPreferredSize (new Dimension (maxMarkerXcoordinate, markerPanel.getHeight ()));
-         //this.markerPanel.repaint ();
          
 			log.debug("Time scale slider changed to " + timeScale + ".");
 		}
