@@ -19,6 +19,7 @@ import java.util.InvalidPropertiesFormatException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataViewer;
 
 /**
  * A template for creating a data panel extension. This is the bare minumum
@@ -158,7 +159,9 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                      messages.setBackground (Color.red);
                      messages.setFont (new Font ("Dialog", Font.BOLD, 24));
                   } else { messageBuffer.append (eventData[i].toEventXmlString () + "\n" +
-                                                 "DataTurbineTime: " + times[i] + "\n");
+                                                 "DataTurbineTime: " + times[i] + "\n" +
+                                                 "DataTurbineTime: " + DataViewer.formatDate (times[i])
+                                                 );
                      messages.setBackground (Color.white);
                      messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
                      

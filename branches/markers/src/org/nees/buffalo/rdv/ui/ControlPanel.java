@@ -40,6 +40,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.util.InvalidPropertiesFormatException;
+import javax.xml.transform.TransformerException;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -72,6 +75,8 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
+
+import org.nees.rbnb.marker.NeesEvent;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
@@ -108,13 +113,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    /* Marker panel interval limits */
    private double markerPanelStart, markerPanelEnd, markerPanelScaleFactor;
    private int markerXcoordinate, maxMarkerXcoordinate=0;
-   
-   private static final SimpleDateFormat TIME_FORMAT =                                             
-      new SimpleDateFormat ("MMM d, yyyy h:mm:ss.SSS aa");                                         
-   private static final TimeZone TZ = TimeZone.getTimeZone ("GMT");                                 
-   static {                                                                                        
-      TIME_FORMAT.setTimeZone (TZ);                                                                
-   }
    ///////////////////////////////////////////////////////////////////////// LJM
    
 	private double startTime;
@@ -288,12 +286,14 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                * coordinate for drawing the scaled position of markers. */
                double timeScaleClipped = (timeScale < 1.0)? 1.0 : timeScale;
                for (int i=0; i<markerTimes.length; i++) {
-                  if (i==0 || i==markerTimes.length-1) {
-                     markerG.setColor (Color.red); 
+                  if (i==0) {
+                     markerG.setColor (Color.green); 
+                  } else if (i==markerTimes.length-1) {
+                     markerG.setColor (Color.red);
                   } else {
-                     markerG.setColor (Color.blue);
+                     markerG.setColor (Color.black);
                   } // else
-                  markerPanelScaleFactor = (markerPanel.getWidth () / endTime) / timeScaleClipped;
+                  markerPanelScaleFactor = (markerPanel.getWidth () / (endTime - startTime)) / timeScaleClipped;
                   markerXcoordinate = (int)(markerTimes[i] * markerPanelScaleFactor);
                   maxMarkerXcoordinate = (maxMarkerXcoordinate < markerXcoordinate)? markerXcoordinate: maxMarkerXcoordinate;
                   markerG.fillRect (markerXcoordinate, 0, 3, 10);
@@ -314,11 +314,17 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       }; // markerPanel
       markerPanel.setBorder (BorderFactory.createEtchedBorder ());
       markerPanel.addMouseListener (new MouseAdapter () {
-         public void mouseClicked (MouseEvent e) {
+      public void mouseClicked (MouseEvent e) {
+         double guiTime = (e.getX () / markerPanelScaleFactor) + startTime;
             //markerLabel.setText ("Time: " + DataViewer.formatDate (location));
-            markerDebug ("\nLocation: " + Double.toString (location + startTime) + "\n" +
-                         "Location: " + DataViewer.formatDate (location) + "\n" +
-                         "Panel Time: " + DataViewer.formatDate (e.getX () / markerPanelScaleFactor));
+            markerDebug ("\nLocation: "   + Double.toString       (location) + "\n" +
+                         "Location: "     + DataViewer.formatDate (location) + "\n" +
+                         "Panel Time: "   + Double.toString       (guiTime) + "\n" +
+                         "Panel Time: "   + DataViewer.formatDate (guiTime) + "\n" +
+                         "P/L: "          + Double.toString       (guiTime / location) + "\n" +
+                         "P-L: "          + Double.toString       (guiTime - location)
+                         );
+            markerPanel.repaint ();
          }
          public void mouseDragged	(MouseEvent e) {}
          public void mouseEntered	(MouseEvent e) {}
@@ -461,6 +467,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	}
    
    ///////////////////////////////////////////////////////////////////////// LJM
+   /** 
+      * A convenience method for debugging output.
+      * @parameter Additional text message
+   */
    public void markerDebug (String extMsg) {
       this.log.info ("\nextMsg=" + extMsg +
                      /*"\nnow=" + this.location +
@@ -469,7 +479,107 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                      "\nstartTime=" + DataViewer.formatDate (this.startTime) +
                      "\nendTime=" + DataViewer.formatDate (this.endTime) +*/
                      "\n");
-   }
+   } // markerDebug ()
+   
+   /**
+      * A method to get event markers from the DataTurbine source "Events".
+      * @return org.nees.rbnb.marker.NeesEvent
+   */
+   NeesEvent[] getNeesEvents () {
+      // LJM TODO - copied postTiem from EventMarkerDataPanel.java - make it work
+      ////// postTime ()
+      /*
+      super.postTime (time);
+		
+		//loop over all channels and see if there is data for them
+		Iterator it = channels.iterator ();
+		while (it.hasNext ()) {
+			String channelName = (String)it.next ();
+			int channelIndex = channelMap.GetIndex (channelName);
+			
+			//if there is data for channel, post it
+			if (channelIndex != -1) {
+				// TODO display the data in your data component
+            // LJM 051021 copied from StringDataPanel.java, line 148
+            String[] data = channelMap.GetDataAsString (channelIndex);
+            NeesEvent[] eventData = new NeesEvent[data.length];
+            double[] times = channelMap.GetTimes (channelIndex);
+            
+            int startIndex = -1;
+            
+            for (int i=0; i<times.length; i++) {
+               if (times[i] > lastTimeDisplayed && times[i] <= time) {
+                  startIndex = i;
+                  break;
+               } // if
+            } // for
+            
+            // if there is no data in the time range we are looking at
+            if (startIndex == -1) {
+               return;
+            } // if	
+            
+            int endIndex = startIndex;
+            
+            for (int ii=times.length-1; ii>startIndex; ii--) {
+               if (times[ii] <= time) {
+                  endIndex = ii;
+                  break;
+               } // if
+            } // for
+              // LJM actually display the marker
+            StringBuffer messageBuffer = new StringBuffer ();
+            for (int i=startIndex; i<=endIndex; i++) {
+               eventData[i] = new NeesEvent ();
+               try {
+                  eventData[i].setFromEventXml (data[i]);
+               } catch (TransformerException te) { 
+                  log.error ("Java XML Error\n" + te);
+                  te.printStackTrace ();
+               } catch (InvalidPropertiesFormatException ipfe) {
+                  log.error ("Java XML Error\n" + ipfe);
+                  ipfe.printStackTrace ();
+               } catch (IOException ioe) {
+                  log.error ("Java IO Error\n" + ioe);
+                  ioe.printStackTrace ();
+               }
+               try {
+                  if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Start") == 0 ) {
+                     messageBuffer.append ("Start\n\n");
+                     messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
+                     //messages.setBackground (Color.green);
+                     //messages.setFont (new Font ("Dialog", Font.BOLD, 24));
+                     
+                  } else if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Stop") == 0 ) {
+                     messageBuffer.append ("Stop\n\n");
+                     messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
+                     //messages.setBackground (Color.red);
+                     //messages.setFont (new Font ("Dialog", Font.BOLD, 24));
+                  } else { messageBuffer.append (eventData[i].toEventXmlString () + "\n" +
+                                                 "DataTurbineTime: " + times[i] + "\n" +
+                                                 "DataTurbineTime: " + DataViewer.formatDate (times[i])
+                                                 );
+                     //messages.setBackground (Color.white);
+                     //messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
+                     
+                  }
+                  
+               } catch (IOException ioe) {
+                  messageBuffer.append ("Java IO Error\n" + ioe);
+               } catch (TransformerException te) {
+                  messageBuffer.append ("Java XML Display Error\n" + te);
+               }
+            } // for
+            //messages.setText (messageBuffer.toString ());
+            this.log.info ("Setting Event Marker Data Panel:\n" + messageBuffer.toString ());
+         } // if
+		} // while
+
+      */
+      ////// postTime  ()    
+      return null;
+   } // getNeesEvents ()
+   
    ///////////////////////////////////////////////////////////////////////// LJM
    
 	public void channelTreeUpdated(ChannelTree ctree) {
@@ -582,7 +692,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 
 	private void locationChange() {	
 		int sliderLocation = locationScrollBar.getValue();
-		
+
 		if (this.sliderLocation != sliderLocation) {
 			this.sliderLocation = sliderLocation;
 			double location = (((double)sliderLocation)/1000)+startTime;
@@ -590,9 +700,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				this.location = location;
 				rbnbController.setLocation(location);
 			}
-         // LJM 051130
-         markerLabel.setText ("Markers");
-		}
+      }
+      // LJM
+      markerLabel.setText ("Markers");
+      this.markerPanel.repaint ();      
    }
 	
 	private int getPlaybackRateIndex(double playbackRate) {
@@ -719,6 +830,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		endButton.setEnabled(false);
       ////////////////////////////////////////////////////////////////////// LJM
       markerPanel.setEnabled (false);
+      //markerPanel.setEnabled (true);
 
 		locationScrollBar.setEnabled(false);
 		playbackRateScrollBar.setEnabled(false);

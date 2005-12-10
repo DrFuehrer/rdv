@@ -49,6 +49,7 @@
 <extension>
    <name>Event Marker Data Panel</name>
    <id>org.nees.buffalo.rdv.datapanel.EventMarkerDataPanel</id>
+   <!-- This needs to be MIME_TYPES from org.nees.rbnb.marker.NeesEvent -->
    <mimeTypes>
       <mimeType>x-neesEvent</mimeType>
    </mimeTypes>
