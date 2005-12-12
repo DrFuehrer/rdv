@@ -324,7 +324,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                          "P/L: "          + Double.toString       (guiTime / location) + "\n" +
                          "P-L: "          + Double.toString       (guiTime - location)
                          );
-            markerPanel.repaint ();
+            //markerPanel.repaint ();
          }
          public void mouseDragged	(MouseEvent e) {}
          public void mouseEntered	(MouseEvent e) {}
@@ -486,97 +486,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       * @return org.nees.rbnb.marker.NeesEvent
    */
    NeesEvent[] getNeesEvents () {
-      // LJM TODO - copied postTiem from EventMarkerDataPanel.java - make it work
-      ////// postTime ()
-      /*
-      super.postTime (time);
-		
-		//loop over all channels and see if there is data for them
-		Iterator it = channels.iterator ();
-		while (it.hasNext ()) {
-			String channelName = (String)it.next ();
-			int channelIndex = channelMap.GetIndex (channelName);
-			
-			//if there is data for channel, post it
-			if (channelIndex != -1) {
-				// TODO display the data in your data component
-            // LJM 051021 copied from StringDataPanel.java, line 148
-            String[] data = channelMap.GetDataAsString (channelIndex);
-            NeesEvent[] eventData = new NeesEvent[data.length];
-            double[] times = channelMap.GetTimes (channelIndex);
-            
-            int startIndex = -1;
-            
-            for (int i=0; i<times.length; i++) {
-               if (times[i] > lastTimeDisplayed && times[i] <= time) {
-                  startIndex = i;
-                  break;
-               } // if
-            } // for
-            
-            // if there is no data in the time range we are looking at
-            if (startIndex == -1) {
-               return;
-            } // if	
-            
-            int endIndex = startIndex;
-            
-            for (int ii=times.length-1; ii>startIndex; ii--) {
-               if (times[ii] <= time) {
-                  endIndex = ii;
-                  break;
-               } // if
-            } // for
-              // LJM actually display the marker
-            StringBuffer messageBuffer = new StringBuffer ();
-            for (int i=startIndex; i<=endIndex; i++) {
-               eventData[i] = new NeesEvent ();
-               try {
-                  eventData[i].setFromEventXml (data[i]);
-               } catch (TransformerException te) { 
-                  log.error ("Java XML Error\n" + te);
-                  te.printStackTrace ();
-               } catch (InvalidPropertiesFormatException ipfe) {
-                  log.error ("Java XML Error\n" + ipfe);
-                  ipfe.printStackTrace ();
-               } catch (IOException ioe) {
-                  log.error ("Java IO Error\n" + ioe);
-                  ioe.printStackTrace ();
-               }
-               try {
-                  if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Start") == 0 ) {
-                     messageBuffer.append ("Start\n\n");
-                     messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
-                     //messages.setBackground (Color.green);
-                     //messages.setFont (new Font ("Dialog", Font.BOLD, 24));
-                     
-                  } else if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Stop") == 0 ) {
-                     messageBuffer.append ("Stop\n\n");
-                     messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
-                     //messages.setBackground (Color.red);
-                     //messages.setFont (new Font ("Dialog", Font.BOLD, 24));
-                  } else { messageBuffer.append (eventData[i].toEventXmlString () + "\n" +
-                                                 "DataTurbineTime: " + times[i] + "\n" +
-                                                 "DataTurbineTime: " + DataViewer.formatDate (times[i])
-                                                 );
-                     //messages.setBackground (Color.white);
-                     //messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
-                     
-                  }
-                  
-               } catch (IOException ioe) {
-                  messageBuffer.append ("Java IO Error\n" + ioe);
-               } catch (TransformerException te) {
-                  messageBuffer.append ("Java XML Display Error\n" + te);
-               }
-            } // for
-            //messages.setText (messageBuffer.toString ());
-            this.log.info ("Setting Event Marker Data Panel:\n" + messageBuffer.toString ());
-         } // if
-		} // while
-
-      */
-      ////// postTime  ()    
       return null;
    } // getNeesEvents ()
    
@@ -701,9 +610,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				rbnbController.setLocation(location);
 			}
       }
-      // LJM
-      markerLabel.setText ("Markers");
-      this.markerPanel.repaint ();      
    }
 	
 	private int getPlaybackRateIndex(double playbackRate) {
@@ -791,7 +697,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			rbnbController.setTimeScale(timeScale);
          /////////////////////////////////////////////////////////////////// LJM
          this.maxMarkerXcoordinate = 0;
-         this.markerPanel.repaint ();
+         //this.markerPanel.repaint ();
          this.markerPanel.setPreferredSize (new Dimension (maxMarkerXcoordinate, markerPanel.getHeight ()));
          
 			log.debug("Time scale slider changed to " + timeScale + ".");
