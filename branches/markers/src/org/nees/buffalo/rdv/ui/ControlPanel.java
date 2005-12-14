@@ -42,6 +42,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
+import java.util.Vector;
 import javax.xml.transform.TransformerException;
 
 import java.awt.GridBagConstraints;
@@ -104,14 +105,17 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  	private double timeScales[] = {1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
  	///////////////////////////////////////////////////////////////////////// LJM
+   /** A pair of variables that will be used to make a synthetic data source. */
    double cannedTimeBase = 1.132618341E9;
    private double markerTimes[] = {cannedTimeBase*.01, cannedTimeBase*.33, cannedTimeBase*.66, cannedTimeBase*.99};
+   private NeesEvent[] events;
    /* Need these to have global scope in this class to interact with it between methods.
       Perhaps the thing to do is make a trivial data structure class? */
-   private JPanel markerPanel = null;
+   protected JPanel markerPanel = null;
    private JLabel markerLabel = null;
    /* Marker panel interval limits */
    private double markerPanelStart, markerPanelEnd, markerPanelScaleFactor;
+   private double timeScaleClipped;
    private int markerXcoordinate, maxMarkerXcoordinate=0;
    ///////////////////////////////////////////////////////////////////////// LJM
    
@@ -279,37 +283,31 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       
       /** This defines how the marker display panel displays itself graphically. */
       markerPanel = new JPanel () {
-            public void paintComponent (Graphics markerG) {
-               super.paintComponent (markerG);
+            public void paintComponent (Graphics markerPanelG) {
+               super.paintComponent (markerPanelG);
                /** Necessary to limit this scale factor to 1 as imprecision in
                * double arithmetic adversely effects the integral JPanel X
                * coordinate for drawing the scaled position of markers. */
-               double timeScaleClipped = (timeScale < 1.0)? 1.0 : timeScale;
-               for (int i=0; i<markerTimes.length; i++) {
-                  if (i==0) {
-                     markerG.setColor (Color.green); 
-                  } else if (i==markerTimes.length-1) {
-                     markerG.setColor (Color.red);
-                  } else {
-                     markerG.setColor (Color.black);
-                  } // else
-                  markerPanelScaleFactor = (markerPanel.getWidth () / (endTime - startTime)) / timeScaleClipped;
-                  markerXcoordinate = (int)(markerTimes[i] * markerPanelScaleFactor);
-                  maxMarkerXcoordinate = (maxMarkerXcoordinate < markerXcoordinate)? markerXcoordinate: maxMarkerXcoordinate;
-                  markerG.fillRect (markerXcoordinate, 0, 3, 10);
-                  /*markerDebug (
-                                 "markerPanelScaleFactor=" + 
-                                 Double.toString (markerPanelScaleFactor) + "\n" + 
-                                 "maxMarkerXcoordinate=" +
-                                 Integer.toString (maxMarkerXcoordinate) + "\n" +
-                                 "markerXcoordinate=" +
-                                 Integer.toString (markerXcoordinate) + "\n" +  
-                                 "width=" +
-                                 Integer.toString (markerPanel.getWidth ()) + "\n" +
-                                 "markerCount=" +
-                                 Integer.toString (i + 1)
-                               );*/
-               } // for
+               timeScaleClipped = (timeScale < 1.0)? 1.0 : timeScale;
+               // The fake channels root here.
+               NeesEvent[] theEvents = makeFakeEvents ();
+               log.info ("returned from getNeesEvents ()");
+               String markerType = null;
+                  for (int i=0; i<theEvents.length; i++) {
+                     markerType = theEvents[i].getProperty ("eventType");
+                     log.info (markerType);
+                     if ( markerType.compareToIgnoreCase ("Start") == 0 ) {
+                        markerPanelG.setColor (Color.green); 
+                     } else if ( markerType.compareToIgnoreCase ("Stop") == 0 ) {
+                        markerPanelG.setColor (Color.red);
+                     } else {
+                        markerPanelG.setColor (Color.black);
+                     } // else
+                     markerPanelScaleFactor = (markerPanel.getWidth () / (endTime - startTime)) / timeScaleClipped;
+                     markerXcoordinate = (int)(markerTimes[i] * markerPanelScaleFactor);
+                     maxMarkerXcoordinate = (maxMarkerXcoordinate < markerXcoordinate)? markerXcoordinate: maxMarkerXcoordinate;
+                     markerPanelG.fillRect (markerXcoordinate, 0, 3, 10);
+                  } // for
             } // paintComponent ()
       }; // markerPanel
       markerPanel.setBorder (BorderFactory.createEtchedBorder ());
@@ -317,13 +315,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       public void mouseClicked (MouseEvent e) {
          double guiTime = (e.getX () / markerPanelScaleFactor) + startTime;
             //markerLabel.setText ("Time: " + DataViewer.formatDate (location));
-            markerDebug ("\nLocation: "   + Double.toString       (location) + "\n" +
-                         "Location: "     + DataViewer.formatDate (location) + "\n" +
-                         "Panel Time: "   + Double.toString       (guiTime) + "\n" +
-                         "Panel Time: "   + DataViewer.formatDate (guiTime) + "\n" +
-                         "P/L: "          + Double.toString       (guiTime / location) + "\n" +
-                         "P-L: "          + Double.toString       (guiTime - location)
-                         );
             //markerPanel.repaint ();
          }
          public void mouseDragged	(MouseEvent e) {}
@@ -352,6 +343,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                       JScrollPane.HORIZONTAL_SCROLLBAR_NEVER),
                       //JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED),
                      c);
+      log.info ("Added Marker Panel to Control Panel.");
       ////////////////////////////////////////////////////////////////////// LJM      
       
 		JLabel locationLabel = new JLabel("Time");
@@ -467,35 +459,66 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	}
    
    ///////////////////////////////////////////////////////////////////////// LJM
-   /** 
-      * A convenience method for debugging output.
-      * @parameter Additional text message
-   */
-   public void markerDebug (String extMsg) {
-      this.log.info ("\nextMsg=" + extMsg +
-                     /*"\nnow=" + this.location +
-                     "\nslider=" + this.locationScrollBar.getValue () +
-                     "\nscaleFactor=" + this.timeScale +
-                     "\nstartTime=" + DataViewer.formatDate (this.startTime) +
-                     "\nendTime=" + DataViewer.formatDate (this.endTime) +*/
-                     "\n");
-   } // markerDebug ()
-   
    /**
-      * A method to get event markers from the DataTurbine source "Events".
+      * A method to get event markers from the DataTurbine source keyed on the
+      * NEESEvent mime type.
       * @return org.nees.rbnb.marker.NeesEvent
    */
-   NeesEvent[] getNeesEvents () {
+   public NeesEvent[] getNeesEvents (ChannelTree ceetree) {
+      /* LJM Real marker stuff
+      Iterator it = ceetree.iterator ();
+      ChannelTree.Node node;
+		String channelName = null;
+      String channelMime = null;
+      */
+      
+      /* Real stuff here
+      while (it.hasNext ()) {
+         node = (ChannelTree.Node)it.next ();
+			channelName = node.getFullName ();
+         channelMime = node.getMime ();
+         if (channelMime.compareToIgnoreCase (NeesEvent.MIME_TYPE) == 0) {
+            log.info ("Marker Channel Found: " + channelName + "\n");
+         }
+      } // while
+      */
+      log.info ("Got updated NEESEvents channels.");
       return null;
    } // getNeesEvents ()
    
-   ///////////////////////////////////////////////////////////////////////// LJM
+   /** A method to generate synthetic marker data. */
+   NeesEvent[] makeFakeEvents () {
+      Vector eventVector = new Vector ();
+      NeesEvent eventTemp = null;
+      for (int i=0; i<markerTimes.length; i++) {
+         eventTemp = new NeesEvent ();
+         eventTemp.setProperty ("TimeStamp", Double.toString (markerTimes[i]));
+         eventTemp.setProperty ("SourceType", "Other");
+         eventTemp.setProperty ("Annotation", "Synthetic Marker");
+         if (i == 0) {
+            eventTemp.setProperty ("EventType", "Start");
+         } else if (i == markerTimes.length - 1 ) {
+            eventTemp.setProperty ("EventType", "Stop");
+         }
+      } // for
+         eventVector.add (eventTemp);
+         Object [] retValTmp = eventVector.toArray ();
+         NeesEvent[] retVal= new NeesEvent [retValTmp.length];
+         
+         for (int j=0; j<retValTmp.length; j++) {
+            retVal[j] = (NeesEvent)retValTmp[j];
+         }
+         log.info ("Made fake events.");
+         return retVal;
+   } // makeFakeEvents ()
+   
+   //////////////////////////////////////////////////////////////////////////LJM
    
 	public void channelTreeUpdated(ChannelTree ctree) {
 		this.ctree = ctree;
 		
 		updateTimeBoundaries();
-		
+		//getNeesEvents (ctree);
 		log.info("Received updated channel metatdata.");
 	}
 	
@@ -525,6 +548,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 		
 		setSliderBounds(startTime, endTime);
+      ///////////////////////////////////////////////////////////////////////LJM
+      //getNeesEvents (/*ctree*/);
+      ///////////////////////////////////////////////////////////////////////LJM
 	}	
 		
 	private void setSliderBounds(double startTime, double endTime) {
@@ -695,10 +721,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		if (timeScale != oldTimeScale) {
 			rbnbController.setTimeScale(timeScale);
+         
          /////////////////////////////////////////////////////////////////// LJM
          this.maxMarkerXcoordinate = 0;
-         //this.markerPanel.repaint ();
+         this.markerPanel.repaint ();
          this.markerPanel.setPreferredSize (new Dimension (maxMarkerXcoordinate, markerPanel.getHeight ()));
+         /////////////////////////////////////////////////////////////////// LJM
          
 			log.debug("Time scale slider changed to " + timeScale + ".");
 		}
@@ -736,8 +764,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		endButton.setEnabled(false);
       ////////////////////////////////////////////////////////////////////// LJM
       markerPanel.setEnabled (false);
-      //markerPanel.setEnabled (true);
-
+      ////////////////////////////////////////////////////////////////////// LJM
 		locationScrollBar.setEnabled(false);
 		playbackRateScrollBar.setEnabled(false);
 		timeScaleScrollBar.setEnabled(false);
@@ -753,7 +780,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		endButton.setEnabled(true);
       ////////////////////////////////////////////////////////////////////// LJM
       markerPanel.setEnabled (true);
-
+      ////////////////////////////////////////////////////////////////////// LJM
 		locationScrollBar.setEnabled(true);
 		playbackRateScrollBar.setEnabled(true);
 		timeScaleScrollBar.setEnabled(true);
