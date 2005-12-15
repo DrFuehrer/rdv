@@ -43,6 +43,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
    private StringBuffer messageBuffer;
    // LJM
    private static Log log = LogFactory.getLog (EventMarkerDataPanel.class.getName ());
+   public static Color goColor = new Color (33,108,38);
    
 	/**
 	 * Initialize the object and UI
@@ -147,10 +148,11 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                   ioe.printStackTrace ();
                }
                try {
+                  // LJM 051214 - caps like "EventType" breaks this... dunno why
                   if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Start") == 0 ) {
                      messageBuffer.append ("Start\n\n");
                      messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
-                     messages.setBackground (Color.green);
+                     messages.setBackground (goColor);
                      messages.setFont (new Font ("Dialog", Font.BOLD, 24));
                      
                   } else if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Stop") == 0 ) {
