@@ -41,6 +41,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
@@ -50,6 +51,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -61,6 +63,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,6 +114,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action fileAction;
  	private Action connectAction;
  	private Action disconnectAction;
+  private Action loadAction;
+  private Action saveAction;
  	private Action importAction;
   private Action exportAction;
  	private Action exitAction;
@@ -239,14 +244,42 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				rbnb.disconnect();
  			}			
  		};
- 		
- 		importAction = new DataViewerAction("Import", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
+    
+    loadAction = new DataViewerAction("Load Setup", "Load data viewer setup from file") {
+      public void actionPerformed(ActionEvent ae) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new RDVFileFilter());
+        chooser.setApproveButtonText("Load");
+        chooser.setApproveButtonToolTipText("Load selected file");
+        int returnVal = chooser.showOpenDialog(frame);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+          dataViewer.getConfigurationManager().loadConfiguration(chooser.getSelectedFile());
+        }
+      }     
+    };
+
+    saveAction = new DataViewerAction("Save Setup", "Save data viewer setup to file") {
+      public void actionPerformed(ActionEvent ae) {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setFileFilter(new RDVFileFilter());
+        int returnVal = chooser.showSaveDialog(frame);
+        if(returnVal == JFileChooser.APPROVE_OPTION) {
+          File file = chooser.getSelectedFile();
+          if (file.getName().indexOf(".") == -1) {
+            file = new File(file.getAbsolutePath() + ".rdv");
+          }
+          dataViewer.getConfigurationManager().saveConfiguration(file);
+        }     
+      }     
+    };    
+
+ 		importAction = new DataViewerAction("Import Data", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				showImportDialog();
  			}			
  		};
         
-    exportAction = new DataViewerAction("Export", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
+    exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
         public void actionPerformed(ActionEvent ae) {
             
         }
@@ -410,6 +443,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		fileMenu.add(menuItem);
  		
  		fileMenu.addSeparator();	
+    
+    menuItem = new JMenuItem(loadAction);
+    fileMenu.add(menuItem);
+    
+    menuItem = new JMenuItem(saveAction);
+    fileMenu.add(menuItem);
+    
+    fileMenu.addSeparator();
  		
     menuItem = new JMenuItem(importAction);
  		fileMenu.add(menuItem);
@@ -806,5 +847,17 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   
   private void stopThrobber() {
     throbber.setIcon(throbberStop);
-  }  
+  }
+  
+  public class RDVFileFilter extends FileFilter {
+    public boolean accept(File f) {
+      return !f.isFile() || f.getName().endsWith(".rdv");
+    }
+
+    public String getDescription() {
+      return "RDV Configuration Files (*.rdv)";
+    }
+    
+  };
+
 }

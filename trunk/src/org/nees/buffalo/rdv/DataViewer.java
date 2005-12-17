@@ -67,6 +67,7 @@ public class DataViewer {
 	private RBNBController rbnb;
 	private DataPanelManager dataPanelManager;
 	private ApplicationFrame applicationFrame;
+  private ConfigurationManager configurationManager;
 
   private double location;
 	private double playbackRate;
@@ -98,6 +99,7 @@ public class DataViewer {
 	public void initialize(boolean isApplet) {
 		rbnb = new RBNBController(location, playbackRate, timeScale);
 		dataPanelManager = new DataPanelManager(rbnb);
+    configurationManager = new ConfigurationManager(this);
 		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);		
 	}
 
@@ -116,6 +118,10 @@ public class DataViewer {
  	public DataPanelManager getDataPanelManager() {
  		return dataPanelManager;
  	}
+  
+  public ConfigurationManager getConfigurationManager() {
+    return configurationManager;
+  }
  	
  	public ApplicationFrame getApplicationFrame() {
  		return applicationFrame;

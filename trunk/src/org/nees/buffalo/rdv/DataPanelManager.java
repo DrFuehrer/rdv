@@ -556,4 +556,14 @@ public class DataPanelManager {
       }
     }
   }
+  
+  /**
+   * Return a list of data panels.
+   * 
+   * @return  a list of data panels 
+   * @since   1.3
+   */
+  public List getDataPanels() {
+    return dataPanels;
+  }
 }
