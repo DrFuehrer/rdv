@@ -1,0 +1,5 @@
+1.3.0
+-Refined look for the user interface. There are new buttons in
+ panels for common actions.
+-Add support for parent/child server configurations.
+-Load and save of current configuration to/from a file.

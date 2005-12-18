@@ -39,6 +39,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.swing.ImageIcon;
@@ -58,7 +59,6 @@ import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
-import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 
 /**
@@ -450,6 +450,20 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			timeScaleChange();
 		}
 	}
+  
+  public void setPlaybackRate(double playbackRate) {
+    int index = Arrays.binarySearch(playbackRates, playbackRate);
+    if (index >= 0) {
+      playbackRateScrollBar.setValue(index);
+    }
+  }
+  
+  public void setTimeScale(double timeScale) {
+    int index = Arrays.binarySearch(timeScales, timeScale);
+    if (index >= 0) {
+      timeScaleScrollBar.setValue(index);
+    }    
+  }
 
 	private void locationChange() {	
 		int sliderLocation = locationScrollBar.getValue();

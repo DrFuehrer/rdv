@@ -323,6 +323,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		TimeSeries timeSeriesData = null;
 		TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
 		timeSeriesData = dataCollection.getSeries(getSeriesName(channelName));
+    if (timeSeriesData == null) {
+      //FIXME why does this happen?
+      log.error("We don't have a data collection to post this data.");
+      return;
+    }
 		
 		try {		
 			double[] times = channelMap.GetTimes(channelIndex);

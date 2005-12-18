@@ -103,7 +103,7 @@ public class RBNBController implements Player, MetadataListener {
 	
 	private final double PLAYBACK_REFRESH_RATE = 0.05;
 	
-	public RBNBController(double location, double playbackRate, double timeScale) {
+	public RBNBController() {
 		state = STATE_DISCONNECTED;
 		
 		rbnbHostName = DEFAULT_RBNB_HOST_NAME;
@@ -113,9 +113,9 @@ public class RBNBController implements Player, MetadataListener {
 		
 		dropData = true;
 		
-    this.location = location;
-		this.playbackRate = playbackRate;
-		this.timeScale = timeScale;
+    location = System.currentTimeMillis()/1000d;
+		playbackRate = 1;
+		timeScale = 1;
 
     requestedChannels = new ChannelMap();
     metaDataChannelTree = ChannelTree.EMPTY_TREE;
@@ -383,6 +383,11 @@ public class RBNBController implements Player, MetadataListener {
 	// Subscription Methods
 	
 	private boolean subscribeSafe(String channelName, DataListener panel) {
+    //skip subscription if we are not connected
+    if (state == STATE_DISCONNECTED) {
+      return false;
+    }
+    
 		//subscribe to channel
 		try {
 			requestedChannels.Add(channelName);
@@ -415,6 +420,11 @@ public class RBNBController implements Player, MetadataListener {
 	}
 		
 	private boolean unsubscribeSafe(String channelName, DataListener panel) {
+    //skip unsubscription if we are not connected
+    if (state == STATE_DISCONNECTED) {
+      return false;
+    }
+    
 		channelManager.unsubscribe(channelName, panel);
 		
 		if (!channelManager.isChannelSubscribed(channelName)) {
@@ -1025,6 +1035,12 @@ public class RBNBController implements Player, MetadataListener {
  			try { Thread.sleep(50); } catch (Exception e) {}
  		}
 	}
+  
+  public int setState(int state) {
+    //FIXME this is not thread safe!
+    changeStateSafe(state);
+    return this.state;
+  }
 	
 	public double getLocation() {
 		return location;
@@ -1278,6 +1294,35 @@ public class RBNBController implements Player, MetadataListener {
 		
 		return stateString;		
 	}
+  
+  /**
+   * Returns the state code for a givin state name
+   * 
+   * @param stateName  the state name
+   * @return           the state code
+   * @since            1.3
+   */
+  public static int getState(String stateName) {
+    int code;
+    
+    if (stateName.equals("loading")) {
+      code = STATE_LOADING;
+    } else if (stateName.equals("playing")) {
+      code = STATE_PLAYING;
+    } else if (stateName.equals("real time")) {
+      code = STATE_REALTIME;
+    } else if (stateName.equals("stopped")) {
+      code = STATE_STOPPED;
+    } else if (stateName.equals("exiting")) {
+      code = STATE_EXITING;
+    } else if (stateName.equals("disconnected")) {
+        code = STATE_DISCONNECTED;
+    } else {
+      code = -1; 
+    }
+    
+    return code;
+  }
 	
 	class SubscriptionRequest {
 		private String channelName;

@@ -31,6 +31,11 @@
 -Add initial trace implementation for charts
 -Add support for child RBNB servers
 -Add applet support (thanks to Beth Kirschner)
+-Add load/save current setup to/from file. This includes:
+ -server name and port
+ -control panel settings
+ -current state
+ -open data panels with their channels
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

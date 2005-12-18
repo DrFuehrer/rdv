@@ -177,6 +177,19 @@ public class DataPanelManager {
 		
 		return null;
 	}
+
+  /**
+   * Return the registered extension specified by the given class name.
+   * 
+   * @param extensionID              the class name of the desired extension
+   * @return                         the extension, or null if the class wasn't found
+   * @throws ClassNotFoundException
+   * @since                          1.3
+   */
+  public Extension getExtension(String extensionID) throws ClassNotFoundException {
+    Class extensionClass = Class.forName(extensionID);
+    return getExtension(extensionClass);
+  }
 	
 	/**
 	 * Return a list of registered extensions.
@@ -404,6 +417,19 @@ public class DataPanelManager {
 		
 		return null;
 	}
+  
+  /**
+   * Creates the data panel referenced by the supplied extension ID. This first
+   * finds the extension onbject then calls createDataPanel with this.
+   * 
+   * @param extensionID  the ID of the extension to create
+   * @throws Exception
+   * @return             the newly created data panel
+   * @since              1.3
+   */
+  public DataPanel createDataPanel(String extensionID) throws Exception {
+    return createDataPanel(getExtension(extensionID));
+  }
 	
 	/**
 	 * Creates the data panel referenced by the supplied extension

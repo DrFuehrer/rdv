@@ -685,6 +685,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		splitPane.setContinuousLayout(true);
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 	}
+  
+  public ControlPanel getControlPanel() {
+    return controlPanel;
+  }
 	
  	private boolean enterFullScreenMode() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
