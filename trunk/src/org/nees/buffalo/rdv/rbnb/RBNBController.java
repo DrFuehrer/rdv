@@ -221,16 +221,20 @@ public class RBNBController implements Player, MetadataListener {
     
   private void processTimeScaleUpdate() {
     if (updateTimeScale != -1 && timeScale != updateTimeScale) {
+      double oldTimeScale = timeScale;
+      
       synchronized (updateTimeScaleLock) {
         timeScale = updateTimeScale;
         updateTimeScale = -1;
       }
       
       log.info("Setting time scale to " + timeScale + ".");
-    
-      //TODO make this loading smarter
-      if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
-        changeStateSafe(STATE_LOADING);
+      
+      if (timeScale > oldTimeScale) {    
+        //TODO make this loading smarter
+        if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
+          changeStateSafe(STATE_LOADING);
+        }
       }
       
       fireTimeScaleChanged(timeScale);
