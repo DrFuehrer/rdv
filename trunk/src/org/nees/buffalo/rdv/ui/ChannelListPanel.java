@@ -152,9 +152,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   
   private JComponent createTree() {
     tree = new JTree(this);
-    tree.setRootVisible(false);
-    tree.setShowsRootHandles(true);
-    tree.putClientProperty(Options.TREE_LINE_STYLE_KEY,Options.TREE_LINE_STYLE_NONE_VALUE);
+    tree.setRootVisible(true);
+    tree.setShowsRootHandles(false);
+    tree.putClientProperty(Options.TREE_LINE_STYLE_KEY, Options.TREE_LINE_STYLE_NONE_VALUE);
     tree.setExpandsSelectedPaths(true);
     tree.setCellRenderer(new ChannelTreeCellRenderer());
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -669,8 +669,11 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         String mime = RBNBUtilities.fixMime(node.getMime(), node.getFullName());
         
 				setText(node.getName());
-        if (type == ChannelTree.FOLDER || type == ChannelTree.SOURCE ||
-            type == ChannelTree.SERVER || type == ChannelTree.PLUGIN) {
+        if (type == ChannelTree.SERVER) {
+          setIcon(DataViewer.getIcon("icons/server.gif"));
+        } else if (type == ChannelTree.FOLDER ||
+                   type == ChannelTree.SOURCE ||
+                   type == ChannelTree.PLUGIN) {
           if (expanded) {
             setIcon(DataViewer.getIcon("icons/folder_open.gif"));
           } else {
@@ -687,10 +690,13 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
             setIcon(DataViewer.getIcon("icons/file.gif"));
           }
         }
-        
  			} else if (value.equals(EMPTY_ROOT)) {
  				setIcon(null);
-			}
+        setText(null);
+			} else {
+        setIcon(DataViewer.getIcon("icons/server.gif"));
+      }
+
 			return c;
 		}
 		
