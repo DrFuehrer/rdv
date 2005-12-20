@@ -277,4 +277,43 @@ public final class RBNBUtilities {
     }
     return mime;
   }
+  
+  /**
+   * Returns a list of all the names of the channels in the channel tree.
+   * 
+   * @param ctree  the channel tree
+   * @return       a list of channel names
+   * @sicne        1.3
+   */
+  public static List getAllChannels(ChannelTree ctree) {
+    ArrayList channels = new ArrayList();
+    Iterator it = ctree.iterator();
+    while (it.hasNext()) {
+      ChannelTree.Node node = (ChannelTree.Node)it.next();
+      if (node.getType() == ChannelTree.CHANNEL) {
+        channels.add(node.getFullName());
+      }
+    }
+    return channels;
+  }
+  
+  /**
+   * Returns all the names of children of this node that are channels.
+   * 
+   * @param source  the source node
+   * @return        a list of channel names
+   * @since         1.3
+   */
+  public static List getChildChannels(ChannelTree.Node source) {
+    ArrayList channels = new ArrayList();
+    Iterator children = source.getChildren().iterator();
+    while (children.hasNext()) {
+      ChannelTree.Node node = (ChannelTree.Node)children.next();
+      if (node.getType() == ChannelTree.CHANNEL) {
+        channels.add(node.getFullName());
+      }
+    }
+    return channels;
+  }
+
 }

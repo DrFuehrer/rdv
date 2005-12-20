@@ -43,6 +43,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -74,6 +75,7 @@ import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 
 import com.jgoodies.looks.HeaderStyle;
@@ -221,6 +223,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	rbnb.addConnectionListener(this);
 
 		if (!isApplet) { 
+      frame.setLocationByPlatform(true);
 			frame.setVisible(true);
 		}
 	}
@@ -280,9 +283,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
         
     exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
-        public void actionPerformed(ActionEvent ae) {
-            
-        }
+      public void actionPerformed(ActionEvent ae) {
+        showExportDialog();
+      }
     };
  
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)) {
@@ -759,6 +762,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   
   public void showImportDialog(String sourceName) {
     new ImportDialog(frame, rbnb, sourceName);
+  }
+  
+  public void showExportDialog() {
+    List channels = channelListPanel.getSelectedChannels();
+    if (channels.size() == 0) {
+      channels = RBNBUtilities.getAllChannels(rbnb.getMetadataManager().getMetadataChannelTree());
+    }
+
+    showExportDialog(channels);
+  }
+  
+  public void showExportDialog(List channels) {
+    new ExportDialog(frame, rbnb, channels);
   }
  	
  	class DataViewerAction extends AbstractAction {

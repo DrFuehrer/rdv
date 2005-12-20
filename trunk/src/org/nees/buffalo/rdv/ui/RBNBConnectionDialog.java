@@ -34,20 +34,21 @@ package org.nees.buffalo.rdv.ui;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,7 +58,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 /**
  * @author Jason P. Hanley
  */
-public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher {
+public class RBNBConnectionDialog extends JDialog {
 
  	static Log log = LogFactory.getLog(RBNBConnectionDialog.class.getName());
 	
@@ -82,25 +83,23 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
     this.dataPanelManager = dataPanelManager;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		addWindowListener(new WindowAdapter() {
-			public void windowActivated(WindowEvent e) {
-				bindKeys();
-			}
-			public void windowDeactivated(WindowEvent e) {
-				unbindKeys();
-			}
-		});
 		
 		setTitle("Select RBNB Server");
+    
+    JPanel container = new JPanel();
+    setContentPane(container);
+    
+    InputMap inputMap = container.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    ActionMap actionMap = container.getActionMap();
 			
-		getContentPane().setLayout(new GridBagLayout());
+		container.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		c.weighty = 1;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,10,10,10);
+		c.insets = new Insets(10,10,10,10);
 		
 		headerLabel = new JLabel("Please specify your RBNB connection.");
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -109,7 +108,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		c.gridy = 0;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.NORTHEAST;
-		getContentPane().add(headerLabel, c);
+    container.add(headerLabel, c);
 		
 		c.gridwidth = 1;
 		
@@ -119,7 +118,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		c.gridx = 0;
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.NORTHEAST;
-		getContentPane().add(rbnbHostNameLabel, c);
+    container.add(rbnbHostNameLabel, c);
 		
 		rbnbHostNameTextField = new JTextField(rbnb.getRBNBHostName(), 25);
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -127,7 +126,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		c.gridx = 1;
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.NORTHWEST;
-		getContentPane().add(rbnbHostNameTextField, c);
+    container.add(rbnbHostNameTextField, c);
 		
 		rbnbPortLabel = new JLabel("Port");
 		c.fill = GridBagConstraints.NONE;
@@ -135,7 +134,7 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		c.gridx = 0;
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.NORTHEAST;
-		getContentPane().add(rbnbPortLabel, c);
+    container.add(rbnbPortLabel, c);
 
 		rbnbPortTextField = new JTextField(Integer.toString(rbnb.getRBNBPortNumber()));
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -143,36 +142,43 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		c.gridx = 1;
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.NORTHWEST;
-		getContentPane().add(rbnbPortTextField, c);
+    container.add(rbnbPortTextField, c);
 		
 		JPanel buttonPanel = new JPanel();
-				
-		connectButton = new JButton("Connect");
-		connectButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				connect();
-			}
-		});
+    
+    Action connectAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent e) {
+        connect();
+      }      
+    };
+    connectAction.putValue(Action.NAME, "Connect");
+    inputMap.put(KeyStroke.getKeyStroke("ENTER"), "connect");
+    actionMap.put("connect", connectAction);
+		connectButton = new JButton(connectAction);
 		buttonPanel.add(connectButton);
 		
-		cancelButton = new JButton("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				cancel();
-			}
-		});
-		buttonPanel.add(cancelButton);
+    Action cancelAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent e) {
+        cancel();
+      }      
+    };
+    cancelAction.putValue(Action.NAME, "Cancel");
+    inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
+    actionMap.put("cancel", cancelAction);    
+    cancelButton = new JButton(cancelAction);
+    buttonPanel.add(cancelButton);
 		
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0.5;
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
 		c.gridx = 0;
 		c.gridy = 3;
 		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.CENTER;
-		getContentPane().add(buttonPanel, c);
+		c.anchor = GridBagConstraints.LINE_END;
+    c.insets = new Insets(10,10,10,5);
+    container.add(buttonPanel, c);
 		
 		pack();
-		
+    setLocationByPlatform(true);
 		setVisible(true);
 	}
 	
@@ -224,27 +230,4 @@ public class RBNBConnectionDialog extends JDialog implements KeyEventDispatcher 
 		dispose();		
 	}
 	
-	private void bindKeys() {
- 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
- 		focusManager.addKeyEventDispatcher(this);		
-	}
-	
-	private void unbindKeys() {
- 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
- 		focusManager.removeKeyEventDispatcher(this);
-	}
-
- 	public boolean dispatchKeyEvent(KeyEvent keyEvent) {
- 		int keyCode = keyEvent.getKeyCode();
- 		
- 		if (keyCode == KeyEvent.VK_ENTER) {
- 			connect();
- 			return true;
- 		} else if (keyCode == KeyEvent.VK_ESCAPE) {
- 			cancel();
- 			return true;
- 		} else {
- 			return false;
- 		}
- 	}
 }

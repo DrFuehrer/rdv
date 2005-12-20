@@ -136,6 +136,11 @@ public class RBNBImport {
 	 * @since             1.2
 	 */
 	private synchronized void importData(String sourceName, File dataFile, RBNBImportListener listener) {
+    if (dataFile == null) {
+      listener.postError("Data file not specified.");
+      return;
+    }
+    
 		String delimiters = "\t";
 		int[] channels;
 		int numberOfChannels;

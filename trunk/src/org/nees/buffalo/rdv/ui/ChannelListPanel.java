@@ -157,7 +157,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     tree.putClientProperty(Options.TREE_LINE_STYLE_KEY, Options.TREE_LINE_STYLE_NONE_VALUE);
     tree.setExpandsSelectedPaths(true);
     tree.setCellRenderer(new ChannelTreeCellRenderer());
-    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
     tree.addTreeSelectionListener(this);
     tree.addMouseListener(this);
     tree.setBorder(new EmptyBorder(4, 4, 4, 4));
@@ -277,6 +277,27 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       fireChannelSelected(o);
     }
 	}
+  
+  public ArrayList getSelectedChannels() {
+    ArrayList selectedChannels = new ArrayList();
+    
+    TreePath[] selectedPaths = tree.getSelectionPaths();
+    if (selectedPaths != null) {
+      for (int i=0; i<selectedPaths.length; i++) {
+        if (selectedPaths[i].getLastPathComponent() != root) {
+          ChannelTree.Node selectedNode = (ChannelTree.Node)selectedPaths[i].getLastPathComponent();
+          NodeTypeEnum type = selectedNode.getType();
+          if (type == ChannelTree.SOURCE) {
+            selectedChannels.addAll(RBNBUtilities.getChildChannels(selectedNode));
+          } else if (type == ChannelTree.CHANNEL) {
+            selectedChannels.add(selectedNode.getFullName());
+          }
+        }
+      }
+    }
+    
+    return selectedChannels;
+  }
   
   public void addChannelSelectionListener(ChannelSelectionListener e) {
     channelSelectionListeners.add(e);
@@ -529,9 +550,16 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       }
     });
     popup.add(menuItem);
+    
     menuItem = new JMenuItem("Export data...", DataViewer.getIcon("icons/import.gif"));
+    menuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        frame.showExportDialog(RBNBUtilities.getAllChannels(ctree));
+      }
+    });
+
     popup.add(menuItem);
-    menuItem.setEnabled(false);
+    
     
     return popup;
   }
@@ -580,7 +608,11 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     });
     popup.add(menuItem);
     menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/import.gif"));
-    menuItem.setEnabled(false);
+    menuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        frame.showExportDialog(RBNBUtilities.getChildChannels(source));
+      }
+    });
     popup.add(menuItem);          
     
     return popup;
@@ -635,7 +667,13 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     }
     
     menuItem = new JMenuItem("Export channel...", DataViewer.getIcon("icons/export.gif"));
-    menuItem.setEnabled(false);
+    menuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        ArrayList channel = new ArrayList();
+        channel.add(channelName);
+        frame.showExportDialog(channel);
+      }
+    });
     popup.add(menuItem);
     
     return popup;    
