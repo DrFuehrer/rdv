@@ -220,12 +220,17 @@ public class RBNBController implements Player, MetadataListener {
 	}
     
   private void processTimeScaleUpdate() {
-    if (updateTimeScale != -1 && timeScale != updateTimeScale) {
-      double oldTimeScale = timeScale;
+    if (updateTimeScale != -1) {
+      double oldTimeScale;
       
-      synchronized (updateTimeScaleLock) {
+      synchronized (updateTimeScaleLock) {        
+        oldTimeScale = timeScale;
         timeScale = updateTimeScale;
-        updateTimeScale = -1;
+        updateTimeScale = -1;        
+      }
+      
+      if (timeScale == oldTimeScale) {
+        return;
       }
       
       log.info("Setting time scale to " + timeScale + ".");
@@ -242,10 +247,17 @@ public class RBNBController implements Player, MetadataListener {
   }
 	
 	private void processPlaybackRateUpdate() {
-    if (updatePlaybackRate != -1 && playbackRate != updatePlaybackRate) {
+    if (updatePlaybackRate != -1) {
+      double oldPlaybackRate;
+      
       synchronized (updatePlaybackRateLock) {
+        oldPlaybackRate = playbackRate;        
       	playbackRate = updatePlaybackRate;
-        updatePlaybackRate = -1;
+        updatePlaybackRate = -1;        
+      }
+      
+      if (playbackRate == oldPlaybackRate) {
+        return;
       }
 
       log.info("Setting playback rate to " + playbackRate + " seconds.");
