@@ -38,7 +38,6 @@ import java.util.Iterator;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.BooleanControl;
-import javax.sound.sampled.Control;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
@@ -116,17 +115,12 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
       AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSize, channels, signed, true);
       try {
         audioOut = AudioSystem.getSourceDataLine(audioFormat);
-        audioOut.open(audioFormat);        
+        audioOut.open(audioFormat, (int)(sampleRate*sampleSize*channels));        
         audioOut.start();
       } catch (LineUnavailableException e) {
         e.printStackTrace();
         super.removeChannel(channelName);
         return false;
-      }
-      
-      Control[] controls = audioOut.getControls();
-      for (int i=0; i<controls.length; i++) {
-        log.info(controls[i]);
       }
       
       JPanel controlPanel = new JPanel();
