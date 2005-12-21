@@ -192,7 +192,6 @@ public class RBNBExport {
         String channel = (String)channels.get(i);
         String unit = null;
         int index = rmap.GetIndex(channel);
-        log.info(channel + ": " + rmap.GetUserInfo(index));
         String[] metadata = rmap.GetUserInfo(index).split("\t|,");
         for (int j=0; j<metadata.length; j++) {
           String[] elements = metadata[j].split("=");
