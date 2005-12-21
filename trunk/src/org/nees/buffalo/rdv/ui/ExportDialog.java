@@ -89,6 +89,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
   JList channelList;
   DefaultListModel channelModel;
 
+  JCheckBox deltaTCheckBox;
   JTextField dataFileTextField;
   JFileChooser dataFileChooser;
   JButton dataFileButton;
@@ -171,12 +172,22 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new java.awt.Insets(0,10,10,10);
     container.add(scrollPane, c);
+    
+    deltaTCheckBox = new JCheckBox("Include relative time channel", true);
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 0;
+    c.weighty = 0;
+    c.gridx = 0;
+    c.gridy = 2;
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.anchor = GridBagConstraints.NORTHEAST;
+    container.add(deltaTCheckBox, c);    
         
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0;
     c.weighty = 0;
     c.gridx = 0;
-    c.gridy = 2;
+    c.gridy = 3;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new java.awt.Insets(0,10,10,5);
@@ -185,7 +196,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1;
     c.gridx = 1;
-    c.gridy = 2;
+    c.gridy = 3;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;    
     dataFileTextField = new JTextField(20);
@@ -207,7 +218,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0;
     c.gridx = 2;
-    c.gridy = 2;
+    c.gridy = 3;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,10,10,10);
@@ -220,7 +231,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 0.5;
     c.gridx = 0;
-    c.gridy = 3;
+    c.gridy = 4;
     c.gridwidth = GridBagConstraints.REMAINDER;;
     c.anchor = GridBagConstraints.CENTER;
     container.add(exportProgressBar, c);        
@@ -291,12 +302,14 @@ public class ExportDialog extends JDialog implements ProgressListener {
     
     double end = rbnb.getLocation();
     double start = end - rbnb.getTimeScale();
+    
+    boolean deltaT = deltaTCheckBox.isSelected();
         
     exportProgressBar.setVisible(true);
     pack();
     
     exporting = true;
-    export.startExport(selectedChannels, dataFile, start, end, this);
+    export.startExport(selectedChannels, dataFile, start, end, deltaT, this);
   }
   
   private void cancel() {

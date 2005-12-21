@@ -107,16 +107,18 @@ public class RBNBExport {
    * @param dataFile   the data file to write the data to
    * @param startTime  the start time of the data to export
    * @param endTime    the end time of the data to export
+   * @param deltaT     save a time channel relative to the startTime
    * @param listener   a listener to post progress to
    * @since            1.3
    */
   public void startExport(final List channels,
                           final File dataFile,
                           final double startTime, final double endTime,
+                          final boolean deltaT,
                           final ProgressListener listener) {
     new Thread() {
       public void run() {
-        exportData(channels, dataFile, startTime, endTime, listener);
+        exportData(channels, dataFile, startTime, endTime, deltaT, listener);
       }
     }.start();        
   }
@@ -129,12 +131,14 @@ public class RBNBExport {
    * @param dataFile   the data file to write the data to
    * @param startTime  the start time of the data to export
    * @param endTime    the end time of the data to export
+   * @param deltaT     save a time channel relative to the startTime
    * @param listener   a listener to post progress to
    * @since            1.3
    */
   private synchronized void exportData(List channels,
                                        File dataFile,
                                        double startTime, double endTime,
+                                       boolean deltaT,
                                        ProgressListener listener) {
        
      
@@ -174,7 +178,16 @@ public class RBNBExport {
       
       BufferedWriter fileWriter = new BufferedWriter(new FileWriter(dataFile));
       
+      fileWriter.write("Start time: " + RBNBUtilities.secondsToISO8601(startTime) + "\r\n");
+      fileWriter.write("End time: " + RBNBUtilities.secondsToISO8601(endTime) + "\r\n");
+      fileWriter.write("Export time: " + RBNBUtilities.millisecondsToISO8601(System.currentTimeMillis()) + "\r\n");
+      fileWriter.write("\r\n");
+
+      // write channel names
       fileWriter.write("Time\t");
+      if (deltaT) {
+        fileWriter.write("Relative Time\t");
+      }
       for (int i=0; i<channels.size(); i++) {
         String channel = (String)channels.get(i);
         String[] channelParts = channel.split("/");
@@ -184,10 +197,14 @@ public class RBNBExport {
         }
       }
       fileWriter.write("\r\n");
-      
+
+      // fetch channel metadata and write channel units (if available)
       sink.RequestRegistration(cmap);
       ChannelMap rmap = sink.Fetch(-1);
-      fileWriter.write("Seconds\t");
+      fileWriter.write("ISO8601\t");
+      if (deltaT) {
+        fileWriter.write("Seconds\t");
+      }
       for (int i=0; i<channels.size(); i++) {
         String channel = (String)channels.get(i);
         String unit = null;
@@ -262,7 +279,10 @@ public class RBNBExport {
         
         while (!end) {
           double t = s.getTime();
-          fileWriter.write(Double.toString(t) + "\t");
+          fileWriter.write(RBNBUtilities.secondsToISO8601(t) + "\t");
+          if (deltaT) {
+            fileWriter.write(Double.toString(t-startTime) + "\t");
+          }
           for (int i=0; i<channels.size(); i++) {
             String c = (String)channels.get(i);
             if (c.equals(s.getChannel()) && t == s.getTime()) {

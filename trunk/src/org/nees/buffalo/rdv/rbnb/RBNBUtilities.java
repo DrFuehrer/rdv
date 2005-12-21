@@ -31,11 +31,14 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SimpleTimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -319,5 +322,38 @@ public final class RBNBUtilities {
     }
     return channels;
   }
+  
+  /**
+   * A date format for IS8601 date and time representation. This representation
+   * is to the millisecond in UTC time.
+   */
+  private static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+  static {
+    ISO8601_DATE_FORMAT.setTimeZone(new SimpleTimeZone(0, "UTC"));
+  }
+  
+  /**
+   * Converts the date and time provided in numbers of seconds since the epoch
+   * to a ISO8601 date and time representation (UTC to the millisecond).
+   * 
+   * @param date  seconds since the epoch
+   * @return      ISO8601 date and time
+   * @since       1.3
+   */
+  public static String secondsToISO8601(double date) {
+    return ISO8601_DATE_FORMAT.format(new Date(((long)(date*1000))));
+  }
+  
+  /**
+   * Converts the date and time provided in numbers of milliseconds since the
+   * epoch to a ISO8601 date and time representation (UTC to the millisecond).
+   * 
+   * @param date  milliseconds since the epoch
+   * @return      ISO8601 date and time
+   * @since       1.3
+   */
+  public static String millisecondsToISO8601(long date) {
+    return ISO8601_DATE_FORMAT.format(new Date(date));
+  }  
 
 }
