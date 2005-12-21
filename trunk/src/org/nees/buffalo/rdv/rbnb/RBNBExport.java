@@ -185,6 +185,29 @@ public class RBNBExport {
       }
       fileWriter.write("\r\n");
       
+      sink.RequestRegistration(cmap);
+      ChannelMap rmap = sink.Fetch(-1);
+      fileWriter.write("Seconds\t");
+      for (int i=0; i<channels.size(); i++) {
+        String channel = (String)channels.get(i);
+        String unit = null;
+        int index = rmap.GetIndex(channel);
+        log.info(channel + ": " + rmap.GetUserInfo(index));
+        String[] metadata = rmap.GetUserInfo(index).split("\t|,");
+        for (int j=0; j<metadata.length; j++) {
+          String[] elements = metadata[j].split("=");
+          if (elements.length == 2 && elements[0].equals("units")) {
+            unit = elements[1];
+            break;
+          }     
+        }       
+        if (unit != null) {
+          fileWriter.write(unit);
+        }
+        fileWriter.write('\t');
+      }
+      fileWriter.write("\r\n");
+      
       listener.postProgress(0);
 
       while (time < endTime && !cancelExport) {
