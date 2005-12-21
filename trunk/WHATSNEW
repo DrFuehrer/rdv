@@ -4,3 +4,4 @@
 -Add support for parent/child server configurations.
 -Load and save of current configuration to/from a file.
 -Export data from the server to your computer
+-A new data panel to list to audio

@@ -40,6 +40,7 @@
 -Now we don't fetch new data when the time scale is decreased
 -Data export functionality. Numeric for now.
 -Add deltaT export option and save date and time in IS8601 format.
+-Added audio data panel. Support for linear formats currently.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

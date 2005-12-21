@@ -42,6 +42,13 @@
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>
 	</extension>	
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.AudioDataPanel</id>
+		<name>Audio Data Panel</name>
+		<mimeTypes>
+			<mimeType>audio/basic</mimeType>
+		</mimeTypes>
+	</extension>	
 	<!--
 	<extension>
 		<id>org.nees.buffalo.rdv.datapanel.HelloWorldDataPanel</id>

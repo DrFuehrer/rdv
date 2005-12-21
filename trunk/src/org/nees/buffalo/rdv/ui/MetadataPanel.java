@@ -170,6 +170,8 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
             s.append("<em>JPEG Video</em>");            
           } else if (mime.equals("text/plain")) {
             s.append("<em>Text</em>");
+          } else if (mime.equals("audio/basic")) {
+            s.append("<em>Audio</em>");
           } else {
             s.append("<em>" + mime + "</em>");
           }
@@ -186,6 +188,14 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
             String offset = channelMetadata.getMetadata("offset");
             if (scale != null && offset != null) {
               s.append("<br>scale=" + scale + ", offset=" + offset);
+            }
+          } else if (mime.equals("audio/basic")) {
+            String encoding = channelMetadata.getMetadata("encoding");
+            String channels = channelMetadata.getMetadata("channels");
+            String sampleRate = channelMetadata.getMetadata("samplerate");
+            String sampleSize = channelMetadata.getMetadata("samplesize");
+            if (encoding != null && channels != null && sampleRate != null && sampleSize != null) {
+              s.append("<br>" + encoding + " (" + Float.parseFloat(sampleRate)/1000 + "kHz/" + channels + "ch/" + sampleSize + "b)");
             }
           }
         }
