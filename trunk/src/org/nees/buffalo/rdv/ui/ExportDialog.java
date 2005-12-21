@@ -264,7 +264,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.5;
     c.gridx = 0;
-    c.gridy = 4;
+    c.gridy = 5;
     c.gridwidth = GridBagConstraints.REMAINDER;;
     c.anchor = GridBagConstraints.LINE_END;
     c.insets = new java.awt.Insets(0,0,10,5);
