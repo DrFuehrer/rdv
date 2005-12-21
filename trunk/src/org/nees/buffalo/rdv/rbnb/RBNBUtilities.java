@@ -281,16 +281,18 @@ public final class RBNBUtilities {
   /**
    * Returns a list of all the names of the channels in the channel tree.
    * 
-   * @param ctree  the channel tree
-   * @return       a list of channel names
-   * @sicne        1.3
+   * @param ctree   the channel tree
+   * @param hidden  include hidden channels
+   * @return        a list of channel names
+   * @sicne         1.3
    */
-  public static List getAllChannels(ChannelTree ctree) {
+  public static List getAllChannels(ChannelTree ctree, boolean hidden) {
     ArrayList channels = new ArrayList();
     Iterator it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
-      if (node.getType() == ChannelTree.CHANNEL) {
+      if (node.getType() == ChannelTree.CHANNEL &&
+          ((!node.getName().startsWith("_") && !node.getParent().getName().startsWith("_"))|| hidden)) {
         channels.add(node.getFullName());
       }
     }
@@ -301,15 +303,17 @@ public final class RBNBUtilities {
    * Returns all the names of children of this node that are channels.
    * 
    * @param source  the source node
+   * @param hidden  include hidden channels
    * @return        a list of channel names
    * @since         1.3
    */
-  public static List getChildChannels(ChannelTree.Node source) {
+  public static List getChildChannels(ChannelTree.Node source, boolean hidden) {
     ArrayList channels = new ArrayList();
     Iterator children = source.getChildren().iterator();
     while (children.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)children.next();
-      if (node.getType() == ChannelTree.CHANNEL) {
+      if (node.getType() == ChannelTree.CHANNEL &&
+          ((!node.getName().startsWith("_") && !node.getParent().getName().startsWith("_"))|| hidden)) {
         channels.add(node.getFullName());
       }
     }

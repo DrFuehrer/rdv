@@ -288,7 +288,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
           ChannelTree.Node selectedNode = (ChannelTree.Node)selectedPaths[i].getLastPathComponent();
           NodeTypeEnum type = selectedNode.getType();
           if (type == ChannelTree.SOURCE) {
-            selectedChannels.addAll(RBNBUtilities.getChildChannels(selectedNode));
+            selectedChannels.addAll(RBNBUtilities.getChildChannels(selectedNode, showHiddenChannels));
           } else if (type == ChannelTree.CHANNEL) {
             selectedChannels.add(selectedNode.getFullName());
           }
@@ -331,6 +331,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       ChannelSelectionListener csl = (ChannelSelectionListener)i.next();
       csl.channelSelectionCleared();
     }    
+  }
+  
+  public boolean isShowingHiddenChannles() {
+    return showHiddenChannels;
   }
 	
 	public void showHiddenChannels(boolean showHiddenChannels) {
@@ -554,7 +558,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     menuItem = new JMenuItem("Export data...", DataViewer.getIcon("icons/import.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        frame.showExportDialog(RBNBUtilities.getAllChannels(ctree));
+        frame.showExportDialog(RBNBUtilities.getAllChannels(ctree, showHiddenChannels));
       }
     });
 
@@ -610,7 +614,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/import.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        frame.showExportDialog(RBNBUtilities.getChildChannels(source));
+        frame.showExportDialog(RBNBUtilities.getChildChannels(source, showHiddenChannels));
       }
     });
     popup.add(menuItem);          

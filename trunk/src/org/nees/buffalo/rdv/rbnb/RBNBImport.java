@@ -118,7 +118,7 @@ public class RBNBImport {
 	 * @param listener    the listener to post status too
 	 * @since             1.2
 	 */
-	public void startImport(final String sourceName, final File dataFile, final RBNBImportListener listener) {
+	public void startImport(final String sourceName, final File dataFile, final ProgressListener listener) {
 		new Thread() {
 			public void run() {
 				importData(sourceName, dataFile, listener);
@@ -135,7 +135,7 @@ public class RBNBImport {
 	 * @param listener    the listener to post status too, can be null
 	 * @since             1.2
 	 */
-	private synchronized void importData(String sourceName, File dataFile, RBNBImportListener listener) {
+	private synchronized void importData(String sourceName, File dataFile, ProgressListener listener) {
     if (dataFile == null) {
       listener.postError("Data file not specified.");
       return;

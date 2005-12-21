@@ -57,7 +57,9 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -68,25 +70,29 @@ import javax.swing.UIManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
-import org.nees.rbnb.RbnbToFile;
+import org.nees.buffalo.rdv.rbnb.RBNBExport;
+import org.nees.buffalo.rdv.rbnb.ProgressListener;
 
 /**
  * @author  Jason P. Hanley
  * @since   1.2
  */
-public class ExportDialog extends JDialog {
+public class ExportDialog extends JDialog implements ProgressListener {
   static Log log = LogFactory.getLog(ExportDialog.class.getName());
   
   ExportDialog dialog;
   
   RBNBController rbnb;
+  RBNBExport export;
+  boolean exporting;
   
   JList channelList;
   DefaultListModel channelModel;
-  
+
   JTextField dataFileTextField;
   JFileChooser dataFileChooser;
   JButton dataFileButton;
+  JProgressBar exportProgressBar;
   JButton exportButton;
   JButton cancelButton;
   
@@ -101,6 +107,9 @@ public class ExportDialog extends JDialog {
     
     this.rbnb = rbnb;
     this.channels = channels;
+    
+    export = new RBNBExport(rbnb.getRBNBHostName(), rbnb.getRBNBPortNumber());
+    exporting = false;
     
     setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     
@@ -139,7 +148,7 @@ public class ExportDialog extends JDialog {
     c.anchor = GridBagConstraints.NORTHEAST;
     container.add(headerLabel, c);
     
-    final JList channelList = new JList(channelModel);
+    channelList = new JList(channelModel);
     channelList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     channelList.setCellRenderer(new CheckListRenderer());
     channelList.setVisibleRowCount(15);
@@ -203,6 +212,18 @@ public class ExportDialog extends JDialog {
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,10,10,10);
     container.add(dataFileButton, c);
+    
+    exportProgressBar = new JProgressBar(0, 100000);
+    exportProgressBar.setStringPainted(true);
+    exportProgressBar.setValue(0);
+    exportProgressBar.setVisible(false);
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 0.5;
+    c.gridx = 0;
+    c.gridy = 3;
+    c.gridwidth = GridBagConstraints.REMAINDER;;
+    c.anchor = GridBagConstraints.CENTER;
+    container.add(exportProgressBar, c);        
        
     JPanel panel = new JPanel();
     panel.setLayout(new FlowLayout());
@@ -232,7 +253,7 @@ public class ExportDialog extends JDialog {
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.5;
     c.gridx = 0;
-    c.gridy = 3;
+    c.gridy = 4;
     c.gridwidth = GridBagConstraints.REMAINDER;;
     c.anchor = GridBagConstraints.LINE_END;
     c.insets = new java.awt.Insets(0,0,10,5);
@@ -243,16 +264,66 @@ public class ExportDialog extends JDialog {
     setVisible(true);
   }
   
+  private void disableUI() {
+    channelList.setEnabled(false);
+    dataFileTextField.setEnabled(false);
+    dataFileButton.setEnabled(false);
+    exportButton.setEnabled(false);
+  }
+  
+  private void enableUI() {
+    channelList.setEnabled(true);
+    dataFileTextField.setEnabled(true);
+    dataFileButton.setEnabled(true);
+    exportButton.setEnabled(true);    
+  }  
+  
   private void exportData() {
-    /* RbnbToFile rbnbToFile = new RbnbToFile();
-    rbnbToFile.setArgs(rbnb.getRBNBHostName(), new Integer(rbnb.getRBNBPortNumber()).toString(),
-                       "RDVExport", null, null, false, null, dataFile.getAbsolutePath(), 0, 1000L);
-    rbnbToFile.startThread(); */
+    disableUI();
+    
+    List selectedChannels = new ArrayList();
+    for (int i=0; i<channelModel.size(); i++) {
+      ExportChannel channel = (ExportChannel)channelModel.get(i);
+      if (channel.isSelected()) {
+        selectedChannels.add(channel.toString());
+      }
+    }
+    
+    double end = rbnb.getLocation();
+    double start = end - rbnb.getTimeScale();
+        
+    exportProgressBar.setVisible(true);
+    pack();
+    
+    exporting = true;
+    export.startExport(selectedChannels, dataFile, start, end, this);
   }
   
   private void cancel() {
-    dispose();   
+    if (exporting) {
+     export.cancelExport();
+    } else {
+      dispose();
+    }
   }
+  
+  public void postProgress(double progress) {
+    exportProgressBar.setValue((int)(progress*100000));   
+  }
+
+  public void postCompletion() {
+    exporting = false;
+    dispose();
+    JOptionPane.showMessageDialog(this, "Export complete.", "Export complete", JOptionPane.INFORMATION_MESSAGE);
+  }
+
+  public void postError(String errorMessage) {
+    exportProgressBar.setValue(0);
+    exportProgressBar.setVisible(false);
+    exporting = false;
+    enableUI();
+    JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
+  }  
   
   class ExportChannel {
     String channelName;
@@ -293,4 +364,5 @@ public class ExportDialog extends JDialog {
       return this;
     }
   }
+
 }

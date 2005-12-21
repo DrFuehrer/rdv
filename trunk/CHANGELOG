@@ -38,6 +38,7 @@
  -open data panels with their channels
 -Added rbnb server icon and display server name as root of channel list
 -Now we don't fetch new data when the time scale is decreased
+-Data export functionality. Numeric for now.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

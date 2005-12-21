@@ -58,12 +58,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBImport;
-import org.nees.buffalo.rdv.rbnb.RBNBImportListener;
+import org.nees.buffalo.rdv.rbnb.ProgressListener;
 
 /**
  * @author Jason P. Hanley
  */
-public class ImportDialog extends JDialog implements RBNBImportListener {
+public class ImportDialog extends JDialog implements ProgressListener {
 	static Log log = LogFactory.getLog(ImportDialog.class.getName());
 	
 	ImportDialog dialog;
