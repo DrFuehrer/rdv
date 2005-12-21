@@ -177,7 +177,8 @@ public class RBNBExport {
       fileWriter.write("Time\t");
       for (int i=0; i<channels.size(); i++) {
         String channel = (String)channels.get(i);
-        fileWriter.write(channel);
+        String[] channelParts = channel.split("/");
+        fileWriter.write(channelParts[channelParts.length-1]);
         if (i != channels.size()-1) {
           fileWriter.write('\t');
         }
