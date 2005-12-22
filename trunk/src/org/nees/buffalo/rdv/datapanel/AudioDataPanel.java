@@ -31,7 +31,11 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -44,6 +48,7 @@ import javax.sound.sampled.SourceDataLine;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -74,13 +79,18 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   JPanel panel;
   FloatSlider gainSlider;
   BooleanCheckBox muteCheckBox;
+  LevelMeter meter;
   
-  double playbackRate;  
+  double playbackRate;
+  
+  byte level;
   
   public AudioDataPanel() {
     super();
     
     lastTime = -1;
+    
+    level = 0;
     
     panel = new JPanel();
     panel.setLayout(new BorderLayout());
@@ -149,6 +159,20 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
       }
       
       panel.add(controlPanel, BorderLayout.WEST);
+      
+      JPanel levelPanel = new JPanel();
+      levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.PAGE_AXIS));
+      levelPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
+      
+      JLabel levelLabel = new JLabel("Level");
+      levelLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+      levelPanel.add(levelLabel);      
+      
+      meter = new LevelMeter();
+      meter.setAlignmentX(Component.CENTER_ALIGNMENT);
+      levelPanel.add(meter);
+      
+      panel.add(levelPanel, BorderLayout.EAST);
             
       return true;
     } else {
@@ -180,6 +204,7 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   
   void clearData() {
     lastTime = -1;
+    level = 0;
   }
   
   public void postTime(double time) {
@@ -255,10 +280,19 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
       byte[][] audioData = channelMap.GetDataAsByteArray(channelIndex);
       for (int i=startIndex; i<endIndex; i++) {
         audioOut.write(audioData[i], 0, audioData[i].length);
+        updateLevel(audioData[i]);
       }
+      
     } catch (Exception e) {
       log.error("Failed to receive data for channel " + channelName + ".");
       e.printStackTrace();
+    }
+  }
+  
+  private void updateLevel(byte[] data) {
+    for (int i=0; i<data.length; i++) {
+      level = (byte)(0.9*level + 0.1*data[i]);
+      meter.setLevel(level);
     }
   }
   
@@ -319,7 +353,77 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
     public void stateChanged(ChangeEvent arg0) {
       control.setValue(isSelected());
     }
+  }
+  
+  class LevelMeter extends JComponent {
+    byte level;
     
+    Color darkGreen = new Color(0, 150, 0);
+    Color green = new Color(0, 254, 0);
+    Color darkYellow = new Color(150, 150, 0);
+    Color yellow = new Color(254, 254, 0);
+    Color darkRed = new Color(150, 0, 0);
+    Color red = new Color(254, 0, 0);
+    
+    int barGap = 2;
+    
+    public LevelMeter() {
+      level = 127;
+    }
+    
+    public void setLevel(byte level) {
+      this.level = level;
+      repaint();
+    }
+    
+    protected void paintComponent(Graphics g) {
+      Insets insets = getInsets();
+      
+      int componentWidth = getWidth() - insets.left - insets.right;
+      int componentHeight = getHeight() - insets.top - insets.bottom;
+      
+      int barWidth = Math.min(10, componentWidth);
+      int barHeight = Math.round(componentHeight/20f);
+      
+      int levelHeight = Math.round((127-level)*(20f/255f));
+      
+      if (isOpaque()) {
+        g.setColor(getBackground());
+        g.fillRect(0, 0, componentWidth-1, componentHeight-1);
+      }
+      
+      for (int i=1; i<=20; i++) {
+        Color color;
+        if (i <= 10) {
+          if (i > levelHeight) {
+            color = darkGreen;
+          } else {
+            color = green;
+          }
+        } else if (i <= 16) {
+          if (i > levelHeight) {
+            color = darkYellow;
+          } else {
+            color = yellow;
+          }          
+        } else {
+          if (i > levelHeight) {
+            color = darkRed;
+          } else {
+            color = red;
+          }
+        }
+        g.setColor(color);
+        g.fillRect(insets.left, insets.top+componentHeight-(i*barHeight)+barGap, barWidth-1, barHeight-barGap-1);
+        
+        g.setColor(getForeground());
+      }
+    }
+    
+    public Dimension getPreferredSize() {
+      Insets insets = getInsets();
+      return new Dimension(insets.left + 10 + insets.right, 100);
+    }
   }
   
 }
