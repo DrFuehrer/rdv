@@ -47,6 +47,8 @@
 		<name>Audio Data Panel</name>
 		<mimeTypes>
 			<mimeType>audio/basic</mimeType>
+			<mimeType>audio/L8</mimeType>
+			<mimeType>audio/L16</mimeType>
 		</mimeTypes>
 	</extension>	
 	<!--

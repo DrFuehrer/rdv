@@ -121,8 +121,9 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
       int sampleSize = Integer.parseInt(channel.getMetadata("samplesize"));
       int channels = Integer.parseInt(channel.getMetadata("channels"));
       boolean signed = channel.getMetadata("signed").equals("1");
+      boolean endian = channel.getMetadata("endian").equals("1");
       
-      AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSize, channels, signed, true);
+      AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSize, channels, signed, endian);
       try {
         audioOut = AudioSystem.getSourceDataLine(audioFormat);
         audioOut.open(audioFormat, (int)(sampleRate*sampleSize*channels));        
