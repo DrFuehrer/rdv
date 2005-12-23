@@ -334,9 +334,11 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
     
     super.closePanel();
     
-    audioOut.stop();
-    audioOut.flush();
-    audioOut.close();
+    if (audioOut != null) {
+      audioOut.stop();
+      audioOut.flush();
+      audioOut.close();
+    }
   }
   
   public void playbackRateChanged(double playbackRate) {
