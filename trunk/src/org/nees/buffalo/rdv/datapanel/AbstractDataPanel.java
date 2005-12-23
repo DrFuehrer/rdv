@@ -271,7 +271,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 	public boolean setChannel(String channelName) {
 		if (channels.size() == 1 && channels.contains(channelName)) {
-			return true;
+			return false;
 		}
 		
 		removeAllChannels();

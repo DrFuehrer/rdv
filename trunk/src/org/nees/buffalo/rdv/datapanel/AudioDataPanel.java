@@ -63,6 +63,7 @@ import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.MetadataManager;
 import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.tritonus.share.sampled.FloatSampleBuffer;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -70,20 +71,19 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   
   static Log log = LogFactory.getLog(AudioDataPanel.class.getName());
   
+  AudioFormat audioFormat;
   SourceDataLine audioOut;
   FloatControl gainControl;
   BooleanControl muteControl;
-  
+
+  double playbackRate;
   double lastTime;
+  float level;
   
   JPanel panel;
   FloatSlider gainSlider;
   BooleanCheckBox muteCheckBox;
   LevelMeter meter;
-  
-  double playbackRate;
-  
-  byte level;
   
   public AudioDataPanel() {
     super();
@@ -123,10 +123,10 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
       boolean signed = channel.getMetadata("signed").equals("1");
       boolean endian = channel.getMetadata("endian").equals("1");
       
-      AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSize, channels, signed, endian);
+      audioFormat = new AudioFormat(sampleRate, sampleSize, channels, signed, endian);
       try {
         audioOut = AudioSystem.getSourceDataLine(audioFormat);
-        audioOut.open(audioFormat, (int)(sampleRate*sampleSize*channels));        
+        audioOut.open(audioFormat);        
         audioOut.start();
       } catch (LineUnavailableException e) {
         e.printStackTrace();
@@ -174,12 +174,38 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
       levelPanel.add(meter);
       
       panel.add(levelPanel, BorderLayout.EAST);
+      
+      panel.revalidate();
             
       return true;
     } else {
       return false;
     }   
   }
+  
+  public boolean removeChannel(String channelName) {
+    if (!super.removeChannel(channelName)) {
+      return false;
+    }
+    
+    audioFormat = null;
+    audioOut.stop();
+    audioOut.flush();
+    audioOut.close();
+    audioOut = null;
+    gainControl = null;
+    muteControl = null;
+    
+    panel.removeAll();
+    gainSlider = null;
+    muteCheckBox = null;
+    meter = null;
+    
+    lastTime = -1;
+    level = 0;
+    
+    return true;
+  }  
   
   private boolean isChannelSupported(String channelName) {
     Channel channel = rbnbController.getChannel(channelName);
@@ -291,13 +317,21 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   }
   
   private void updateLevel(byte[] data) {
-    for (int i=0; i<data.length; i++) {
-      level = (byte)(0.9*level + 0.1*data[i]);
+    FloatSampleBuffer sampleBuffer = new FloatSampleBuffer(data, 0, data.length, audioFormat);
+    float[] normalizedData = sampleBuffer.getChannel(0);
+    for (int i=0; i<normalizedData.length/4; i++) {
+      level = (level +
+              Math.abs(normalizedData[i]) +
+              Math.abs(normalizedData[i+1]) +
+              Math.abs(normalizedData[i+2]) +
+              Math.abs(normalizedData[i+3]))/5;
       meter.setLevel(level);
     }
   }
   
   public void closePanel() {
+    rbnbController.removePlaybackRateListener(this);
+    
     super.closePanel();
     
     audioOut.stop();
@@ -357,7 +391,7 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   }
   
   class LevelMeter extends JComponent {
-    byte level;
+    float level;
     
     Color darkGreen = new Color(0, 150, 0);
     Color green = new Color(0, 254, 0);
@@ -366,18 +400,18 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
     Color darkRed = new Color(150, 0, 0);
     Color red = new Color(254, 0, 0);
     
-    int barGap = 2;
-    
     public LevelMeter() {
-      level = 127;
+      level = 0;
     }
     
-    public void setLevel(byte level) {
+    public void setLevel(float level) {
       this.level = level;
       repaint();
     }
     
     protected void paintComponent(Graphics g) {
+      super.paintComponent(g);
+      
       Insets insets = getInsets();
       
       int componentWidth = getWidth() - insets.left - insets.right;
@@ -386,11 +420,18 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
       int barWidth = Math.min(10, componentWidth);
       int barHeight = Math.round(componentHeight/20f);
       
-      int levelHeight = Math.round((127-level)*(20f/255f));
+      int levelHeight = Math.round(level*20);
+      if (level < 0) {
+        levelHeight = 0;
+      } else if (level > 20) {
+        levelHeight = 20;
+      }
       
-      if (isOpaque()) {
-        g.setColor(getBackground());
-        g.fillRect(0, 0, componentWidth-1, componentHeight-1);
+      int barGap = Math.round(componentHeight/200f);
+      if (barGap == 0) {
+        barGap = 1;
+      } else if (barGap > 10) {
+        barGap = 10;
       }
       
       for (int i=1; i<=20; i++) {
