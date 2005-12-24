@@ -60,7 +60,6 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.MetadataManager;
 import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.tritonus.share.sampled.FloatSampleBuffer;
@@ -71,16 +70,16 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   
   static Log log = LogFactory.getLog(AudioDataPanel.class.getName());
   
-  AudioFormat audioFormat;
   SourceDataLine audioOut;
   FloatControl gainControl;
   BooleanControl muteControl;
+  
+  Channel channel;
 
   double playbackRate;
   double lastTime;
   float level;
   
-  JPanel panel;
   FloatSlider gainSlider;
   BooleanCheckBox muteCheckBox;
   LevelMeter meter;
@@ -92,16 +91,52 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
     
     level = 0;
     
-    panel = new JPanel();
-    panel.setLayout(new BorderLayout());
-    
-    setDataComponent(panel);
+    initPanel();    
   }
   
   public void openPanel(final DataPanelManager dataPanelManager) {
     super.openPanel(dataPanelManager);
     
     rbnbController.addPlaybackRateListener(this);
+  }
+  
+  private void initPanel() {
+    JPanel panel = new JPanel();
+    panel.setLayout(new BorderLayout());
+    
+    JPanel controlPanel = new JPanel();
+    controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
+    controlPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+    
+    JLabel volumeLabel = new JLabel("Volume");
+    volumeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+    controlPanel.add(volumeLabel);
+    
+    gainSlider = new FloatSlider();
+    gainSlider.setAlignmentX(Component.CENTER_ALIGNMENT);
+    controlPanel.add(gainSlider);
+    
+    muteCheckBox = new BooleanCheckBox("Mute");
+    muteCheckBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+    controlPanel.add(muteCheckBox);
+    
+    panel.add(controlPanel, BorderLayout.WEST);
+    
+    JPanel levelPanel = new JPanel();
+    levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.PAGE_AXIS));
+    levelPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
+    
+    JLabel levelLabel = new JLabel("Level");
+    levelLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+    levelPanel.add(levelLabel);      
+    
+    meter = new LevelMeter();
+    meter.setAlignmentX(Component.CENTER_ALIGNMENT);
+    levelPanel.add(meter);
+    
+    panel.add(levelPanel, BorderLayout.EAST);
+    
+    setDataComponent(panel);    
   }
 
   public boolean supportsMultipleChannels() {
@@ -114,68 +149,9 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
     }
     
     if (super.setChannel(channelName)) {
-      MetadataManager metadataManager = rbnbController.getMetadataManager();
-      Channel channel = metadataManager.getChannel(channelName);
+      channel = rbnbController.getMetadataManager().getChannel(channelName);
       
-      float sampleRate = Float.parseFloat(channel.getMetadata("samplerate"));
-      int sampleSize = Integer.parseInt(channel.getMetadata("samplesize"));
-      int channels = Integer.parseInt(channel.getMetadata("channels"));
-      boolean signed = channel.getMetadata("signed").equals("1");
-      boolean endian = channel.getMetadata("endian").equals("1");
-      
-      audioFormat = new AudioFormat(sampleRate, sampleSize, channels, signed, endian);
-      try {
-        audioOut = AudioSystem.getSourceDataLine(audioFormat);
-        audioOut.open(audioFormat);        
-        audioOut.start();
-      } catch (LineUnavailableException e) {
-        e.printStackTrace();
-        super.removeChannel(channelName);
-        return false;
-      }
-      
-      JPanel controlPanel = new JPanel();
-      controlPanel.setLayout(new BoxLayout(controlPanel, BoxLayout.PAGE_AXIS));
-      controlPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-      
-      gainControl = null;
-      if (audioOut.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
-        gainControl = (FloatControl)audioOut.getControl(FloatControl.Type.MASTER_GAIN);
-        
-        JLabel volumeLabel = new JLabel("Volume");
-        volumeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        controlPanel.add(volumeLabel);
-        
-        gainSlider = new FloatSlider(gainControl);
-        gainSlider.setAlignmentX(Component.CENTER_ALIGNMENT);
-        controlPanel.add(gainSlider);
-      }
-      
-      muteControl = null;
-      if (audioOut.isControlSupported(BooleanControl.Type.MUTE)) {
-        muteControl = (BooleanControl)audioOut.getControl(BooleanControl.Type.MUTE);
-        muteCheckBox = new BooleanCheckBox(muteControl, "Mute");
-        muteCheckBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-        controlPanel.add(muteCheckBox);
-      }
-      
-      panel.add(controlPanel, BorderLayout.WEST);
-      
-      JPanel levelPanel = new JPanel();
-      levelPanel.setLayout(new BoxLayout(levelPanel, BoxLayout.PAGE_AXIS));
-      levelPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
-      
-      JLabel levelLabel = new JLabel("Level");
-      levelLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-      levelPanel.add(levelLabel);      
-      
-      meter = new LevelMeter();
-      meter.setAlignmentX(Component.CENTER_ALIGNMENT);
-      levelPanel.add(meter);
-      
-      panel.add(levelPanel, BorderLayout.EAST);
-      
-      panel.revalidate();
+      setupAudioOutput();
             
       return true;
     } else {
@@ -188,21 +164,11 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
       return false;
     }
     
-    audioFormat = null;
-    audioOut.stop();
-    audioOut.flush();
-    audioOut.close();
-    audioOut = null;
-    gainControl = null;
-    muteControl = null;
+    channel = null;
     
-    panel.removeAll();
-    gainSlider = null;
-    muteCheckBox = null;
-    meter = null;
-    
-    lastTime = -1;
-    level = 0;
+    closeAudioOutput();
+        
+    clearData();
     
     return true;
   }  
@@ -231,7 +197,13 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   
   void clearData() {
     lastTime = -1;
+    
     level = 0;
+    meter.setLevel(0);
+    
+    if (audioOut != null) {
+      audioOut.flush();
+    }
   }
   
   public void postTime(double time) {
@@ -297,10 +269,11 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
         }
       }
       
-      lastTime = times[endIndex-1];
+      if (endIndex > 0) {
+        lastTime = times[endIndex-1];
+      }
       
-      // we can only play back audio in real-time
-      if (playbackRate != 1) {
+      if (audioOut == null) {
         return;
       }
       
@@ -317,7 +290,7 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   }
   
   private void updateLevel(byte[] data) {
-    FloatSampleBuffer sampleBuffer = new FloatSampleBuffer(data, 0, data.length, audioFormat);
+    FloatSampleBuffer sampleBuffer = new FloatSampleBuffer(data, 0, data.length, audioOut.getFormat());
     float[] normalizedData = sampleBuffer.getChannel(0);
     for (int i=0; i<normalizedData.length/4; i++) {
       level = (level +
@@ -334,35 +307,133 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
     
     super.closePanel();
     
-    if (audioOut != null) {
-      audioOut.stop();
-      audioOut.flush();
-      audioOut.close();
-    }
+    closeAudioOutput();
   }
   
   public void playbackRateChanged(double playbackRate) {
+    if (this.playbackRate == playbackRate) {
+      return;
+    }
+    
     this.playbackRate = playbackRate;
+
+    setupAudioOutput();
+  }
+  
+  public void postState(int newState, int oldState) {
+    super.postState(newState, oldState);
+    
+    if (newState == oldState) {
+      return;
+    }
+    
+    setupAudioOutput();
+  }
+
+  private boolean setupAudioOutput() {
+    if (channel == null) {
+      return false;
+    }
+    
+    float desiredPlaybackRate = 1;
+    if (state == RBNBController.STATE_PLAYING) {
+      desiredPlaybackRate = (float)(playbackRate);
+    }
+    
+    float sampleRate = Float.parseFloat(channel.getMetadata("samplerate"));
+    if (audioOut != null &&
+        sampleRate*desiredPlaybackRate == audioOut.getFormat().getSampleRate()) {
+      return true;
+    }
+    
+    closeAudioOutput();
+
+    sampleRate *= desiredPlaybackRate;
+    int sampleSize = Integer.parseInt(channel.getMetadata("samplesize"));
+    int channels = Integer.parseInt(channel.getMetadata("channels"));
+    boolean signed = channel.getMetadata("signed").equals("1");
+    boolean endian = channel.getMetadata("endian").equals("1");
+    
+    AudioFormat audioFormat = new AudioFormat(sampleRate, sampleSize, channels, signed, endian);
+    if (sampleRate != audioFormat.getSampleRate()) {
+      closeAudioOutput();
+      return false;
+    }
+
+    try {
+      audioOut = AudioSystem.getSourceDataLine(audioFormat);
+      audioOut.open(audioFormat);
+    } catch (LineUnavailableException e) {
+      closeAudioOutput();
+      return false;
+    }
+    
+    if (audioOut.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+      gainControl = (FloatControl)audioOut.getControl(FloatControl.Type.MASTER_GAIN);
+      gainSlider.setControl(gainControl);
+    }
+
+    
+    if (audioOut.isControlSupported(BooleanControl.Type.MUTE)) {
+      muteControl = (BooleanControl)audioOut.getControl(BooleanControl.Type.MUTE);
+      muteCheckBox.setControl(muteControl);
+    }    
+    
+    audioOut.start();
+    
+    return true;
+  }
+  
+  private void closeAudioOutput() {
+    if (audioOut != null) {
+      gainControl = null;
+      gainSlider.setControl(null);
+      
+      muteControl = null;
+      muteCheckBox.setControl(null);
+      
+      audioOut.stop();
+      audioOut.flush();
+      audioOut.close();
+      audioOut = null;
+    }
   }
   
   class FloatSlider extends JSlider implements ChangeListener {
     FloatControl control;
     
+    public FloatSlider() {
+      this(null, VERTICAL);
+    }    
+    
+    public FloatSlider(int orientation) {
+      this(null, orientation);
+    }
+    
     public FloatSlider(FloatControl volumeControl) {
-      this(volumeControl, JSlider.VERTICAL);
+      this(volumeControl, VERTICAL);
     }
       
     public FloatSlider(FloatControl control, int orientation) {
       super(orientation);
-      
+
+      setControl(control);
+    }
+    
+    public void setControl(FloatControl control) {
       this.control = control;
       
-      setMinimum((int)control.getMinimum());
-      setMaximum((int)control.getMaximum());
+      removeChangeListener(this);
       
-      setValue((int)control.getValue());
-      
-      addChangeListener(this);
+      if (control != null) {
+        setMinimum((int)control.getMinimum());
+        setMaximum((int)control.getMaximum());
+        setValue((int)control.getValue());
+        addChangeListener(this);
+        setEnabled(true);
+      } else {
+        setEnabled(false);
+      }     
     }
     
     public void stateChanged(ChangeEvent arg0) {
@@ -372,6 +443,14 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
   
   class BooleanCheckBox extends JCheckBox implements ChangeListener {
     BooleanControl control;
+        
+    public BooleanCheckBox() {
+      this(null, null);
+    }
+    
+    public BooleanCheckBox(String text) {
+      this(null, text);
+    }
     
     public BooleanCheckBox(BooleanControl control) {
       this(control, null);
@@ -379,12 +458,22 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
     
     public BooleanCheckBox(BooleanControl control, String text) {
       super(text);
-      
+
+      setControl(control);
+    }
+    
+    public void setControl(BooleanControl control) {
       this.control = control;
       
-      setSelected(control.getValue());
+      removeChangeListener(this);
       
-      addChangeListener(this);
+      if (control != null) {
+        setSelected(control.getValue());
+        addChangeListener(this);
+        setEnabled(true);
+      } else {
+        setEnabled(false);
+      }
     }
 
     public void stateChanged(ChangeEvent arg0) {

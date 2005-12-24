@@ -149,6 +149,13 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.1
 	 */
 	double timeScale;
+  
+  /**
+   * The last posted state.
+   * 
+   * @since  1.3
+   */
+  double state;
 
 	/**
 	 * The UI component with toolbar.
@@ -222,6 +229,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		time = 0;
 		timeScale = 1;
+    state = RBNBController.STATE_DISCONNECTED;
 		
 		attached = true;
 		
@@ -417,6 +425,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 	
 	public void postState(int newState, int oldState) {
+    state = newState;
+    
     if (newState == Player.STATE_LOADING || (newState == Player.STATE_MONITORING && oldState != Player.STATE_MONITORING)) {
       clearData();  
     }
