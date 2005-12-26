@@ -255,24 +255,12 @@ public class SpectrumAnalyzerDataPanel extends AbstractDataPanel {
 		chart.setNotify(false);
 		xySeries.clear();
 		
-		/* double[] values = fft.toWraparoundOrder(inputDataArray);
-		double period = sampleRate/(numberOfSamples*2);
-		double frequency = 0;
-		for (int i=0; i<numberOfSamples; i++) {
-			frequency += period;
-			xySeries.add(frequency, values[i]);
-		} */
-		
-		double period = sampleRate/(numberOfSamples*2);
-		double frequency = 0;
-		xySeries.add(frequency, inputDataArray[0]);
-		frequency += period;
-		xySeries.add(frequency, 0.0);
-		for (int i=1; i<numberOfSamples/2; i++) {
-			frequency += period;
-			xySeries.add(frequency, inputDataArray[i]);
-			frequency += period;
-			xySeries.add(frequency, inputDataArray[numberOfSamples-i]);
+		double period = sampleRate/numberOfSamples; 
+    double frequency = 0;
+		for (int i=0; i<=numberOfSamples/2; i++) {
+      double datum = Math.pow(inputDataArray[i], 2);
+			xySeries.add(frequency, datum);
+      frequency += period;
 		}
 		
 		chart.setNotify(true);
