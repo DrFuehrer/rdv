@@ -31,7 +31,18 @@
 
 package org.nees.buffalo.rdv.ui;
 
+import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.Point;
+import java.awt.datatransfer.StringSelection;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
+import java.awt.dnd.DragSourceDragEvent;
+import java.awt.dnd.DragSourceDropEvent;
+import java.awt.dnd.DragSourceEvent;
+import java.awt.dnd.DragSourceListener;
 import java.util.ArrayList;
 
 import javax.swing.JComponent;
@@ -47,7 +58,7 @@ import org.apache.commons.logging.LogFactory;
  * @author  Jason P. Hanley
  * @since   1.1
  */
-public class DataPanelContainer extends JPanel {
+public class DataPanelContainer extends JPanel implements DragGestureListener, DragSourceListener {
 
 	/**
 	 * The logger for this class.
@@ -117,6 +128,10 @@ public class DataPanelContainer extends JPanel {
 	 */
 	public void addDataPanel(JComponent component) {
 		dataPanels.add(component);
+    
+    DragSource dragSource = DragSource.getDefaultDragSource();
+    dragSource.createDefaultDragGestureRecognizer(component, DnDConstants.ACTION_MOVE, this);    
+    
 		layoutDataPanels();
 		
 		log.info("Added data panel to container (total=" + dataPanels.size() + ").");
@@ -186,4 +201,48 @@ public class DataPanelContainer extends JPanel {
 		validate();
 		repaint();
 	}
+  
+  private void moveBefore(Component moveComponent, Component beforeComponent) {
+    int beforeComponentIndex = getComponentIndex(beforeComponent);
+    if (beforeComponentIndex != -1) {
+      dataPanels.remove(moveComponent);
+      dataPanels.add(beforeComponentIndex, moveComponent);
+      layoutDataPanels();
+    }
+  }
+  
+  private int getComponentIndex(Component c) {
+    for (int i=0; i<dataPanels.size(); i++) {
+      Component component = (Component)dataPanels.get(i);
+      if (c == component) {
+        return i;
+      }
+    }    
+    return -1;
+  }
+
+  public void dragGestureRecognized(DragGestureEvent e) {
+    e.startDrag(DragSource.DefaultMoveDrop, new StringSelection(""), this);    
+  }
+
+  public void dragEnter(DragSourceDragEvent e) {}
+
+  public void dragOver(DragSourceDragEvent e) {
+    Point dragPoint = e.getLocation();
+    Point containerLocation = getLocationOnScreen();
+    dragPoint.translate(-containerLocation.x, -containerLocation.y);
+
+    Component overComponent = getComponentAt(dragPoint);
+    Component dragComponent = e.getDragSourceContext().getComponent();
+    
+    if (overComponent != null && overComponent != dragComponent) {
+      moveBefore(dragComponent, overComponent);
+    }
+  }
+
+  public void dropActionChanged(DragSourceDragEvent dsde) {}
+
+  public void dragExit(DragSourceEvent dse) {}
+
+  public void dragDropEnd(DragSourceDropEvent dsde) {}
 }

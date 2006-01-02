@@ -649,25 +649,28 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	
 	public void drop(DropTargetDropEvent e) {
 		try {
-			DataFlavor stringFlavor = DataFlavor.stringFlavor;
-			Transferable tr = e.getTransferable();
-			if(e.isDataFlavorSupported(stringFlavor)) {
-				String channelName = (String)tr.getTransferData(stringFlavor);
-				e.acceptDrop(DnDConstants.ACTION_LINK);
-				e.dropComplete(true);
-
-				boolean status;
-				if (supportsMultipleChannels()) {
-					status = addChannel(channelName);
-				} else {
-					status = setChannel(channelName);
-				}
-				if (!status) {
-					//TODO display an error in the UI
-				}
-			} else {
-				e.rejectDrop();
-			}
+      int dropAction = e.getDropAction();
+      if (dropAction == DnDConstants.ACTION_LINK) {
+  			DataFlavor stringFlavor = DataFlavor.stringFlavor;
+  			Transferable tr = e.getTransferable();
+  			if(e.isDataFlavorSupported(stringFlavor)) {
+  				String channelName = (String)tr.getTransferData(stringFlavor);
+  				e.acceptDrop(DnDConstants.ACTION_LINK);
+  				e.dropComplete(true);
+  
+  				boolean status;
+  				if (supportsMultipleChannels()) {
+  					status = addChannel(channelName);
+  				} else {
+  					status = setChannel(channelName);
+  				}
+  				if (!status) {
+  					//TODO display an error in the UI
+  				}
+  			} else {
+  				e.rejectDrop();
+  			}
+      }
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		} catch(UnsupportedFlavorException ufe) {

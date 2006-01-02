@@ -3,5 +3,7 @@
  panels for common actions.
 -Add support for parent/child server configurations.
 -Load and save of current configuration to/from a file.
--Export data from the server to your computer
--A new data panel to list to audio
+-Export data from the server to your computer.
+-A new data panel to listen to audio.
+-The ability to rearrange docked data panels with drag-and-drop. Just grab the
+ header and drag it with your mouse.
