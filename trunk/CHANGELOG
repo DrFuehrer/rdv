@@ -43,6 +43,7 @@
 -Added audio data panel. Support for linear formats currently.
 -Abstract data panel now manages a state variable for subclasses.
 -Added support for playback rate changes in audio data panel.
+-Extend data panel layout orientation to all cases.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

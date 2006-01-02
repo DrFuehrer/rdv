@@ -83,6 +83,13 @@ public class DataPanelContainer extends JPanel {
 	 * @since  1.1
 	 */
 	private int layout;
+  
+  /**
+   * The layout manager.
+   * 
+   * @since  1.3
+   */
+  private GridLayout gridLayout;
 	
 	/** 
 	 * Create the container and set the default layout to horizontal.
@@ -93,6 +100,9 @@ public class DataPanelContainer extends JPanel {
     super();
     
     setBorder(null);
+    
+    gridLayout = new GridLayout(1, 1, 8, 8);
+    setLayout(gridLayout);
     
 		dataPanels = new ArrayList();
 		
@@ -119,7 +129,6 @@ public class DataPanelContainer extends JPanel {
 	 * @since            1.1
 	 */
 	public void removeDataPanel(JComponent component) {
-		remove(component);
 		dataPanels.remove(component);
 		layoutDataPanels();
 		
@@ -133,8 +142,10 @@ public class DataPanelContainer extends JPanel {
 	 * @since         1.1
 	 */
 	public void setLayout(int layout) {
-		this.layout = layout;
-		layoutDataPanels();
+    if (this.layout != layout) {
+      this.layout = layout;
+      layoutDataPanels();
+    }
 	}
 	
 	/**
@@ -148,22 +159,28 @@ public class DataPanelContainer extends JPanel {
 		if (numberOfDataPanels > 0) {
 			int gridDimension = (int)Math.ceil(Math.sqrt(numberOfDataPanels));
 			int rows = gridDimension;
-			int columns = gridDimension;
-			
-			if (layout == HORIZONTAL_LAYOUT && numberOfDataPanels == 2) {
-				rows = 1;
-			}
-			
-			setLayout(new GridLayout(rows, columns, 8, 8));
-			
-			JComponent component;
-			int channelIndex = 0;
-			for (int i=0; i<numberOfDataPanels; i++) {
-				component = (JComponent)dataPanels.get(i);
-				remove(component);
-				add(component);			
-				channelIndex++;			
-			}
+      
+      int columns;
+      if (numberOfDataPanels > Math.pow(gridDimension, 2)*(gridDimension-1)/gridDimension) {
+        columns = gridDimension;
+      } else {
+        columns = gridDimension-1;
+      }
+
+			if (layout == HORIZONTAL_LAYOUT) {
+        gridLayout.setRows(columns);
+        gridLayout.setColumns(rows);
+			} else {
+        gridLayout.setRows(rows);
+        gridLayout.setColumns(columns);
+      }
+    }
+      
+    removeAll();
+		JComponent component;
+		for (int i=0; i<numberOfDataPanels; i++) {
+			component = (JComponent)dataPanels.get(i);
+			add(component);
 		}
 		
 		validate();
