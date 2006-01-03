@@ -38,12 +38,14 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragGestureRecognizer;
 import java.awt.dnd.DragSource;
 import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -101,6 +103,13 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
    * @since  1.3
    */
   private GridLayout gridLayout;
+  
+  /**
+   * The drag gesture recognizers for the components.
+   * 
+   * @since  1.3
+   */
+  private HashMap dragGestures;
 	
 	/** 
 	 * Create the container and set the default layout to horizontal.
@@ -116,6 +125,7 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
     setLayout(gridLayout);
     
 		dataPanels = new ArrayList();
+    dragGestures =  new HashMap();
 		
 		layout = HORIZONTAL_LAYOUT;
 	}
@@ -130,7 +140,8 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 		dataPanels.add(component);
     
     DragSource dragSource = DragSource.getDefaultDragSource();
-    dragSource.createDefaultDragGestureRecognizer(component, DnDConstants.ACTION_MOVE, this);    
+    DragGestureRecognizer dragGesture = dragSource.createDefaultDragGestureRecognizer(component, DnDConstants.ACTION_MOVE, this);
+    dragGestures.put(component, dragGesture);
     
 		layoutDataPanels();
 		
@@ -144,6 +155,9 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 	 * @since            1.1
 	 */
 	public void removeDataPanel(JComponent component) {
+    DragGestureRecognizer dragGesture = (DragGestureRecognizer)dragGestures.remove(component);
+    dragGesture.setComponent(null);
+    
 		dataPanels.remove(component);
 		layoutDataPanels();
 		
