@@ -37,7 +37,9 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.geom.Ellipse2D;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
 
 import javax.swing.JComponent;
 
@@ -64,7 +66,7 @@ public class RendererDataPanel extends AbstractDataPanel {
 
   void clearData() {
     lastTime = -1;
-    renderer.setPoint(null);
+    renderer.clear();
   }
 
   public boolean supportsMultipleChannels() {
@@ -80,105 +82,122 @@ public class RendererDataPanel extends AbstractDataPanel {
     }
     
     Iterator it = channels.iterator();
-    if (!it.hasNext()) {
-      //no channels to post to
-      return;
-    }
+    while (it.hasNext()) {      
+      String xChannel = null;
+      int xIndex = -1;
+      String yChannel = null;
+      int yIndex = -1;
+      String zChannel = null;
+      int zIndex = -1;
       
-    String xChannel = null;
-    int xIndex = -1;
-    String yChannel = null;
-    int yIndex = -1;
-    String zChannel = null;
-    int zIndex = -1;
-    
-    xChannel = (String)it.next();
-    xIndex = channelMap.GetIndex(xChannel);
-    if (xIndex == -1) {
-      return;
-    }
-    if (it.hasNext()) {
-      yChannel = (String)it.next();
-      yIndex = channelMap.GetIndex(yChannel);
-      if (yIndex == -1) {
+      xChannel = (String)it.next();
+      xIndex = channelMap.GetIndex(xChannel);
+      if (xIndex == -1) {
         return;
       }
       if (it.hasNext()) {
-        zChannel = (String)it.next();
-        zIndex = channelMap.GetIndex(zChannel);
-        if (zIndex == -1) {
+        yChannel = (String)it.next();
+        yIndex = channelMap.GetIndex(yChannel);
+        if (yIndex == -1) {
           return;
         }
-      }
-    }    
-   
-    double[] times = channelMap.GetTimes(xIndex);
-    
-    if (times.length == 0) {
-      return;
-    }
-    
-    int dataIndex = -1;
-    
-    for (int i=times.length-1; i>=0; i--) {
-      if (times[i] > lastTime && times[i] <= time) {
-        dataIndex = i;
-        break;
-      }
-    }
-    
-    if (dataIndex != -1) {
-      lastTime = times[dataIndex];
+        if (it.hasNext()) {
+          zChannel = (String)it.next();
+          zIndex = channelMap.GetIndex(zChannel);
+          if (zIndex == -1) {
+            return;
+          }
+        }
+      }    
+     
+      double[] times = channelMap.GetTimes(xIndex);
       
-      double x = 0;
-      double y = 0;
-      double z = 0;
+      if (times.length == 0) {
+        return;
+      }
       
-      x = channelMap.GetDataAsFloat64(xIndex)[dataIndex];
-      if (yChannel != null) {
-        y = channelMap.GetDataAsFloat64(yIndex)[dataIndex];
-        if (zChannel != null) {
-          z = channelMap.GetDataAsFloat64(zIndex)[dataIndex];
+      int dataIndex = -1;
+      
+      for (int i=times.length-1; i>=0; i--) {
+        if (times[i] > lastTime && times[i] <= time) {
+          dataIndex = i;
+          break;
         }
       }
       
-      Point3D point = new Point3D(x, y, z);
-      renderer.setPoint(point);
-    }      
-  }  
+      if (dataIndex != -1) {
+        double x = 0;
+        double y = 0;
+        double z = 0;
+        
+        x = channelMap.GetDataAsFloat64(xIndex)[dataIndex];
+        if (yChannel != null) {
+          y = channelMap.GetDataAsFloat64(yIndex)[dataIndex];
+          if (zChannel != null) {
+            z = channelMap.GetDataAsFloat64(zIndex)[dataIndex];
+          }
+        }
+        
+        Point3D point = new Point3D(x, y, z);
+        renderer.setPoint(xChannel, point);
+      }
+    }
+    
+    lastTime = time;
+  }
 
   class RendererComponent extends JComponent {
     
-    Point3D point;
+    HashMap points;
     
-    public void setPoint(Point3D point) {
-      Point3D oldPoint = this.point;
-      this.point = point;
+    public RendererComponent() {
+      points = new HashMap();
+    }
+    
+    public void setPoint(String channelName, Point3D point) {
+      Point3D oldPoint = (Point3D)points.put(channelName, point);
       if ((oldPoint != null && !oldPoint.equals(point)) || (oldPoint != point)) {
         repaint();
       }
     }
     
+    public void clear() {
+      points.clear();
+      repaint();
+    }
+    
     protected void paintComponent(Graphics g) {
       super.paintComponent(g);
       
+      Set channels = points.keySet();
+      Iterator it = channels.iterator();
+      while (it.hasNext()) {
+        Point3D point = (Point3D)points.get(it.next());
+        paintComponent(g, point);
+      }
+    }
+    
+    protected void paintComponent(Graphics g, Point3D point) {
       if (point == null) {
         return;
       }
      
-      double minX = -1;
-      double maxX = 1;
-      double minY = -1;
-      double maxY = 1;
+      double minX = -250;
+      double maxX = 250;
+      double minY = -250;
+      double maxY = 250;
       
-      int pointSize = 15;
-      
-      Insets insets = getInsets();      
-      int width = getWidth() - insets.right - pointSize;
-      int height = getHeight() - insets.bottom - pointSize;
-      
+      int maxZ = 10;
+           
       if (point.x >= minX && point.x <= maxX &&
-          point.y >= minY && point.y <= maxY) {
+          point.y >= minY && point.y <= maxY &&
+          point.z <= maxZ) {
+        int pointSize = (int)Math.round(-100/(point.z-maxZ-1));
+        
+        Insets insets = getInsets();      
+        int width = getWidth() - insets.right - pointSize;
+        int height = getHeight() - insets.bottom - pointSize;
+        
         int x = (int)Math.round((point.x-minX)/(maxX-minX)*width);
         int y = (int)Math.round((point.y-minY)/(maxY-minY)*height);
         
@@ -186,9 +205,9 @@ public class RendererDataPanel extends AbstractDataPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         g2.setPaint(Color.GREEN);              
-        g2.fill(new Ellipse2D.Double(x+1, y+1, pointSize-2, pointSize-2));
+        g2.fill(new Ellipse2D.Double(x+1, height-y+1, pointSize-2, pointSize-2));
         g2.setPaint(this.getForeground());
-        g2.draw(new Ellipse2D.Double(x, y, pointSize-1, pointSize-1));        
+        g2.draw(new Ellipse2D.Double(x, height-y, pointSize-1, pointSize-1));        
       }
     }
     
