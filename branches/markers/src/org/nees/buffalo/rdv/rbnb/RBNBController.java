@@ -1167,6 +1167,14 @@ public class RBNBController implements Player, MetadataListener {
 	public void removeSubscriptionListener(SubscriptionListener subscriptionListener) {
 		subscriptionListeners.remove(subscriptionListener);
 	}
+  
+  /**
+    * LJM An accessor method to get the private @see CahnnelMap variable.
+   * implemented for use by the markerPanel in ControlPanel.
+   */
+  public ChannelMap getChannelMap () {
+    return requestedChannels;
+  }
 
 	
 	//Message Methods
@@ -1192,7 +1200,6 @@ public class RBNBController implements Player, MetadataListener {
 	public void removeMessageListener(MessageListener messageListener) {
 		messageListeners.remove(messageListener);
 	}
-	
 	
 	// Connection Listener Methods
 	
@@ -1303,3 +1310,4 @@ public class RBNBController implements Player, MetadataListener {
 		}
 	}
 }
+
