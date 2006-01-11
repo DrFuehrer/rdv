@@ -71,6 +71,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
+//LJM
+import org.nees.buffalo.rdv.rbnb.NeesEventDataListener;
+
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
@@ -131,6 +134,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    /** The name of an event channel, if found. */
    private String eventsChannelName = "Not Found.";
    private int eventsChannelIndex = -1;
+   private  NeesEventDataListener eventListener = null;
 //////////////////////////////////////////////////////////////////////////// LJM
    
 	private double startTime;
@@ -520,14 +524,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
           log.debug ("*** Marker Channel Found: " + channelName + "\n");
           markerLabel.setText ("Event Markers.");
           // TODO Make an event array here.
-          log.debug ("*** eventsChannelIndex: " +
-                     Integer.toString (eventsChannelIndex));
-          /*
-           if (eventsChannelIndex != -1) {
-             String[] markerStrings =
-             myRbnbControllersCmap.GetDataAsString (eventsChannelIndex);
-           }
-           */
+          retval = eventListener.getData (eventsChannelName);
         } // if
       } // while
     } else { // ctree is null
