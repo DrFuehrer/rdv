@@ -14,22 +14,58 @@ package org.nees.buffalo.rdv.rbnb;
   * All rights reserved. See full notice in the source, at the end of the file.
 */
 import com.rbnb.sapi.ChannelMap;
+import java.io.IOException;
+import java.util.InvalidPropertiesFormatException;
+import javax.xml.transform.TransformerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.rbnb.marker.NeesEvent;
 
 public class NeesEventDataListener implements DataListener {
   static Log log = LogFactory.getLog (NeesEventDataListener.class.getName ());
-  private ChannelMap channelMap = null;
+  private ChannelMap channelMap;
 
+  public NeesEventDataListener () {
+    super ();
+    this.channelMap = null;
+  }
+  
   public void postData (ChannelMap cMap) {
     this.channelMap = cMap;
   }
-
-  public NeesEvent[] getData (String channelName) {
-    return null;
+  
+/** A method to get @return NeesEvent data from a @param input rbnb data
+  * channel. */
+  public NeesEvent[] getEventData (String channelName) {
+    int channelIndex;
+    if (channelMap == null) {
+      return null;
+    }
+    channelIndex = this.channelMap.GetIndex (channelName);
+    log.debug ("Got Events channel \"" + channelName + "\" with index " +
+               Integer.toString (channelIndex));
+    String[] channelData = this.channelMap.GetDataAsString (channelIndex);
+    //TODO return the data
+    NeesEvent[] eventData = new NeesEvent[channelData.length];
+    for (int i=0; i<channelData.length; i++) {
+      eventData[i] = new NeesEvent ();
+      try {
+        eventData[i].setFromEventXml (channelData[i]);
+      } catch (TransformerException te) { 
+        log.error ("Java XML Error\n" + te);
+        te.printStackTrace ();
+      } catch (InvalidPropertiesFormatException ipfe) {
+        log.error ("Java XML Error\n" + ipfe);
+        ipfe.printStackTrace ();
+      } catch (IOException ioe) {
+        log.error ("Java IO Error\n" + ioe);
+        ioe.printStackTrace ();
+      }
+    } // for
+      return eventData;
   } // getData ()
 } // class
+
 /* Copyright Notice:
 *
 * Copyright (c) 2005, NEES Cyberinfrastructure Center (NEESit), San Diego Supercomputer Center

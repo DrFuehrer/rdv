@@ -170,9 +170,12 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
               messages.setBackground (NeesEvent.noteColor);
               messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
-              
             }
             
+            messageBuffer.append ("\n\n--\nTime:\n");
+            messageBuffer.append ( (String)(eventData[i].getProperty ("timeStamp")) + "\n");
+            messageBuffer.append ( DataViewer.formatDate (Double.parseDouble (eventData[i].getProperty ("timeStamp"))) );
+          
           } catch (IOException ioe) {
             messageBuffer.append ("Java IO Error\n" + ioe);
           } catch (TransformerException te) {
@@ -180,7 +183,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
           }
         } // for
         messages.setText (messageBuffer.toString ());
-        this.log.info ("Setting Event Marker Data Panel:\n" + messageBuffer.toString ());
+        //this.log.info ("Setting Event Marker Data Panel:\n" + messageBuffer.toString ());
       } // if
 		} // while
 	} // postTime ()

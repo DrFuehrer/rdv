@@ -109,11 +109,17 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  	private double timeScales[] = {1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
 //////////////////////////////////////////////////////////////////////////// LJM
-   /** A pair of variables that will be used to make a synthetic data source. */
-   double cannedTimeBase = 1.132618341E9;
-   private double markerTimes[] = {
-     cannedTimeBase*.01, cannedTimeBase*.20, cannedTimeBase*.40,
-     cannedTimeBase*.60, cannedTimeBase*.80, cannedTimeBase*.99
+  /** A variable to switch on the usage of synthetic marker data. */
+  public boolean usingFakeEvents = true; 
+  /** A pair of variables that will be used to make a synthetic data source. */
+  //long timeNow = System.currentTimeMillis ();
+  //double cannedTimeBase = (double)timeNow / 1000.0;
+  double cannedTimeBase = 1.137111194512E9;
+  double cannedTimeInterval = 5.0;
+  private double markerTimes[] = {
+    cannedTimeBase + 1*cannedTimeInterval, cannedTimeBase + 2*cannedTimeInterval,
+    cannedTimeBase + 3*cannedTimeInterval, cannedTimeBase + 4*cannedTimeInterval,
+    cannedTimeBase + 5*cannedTimeInterval, cannedTimeBase + 6*cannedTimeInterval
    };
    /* Need these to have global scope in this class to interact with it between
      * methods. Perhaps the thing to do is make a trivial data structure class?
@@ -122,19 +128,16 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    private JLabel markerLabel = null;
    /* Marker panel interval limits */
    private double markerPanelStart, markerPanelEnd, markerPanelScaleFactor;
-   private double timeScaleClipped;
-   private int markerXcoordinate, maxMarkerXcoordinate=0;
+   private int markerXcoordinate;
    /** An array of event markers generated from an appropriate channel in
      * in the DataTurbine to which this RDV is connected. */
    protected NeesEvent[] theEvents = null;
-   /** A variable to switch on the usage of synthetic marker data. */
-   public boolean usingFakeEvents = false;
    /** A variable to indicate whether or not an events channel has been found */
    private boolean foundEventsChannel = false;
    /** The name of an event channel, if found. */
    private String eventsChannelName = "Not Found.";
    private int eventsChannelIndex = -1;
-   private  NeesEventDataListener eventListener = null;
+   private  NeesEventDataListener neesEventListener = null;
 //////////////////////////////////////////////////////////////////////////// LJM
    
 	private double startTime;
@@ -153,7 +156,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		super();
 
 		this.rbnbController = rbnbController;
-		
+//////////////////////////////////////////////////////////////////////////// LJM
+    this.neesEventListener = new NeesEventDataListener ();
+//////////////////////////////////////////////////////////////////////////// LJM
+    
+    
 		startTime = -1;
 		endTime = -1;
 		location = -1;
@@ -309,24 +316,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
           * double arithmetic adversely effects the integral JPanel X
           * coordinate for drawing the scaled position of markers.
          */
-        timeScaleClipped = (timeScale < 1.0)? 1.0 : timeScale;
         theEvents = getNeesEvents (ctree);
+        //log.debug ("returned from getNeesEvents ()");
         // if we have some events to look at, display them.
         if (theEvents != null) {
-          for (int ii=0; ii<theEvents.length; ii++) {
-            try {
-              log.debug ("Event " + Integer.toString (ii) + " of " +
-                         Integer.toString (theEvents.length) + "\n" +
-                         theEvents[ii].toEventXmlString ());
-            } catch (Exception e) {
-              log.error ("Printing NEESevents. " + e);
-            }
-          }
-          log.debug ("returned from getNeesEvents ()");
           String markerType = null;
           for (int i=0; i<theEvents.length; i++) {
             markerType = theEvents[i].getProperty ("EventType");
-            log.debug ("Marker type: " + markerType);
             if ( markerType.compareToIgnoreCase ("Start") == 0 ) {
               markerPanelG.setColor (NeesEvent.startColor); 
             } else if ( markerType.compareToIgnoreCase ("Stop") == 0 ) {
@@ -335,12 +331,20 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
               markerPanelG.setColor (Color.black);
             } // else
             updateMarkerPanelScaleFactor ();
+            // x=t*width/(e-s)
             markerXcoordinate =
-              (int)(Double.parseDouble (theEvents[i].getProperty ("TimeStamp")) *
-                    markerPanelScaleFactor);
-            maxMarkerXcoordinate =
-              (maxMarkerXcoordinate < markerXcoordinate)? markerXcoordinate: maxMarkerXcoordinate;
+              (int)( (Double.parseDouble (theEvents[i].getProperty ("TimeStamp")) - startTime ) * markerPanelScaleFactor);
             markerPanelG.fillRect (markerXcoordinate, 0, 3, 10);
+            log.debug ("Drew a " + markerType + " marker at x: " +
+                       Integer.toString (markerXcoordinate) + "\n" +
+                       "at time (from XML): " +
+                        theEvents[i].getProperty ("TimeStamp") + "\n" +
+                       "at nice time (from XML): " +
+                        DataViewer.formatDate
+                          (Double.parseDouble
+                           (theEvents[i].getProperty ("TimeStamp"))) + "\n" +
+                       "With scale factor: " + markerPanelScaleFactor
+                       );
           } // for
         } else { // no markers
           log.debug ("No Marker Data - null.");
@@ -354,14 +358,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       public void mouseClicked (MouseEvent e) {
         // scale factor is pixels/time
         double guiTime = ((e.getX () / markerPanelScaleFactor) + startTime);
-        double locStart = location + startTime;
+        // TODO set the location to the GUI click time.
+        setSliderLocation (guiTime);
         log.debug ("\nGUI Click Time: " + Double.toString (guiTime) + "\n" +
-                   "GUI Click Time: " + DataViewer.formatDate (guiTime) + "\n" +
-                   "LocStart: " + locStart + "\n" +
-                   "LocStart: " + DataViewer.formatDate (locStart) + "\n" +
-                   "G/L: " + Double.toString (guiTime/locStart)
+                   "Nice GUI Click Time: " + DataViewer.formatDate (guiTime)
                    );
-      }
+        markerPanel.repaint ();
+      } // mouseClicked ()
       public void mouseDragged   (MouseEvent e) {}
       public void mouseEntered   (MouseEvent e) {}
       public void mouseExited    (MouseEvent e) {}
@@ -523,19 +526,31 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
           eventsChannelName = channelName;
           log.debug ("*** Marker Channel Found: " + channelName + "\n");
           markerLabel.setText ("Event Markers.");
-          // TODO Make an event array here.
-          retval = eventListener.getData (eventsChannelName);
+          if (this.rbnbController.subscribe (channelName, neesEventListener)) {
+            retval = (neesEventListener == null)? null : 
+              neesEventListener.getEventData (eventsChannelName);
+          } else {
+            log.error ("Couldn't subscribe to channel \"" + channelName + "\"");
+          }
         } // if
       } // while
-    } else { // ctree is null
-      log.debug ("No NeesEvent channels found.");
+    } else { // ceetree is null
+      log.debug ("Channel tree is null.");
     }
     log.info ("Got updated NeesEvents channels.");
+    
+    if (retval == null) {
+      log.debug ("Got an array of events of size 0");
+    } else {
+      log.debug ("Got an array of events of size " + 
+                 Integer.toString (retval.length));
+    } // else
+    
     return retval;
   } // getNeesEvents ()
   
   /**
-    *A method to generate synthetic marker data.
+    * A method to generate synthetic marker data.
     * @return org.nees.rbnb.marker.NeesEvent
    */
   NeesEvent[] makeFakeEvents () {
@@ -561,7 +576,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     for (int j=0; j<retValTmp.length; j++) {
       retVal[j] = (NeesEvent)retValTmp[j];
     }
-    log.debug ("Made fake events.");
+    //log.debug ("Made fake events.");
     markerLabel.setText ("Event Markers*.");
     return retVal;
   } // makeFakeEvents ()
@@ -571,14 +586,20 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    */
   private void updateMarkerPanelScaleFactor () {
     markerPanelScaleFactor =
-      (markerPanel.getWidth () / (endTime - startTime)) / timeScaleClipped;
+    (markerPanel.getWidth () / (endTime - startTime));
+    //log.debug ("End-Start: " + Double.toString (endTime - startTime));
+    /*log.debug ("Start: " + Double.toString (startTime) + "\n" +
+               "Nice start time: " + DataViewer.formatDate (startTime) + "\n" +
+               "End: " + Double.toString (endTime) + "\n" +
+               "Nice end time: " + DataViewer.formatDate (endTime)
+               );*/
   }
    
 	public void channelTreeUpdated(ChannelTree ctree) {
 		this.ctree = ctree;
 		updateTimeBoundaries();
-//////////////////////////////////////////////////////////////////////////////LJM
-		//theEvents = getNeesEvents (ctree);
+/////////////////////////////////////////////////////////////////////////////LJM
+    updateMarkerPanelScaleFactor ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 		log.info("Received updated channel metatdata.");
@@ -611,7 +632,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		setSliderBounds(startTime, endTime);
 /////////////////////////////////////////////////////////////////////////////LJM
-    //theEvents = getNeesEvents (ctree);
+    updateMarkerPanelScaleFactor ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 	}	
@@ -634,7 +655,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				setLocationEnd();
 			}
 		}
-	}
+/////////////////////////////////////////////////////////////////////////////LJM
+    updateMarkerPanelScaleFactor ();
+    markerPanel.repaint ();
+/////////////////////////////////////////////////////////////////////////////LJM
+  }
 	
 	private void refreshSliderBounds() {
 		int intDurationTime = (int)((endTime-startTime)*1000);
@@ -666,6 +691,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				locationScrollBar.addAdjustmentListener(this);
 			}
 		}
+/////////////////////////////////////////////////////////////////////////////LJM
+    updateMarkerPanelScaleFactor ();
+    markerPanel.repaint ();
+/////////////////////////////////////////////////////////////////////////////LJM    
    }
 	
 	public void setLocationBegin() {
@@ -785,10 +814,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		if (timeScale != oldTimeScale) {
 			rbnbController.setTimeScale(timeScale);         
 /////////////////////////////////////////////////////////////////////////////LJM
-      this.maxMarkerXcoordinate = 0;
       this.markerPanel.repaint ();
-      this.markerPanel.setPreferredSize (new Dimension (maxMarkerXcoordinate,
-                                                  markerPanel.getHeight ()));
 /////////////////////////////////////////////////////////////////////////////LJM
 			log.debug("Time scale slider changed to " + timeScale + ".");
 		}
