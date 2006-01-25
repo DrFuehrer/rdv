@@ -22,8 +22,8 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 
 /**
-* A template for creating a data panel extension. This is the bare minumum
- * needed to get a working data panel (that does nothing).
+ * An RDV data panel that will handle XML-based event marker objects from a text
+ * channel in DataTurbine and render them particularly to their event type. 
  * 
  * @author Jason P. Hanley
  * @author Lawrence J. Miller
@@ -70,8 +70,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		panel.add (scrollPane, BorderLayout.CENTER);
-		
-		setDataComponent (panel);
+		//setDataComponent (panel);
 	}
   
 	void clearData() {
