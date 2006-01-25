@@ -54,4 +54,8 @@
       <mimeType>x-neesEvent</mimeType>
    </mimeTypes>
 </extension>
+<extension>
+   <name>Event Marker Submission Data Panel</name>
+   <id>org.nees.buffalo.rdv.datapanel.EventMarkerSubmissionDataPanel</id>
+</extension>
 </extensions>
