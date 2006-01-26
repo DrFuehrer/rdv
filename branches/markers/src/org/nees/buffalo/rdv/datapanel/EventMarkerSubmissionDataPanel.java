@@ -1,6 +1,6 @@
-// LJM 051129 - choking on panel and dataComponent
+
 /*
- * Created on Feb 7, 2005
+ * Created on Jan. 24, 2006
  */
 package org.nees.buffalo.rdv.datapanel;
 import java.util.Iterator;
@@ -10,19 +10,22 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-// LJM 051129
-import org.nees.rbnb.marker.NeesEvent;
+/////////////////////////////////////////////////////////////////////////////LJM
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.SendMarkerRDVPanel;
+/////////////////////////////////////////////////////////////////////////////LJM
 
 /**
-* A data panel that turns RDV into t hybrid in that it is a DataTurbine source
+* A data panel that turns RDV into a hybrid in that it is a DataTurbine source
  * that submits data.
  * @author Lawrence J. Miller
  */
@@ -48,8 +51,9 @@ public class EventMarkerSubmissionDataPanel extends AbstractDataPanel implements
 	 */
 	private void initDataComponent () {
 		// TODO create data component
-    panel = new JPanel ();
-		panel.setLayout (new BorderLayout ());
+    panel = new SendMarkerRDVPanel (null);
+    //panel.setBackground (new Color (200, 235, 243));
+		//panel.setLayout (new BorderLayout ());
 		/*scrollPane = new JScrollPane (messages,
                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);*/

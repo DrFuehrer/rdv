@@ -546,9 +546,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem = new JMenuItem(closeAllDataPanelsAction);
   		windowMenu.add(menuItem);
 /////////////////////////////////////////////////////////////////////////////LJM
+     /* Left out (for now), but mat be needed later
       windowMenu.addSeparator ();
       menuItem = new JMenuItem (markerSubmitPanelAction);
-  		windowMenu.add (menuItem);
+  		windowMenu.add (menuItem); */
 /////////////////////////////////////////////////////////////////////////////LJM
   		menuBar.add(windowMenu);
   		
