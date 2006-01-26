@@ -12,6 +12,8 @@ import javax.swing.JScrollPane;
 
 // LJM 051129
 import org.nees.rbnb.marker.NeesEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 import javax.xml.transform.TransformerException;
@@ -66,4 +68,7 @@ public class EventMarkerSubmissionDataPanel extends AbstractDataPanel implements
   public void postTime (double time) {
 		super.postTime (time);
   } // postTime ()
+  
+  public void actionPerformed (ActionEvent e) {}
+  
 } // class
