@@ -77,6 +77,10 @@ import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import com.jgoodies.uif_lite.component.Factory;
 
+/////////////////////////////////////////////////////////////////////////////LJM
+import org.nees.rbnb.marker.SendMarkerRDVPanel;
+/////////////////////////////////////////////////////////////////////////////LJM
+
 /**
  * Main frame fro the application
  * 
@@ -137,7 +141,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	
  	private Action windowAction;
  	private Action closeAllDataPanelsAction;
- 	
+/////////////////////////////////////////////////////////////////////////////LJM 	
+  private Action markerSubmitPanelAction;
+  private SendMarkerRDVPanel markerSender;
+/////////////////////////////////////////////////////////////////////////////LJM  
  	private Action helpAction;
  	private Action aboutAction;
   
@@ -381,6 +388,15 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  		
+/////////////////////////////////////////////////////////////////////////////LJM
+    markerSubmitPanelAction = new DataViewerAction ("Event Marker Submission Panel", "", KeyEvent.VK_M, "icons/channels.gif") {
+      public void ActionPerformed (ActionEvent ae) {
+        markerSender = new SendMarkerRDVPanel (null);
+        markerSender.show ();
+      }
+    };
+/////////////////////////////////////////////////////////////////////////////LJM
+    
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
  
  		aboutAction = new DataViewerAction("About RDV", "", KeyEvent.VK_A) {
@@ -529,7 +545,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		menuItem = new JMenuItem(closeAllDataPanelsAction);
   		windowMenu.add(menuItem);
-  		
+/////////////////////////////////////////////////////////////////////////////LJM
+      windowMenu.addSeparator ();
+      menuItem = new JMenuItem (markerSubmitPanelAction);
+  		windowMenu.add (menuItem);
+/////////////////////////////////////////////////////////////////////////////LJM
   		menuBar.add(windowMenu);
   		
  		JMenu helpMenu = new JMenu(helpAction);

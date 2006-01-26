@@ -112,9 +112,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
   /** A variable to switch on the usage of synthetic marker data. */
   public boolean usingFakeEvents = true; 
   /** A pair of variables that will be used to make a synthetic data source. */
-  //long timeNow = System.currentTimeMillis ();
-  //double cannedTimeBase = (double)timeNow / 1000.0;
-  double cannedTimeBase = 1.137111194512E9;
+  long timeNow = System.currentTimeMillis ();
+  double cannedTimeBase = (double)timeNow / 1000.0;
+  //double cannedTimeBase = 1.137111194512E9;
   double cannedTimeInterval = 5.0;
   private double markerTimes[] = {
     cannedTimeBase + 1*cannedTimeInterval, cannedTimeBase + 2*cannedTimeInterval,
