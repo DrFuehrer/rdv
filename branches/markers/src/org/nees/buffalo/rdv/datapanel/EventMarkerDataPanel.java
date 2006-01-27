@@ -148,13 +148,17 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
           }
           try {
             // LJM 051214 - caps like "EventType" breaks this... dunno why
-            if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Start") == 0 ) {
+            if ( eventData[i].getProperty ("eventType") != null &&
+                 ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Start") == 0 
+                 ) {
               messageBuffer.append ("Start\n\n");
               messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
               messages.setBackground (NeesEvent.startColor);
               messages.setFont (new Font ("Dialog", Font.BOLD, 24));
               
-            } else if ( ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Stop") == 0 ) {
+            } else if ( eventData[i].getProperty ("eventType") != null &&
+                        ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Stop") == 0 
+                        ) {
               messageBuffer.append ("Stop\n\n");
               messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
               messages.setBackground (NeesEvent.stopColor);
@@ -165,8 +169,14 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               "DataTurbineTime: " + times[i] + "\n" +
               "DataTurbineTime: " + DataViewer.formatDate (times[i])
               );*/
-              messageBuffer.append ("Annotation\n\n");
-              messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
+              
+              messageBuffer.append ("Label: ");
+              messageBuffer.append ( (String)(eventData[i].getProperty ("label")) + "\n" );
+              messageBuffer.append ("Annotation: ");
+              messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) + "\n" );
+              messageBuffer.append ("Source: ");
+              messageBuffer.append ( (String)(eventData[i].getProperty ("source")) );
+              
               messages.setBackground (NeesEvent.noteColor);
               messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
             }
