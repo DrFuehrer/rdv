@@ -391,7 +391,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 /////////////////////////////////////////////////////////////////////////////LJM
     markerSubmitPanelAction = new DataViewerAction ("Event Marker Submission Panel", "", KeyEvent.VK_M, "icons/channels.gif") {
       public void ActionPerformed (ActionEvent ae) {
-        markerSender = new SendMarkerRDVPanel (null);
+        markerSender = new SendMarkerRDVPanel (null, "localhost:3333");
         markerSender.show ();
       }
     };

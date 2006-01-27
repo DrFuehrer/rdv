@@ -51,7 +51,7 @@ public class EventMarkerSubmissionDataPanel extends AbstractDataPanel implements
 	 */
 	private void initDataComponent () {
 		// TODO create data component
-    panel = new SendMarkerRDVPanel (null);
+    panel = new SendMarkerRDVPanel (null, "localhost");
     //panel.setBackground (new Color (200, 235, 243));
 		//panel.setLayout (new BorderLayout ());
 		/*scrollPane = new JScrollPane (messages,

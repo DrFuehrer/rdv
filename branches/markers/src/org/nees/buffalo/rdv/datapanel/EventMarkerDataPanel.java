@@ -170,6 +170,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               "DataTurbineTime: " + DataViewer.formatDate (times[i])
               );*/
               
+              messageBuffer.append ("--\n");
               messageBuffer.append ("Label: ");
               messageBuffer.append ( (String)(eventData[i].getProperty ("label")) + "\n" );
               messageBuffer.append ("Annotation: ");
@@ -181,9 +182,10 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
             }
             
-            messageBuffer.append ("\n\n--\nTime:\n");
+            messageBuffer.append ("\nTime:\n");
             messageBuffer.append ( (String)(eventData[i].getProperty ("timeStamp")) + "\n");
             messageBuffer.append ( DataViewer.formatDate (Double.parseDouble (eventData[i].getProperty ("timeStamp"))) );
+            messageBuffer.append ("\n--\n");
           
           } catch (IOException ioe) {
             messageBuffer.append ("Java IO Error\n" + ioe);
