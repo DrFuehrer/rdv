@@ -322,7 +322,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
         if (theEvents != null) {
           String markerType = null;
           for (int i=0; i<theEvents.length; i++) {
-            markerType = theEvents[i].getProperty ("EventType");
+            log.debug (theEvents[i].toString ());
+            /*   markerType = theEvents[i].getProperty ("EventType");
             if ( markerType.compareToIgnoreCase ("Start") == 0 ) {
               markerPanelG.setColor (NeesEvent.startColor); 
             } else if ( markerType.compareToIgnoreCase ("Stop") == 0 ) {
@@ -345,6 +346,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                            (theEvents[i].getProperty ("TimeStamp"))) + "\n" +
                        "With scale factor: " + markerPanelScaleFactor
                        );
+          */
           } // for
         } else { // no markers
           log.debug ("No Marker Data - null.");

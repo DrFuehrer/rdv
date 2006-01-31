@@ -148,19 +148,19 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
           }
           try {
             // LJM 051214 - caps like "EventType" breaks this... dunno why
-            if ( eventData[i].getProperty ("eventType") != null &&
-                 ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Start") == 0 
+            if ( eventData[i].getProperty ("type") != null &&
+                 ((String)(eventData[i].getProperty ("type"))).compareToIgnoreCase ("start") == 0 
                  ) {
-              messageBuffer.append ("Start\n\n");
-              messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
+              messageBuffer.append ("start\n\n");
+              messageBuffer.append ( (String)(eventData[i].getProperty ("content")) );
               messages.setBackground (NeesEvent.startColor);
               messages.setFont (new Font ("Dialog", Font.BOLD, 24));
               
-            } else if ( eventData[i].getProperty ("eventType") != null &&
-                        ((String)(eventData[i].getProperty ("eventType"))).compareToIgnoreCase ("Stop") == 0 
+            } else if ( eventData[i].getProperty ("type") != null &&
+                        ((String)(eventData[i].getProperty ("type"))).compareToIgnoreCase ("stop") == 0 
                         ) {
               messageBuffer.append ("Stop\n\n");
-              messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) );
+              messageBuffer.append ( (String)(eventData[i].getProperty ("content")) );
               messages.setBackground (NeesEvent.stopColor);
               messages.setFont (new Font ("Dialog", Font.BOLD, 24));
             } else { 
@@ -173,8 +173,8 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               messageBuffer.append ("--\n");
               messageBuffer.append ("Label: ");
               messageBuffer.append ( (String)(eventData[i].getProperty ("label")) + "\n" );
-              messageBuffer.append ("Annotation: ");
-              messageBuffer.append ( (String)(eventData[i].getProperty ("annotation")) + "\n" );
+              messageBuffer.append ("Content: ");
+              messageBuffer.append ( (String)(eventData[i].getProperty ("content")) + "\n" );
               messageBuffer.append ("Source: ");
               messageBuffer.append ( (String)(eventData[i].getProperty ("source")) );
               
@@ -183,8 +183,8 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
             }
             
             messageBuffer.append ("\nTime:\n");
-            messageBuffer.append ( (String)(eventData[i].getProperty ("timeStamp")) + "\n");
-            messageBuffer.append ( DataViewer.formatDate (Double.parseDouble (eventData[i].getProperty ("timeStamp"))) );
+            messageBuffer.append ( (String)(eventData[i].getProperty ("timestamp")) + "\n");
+            messageBuffer.append ( DataViewer.formatDate (Double.parseDouble (eventData[i].getProperty ("timestamp"))) );
             messageBuffer.append ("\n--\n");
           
           } catch (IOException ioe) {
