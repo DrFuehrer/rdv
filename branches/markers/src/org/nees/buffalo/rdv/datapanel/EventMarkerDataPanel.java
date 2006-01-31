@@ -43,7 +43,6 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
   private StringBuffer messageBuffer;
   // LJM
   private static Log log = LogFactory.getLog (EventMarkerDataPanel.class.getName ());
-  public static Color goColor = new Color (33,108,38);
   
 	/**
     * Initialize the object and UI

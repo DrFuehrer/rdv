@@ -560,15 +560,14 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     NeesEvent eventTemp = null;
     for (int i=0; i<markerTimes.length; i++) {
       eventTemp = new NeesEvent ();
-      eventTemp.setProperty ("TimeStamp", Double.toString (markerTimes[i]));
-      eventTemp.setProperty ("SourceType", "Other");
-      eventTemp.setProperty ("Annotation", "Synthetic Marker");
+      eventTemp.setProperty ("timestamp", Double.toString (markerTimes[i]));
+      eventTemp.setProperty ("label", "Synthetic Marker");
       if (i%3 == 0) {
-        eventTemp.setProperty ("EventType", "Start");
+        eventTemp.setProperty ("type", "start");
       } else if (i%3 == 2) {
-        eventTemp.setProperty ("EventType", "Stop");
+        eventTemp.setProperty ("type", "stop");
       } else {
-        eventTemp.setProperty ("EventType", "Annotation");
+        eventTemp.setProperty ("type", "annotation");
       }
       eventVector.add (eventTemp);
     } // for
