@@ -110,7 +110,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
 //////////////////////////////////////////////////////////////////////////// LJM
   /** A variable to switch on the usage of synthetic marker data. */
-  public boolean usingFakeEvents = true; 
+  public boolean usingFakeEvents = false; 
   /** A pair of variables that will be used to make a synthetic data source. */
   long timeNow = System.currentTimeMillis ();
   double cannedTimeBase = (double)timeNow / 1000.0;
@@ -317,11 +317,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
           * coordinate for drawing the scaled position of markers.
          */
         theEvents = getNeesEvents (ctree);
-        //log.debug ("returned from getNeesEvents ()");
+        // log.debug ("returned from getNeesEvents ()");
         // if we have some events to look at, display them.
+        // LJM
         if (theEvents != null) {
           String markerType = null;
-          for (int i=0; i<theEvents.length; i++) {
+          /*for (int i=0; i<theEvents.length; i++) {
             log.debug (theEvents[i].toString ());
             /*   markerType = theEvents[i].getProperty ("EventType");
             if ( markerType.compareToIgnoreCase ("Start") == 0 ) {
@@ -346,12 +347,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                            (theEvents[i].getProperty ("TimeStamp"))) + "\n" +
                        "With scale factor: " + markerPanelScaleFactor
                        );
-          */
-          } // for
+          
+          } // for*/
         } else { // no markers
-          log.debug ("No Marker Data - null.");
-          markerLabel.setText ("");
-          markerPanelG.drawString ("No Markers Detected", 1, 1);
+          log.debug ("*** No Marker Data - null.");
+          //markerLabel.setText ("");
+          //markerPanelG.drawString ("No Markers Detected", 1, 1);
         } // else
       } // paintComponent ()
     }; // markerPanel
@@ -539,12 +540,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     } else { // ceetree is null
       log.debug ("Channel tree is null.");
     }
-    log.info ("Got updated NeesEvents channels.");
+    log.info ("*** Got updated NeesEvents channels.");
     
     if (retval == null) {
-      log.debug ("Got an array of events of size 0");
+      log.debug ("*** Got an array of events of size 0");
     } else {
-      log.debug ("Got an array of events of size " + 
+      log.debug ("*** Got an array of events of size " + 
                  Integer.toString (retval.length));
     } // else
     

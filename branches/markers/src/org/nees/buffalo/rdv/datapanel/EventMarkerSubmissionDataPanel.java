@@ -33,7 +33,7 @@ public class EventMarkerSubmissionDataPanel extends AbstractDataPanel implements
   
   private JPanel panel;
   private JScrollPane scrollPane;
-  private String dtServer;
+  private String dtServer, dtServerTemp;
   
   // LJM
   private static Log log = LogFactory.getLog (EventMarkerSubmissionDataPanel.class.getName ());
@@ -69,14 +69,16 @@ public class EventMarkerSubmissionDataPanel extends AbstractDataPanel implements
   
   public void postTime (double time) {
 		super.postTime (time);
-    this.dtServer = rbnbController.getRBNBHostName ();
-    try {
-      ((SendMarkerRDVPanel)panel).changeTurbine (dtServer);
-    } catch (com.rbnb.sapi.SAPIException sae) {
-      log.error ("Problem talking to DataTurbine.");
-      sae.printStackTrace ();
-    }
-    //((SendMarkerRDVPanel)panel).setRbnbLabel (dtServer);
+    this.dtServerTemp = rbnbController.getRBNBHostName ();
+    if (this.dtServer.compareTo (this.dtServerTemp) != 0) {
+      try {
+        ((SendMarkerRDVPanel)panel).changeTurbine (dtServer);
+      } catch (com.rbnb.sapi.SAPIException sae) {
+        log.error ("Problem talking to DataTurbine.");
+        sae.printStackTrace ();
+      }
+    } // if
+    ((SendMarkerRDVPanel)panel).setRbnbLabel (dtServer);
   } // postTime ()
   
   public void actionPerformed (ActionEvent e) {}

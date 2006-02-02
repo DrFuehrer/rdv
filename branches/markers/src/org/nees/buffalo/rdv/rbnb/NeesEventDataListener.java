@@ -42,10 +42,9 @@ public class NeesEventDataListener implements DataListener {
       return null;
     }
     channelIndex = this.channelMap.GetIndex (channelName);
-    log.debug ("Got Events channel \"" + channelName + "\" with index " +
-               Integer.toString (channelIndex));
+    /*log.debug ("Got Events channel \"" + channelName + "\" with index " +
+               Integer.toString (channelIndex));*/
     String[] channelData = this.channelMap.GetDataAsString (channelIndex);
-    //TODO return the data
     NeesEvent[] eventData = new NeesEvent[channelData.length];
     for (int i=0; i<channelData.length; i++) {
       eventData[i] = new NeesEvent ();
@@ -63,7 +62,7 @@ public class NeesEventDataListener implements DataListener {
       }
     } // for
       return eventData;
-  } // getData ()
+  } // getEventData ()
 } // class
 
 /* Copyright Notice:
