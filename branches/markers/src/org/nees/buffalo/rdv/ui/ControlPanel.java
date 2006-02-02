@@ -24,9 +24,6 @@
  * SOFTWARE.
  * 
  * $URL: https://code.nees.buffalo.edu/repository/RDV/branches/markers/src/org/nees/buffalo/rdv/ui/ControlPanel.java $
- * $Revision: 332 $
- * $Date: 2005-11-23 15:03:01 -0800 (Wed, 23 Nov 2005) $
- * $Author: ljmiller $
  */
 
 package org.nees.buffalo.rdv.ui;
@@ -89,6 +86,7 @@ import com.rbnb.sapi.ChannelTree;
 
 /**
  * @author Jason P. Hanley
+ * @authot Lawrence J. Miller <ljmiller@sdsc.edu>
  */
 public class ControlPanel extends JPanel implements AdjustmentListener, TimeListener, StateListener, SubscriptionListener, MetadataListener {
 
@@ -110,7 +108,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
 //////////////////////////////////////////////////////////////////////////// LJM
   /** A variable to switch on the usage of synthetic marker data. */
-  public boolean usingFakeEvents = true; 
+  public boolean usingFakeEvents = true;
+  public boolean madeFakeEvents = false;
   /** A pair of variables that will be used to make a synthetic data source. */
   long timeNow = System.currentTimeMillis ();
   double cannedTimeBase = (double)timeNow / 1000.0;
@@ -322,12 +321,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
         // LJM
         if (theEvents != null) {
           String markerType = null;
-          /*for (int i=0; i<theEvents.length; i++) {
+          for (int i=0; i<theEvents.length; i++) {
             log.debug (theEvents[i].toString ());
-            /*   markerType = theEvents[i].getProperty ("EventType");
-            if ( markerType.compareToIgnoreCase ("Start") == 0 ) {
+            markerType = theEvents[i].getProperty ("type");
+            if ( markerType.compareToIgnoreCase ("start") == 0 ) {
               markerPanelG.setColor (NeesEvent.startColor); 
-            } else if ( markerType.compareToIgnoreCase ("Stop") == 0 ) {
+            } else if ( markerType.compareToIgnoreCase ("stop") == 0 ) {
               markerPanelG.setColor (NeesEvent.stopColor);
             } else {
               markerPanelG.setColor (Color.black);
@@ -335,20 +334,20 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
             updateMarkerPanelScaleFactor ();
             // x=t*width/(e-s)
             markerXcoordinate =
-              (int)( (Double.parseDouble (theEvents[i].getProperty ("TimeStamp")) - startTime ) * markerPanelScaleFactor);
+              (int)( (Double.parseDouble (theEvents[i].getProperty ("timestamp")) - startTime ) * markerPanelScaleFactor);
             markerPanelG.fillRect (markerXcoordinate, 0, 3, 10);
             log.debug ("Drew a " + markerType + " marker at x: " +
                        Integer.toString (markerXcoordinate) + "\n" +
                        "at time (from XML): " +
-                        theEvents[i].getProperty ("TimeStamp") + "\n" +
+                        theEvents[i].getProperty ("timestamp") + "\n" +
                        "at nice time (from XML): " +
                         DataViewer.formatDate
                           (Double.parseDouble
-                           (theEvents[i].getProperty ("TimeStamp"))) + "\n" +
+                           (theEvents[i].getProperty ("timestamp"))) + "\n" +
                        "With scale factor: " + markerPanelScaleFactor
                        );
           
-          } // for*/
+          } // for
         } else { // no markers
           log.debug ("*** No Marker Data - null.");
           //markerLabel.setText ("");
@@ -363,8 +362,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
         double guiTime = ((e.getX () / markerPanelScaleFactor) + startTime);
         // TODO set the location to the GUI click time.
         setSliderLocation (guiTime);
+        location = guiTime;
+        locationChange ();
+        
         log.debug ("\nGUI Click Time: " + Double.toString (guiTime) + "\n" +
-                   "Nice GUI Click Time: " + DataViewer.formatDate (guiTime)
+                   "Nice GUI Click Time: " + DataViewer.formatDate (guiTime) + "\n" +
+                   "Location: " + location + "\n" +
+                   "Nice Location " + DataViewer.formatDate (location)
                    );
         markerPanel.repaint ();
       } // mouseClicked ()
@@ -557,6 +561,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     * @return org.nees.rbnb.marker.NeesEvent
    */
   NeesEvent[] makeFakeEvents () {
+    if (this.madeFakeEvents) {
+      return this.theEvents;
+    }
     Vector eventVector = new Vector ();
     NeesEvent eventTemp = null;
     for (int i=0; i<markerTimes.length; i++) {
@@ -580,6 +587,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     }
     //log.debug ("Made fake events.");
     markerLabel.setText ("Event Markers*.");
+    madeFakeEvents = true;
     return retVal;
   } // makeFakeEvents ()
   
@@ -588,13 +596,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    */
   private void updateMarkerPanelScaleFactor () {
     markerPanelScaleFactor =
-    (markerPanel.getWidth () / (endTime - startTime));
+    (markerPanel.getWidth () / (this.endTime - this.startTime));
     //log.debug ("End-Start: " + Double.toString (endTime - startTime));
-    /*log.debug ("Start: " + Double.toString (startTime) + "\n" +
+    log.debug ("Start: " + Double.toString (startTime) + "\n" +
                "Nice start time: " + DataViewer.formatDate (startTime) + "\n" +
                "End: " + Double.toString (endTime) + "\n" +
                "Nice end time: " + DataViewer.formatDate (endTime)
-               );*/
+               );
   }
    
 	public void channelTreeUpdated(ChannelTree ctree) {
@@ -671,7 +679,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		locationScrollBar.setMaximum(intDurationTime);
 		locationScrollBar.addAdjustmentListener(this);
 	}
-		
+//// TODO LJM
 	public void setSliderLocation(double location) {
 		if (rbnbController.getRequestedLocation() == -1 && !locationScrollBar.getValueIsAdjusting()) {
 			int sliderLocation = (int)((location-startTime)*1000);

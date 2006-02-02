@@ -95,9 +95,12 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 		
 		//loop over all channels and see if there is data for them
 		Iterator it = channels.iterator ();
+    int channelIndex = -1;
 		while (it.hasNext ()) {
 			String channelName = (String)it.next ();
-			int channelIndex = channelMap.GetIndex (channelName);
+			if (channelMap != null ) {
+        channelIndex = channelMap.GetIndex (channelName);
+      }
 			
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
@@ -146,7 +149,6 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
             ioe.printStackTrace ();
           }
           try {
-            // LJM 051214 - caps like "EventType" breaks this... dunno why
             if ( eventData[i].getProperty ("type") != null &&
                  ((String)(eventData[i].getProperty ("type"))).compareToIgnoreCase ("start") == 0 
                  ) {
@@ -164,11 +166,6 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               messages.setFont (new Font ("Dialog", Font.BOLD, 24));
             } else { 
               String markerXml = eventData[i].toEventXmlString ();
-              /*messageBuffer.append (markerXml + "\n" +
-              "DataTurbineTime: " + times[i] + "\n" +
-              "DataTurbineTime: " + DataViewer.formatDate (times[i])
-              );*/
-              
               messageBuffer.append ("--\n");
               messageBuffer.append ("Label: ");
               messageBuffer.append ( (String)(eventData[i].getProperty ("label")) + "\n" );
@@ -193,7 +190,6 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
           }
         } // for
         messages.setText (messageBuffer.toString ());
-        //this.log.info ("Setting Event Marker Data Panel:\n" + messageBuffer.toString ());
       } // if
 		} // while
 	} // postTime ()
