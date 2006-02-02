@@ -110,7 +110,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
 //////////////////////////////////////////////////////////////////////////// LJM
   /** A variable to switch on the usage of synthetic marker data. */
-  public boolean usingFakeEvents = false; 
+  public boolean usingFakeEvents = true; 
   /** A pair of variables that will be used to make a synthetic data source. */
   long timeNow = System.currentTimeMillis ();
   double cannedTimeBase = (double)timeNow / 1000.0;
