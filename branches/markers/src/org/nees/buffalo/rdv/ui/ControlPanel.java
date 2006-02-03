@@ -307,7 +307,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     
     /** A variable that defines how the marker display panel displays itself
       * graphically.
-     */
+      */
     markerPanel = new JPanel () {
       public void paintComponent (Graphics markerPanelG) {
         super.paintComponent (markerPanelG);
@@ -364,6 +364,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
         setSliderLocation (guiTime);
         location = guiTime;
         locationChange ();
+        // This updates the whole display
+        rbnbController.setLocation (location);
         
         log.debug ("\nGUI Click Time: " + Double.toString (guiTime) + "\n" +
                    "Nice GUI Click Time: " + DataViewer.formatDate (guiTime) + "\n" +
@@ -696,11 +698,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 				this.sliderLocation = sliderLocation;
         while (locationScrollBar.getAdjustmentListeners().length != 0) {
         	locationScrollBar.removeAdjustmentListener(this);
-        }
+        } // while
 				locationScrollBar.setValue(sliderLocation);
 				locationScrollBar.addAdjustmentListener(this);
-			}
-		}
+			} // if
+		} // if
 /////////////////////////////////////////////////////////////////////////////LJM
     updateMarkerPanelScaleFactor ();
     markerPanel.repaint ();
