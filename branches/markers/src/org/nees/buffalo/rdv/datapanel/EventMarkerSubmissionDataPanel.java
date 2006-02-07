@@ -33,7 +33,8 @@ public class EventMarkerSubmissionDataPanel extends AbstractDataPanel implements
   
   private JPanel panel;
   private JScrollPane scrollPane;
-  private String dtServer, dtServerTemp;
+  private String dtServer = "localhost";
+  private String dtServerTemp;
   
   // LJM
   private static Log log = LogFactory.getLog (EventMarkerSubmissionDataPanel.class.getName ());
@@ -51,7 +52,7 @@ public class EventMarkerSubmissionDataPanel extends AbstractDataPanel implements
     * Initialize the UI component and pass it too the abstract class.
 	 */
 	private void initDataComponent () {
-    panel = new SendMarkerRDVPanel (null, "localhost");
+    panel = new SendMarkerRDVPanel (null, dtServer);
 		/*scrollPane = new JScrollPane (messages,
                                   JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                   JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);*/

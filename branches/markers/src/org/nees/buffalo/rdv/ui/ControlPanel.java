@@ -79,6 +79,7 @@ import org.nees.buffalo.rdv.rbnb.TimeListener;
 
 //LJM
 import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.SendMarkerRDVPanel;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
@@ -125,6 +126,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
    */
    protected JPanel markerPanel = null;
    private JLabel markerLabel = null;
+   protected SendMarkerRDVPanel markerSubmitPanel = null;
    /* Marker panel interval limits */
    private double markerPanelStart, markerPanelEnd, markerPanelScaleFactor;
    private int markerXcoordinate;
@@ -291,12 +293,28 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		container.setLayout(new GridBagLayout());		
 		
 //////////////////////////////// LJM - various Y gridbag coordinates incremented
-    markerLabel = new JLabel ("Event Markers");
+// Marker submission GUI panel
+    markerSubmitPanel = new SendMarkerRDVPanel (null, "localhost:3333");
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
 		c.gridy = 0;
+		c.gridwidth = 2;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;				
+		container.add (markerSubmitPanel, c); 
+    log.info ("Added Marker Submission Panel to Control Panel.");
+// marker display panel    
+    markerLabel = new JLabel ("Event Markers");
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0;
+		c.weighty = 0;
+		c.gridx = 0;
+		c.gridy = 1;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -383,9 +401,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
                                   );
     c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
-		c.weighty = 0;
+		c.weighty = 1;
 		c.gridx = 1;
-		c.gridy = 0;
+		c.gridy = 1;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -401,7 +419,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -416,7 +434,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -430,7 +448,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -446,7 +464,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -460,7 +478,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 4;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -476,7 +494,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 1;
-		c.gridy = 3;
+		c.gridy = 4;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -485,7 +503,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;		
 		container.add(playbackRateScrollBar, c);
 		
-		c.fill = GridBagConstraints.HORIZONTAL;
+		// Add into the main overall GUI
+    c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 0;

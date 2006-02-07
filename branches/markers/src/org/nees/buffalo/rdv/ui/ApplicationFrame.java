@@ -132,6 +132,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action showChannelListAction;
   private Action showMetadataPanelAction;
  	private Action showControlPanelAction;
+/////////////////////////////////////////////////////////////////////////////LJM
+  private Action showMarkerPanelAction;
+/////////////////////////////////////////////////////////////////////////////LJM
  	private Action showStatusPanelAction;
  	private Action dataPanelAction;
  	private Action dataPanelHorizontalLayoutAction;
@@ -140,11 +143,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action fullScreenAction;
  	
  	private Action windowAction;
- 	private Action closeAllDataPanelsAction;
-/////////////////////////////////////////////////////////////////////////////LJM 	
-  private Action markerSubmitPanelAction;
-  private SendMarkerRDVPanel markerSender;
-/////////////////////////////////////////////////////////////////////////////LJM  
+ 	private Action closeAllDataPanelsAction;  
  	private Action helpAction;
  	private Action aboutAction;
   
@@ -330,10 +329,20 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  
  		showControlPanelAction = new DataViewerAction("Show Control Panel", "", KeyEvent.VK_C, "icons/control.gif") {
  			public void actionPerformed(ActionEvent ae) {
+        log.info ("!!!!!!!!");
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				controlPanel.setVisible(menuItem.isSelected());
  			}			
  		};
+    
+/////////////////////////////////////////////////////////////////////////////LJM
+    showMarkerPanelAction = new DataViewerAction ("Show Event Markers Control", "", KeyEvent.VK_M, "icons/channels.gif") {
+      public void ActionPerformed (ActionEvent ae) {
+        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();
+ 				controlPanel.setVisible (menuItem.isSelected ());
+      }
+    };
+/////////////////////////////////////////////////////////////////////////////LJM
  
  		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S, "icons/info.gif") {
  			public void actionPerformed(ActionEvent ae) {
@@ -387,15 +396,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				dataPanelManager.closeAllDataPanels();				
  			}			
  		};
- 		
-/////////////////////////////////////////////////////////////////////////////LJM
-    markerSubmitPanelAction = new DataViewerAction ("Event Marker Submission Panel", "", KeyEvent.VK_M, "icons/channels.gif") {
-      public void ActionPerformed (ActionEvent ae) {
-        markerSender = new SendMarkerRDVPanel (null, "localhost:3333");
-        markerSender.show ();
-      }
-    };
-/////////////////////////////////////////////////////////////////////////////LJM
     
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
  
@@ -482,9 +482,15 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     menuItem.setSelected(true);
     viewMenu.add(menuItem);   
  		
- 		menuItem = new JCheckBoxMenuItem(showControlPanelAction);
+    menuItem = new JCheckBoxMenuItem(showControlPanelAction);
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
+    
+/////////////////////////////////////////////////////////////////////////////LJM
+    menuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
+    menuItem.setSelected (true);
+    viewMenu.add (menuItem);
+/////////////////////////////////////////////////////////////////////////////LJM
  		
  		menuItem = new JCheckBoxMenuItem(showStatusPanelAction);
  		menuItem.setSelected(true);
@@ -545,12 +551,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		menuItem = new JMenuItem(closeAllDataPanelsAction);
   		windowMenu.add(menuItem);
-/////////////////////////////////////////////////////////////////////////////LJM
-     /* Left out (for now), but mat be needed later
-      windowMenu.addSeparator ();
-      menuItem = new JMenuItem (markerSubmitPanelAction);
-  		windowMenu.add (menuItem); */
-/////////////////////////////////////////////////////////////////////////////LJM
   		menuBar.add(windowMenu);
   		
  		JMenu helpMenu = new JMenu(helpAction);
