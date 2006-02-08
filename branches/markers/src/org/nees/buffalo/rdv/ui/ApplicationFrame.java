@@ -105,6 +105,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JSplitPane leftPanel;
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
+/////////////////////////////////////////////////////////////////////////////LJM
+  private SendMarkerRDVPanel markerSubmitPanel = null;
+/////////////////////////////////////////////////////////////////////////////LJM
 	private StatusPanel statusPanel;
 	private DataPanelContainer dataPanelContainer;
  	private JSplitPane splitPane;
@@ -192,6 +195,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
 		initRightPanel();
 		initControls();
+/////////////////////////////////////////////////////////////////////////////LJM    
+    initSubmit ();
+/////////////////////////////////////////////////////////////////////////////LJM        
 		initDataPanelContainer();		
 		initStatus();
     
@@ -220,6 +226,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	rbnb.addMessageListener(this);
   	
   	rbnb.addConnectionListener(this);
+    /////////////////////////////////////////////////////////////////////////////LJM    
+    //rbnb.addConnectionListener (markerSubmitPanel);
+/////////////////////////////////////////////////////////////////////////////LJM        
 
 		if (!isApplet) { 
 			frame.setVisible(true);
@@ -637,14 +646,32 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		log.info("Added data panel container.");
 	}
-	
+/////////////////////////////////////////////////////////////////////////////LJM
+  // Marker submission GUI panel
+  private void initSubmit () {
+  markerSubmitPanel = new SendMarkerRDVPanel (null, rbnb.getRBNBHostName ());
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0;
+		c.weighty = 2;
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 2;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets (5, 5, 5, 5);
+		c.anchor = GridBagConstraints.SOUTH;				
+    rightPanel.add (markerSubmitPanel, c);
+    log.info ("Added Marker Submission Panel.");
+  } // initSubmit ()
+/////////////////////////////////////////////////////////////////////////////LJM  
 	private void initStatus() {
 		statusPanel = new StatusPanel();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;

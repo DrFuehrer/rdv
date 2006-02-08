@@ -155,6 +155,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               messageBuffer.append ("start\n\n");
               messageBuffer.append ( (String)(eventData[i].getProperty ("content")) );
               messages.setBackground (NeesEvent.startColor);
+              log.info ("Got a START marker.");
               messages.setFont (new Font ("Dialog", Font.BOLD, 24));
               
             } else if ( eventData[i].getProperty ("type") != null &&
@@ -163,6 +164,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               messageBuffer.append ("Stop\n\n");
               messageBuffer.append ( (String)(eventData[i].getProperty ("content")) );
               messages.setBackground (NeesEvent.stopColor);
+              log.info ("Got a STOP marker.");
               messages.setFont (new Font ("Dialog", Font.BOLD, 24));
             } else { 
               String markerXml = eventData[i].toEventXmlString ();
