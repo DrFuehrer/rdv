@@ -13,7 +13,7 @@
 		<all-permissions/>
 	</security>
 	<resources>
-		<j2se version="1.4+" initial-heap-size="64m" max-heap-size="256m"/>
+		<j2se version="1.5+" initial-heap-size="64m" max-heap-size="256m"/>
 		<jar href="RDV.jar" main="true"/>
 		<jar href="commons-cli-1.0.jar"/>
 		<jar href="commons-logging.jar"/>
@@ -28,6 +28,6 @@
 	<application-desc main-class="org.nees.buffalo.rdv.DataViewer">
 		<property name="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.NoOpLog"/>
 		<argument>--host</argument>
-		<argument>rbnb.nees.buffalo.edu</argument>
+		<argument>dev-neestpm.sdsc.edu</argument>
 	</application-desc>
 </jnlp>
