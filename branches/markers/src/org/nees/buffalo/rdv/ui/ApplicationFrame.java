@@ -78,6 +78,8 @@ import com.jgoodies.looks.Options;
 import com.jgoodies.uif_lite.component.Factory;
 
 /////////////////////////////////////////////////////////////////////////////LJM
+import java.io.IOException;
+import javax.xml.transform.TransformerException;
 import org.nees.rbnb.marker.SendMarkerRDVPanel;
 /////////////////////////////////////////////////////////////////////////////LJM
 
@@ -251,6 +253,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();
+/////////////////////////////////////////////////////////////////////////////LJM    
+        try {
+          markerSubmitPanel.sendClosingMarker ();
+          markerSubmitPanel.closeTurbine ();
+        } catch (IOException ioe) {
+          log.error ("Sending closing marker: " + ioe);
+        } catch (TransformerException te) {
+          log.error ("Sending closing marker: " + te);
+        }
+/////////////////////////////////////////////////////////////////////////////LJM 
  				rbnb.disconnect();
  			}			
  		};
@@ -649,7 +661,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 /////////////////////////////////////////////////////////////////////////////LJM
   // Marker submission GUI panel
   private void initSubmit () {
-  markerSubmitPanel = new SendMarkerRDVPanel (null, rbnb.getRBNBHostName ());
+  markerSubmitPanel = new SendMarkerRDVPanel (null, rbnb);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
 		c.weighty = 2;

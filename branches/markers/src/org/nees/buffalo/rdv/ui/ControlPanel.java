@@ -86,7 +86,7 @@ import com.rbnb.sapi.ChannelTree;
 
 /**
  * @author Jason P. Hanley
- * @authot Lawrence J. Miller <ljmiller@sdsc.edu>
+ * @author Lawrence J. Miller <ljmiller@sdsc.edu>
  */
 public class ControlPanel extends JPanel implements AdjustmentListener, TimeListener, StateListener, SubscriptionListener, MetadataListener {
 
