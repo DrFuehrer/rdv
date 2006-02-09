@@ -112,7 +112,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
   public boolean madeFakeEvents = false;
   /** A pair of variables that will be used to make a synthetic data source. */
   long timeNow = System.currentTimeMillis ();
-  double cannedTimeBase = (double)timeNow / 1000.0;
+  // This is all in miliseconds
+  double cannedTimeBase = (double)timeNow;
   //double cannedTimeBase = 1.137111194512E9;
   double cannedTimeInterval = 5.0;
   private double markerTimes[] = {
@@ -336,15 +337,20 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
             // x=t*width/(e-s)
             markerXcoordinate =
               (int)( (Double.parseDouble (theEvents[i].getProperty ("timestamp")) - startTime ) * markerPanelScaleFactor);
+            // LJM
+            markerXcoordinate =
+              (markerPanel.getWidth () <= markerXcoordinate)? markerPanel.getWidth () - 20 : markerXcoordinate;
             markerPanelG.fillRect (markerXcoordinate, 0, 3, 10);
             log.debug ("Drew a " + markerType + " marker at x: " +
-                       Integer.toString (markerXcoordinate) + "\n" +
+                       Integer.toString (markerXcoordinate) + 
+                       " of: " + Integer.toString (markerPanel.getWidth ()) + 
+                       "\n" +
                        "at time (from XML): " +
                         theEvents[i].getProperty ("timestamp") + "\n" +
                        "at nice time (from XML): " +
                         DataViewer.formatDate
                           (Double.parseDouble
-                           (theEvents[i].getProperty ("timestamp"))) + "\n" +
+                           (theEvents[i].getProperty ("timestamp"))/1000) + "\n" +
                        "With scale factor: " + markerPanelScaleFactor
                        );
           
