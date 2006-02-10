@@ -45,6 +45,7 @@
 -Added support for playback rate changes in audio data panel.
 -Extend data panel layout orientation to all cases.
 -Enable drag-and-drop moving of docked data panels.
+-Added unit column to tabular data panel.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

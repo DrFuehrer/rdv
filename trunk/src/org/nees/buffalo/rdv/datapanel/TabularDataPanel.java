@@ -139,7 +139,7 @@ public class TabularDataPanel extends AbstractDataPanel {
 			labelText += "(" + unit + ")";
 		}
 		
-		tableModel.addRow(channelName);
+		tableModel.addRow(channelName, unit);
     updateRowHeight();
     
 		return true;
@@ -254,6 +254,7 @@ public class TabularDataPanel extends AbstractDataPanel {
     private String[] columnNames = {
         "Name",
         "Value",
+        "Unit",
         "Min",
         "Max"};
     
@@ -267,8 +268,8 @@ public class TabularDataPanel extends AbstractDataPanel {
       cleared = true;
     }
     
-    public void addRow(String name) {
-      DataRow dataRow = new DataRow(name);
+    public void addRow(String name, String unit) {
+      DataRow dataRow = new DataRow(name, unit);
       rows.add(dataRow);
       int row = rows.size()-1;
       fireTableRowsInserted(row, row);
@@ -330,8 +331,10 @@ public class TabularDataPanel extends AbstractDataPanel {
         case 1:
           return new Double(dataRow.value);
         case 2:
-          return new Double(dataRow.min);
+          return dataRow.unit;
         case 3:
+          return new Double(dataRow.min);
+        case 4:
           return new Double(dataRow.max);
         default:
           return null;
@@ -341,12 +344,14 @@ public class TabularDataPanel extends AbstractDataPanel {
   
   private class DataRow {
     String name;
+    String unit;
     double value;
     double min;
     double max;
     
-    public DataRow(String name) {
+    public DataRow(String name, String unit) {
       this.name = name;
+      this.unit = unit;
       clearData();
     }
     
