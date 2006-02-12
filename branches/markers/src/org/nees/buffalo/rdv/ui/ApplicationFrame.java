@@ -84,7 +84,7 @@ import org.nees.rbnb.marker.SendMarkerRDVPanel;
 /////////////////////////////////////////////////////////////////////////////LJM
 
 /**
- * Main frame fro the application
+ * Main frame for the application
  * 
  * @author  Jason P. Hanley
  * @since   1.2
