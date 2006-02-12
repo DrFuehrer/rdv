@@ -81,9 +81,9 @@ import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 
 /**
-* @author Jason P. Hanley
- * @author Lawrence J. Miller <ljmiller@sdsc.edu>
- */
+  * @author Jason P. Hanley
+  * @author Lawrence J. Miller <ljmiller@sdsc.edu>
+  */
 public class ControlPanel extends JPanel implements AdjustmentListener, TimeListener, StateListener, SubscriptionListener, MetadataListener {
   
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
@@ -275,7 +275,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     
     /** A panel that displays a time-line-like view of markers present in the turbine */
     markerPanel = new NeesEventRDVTimelinePanel (this.rbnbController);
-    markerPanel.usingFakeEvents = true;
     
     markerPanel.setBorder (BorderFactory.createEtchedBorder ());
     markerPanel.addMouseListener (new MouseAdapter () {
