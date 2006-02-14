@@ -274,7 +274,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		container.add (markerLabel, c);
     
     /** A panel that displays a time-line-like view of markers present in the turbine */
-    markerPanel = new NeesEventRDVTimelinePanel (this.rbnbController);
+    markerPanel = new NeesEventRDVTimelinePanel (this.rbnbController,
+                                                 this.ctree,
+                                                 this.startTime,
+                                                 this.endTime);
     
     markerPanel.setBorder (BorderFactory.createEtchedBorder ());
     markerPanel.addMouseListener (new MouseAdapter () {
@@ -438,7 +441,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		updateTimeBoundaries();
 /////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.updateCtree (ctree);
-    //markerPanel.repaint ();
+    markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 		log.info("Received updated channel metatdata.");
 	}
@@ -472,7 +475,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 /////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.setStartTime (startTime);
     markerPanel.setEndTime (endTime);
-    //markerPanel.repaint ();
+    markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 	}	
 		
@@ -495,6 +498,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			}
 		}
 /////////////////////////////////////////////////////////////////////////////LJM
+    markerPanel.setStartTime (this.startTime);
+    markerPanel.setEndTime (this.endTime);
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
   }
@@ -700,6 +705,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		endButton.setEnabled(true);
 /////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.setEnabled (true);
+    markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 		locationScrollBar.setEnabled(true);
     playbackRateScrollBar.setEnabled(true);
