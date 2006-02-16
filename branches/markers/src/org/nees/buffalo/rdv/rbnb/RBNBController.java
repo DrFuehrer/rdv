@@ -624,7 +624,7 @@ public class RBNBController implements Player, MetadataListener {
 		//log.debug("Actual duration " + (playbackEndTime-playbackStartTime)/1000d + ", seconds desired duration " + playbackDuration/playbackRate + " seconds.");
 	}
 	
-	private void preFetchData(final double location, final double duration) {
+	public void preFetchData(final double location, final double duration) {
 		preFetchChannelMap = null;
 		preFetchDone = false;
 

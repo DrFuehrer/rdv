@@ -535,6 +535,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			} // if
 		} // if
 /////////////////////////////////////////////////////////////////////////////LJM
+    markerPanel.setStartTime (this.startTime);
+    markerPanel.setEndTime (this.endTime);
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM    
   }
