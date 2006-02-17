@@ -104,7 +104,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
   //////////////////////////////////////////////////////////////////////////// LJM
   protected NeesEventRDVTimelinePanel markerPanel = null;
-  private JLabel markerLabel = null;
+  protected JLabel markerLabel = null;
   /* Marker panel interval limits */
   /** An array of event markers generated from an appropriate channel in
     * in the DataTurbine to which this RDV is connected. */

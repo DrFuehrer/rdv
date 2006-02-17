@@ -624,6 +624,7 @@ public class RBNBController implements Player, MetadataListener {
 		//log.debug("Actual duration " + (playbackEndTime-playbackStartTime)/1000d + ", seconds desired duration " + playbackDuration/playbackRate + " seconds.");
 	}
 	
+  // LJM made public to prefetch from ControlPanel. 
 	public void preFetchData(final double location, final double duration) {
 		preFetchChannelMap = null;
 		preFetchDone = false;
@@ -1170,10 +1171,18 @@ public class RBNBController implements Player, MetadataListener {
   
   /**
     * LJM An accessor method to get the private @see CahnnelMap variable.
-   * implemented for use by the markerPanel in ControlPanel.
-   */
+    * implemented for use by the markerPanel in ControlPanel.
+    */
   public ChannelMap getChannelMap () {
     return requestedChannels;
+  }
+  
+  /**
+    * LJM An accessor method to get the @see com.rbnb.sapi.Sink
+    * @return sink private variable.
+    */
+  public Sink getSink () {
+    return this.sink;
   }
 
 	

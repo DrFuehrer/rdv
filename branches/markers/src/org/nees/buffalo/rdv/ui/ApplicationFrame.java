@@ -358,9 +358,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
 /////////////////////////////////////////////////////////////////////////////LJM
     showMarkerPanelAction = new DataViewerAction ("Show Event Markers Control", "", KeyEvent.VK_M, "icons/channels.gif") {
-      public void ActionPerformed (ActionEvent ae) {
+      public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();
- 				controlPanel.setVisible (menuItem.isSelected ());
+ 				markerSubmitPanel.setVisible (menuItem.isSelected ());
+        controlPanel.markerPanel.setVisible (menuItem.isSelected ());
+        controlPanel.markerLabel.setVisible (menuItem.isSelected ());
       }
     };
 /////////////////////////////////////////////////////////////////////////////LJM
@@ -671,8 +673,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets (5, 5, 5, 5);
-		c.anchor = GridBagConstraints.SOUTH;				
+		c.insets = new java.awt.Insets (0, 0, 5, 8);
+		c.anchor = GridBagConstraints.SOUTHWEST;				
     rightPanel.add (markerSubmitPanel, c);
     log.info ("Added Marker Submission Panel.");
   } // initSubmit ()
