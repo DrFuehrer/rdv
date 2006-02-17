@@ -285,7 +285,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       public void mouseClicked (MouseEvent e) {
         // scale factor is pixels/time
         double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) + startTime);
-        // TODO set the location to the GUI click time.
         setSliderLocation (guiTime);
         location = guiTime;
         locationChange ();

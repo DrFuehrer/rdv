@@ -181,7 +181,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
             }
             
             messageBuffer.append ("\nTime Marker Generated:\n");
-            messageBuffer.append ( (String)(eventData[i].getProperty ("timestamp")) + "\n");
+            messageBuffer.append ( (String)(eventData[i].getProperty ("timestamp")) + " || ");
             messageBuffer.append ( DataViewer.formatDate (Double.parseDouble (eventData[i].getProperty ("timestamp"))) );
             messageBuffer.append ("\nTime Marker Received:\n");
             messageBuffer.append ( DataViewer.formatDate (times[i]) );

@@ -78,6 +78,7 @@ import com.jgoodies.looks.Options;
 import com.jgoodies.uif_lite.component.Factory;
 
 /////////////////////////////////////////////////////////////////////////////LJM
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import java.io.IOException;
 import javax.xml.transform.TransformerException;
 import org.nees.rbnb.marker.SendMarkerRDVPanel;
@@ -109,6 +110,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private ControlPanel controlPanel;
 /////////////////////////////////////////////////////////////////////////////LJM
   private SendMarkerRDVPanel markerSubmitPanel = null;
+  private SimpleInternalFrame markerFrame;
 /////////////////////////////////////////////////////////////////////////////LJM
 	private StatusPanel statusPanel;
 	private DataPanelContainer dataPanelContainer;
@@ -360,7 +362,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     showMarkerPanelAction = new DataViewerAction ("Show Event Markers Control", "", KeyEvent.VK_M, "icons/channels.gif") {
       public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();
- 				markerSubmitPanel.setVisible (menuItem.isSelected ());
+ 				//markerSubmitPanel.setVisible (menuItem.isSelected ());
+        markerFrame.setVisible (menuItem.isSelected ());
         controlPanel.markerPanel.setVisible (menuItem.isSelected ());
         controlPanel.markerLabel.setVisible (menuItem.isSelected ());
       }
@@ -666,7 +669,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   markerSubmitPanel = new SendMarkerRDVPanel (null, rbnb);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
-		c.weighty = 2;
+		c.weighty = 0;
 		c.gridx = 0;
 		c.gridy = 2;
 		c.gridwidth = 2;
@@ -675,7 +678,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.ipady = 0;
 		c.insets = new java.awt.Insets (0, 0, 5, 8);
 		c.anchor = GridBagConstraints.SOUTHWEST;				
-    rightPanel.add (markerSubmitPanel, c);
+    // TODO add in the swing bling
+    markerFrame = new SimpleInternalFrame(
+                                            DataViewer.getIcon ("icons/info.gif"),
+                                            "Event Marker Submission",
+                                            null,
+                                            markerSubmitPanel
+                                          );
+    
+    rightPanel.add (markerFrame, c);
+    //rightPanel.add (markerSubmitPanel, c);
     log.info ("Added Marker Submission Panel.");
   } // initSubmit ()
 /////////////////////////////////////////////////////////////////////////////LJM  
