@@ -285,8 +285,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       public void mouseClicked (MouseEvent e) {
         // scale factor is pixels/time
         double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) + startTime);
-        setSliderLocation (guiTime);
         location = guiTime;
+        setSliderLocation (guiTime);
         locationChange ();
         // This updates the whole display
         rbnbController.setLocation (location);
@@ -445,6 +445,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		log.info("Received updated channel metatdata.");
 	}
 	
+  // TODO copy this in marker panel to get the bounds on the marker channel only
+  
 	private void updateTimeBoundaries() {
 		double startTime = -1;
 		double endTime = -1;
@@ -472,8 +474,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		setSliderBounds(startTime, endTime);
 /////////////////////////////////////////////////////////////////////////////LJM
-    markerPanel.setStartTime (startTime);
-    markerPanel.setEndTime (endTime);
+    //markerPanel.setStartTime (startTime);
+    //markerPanel.setEndTime (endTime);
+    markerPanel.updateMarkerChannelTimeBoundaries ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 	}	
