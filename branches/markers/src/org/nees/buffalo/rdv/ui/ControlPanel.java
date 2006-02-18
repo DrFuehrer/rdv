@@ -474,9 +474,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		setSliderBounds(startTime, endTime);
 /////////////////////////////////////////////////////////////////////////////LJM
-    //markerPanel.setStartTime (startTime);
-    //markerPanel.setEndTime (endTime);
-    markerPanel.updateMarkerChannelTimeBoundaries ();
+    markerPanel.setStartTime (startTime);
+    markerPanel.setEndTime (endTime);
+    //markerPanel.updateMarkerChannelTimeBoundaries ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 	}	
@@ -502,6 +502,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 /////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.setStartTime (this.startTime);
     markerPanel.setEndTime (this.endTime);
+    //markerPanel.updateMarkerChannelTimeBoundaries ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
   }
@@ -539,6 +540,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 /////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.setStartTime (this.startTime);
     markerPanel.setEndTime (this.endTime);
+    //markerPanel.updateMarkerChannelTimeBoundaries ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM    
   }
