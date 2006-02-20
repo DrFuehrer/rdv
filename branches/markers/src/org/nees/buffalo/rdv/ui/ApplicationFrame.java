@@ -168,6 +168,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		busyDialog = null;
 		
 		initFrame(isApplet);
+/////////////////////////////////////////////////////////////////////////////LJM
+    // Initially, these should be off
+    markerFrame.setVisible (false);
+    controlPanel.markerPanel.setVisible (false);
+    controlPanel.markerLabel.setVisible (false);
+/////////////////////////////////////////////////////////////////////////////LJM
+
 	}
 	
 	private void initFrame(boolean isApplet) {
@@ -362,7 +369,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     showMarkerPanelAction = new DataViewerAction ("Show Event Markers Control", "", KeyEvent.VK_M, "icons/channels.gif") {
       public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();
- 				//markerSubmitPanel.setVisible (menuItem.isSelected ());
         markerFrame.setVisible (menuItem.isSelected ());
         controlPanel.markerPanel.setVisible (menuItem.isSelected ());
         controlPanel.markerLabel.setVisible (menuItem.isSelected ());
@@ -514,7 +520,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
 /////////////////////////////////////////////////////////////////////////////LJM
     menuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
-    menuItem.setSelected (true);
+    menuItem.setSelected (false);
     viewMenu.add (menuItem);
 /////////////////////////////////////////////////////////////////////////////LJM
  		

@@ -284,7 +284,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       
       public void mouseClicked (MouseEvent e) {
         // scale factor is pixels/time
-        double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) + startTime);
+        double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) +
+                          markerPanel.getEventsChannelStartTime ());
         location = guiTime;
         setSliderLocation (guiTime);
         locationChange ();
@@ -440,7 +441,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		updateTimeBoundaries();
 /////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.updateCtree (ctree);
-    markerPanel.findEventsChannel ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 		log.info("Received updated channel metatdata.");
@@ -474,7 +474,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		setSliderBounds(startTime, endTime);
 /////////////////////////////////////////////////////////////////////////////LJM
-    markerPanel.findEventsChannel ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 	}	
@@ -498,7 +497,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			}
 		}
 /////////////////////////////////////////////////////////////////////////////LJM
-    markerPanel.findEventsChannel ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
   }
@@ -534,7 +532,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			} // if
 		} // if
 /////////////////////////////////////////////////////////////////////////////LJM
-    markerPanel.findEventsChannel ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM    
   }
@@ -666,12 +663,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
   
 	
 	// Player State Methods
-  
 	public void postState(int newState, int oldState) {
 		playerState = newState;
 		
 		if (newState == Player.STATE_DISCONNECTED) {
-			disbaleUI();
+			disableUI();
 		} else if (oldState == Player.STATE_DISCONNECTED && newState != Player.STATE_EXITING) {
 			enableUI();
 		} else if (newState == Player.STATE_MONITORING) {
@@ -681,7 +677,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 	}
 	
-	private void disbaleUI() {
+	private void disableUI() {
 		monitorButton.setEnabled(false);
 		startButton.setEnabled(false);
 		pauseButton.setEnabled(false);
@@ -694,7 +690,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		playbackRateScrollBar.setEnabled(false);
 		timeScaleScrollBar.setEnabled(false);
 		
-		log.info("Control Panel UI disbaled.");
+		log.info("Control Panel UI disabled.");
 	}
 	
 	private void enableUI() {
