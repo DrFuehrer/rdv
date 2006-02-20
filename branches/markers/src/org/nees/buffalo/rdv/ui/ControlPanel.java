@@ -440,12 +440,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		updateTimeBoundaries();
 /////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.updateCtree (ctree);
+    markerPanel.findEventsChannel ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 		log.info("Received updated channel metatdata.");
 	}
 	
-  // TODO copy this in marker panel to get the bounds on the marker channel only
   
 	private void updateTimeBoundaries() {
 		double startTime = -1;
@@ -474,9 +474,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		
 		setSliderBounds(startTime, endTime);
 /////////////////////////////////////////////////////////////////////////////LJM
-    markerPanel.setStartTime (startTime);
-    markerPanel.setEndTime (endTime);
-    //markerPanel.updateMarkerChannelTimeBoundaries ();
+    markerPanel.findEventsChannel ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
 	}	
@@ -500,9 +498,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			}
 		}
 /////////////////////////////////////////////////////////////////////////////LJM
-    markerPanel.setStartTime (this.startTime);
-    markerPanel.setEndTime (this.endTime);
-    //markerPanel.updateMarkerChannelTimeBoundaries ();
+    markerPanel.findEventsChannel ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM
   }
@@ -538,9 +534,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 			} // if
 		} // if
 /////////////////////////////////////////////////////////////////////////////LJM
-    markerPanel.setStartTime (this.startTime);
-    markerPanel.setEndTime (this.endTime);
-    //markerPanel.updateMarkerChannelTimeBoundaries ();
+    markerPanel.findEventsChannel ();
     markerPanel.repaint ();
 /////////////////////////////////////////////////////////////////////////////LJM    
   }

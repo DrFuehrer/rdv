@@ -230,7 +230,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	rbnb.addMessageListener(this);
   	
   	rbnb.addConnectionListener(this);
-    /////////////////////////////////////////////////////////////////////////////LJM    
+/////////////////////////////////////////////////////////////////////////////LJM    
     //rbnb.addConnectionListener (markerSubmitPanel);
 /////////////////////////////////////////////////////////////////////////////LJM        
 
@@ -678,7 +678,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.ipady = 0;
 		c.insets = new java.awt.Insets (0, 0, 5, 8);
 		c.anchor = GridBagConstraints.SOUTHWEST;				
-    // TODO add in the swing bling
     markerFrame = new SimpleInternalFrame(
                                             DataViewer.getIcon ("icons/info.gif"),
                                             "Event Marker Submission",
@@ -687,7 +686,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
                                           );
     
     rightPanel.add (markerFrame, c);
-    //rightPanel.add (markerSubmitPanel, c);
     log.info ("Added Marker Submission Panel.");
   } // initSubmit ()
 /////////////////////////////////////////////////////////////////////////////LJM  
