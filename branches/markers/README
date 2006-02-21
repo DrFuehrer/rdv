@@ -1,5 +1,6 @@
-RDV - Realtime Data Viewer - Event Marker Hacked branch
+RDV - Realtime Data Viewer - NEESit Event Marker Branch
 by Jason P. Hanley <jphanley@buffalo.edu>
+modified by Lawrence J. Miler <ljmiller@sdsc.edu>
 
 
 
@@ -29,6 +30,23 @@ The following software is required to build the application:
 
 The following software is required to run the application:
 same as above
+
+SET UP
+- install rbnb
+- install ant
+- set the following environment variables:
+RBNB_HOME   - the root of the rbnb installation
+RDV_SRC     - points to the RDV svn checkout
+MARKER_HOME - points to dataturbine-dev/marker under the neesit svn checkout
+
+BUILDING
+- neesit RDV extension:
+cd $MARKER_HOME && ant clean jar
+- RDV with event marker augmentation:
+cd ${RDV_SRC}/branches/markers && ant clean jar
+
+RUNNING
+do an 'ant clean jar runMarkers' from $RDV_SRC/branches/markers
 
  /** Copyright (c) 2005, Lawrence J. Miller and NEESit
  * All rights reserved.
