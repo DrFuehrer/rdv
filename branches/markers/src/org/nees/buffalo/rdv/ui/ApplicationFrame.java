@@ -81,6 +81,7 @@ import com.jgoodies.uif_lite.component.Factory;
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import java.io.IOException;
 import javax.xml.transform.TransformerException;
+import org.nees.rbnb.marker.NeesEvent;
 import org.nees.rbnb.marker.SendMarkerRDVPanel;
 /////////////////////////////////////////////////////////////////////////////LJM
 
@@ -88,6 +89,7 @@ import org.nees.rbnb.marker.SendMarkerRDVPanel;
  * Main frame for the application
  * 
  * @author  Jason P. Hanley
+ * modified for event markers by @author Lawrence J. Miller
  * @since   1.2
  */
 public class ApplicationFrame extends JFrame implements MessageListener, ConnectionListener, StateListener {
@@ -520,6 +522,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
 /////////////////////////////////////////////////////////////////////////////LJM
     menuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
+    menuItem.setBackground (NeesEvent.danielBlue);
     menuItem.setSelected (false);
     viewMenu.add (menuItem);
 /////////////////////////////////////////////////////////////////////////////LJM
