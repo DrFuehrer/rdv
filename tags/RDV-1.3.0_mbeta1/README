@@ -1,11 +1,13 @@
-RDV - Realtime Data Viewer
+RDV - Realtime Data Viewer - NEESit Event Marker Branch
 by Jason P. Hanley <jphanley@buffalo.edu>
+modified by Lawrence J. Miler <ljmiller@sdsc.edu>
+
 
 
 Release
 -------
-Version: 1.2.0
-Date: June 21, 2005
+Version: 0.1
+Date: 11/16/05
 
 
 Introduction
@@ -21,65 +23,56 @@ viewing and analysis.
 Requirements
 ------------
 The following software is required to build the application:
--Java SDK 1.4
+-Java SDK 1.5
 -Ant
--RBNB 2.4
+-RBNB 2.5
+-NEESit 'turbine-dev.jar' on classspath
 
 The following software is required to run the application:
--Java 1.4
+same as above
 
+SET UP
+- install rbnb
+- install ant
+- set the following environment variables:
+RBNB_HOME   - the root of the rbnb installation
+RDV_SRC     - points to the RDV svn checkout
+MARKER_HOME - points to dataturbine-dev/marker under the neesit svn checkout
 
-Building
---------
-Set the following environmental variables:
--JAVA_HOME                root of JDK instalation
--ANT_HOME                 root of Ant installation
--RBNB_HOME                root of RBNB instalation
+BUILDING
+- neesit RDV extension:
+cd $MARKER_HOME && ant clean jar
+- RDV with event marker augmentation:
+cd ${RDV_SRC}/branches/markers && ant clean jar
 
-Add JAVA_HOME/bin and ANT_HOME/bin to your path.
+RUNNING
+do an 'ant clean jar runMarkers' from $RDV_SRC/branches/markers
 
-To compile, execute the following command from the root directory of the distribution:
-> ant compile
+ /** Copyright (c) 2005, Lawrence J. Miller and NEESit
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *    * Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the 
+ * documentation and/or other materials provided with the distribution.
+ *   * Neither the name of the San Diego Supercomputer Center nor the names of
+ * its contributors may be used to endorse or promote products derived from this
+ * software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
-
-Running
--------
-> ant run
-
-and the application should compile and run. This will pop up 
-the application with a channel list on the left 
-and a control interface on the top. Select "File->Connect" and 
-specify a RBNB server to connect to and click "connect". 
-To add channels, go to the 
-channel list and double click the channel you want to view. 
-Then either monitor with the RT button or drag the location bar 
-to where you want it and click play (">"). The time scale bar 
-controls how fast playback is. The domain scroll bar controls 
-the size of the time axis on the plots, there is no effect on 
-the video. The data plotter supports multiple channels, so you 
-can drag additional channels onto it. To close a data panel 
-click the "X" in the upper right hand corner, this is a little 
-broken but just click there and it should work. If you click 
-anywhere else in a data panel, the panel will detach and become 
-its own window. To reattach the data panel just click it again.
-
-
-Distribution
-------------
-To create a standalone package:
-> ant zip
-
-To create a Java Web Start (JNLP) package:
-> ant jnlp
-
-
-Copyright
----------
-Copyright (c) 2005 University at Buffalo
-
-
-Acknowledgements
-----------------
-This work is supported in part by the George E. Brown, Jr. Network 
-for Earthquake Engineering Simulation (NEES) Program of the National 
-Science Foundation under Award Numbers CMS-0086611 and CMS-0086612.

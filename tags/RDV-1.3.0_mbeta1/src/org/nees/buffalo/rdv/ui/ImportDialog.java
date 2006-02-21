@@ -34,16 +34,16 @@ package org.nees.buffalo.rdv.ui;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -52,18 +52,17 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBImport;
-import org.nees.buffalo.rdv.rbnb.ProgressListener;
+import org.nees.buffalo.rdv.rbnb.RBNBImportListener;
 
 /**
  * @author Jason P. Hanley
  */
-public class ImportDialog extends JDialog implements ProgressListener {
+public class ImportDialog extends JDialog implements KeyEventDispatcher, RBNBImportListener {
 	static Log log = LogFactory.getLog(ImportDialog.class.getName());
 	
 	ImportDialog dialog;
@@ -104,6 +103,14 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		importing = false;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			public void windowActivated(WindowEvent e) {
+				bindKeys();
+			}
+			public void windowDeactivated(WindowEvent e) {
+				unbindKeys();
+			}
+		});
 
 		setTitle("Data file import");
 		
@@ -113,13 +120,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 	}
 	
 	private void initComponents() {
-    JPanel container = new JPanel();
-    setContentPane(container);
-    
-    InputMap inputMap = container.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    ActionMap actionMap = container.getActionMap();
-    
-		container.setLayout(new GridBagLayout());
+		getContentPane().setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		c.weighty = 1;
 		c.gridwidth = 1;
@@ -135,7 +136,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridy = 0;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.NORTHEAST;
-    container.add(headerLabel, c);
+		getContentPane().add(headerLabel, c);
 		
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
@@ -144,7 +145,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.NORTHEAST;
 		c.insets = new java.awt.Insets(0,10,10,5);
-    container.add(new JLabel("Source name: "), c);
+		getContentPane().add(new JLabel("Source name: "), c);
 		
 		sourceNameTextField = new JTextField();
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -154,7 +155,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.insets = new java.awt.Insets(0,0,10,10);
-    container.add(sourceNameTextField, c);
+		getContentPane().add(sourceNameTextField, c);
 		
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
@@ -163,7 +164,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.NORTHEAST;
 		c.insets = new java.awt.Insets(0,10,10,5);
-    container.add(new JLabel("Data file: "), c);
+		getContentPane().add(new JLabel("Data file: "), c);
 		
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
@@ -174,7 +175,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		dataFileTextField = new JTextField(20);
 		dataFileTextField.setEditable(false);
 		c.insets = new java.awt.Insets(0,0,10,5);
-    container.add(dataFileTextField, c);
+		getContentPane().add(dataFileTextField, c);
 		
 		dataFileChooser = new JFileChooser();
 		dataFileButton = new JButton("Browse");
@@ -194,7 +195,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.NORTHWEST;
 		c.insets = new java.awt.Insets(0,10,10,10);
-    container.add(dataFileButton, c);
+		getContentPane().add(dataFileButton, c);
 		
 		importProgressBar = new JProgressBar(0, 100000);
 		importProgressBar.setStringPainted(true);
@@ -206,64 +207,97 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridy = 3;
 		c.gridwidth = GridBagConstraints.REMAINDER;;
 		c.anchor = GridBagConstraints.CENTER;
-    container.add(importProgressBar, c);		
+		getContentPane().add(importProgressBar, c);		
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout());
-    
-    Action importAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
-        importData();
-      }      
-    };
-    importAction.putValue(Action.NAME, "Import");
-    inputMap.put(KeyStroke.getKeyStroke("ENTER"), "import");
-    actionMap.put("export", importAction);
-		importButton = new JButton(importAction);
+		importButton = new JButton("Import");
+		importButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				final String sourceName = sourceNameTextField.getText();
+				importProgressBar.setVisible(true);
+				disableUI();
+				pack();
+				importing = true;
+				rbnbImport.startImport(sourceName, dataFile, dialog);
+			}
+		});	
 		panel.add(importButton);
-    
-    Action cancelAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent e) {
-        cancel();
-      }      
-    };
-    cancelAction.putValue(Action.NAME, "Cancel");
-    inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
-    actionMap.put("cancel", cancelAction);    
-    cancelButton = new JButton(cancelAction);
-    panel.add(cancelButton);
+		cancelButton = new JButton("Cancel");
+		cancelButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (importing) {
+					rbnbImport.cancelImport();
+				} else {
+					dispose();
+				}
+			}
+		});		
+		panel.add(cancelButton);
 		
-		c.fill = GridBagConstraints.NONE;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
 		c.gridx = 0;
 		c.gridy = 4;
 		c.gridwidth = GridBagConstraints.REMAINDER;;
-		c.anchor = GridBagConstraints.LINE_END;
-		c.insets = new java.awt.Insets(0,0,10,5);
-    container.add(panel, c);
+		c.anchor = GridBagConstraints.CENTER;
+		c.insets = new java.awt.Insets(0,0,10,10);
+		getContentPane().add(panel, c);
 		
 		pack();
-    setLocationByPlatform(true);
+		centerOnOwner();
 		setVisible(true);
 	}
-  
-  private void importData() {
-    String sourceName = sourceNameTextField.getText();
-    importProgressBar.setVisible(true);
-    disableUI();
-    pack();
-    importing = true;
-    rbnbImport.startImport(sourceName, dataFile, dialog);
-  }
-  
-  private void cancel() {
-    if (importing) {
-      rbnbImport.cancelImport();
-    } else {
-      dispose();
-    }
-  }
 
+	/**
+	 * Center the dialog box on the owner frame.
+	 *
+	 * @since  1.2
+	 */
+	private void centerOnOwner() {
+		int frameX = owner.getX();
+		int frameY = owner.getY();
+		int frameWidth = owner.getWidth();
+		int frameHeight = owner.getHeight();
+		int dialogWidth = getWidth();
+		int dialogHeight = getHeight();
+		
+		int dialogX = frameX + (frameWidth/2) - (dialogWidth/2);
+		if (dialogX < 0) {
+			dialogX = 0;
+		}
+		int dialogY = frameY + (frameHeight/2) - (dialogHeight/2);
+		if (dialogY < 0) {
+			dialogY = 0;
+		}
+		setLocation(dialogX, dialogY);
+	}
+
+	
+	private void bindKeys() {
+ 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+ 		focusManager.addKeyEventDispatcher(this);		
+	}
+	
+	private void unbindKeys() {
+ 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+ 		focusManager.removeKeyEventDispatcher(this);
+	}
+
+ 	public boolean dispatchKeyEvent(KeyEvent keyEvent) {
+ 		int keyCode = keyEvent.getKeyCode();
+ 		
+ 		if (keyCode == KeyEvent.VK_ENTER) {
+ 			
+ 			return true;
+ 		} else if (keyCode == KeyEvent.VK_ESCAPE) {
+ 			dispose();
+ 			return true;
+ 		} else {
+ 			return false;
+ 		}
+ 	}
+ 	
  	private void disableUI() {
  		importButton.setEnabled(false);
  		sourceNameTextField.setEnabled(false);

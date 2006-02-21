@@ -50,9 +50,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
-import org.nees.buffalo.rdv.ui.ControlPanel;
 
 import com.jgoodies.looks.LookUtils;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
@@ -67,18 +67,38 @@ public class DataViewer {
 	private RBNBController rbnb;
 	private DataPanelManager dataPanelManager;
 	private ApplicationFrame applicationFrame;
-  private ConfigurationManager configurationManager;
 
+  private double location;
+	private double playbackRate;
+	private double timeScale;
+	
 	private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
   private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm a");
   private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm a");
   private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss a");
 	
-	public DataViewer(boolean isApplet) {
-		rbnb = new RBNBController();
+	public DataViewer() {
+    location = System.currentTimeMillis()/1000d;;
+		playbackRate = 1;
+		timeScale = 1;
+	}
+    
+  public void setLocation(double location) {
+    this.location = location; 
+  }
+	
+	public void setPlaybackRate(double playbackRate) {
+		this.playbackRate = playbackRate;
+	}
+		
+	public void setTimeScale(double timeScale) {
+		this.timeScale = timeScale;
+	}
+	
+	public void initialize(boolean isApplet) {
+		rbnb = new RBNBController(location, playbackRate, timeScale);
 		dataPanelManager = new DataPanelManager(rbnb);
-    configurationManager = new ConfigurationManager(this);
-		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);
+		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);		
 	}
 
 	public void exit() {
@@ -96,10 +116,6 @@ public class DataViewer {
  	public DataPanelManager getDataPanelManager() {
  		return dataPanelManager;
  	}
-  
-  public ConfigurationManager getConfigurationManager() {
-    return configurationManager;
-  }
  	
  	public ApplicationFrame getApplicationFrame() {
  		return applicationFrame;
@@ -291,20 +307,19 @@ public class DataViewer {
 	    }
 		
 		log.info("Starting data viewer in disconnected state.");
-		DataViewer dataViewer = new DataViewer(false);
+		DataViewer dataViewer = new DataViewer();
 		
-    RBNBController rbnbController = dataViewer.getRBNBController();
-    ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
-    
 		if (playbackRate != -1) {
-      controlPanel.setPlaybackRate(playbackRate);
-			rbnbController.setPlaybackRate(playbackRate);
+			dataViewer.setPlaybackRate(playbackRate);
 		}
 		
 		if (timeScale != -1) {
-      controlPanel.setTimeScale(timeScale);
-			rbnbController.setTimeScale(timeScale);
+			dataViewer.setTimeScale(timeScale);
 		}
+		
+		dataViewer.initialize(false);
+		
+		RBNBController rbnbController = dataViewer.getRBNBController();
 				
 		if (portNumber != -1) {
 			rbnbController.setRBNBPortNumber(portNumber);
@@ -312,25 +327,32 @@ public class DataViewer {
 		
 		if (hostName != null) {
 			rbnbController.setRBNBHostName(hostName);
-			int state = rbnbController.setState(RBNBController.STATE_STOPPED);
+			rbnbController.connect();
 			
-      if (state == RBNBController.STATE_STOPPED) {
-  			if (channels != null) {
-  				for (int i=0; i<channels.length; i++) {
-  					String channel = channels[i];
-  					log.info("Viewing channel " + channel + ".");
-  					dataViewer.getDataPanelManager().viewChannel(channel);
-  				}
-  			}
-  			
-  			if (play) {
-  				log.info("Starting data playback.");
-  				rbnbController.play();
-  			} else if (realTime) {
-  				log.info("Viewing data in real time.");
-  				rbnbController.monitor();
-  			}
-      }
+			//FIXME this needs to be done better
+			int tries = 0;
+			int maxTries = 20;
+			while (rbnbController.getState() == Player.STATE_DISCONNECTED && tries++ < maxTries) {
+				try { Thread.sleep(1000); } catch (Exception e) {}
+			}
+			
+			if (tries < maxTries) {	
+				if (channels != null && hostName != null) {
+					for (int i=0; i<channels.length; i++) {
+						String channel = channels[i];
+						log.info("Viewing channel " + channel + ".");
+						dataViewer.getDataPanelManager().viewChannel(channel);
+					}
+				}
+				
+				if (play) {
+					log.info("Starting data playback.");
+					rbnbController.play();
+				} else if (realTime) {
+					log.info("Viewing data in real time.");
+					rbnbController.monitor();
+				}
+			}
 		}
 	}
 }

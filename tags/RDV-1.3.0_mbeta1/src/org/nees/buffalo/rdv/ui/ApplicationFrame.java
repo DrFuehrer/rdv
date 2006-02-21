@@ -41,9 +41,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -52,7 +50,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -64,7 +61,6 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -75,17 +71,25 @@ import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
-import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import com.jgoodies.uif_lite.component.Factory;
 
+/////////////////////////////////////////////////////////////////////////////LJM
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
+import java.io.IOException;
+import javax.xml.transform.TransformerException;
+import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.SendMarkerRDVPanel;
+/////////////////////////////////////////////////////////////////////////////LJM
+
 /**
- * Main frame fro the application
+ * Main frame for the application
  * 
  * @author  Jason P. Hanley
+ * modified for event markers by @author Lawrence J. Miller
  * @since   1.2
  */
 public class ApplicationFrame extends JFrame implements MessageListener, ConnectionListener, StateListener {
@@ -106,6 +110,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JSplitPane leftPanel;
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
+/////////////////////////////////////////////////////////////////////////////LJM
+  private SendMarkerRDVPanel markerSubmitPanel = null;
+  private SimpleInternalFrame markerFrame;
+/////////////////////////////////////////////////////////////////////////////LJM
 	private StatusPanel statusPanel;
 	private DataPanelContainer dataPanelContainer;
  	private JSplitPane splitPane;
@@ -116,8 +124,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action fileAction;
  	private Action connectAction;
  	private Action disconnectAction;
-  private Action loadAction;
-  private Action saveAction;
  	private Action importAction;
   private Action exportAction;
  	private Action exitAction;
@@ -135,6 +141,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action showChannelListAction;
   private Action showMetadataPanelAction;
  	private Action showControlPanelAction;
+/////////////////////////////////////////////////////////////////////////////LJM
+  private Action showMarkerPanelAction;
+/////////////////////////////////////////////////////////////////////////////LJM
  	private Action showStatusPanelAction;
  	private Action dataPanelAction;
  	private Action dataPanelHorizontalLayoutAction;
@@ -143,8 +152,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action fullScreenAction;
  	
  	private Action windowAction;
- 	private Action closeAllDataPanelsAction;
- 	
+ 	private Action closeAllDataPanelsAction;  
  	private Action helpAction;
  	private Action aboutAction;
   
@@ -162,6 +170,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		busyDialog = null;
 		
 		initFrame(isApplet);
+/////////////////////////////////////////////////////////////////////////////LJM
+    // Initially, these should be off
+    markerFrame.setVisible (false);
+    controlPanel.markerPanel.setVisible (false);
+    controlPanel.markerLabel.setVisible (false);
+/////////////////////////////////////////////////////////////////////////////LJM
+
 	}
 	
 	private void initFrame(boolean isApplet) {
@@ -193,6 +208,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
 		initRightPanel();
 		initControls();
+/////////////////////////////////////////////////////////////////////////////LJM    
+    initSubmit ();
+/////////////////////////////////////////////////////////////////////////////LJM        
 		initDataPanelContainer();		
 		initStatus();
     
@@ -221,9 +239,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	rbnb.addMessageListener(this);
   	
   	rbnb.addConnectionListener(this);
+/////////////////////////////////////////////////////////////////////////////LJM    
+    //rbnb.addConnectionListener (markerSubmitPanel);
+/////////////////////////////////////////////////////////////////////////////LJM        
 
 		if (!isApplet) { 
-      frame.setLocationByPlatform(true);
 			frame.setVisible(true);
 		}
 	}
@@ -244,48 +264,30 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();
+/////////////////////////////////////////////////////////////////////////////LJM    
+        try {
+          markerSubmitPanel.sendClosingMarker ();
+          markerSubmitPanel.closeTurbine ();
+        } catch (IOException ioe) {
+          log.error ("Sending closing marker: " + ioe);
+        } catch (TransformerException te) {
+          log.error ("Sending closing marker: " + te);
+        }
+/////////////////////////////////////////////////////////////////////////////LJM 
  				rbnb.disconnect();
  			}			
  		};
-    
-    loadAction = new DataViewerAction("Load Setup", "Load data viewer setup from file") {
-      public void actionPerformed(ActionEvent ae) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new RDVFileFilter());
-        chooser.setApproveButtonText("Load");
-        chooser.setApproveButtonToolTipText("Load selected file");
-        int returnVal = chooser.showOpenDialog(frame);
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
-          dataViewer.getConfigurationManager().loadConfiguration(chooser.getSelectedFile());
-        }
-      }     
-    };
-
-    saveAction = new DataViewerAction("Save Setup", "Save data viewer setup to file") {
-      public void actionPerformed(ActionEvent ae) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new RDVFileFilter());
-        int returnVal = chooser.showSaveDialog(frame);
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
-          File file = chooser.getSelectedFile();
-          if (file.getName().indexOf(".") == -1) {
-            file = new File(file.getAbsolutePath() + ".rdv");
-          }
-          dataViewer.getConfigurationManager().saveConfiguration(file);
-        }     
-      }     
-    };    
-
- 		importAction = new DataViewerAction("Import Data", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
+ 		
+ 		importAction = new DataViewerAction("Import", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				showImportDialog();
  			}			
  		};
         
-    exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
-      public void actionPerformed(ActionEvent ae) {
-        showExportDialog();
-      }
+    exportAction = new DataViewerAction("Export", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
+        public void actionPerformed(ActionEvent ae) {
+            
+        }
     };
  
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)) {
@@ -359,10 +361,22 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  
  		showControlPanelAction = new DataViewerAction("Show Control Panel", "", KeyEvent.VK_C, "icons/control.gif") {
  			public void actionPerformed(ActionEvent ae) {
+        log.info ("!!!!!!!!");
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				controlPanel.setVisible(menuItem.isSelected());
  			}			
  		};
+    
+/////////////////////////////////////////////////////////////////////////////LJM
+    showMarkerPanelAction = new DataViewerAction ("Show Event Markers Control", "", KeyEvent.VK_M, "icons/channels.gif") {
+      public void actionPerformed (ActionEvent ae) {
+        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();
+        markerFrame.setVisible (menuItem.isSelected ());
+        controlPanel.markerPanel.setVisible (menuItem.isSelected ());
+        controlPanel.markerLabel.setVisible (menuItem.isSelected ());
+      }
+    };
+/////////////////////////////////////////////////////////////////////////////LJM
  
  		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S, "icons/info.gif") {
  			public void actionPerformed(ActionEvent ae) {
@@ -416,7 +430,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				dataPanelManager.closeAllDataPanels();				
  			}			
  		};
- 		
+    
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
  
  		aboutAction = new DataViewerAction("About RDV", "", KeyEvent.VK_A) {
@@ -446,14 +460,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		fileMenu.add(menuItem);
  		
  		fileMenu.addSeparator();	
-    
-    menuItem = new JMenuItem(loadAction);
-    fileMenu.add(menuItem);
-    
-    menuItem = new JMenuItem(saveAction);
-    fileMenu.add(menuItem);
-    
-    fileMenu.addSeparator();
  		
     menuItem = new JMenuItem(importAction);
  		fileMenu.add(menuItem);
@@ -510,9 +516,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     menuItem.setSelected(true);
     viewMenu.add(menuItem);   
  		
- 		menuItem = new JCheckBoxMenuItem(showControlPanelAction);
+    menuItem = new JCheckBoxMenuItem(showControlPanelAction);
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
+    
+/////////////////////////////////////////////////////////////////////////////LJM
+    menuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
+    menuItem.setBackground (NeesEvent.danielBlue);
+    menuItem.setSelected (false);
+    viewMenu.add (menuItem);
+/////////////////////////////////////////////////////////////////////////////LJM
  		
  		menuItem = new JCheckBoxMenuItem(showStatusPanelAction);
  		menuItem.setSelected(true);
@@ -573,7 +586,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		menuItem = new JMenuItem(closeAllDataPanelsAction);
   		windowMenu.add(menuItem);
-  		
   		menuBar.add(windowMenu);
   		
  		JMenu helpMenu = new JMenu(helpAction);
@@ -660,14 +672,39 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		log.info("Added data panel container.");
 	}
-	
+/////////////////////////////////////////////////////////////////////////////LJM
+  // Marker submission GUI panel
+  private void initSubmit () {
+  markerSubmitPanel = new SendMarkerRDVPanel (null, rbnb);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0;
+		c.weighty = 0;
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 2;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets (0, 0, 5, 8);
+		c.anchor = GridBagConstraints.SOUTHWEST;				
+    markerFrame = new SimpleInternalFrame(
+                                            DataViewer.getIcon ("icons/info.gif"),
+                                            "Event Marker Submission",
+                                            null,
+                                            markerSubmitPanel
+                                          );
+    
+    rightPanel.add (markerFrame, c);
+    log.info ("Added Marker Submission Panel.");
+  } // initSubmit ()
+/////////////////////////////////////////////////////////////////////////////LJM  
 	private void initStatus() {
 		statusPanel = new StatusPanel();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -688,10 +725,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		splitPane.setContinuousLayout(true);
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 	}
-  
-  public ControlPanel getControlPanel() {
-    return controlPanel;
-  }
 	
  	private boolean enterFullScreenMode() {
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -762,19 +795,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   
   public void showImportDialog(String sourceName) {
     new ImportDialog(frame, rbnb, sourceName);
-  }
-  
-  public void showExportDialog() {
-    List channels = channelListPanel.getSelectedChannels();
-    if (channels.size() == 0) {
-      channels = RBNBUtilities.getAllChannels(rbnb.getMetadataManager().getMetadataChannelTree(), channelListPanel.isShowingHiddenChannles());
-    }
-
-    showExportDialog(channels);
-  }
-  
-  public void showExportDialog(List channels) {
-    new ExportDialog(frame, rbnb, channels);
   }
  	
  	class DataViewerAction extends AbstractAction {
@@ -867,17 +887,5 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   
   private void stopThrobber() {
     throbber.setIcon(throbberStop);
-  }
-  
-  public class RDVFileFilter extends FileFilter {
-    public boolean accept(File f) {
-      return !f.isFile() || f.getName().endsWith(".rdv");
-    }
-
-    public String getDescription() {
-      return "RDV Configuration Files (*.rdv)";
-    }
-    
-  };
-
+  }  
 }

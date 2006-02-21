@@ -32,30 +32,13 @@
 package org.nees.buffalo.rdv.rbnb;
 
 /**
- * A listener interface for posting progress information about some process.
+ * A listener interface for the progress of an upload to RBNB.
  * 
  * @author  Jason P. Hanley
  * @since   1.2
  */
-public interface ProgressListener {
-  
-  /**
-   * Post incremental progress information.
-   * 
-   * @param progress amount of progress, from 0 to 1
-   */
+public interface RBNBImportListener {
 	public void postProgress(double progress);
-  
-  /**
-   * Post completion of process.
-   */
 	public void postCompletion();
-  
-  /**
-   * Post error in progress of process. When this is posted the process is
-   * assumed to completed.
-   * 
-   * @param errorMessage  message about error
-   */
 	public void postError(String errorMessage);
 }

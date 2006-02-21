@@ -152,12 +152,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   
   private JComponent createTree() {
     tree = new JTree(this);
-    tree.setRootVisible(true);
-    tree.setShowsRootHandles(false);
-    tree.putClientProperty(Options.TREE_LINE_STYLE_KEY, Options.TREE_LINE_STYLE_NONE_VALUE);
+    tree.setRootVisible(false);
+    tree.setShowsRootHandles(true);
+    tree.putClientProperty(Options.TREE_LINE_STYLE_KEY,Options.TREE_LINE_STYLE_NONE_VALUE);
     tree.setExpandsSelectedPaths(true);
     tree.setCellRenderer(new ChannelTreeCellRenderer());
-    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+    tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     tree.addTreeSelectionListener(this);
     tree.addMouseListener(this);
     tree.setBorder(new EmptyBorder(4, 4, 4, 4));
@@ -278,27 +278,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     }
 	}
   
-  public ArrayList getSelectedChannels() {
-    ArrayList selectedChannels = new ArrayList();
-    
-    TreePath[] selectedPaths = tree.getSelectionPaths();
-    if (selectedPaths != null) {
-      for (int i=0; i<selectedPaths.length; i++) {
-        if (selectedPaths[i].getLastPathComponent() != root) {
-          ChannelTree.Node selectedNode = (ChannelTree.Node)selectedPaths[i].getLastPathComponent();
-          NodeTypeEnum type = selectedNode.getType();
-          if (type == ChannelTree.SOURCE) {
-            selectedChannels.addAll(RBNBUtilities.getChildChannels(selectedNode, showHiddenChannels));
-          } else if (type == ChannelTree.CHANNEL) {
-            selectedChannels.add(selectedNode.getFullName());
-          }
-        }
-      }
-    }
-    
-    return selectedChannels;
-  }
-  
   public void addChannelSelectionListener(ChannelSelectionListener e) {
     channelSelectionListeners.add(e);
   }
@@ -331,10 +310,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       ChannelSelectionListener csl = (ChannelSelectionListener)i.next();
       csl.channelSelectionCleared();
     }    
-  }
-  
-  public boolean isShowingHiddenChannles() {
-    return showHiddenChannels;
   }
 	
 	public void showHiddenChannels(boolean showHiddenChannels) {
@@ -554,16 +529,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       }
     });
     popup.add(menuItem);
-    
     menuItem = new JMenuItem("Export data...", DataViewer.getIcon("icons/import.gif"));
-    menuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        frame.showExportDialog(RBNBUtilities.getAllChannels(ctree, showHiddenChannels));
-      }
-    });
-
     popup.add(menuItem);
-    
+    menuItem.setEnabled(false);
     
     return popup;
   }
@@ -612,11 +580,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     });
     popup.add(menuItem);
     menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/import.gif"));
-    menuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        frame.showExportDialog(RBNBUtilities.getChildChannels(source, showHiddenChannels));
-      }
-    });
+    menuItem.setEnabled(false);
     popup.add(menuItem);          
     
     return popup;
@@ -671,13 +635,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     }
     
     menuItem = new JMenuItem("Export channel...", DataViewer.getIcon("icons/export.gif"));
-    menuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        ArrayList channel = new ArrayList();
-        channel.add(channelName);
-        frame.showExportDialog(channel);
-      }
-    });
+    menuItem.setEnabled(false);
     popup.add(menuItem);
     
     return popup;    
@@ -711,11 +669,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         String mime = RBNBUtilities.fixMime(node.getMime(), node.getFullName());
         
 				setText(node.getName());
-        if (type == ChannelTree.SERVER) {
-          setIcon(DataViewer.getIcon("icons/server.gif"));
-        } else if (type == ChannelTree.FOLDER ||
-                   type == ChannelTree.SOURCE ||
-                   type == ChannelTree.PLUGIN) {
+        if (type == ChannelTree.FOLDER || type == ChannelTree.SOURCE ||
+            type == ChannelTree.SERVER || type == ChannelTree.PLUGIN) {
           if (expanded) {
             setIcon(DataViewer.getIcon("icons/folder_open.gif"));
           } else {
@@ -732,13 +687,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
             setIcon(DataViewer.getIcon("icons/file.gif"));
           }
         }
+        
  			} else if (value.equals(EMPTY_ROOT)) {
  				setIcon(null);
-        setText(null);
-			} else {
-        setIcon(DataViewer.getIcon("icons/server.gif"));
-      }
-
+			}
 			return c;
 		}
 		

@@ -31,21 +31,8 @@
 
 package org.nees.buffalo.rdv.ui;
 
-import java.awt.Component;
 import java.awt.GridLayout;
-import java.awt.Point;
-import java.awt.datatransfer.StringSelection;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragGestureRecognizer;
-import java.awt.dnd.DragSource;
-import java.awt.dnd.DragSourceDragEvent;
-import java.awt.dnd.DragSourceDropEvent;
-import java.awt.dnd.DragSourceEvent;
-import java.awt.dnd.DragSourceListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -60,7 +47,7 @@ import org.apache.commons.logging.LogFactory;
  * @author  Jason P. Hanley
  * @since   1.1
  */
-public class DataPanelContainer extends JPanel implements DragGestureListener, DragSourceListener {
+public class DataPanelContainer extends JPanel {
 
 	/**
 	 * The logger for this class.
@@ -96,20 +83,6 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 	 * @since  1.1
 	 */
 	private int layout;
-  
-  /**
-   * The layout manager.
-   * 
-   * @since  1.3
-   */
-  private GridLayout gridLayout;
-  
-  /**
-   * The drag gesture recognizers for the components.
-   * 
-   * @since  1.3
-   */
-  private HashMap dragGestures;
 	
 	/** 
 	 * Create the container and set the default layout to horizontal.
@@ -121,11 +94,7 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
     
     setBorder(null);
     
-    gridLayout = new GridLayout(1, 1, 8, 8);
-    setLayout(gridLayout);
-    
 		dataPanels = new ArrayList();
-    dragGestures =  new HashMap();
 		
 		layout = HORIZONTAL_LAYOUT;
 	}
@@ -138,11 +107,6 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 	 */
 	public void addDataPanel(JComponent component) {
 		dataPanels.add(component);
-    
-    DragSource dragSource = DragSource.getDefaultDragSource();
-    DragGestureRecognizer dragGesture = dragSource.createDefaultDragGestureRecognizer(component, DnDConstants.ACTION_MOVE, this);
-    dragGestures.put(component, dragGesture);
-    
 		layoutDataPanels();
 		
 		log.info("Added data panel to container (total=" + dataPanels.size() + ").");
@@ -155,9 +119,7 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 	 * @since            1.1
 	 */
 	public void removeDataPanel(JComponent component) {
-    DragGestureRecognizer dragGesture = (DragGestureRecognizer)dragGestures.remove(component);
-    dragGesture.setComponent(null);
-    
+		remove(component);
 		dataPanels.remove(component);
 		layoutDataPanels();
 		
@@ -171,10 +133,8 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 	 * @since         1.1
 	 */
 	public void setLayout(int layout) {
-    if (this.layout != layout) {
-      this.layout = layout;
-      layoutDataPanels();
-    }
+		this.layout = layout;
+		layoutDataPanels();
 	}
 	
 	/**
@@ -188,75 +148,25 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 		if (numberOfDataPanels > 0) {
 			int gridDimension = (int)Math.ceil(Math.sqrt(numberOfDataPanels));
 			int rows = gridDimension;
-      
-      int columns;
-      if (numberOfDataPanels > Math.pow(gridDimension, 2)*(gridDimension-1)/gridDimension) {
-        columns = gridDimension;
-      } else {
-        columns = gridDimension-1;
-      }
-
-			if (layout == HORIZONTAL_LAYOUT) {
-        gridLayout.setRows(columns);
-        gridLayout.setColumns(rows);
-			} else {
-        gridLayout.setRows(rows);
-        gridLayout.setColumns(columns);
-      }
-    }
-      
-    removeAll();
-		JComponent component;
-		for (int i=0; i<numberOfDataPanels; i++) {
-			component = (JComponent)dataPanels.get(i);
-			add(component);
+			int columns = gridDimension;
+			
+			if (layout == HORIZONTAL_LAYOUT && numberOfDataPanels == 2) {
+				rows = 1;
+			}
+			
+			setLayout(new GridLayout(rows, columns, 8, 8));
+			
+			JComponent component;
+			int channelIndex = 0;
+			for (int i=0; i<numberOfDataPanels; i++) {
+				component = (JComponent)dataPanels.get(i);
+				remove(component);
+				add(component);			
+				channelIndex++;			
+			}
 		}
 		
 		validate();
 		repaint();
 	}
-  
-  private void moveBefore(Component moveComponent, Component beforeComponent) {
-    int beforeComponentIndex = getComponentIndex(beforeComponent);
-    if (beforeComponentIndex != -1) {
-      dataPanels.remove(moveComponent);
-      dataPanels.add(beforeComponentIndex, moveComponent);
-      layoutDataPanels();
-    }
-  }
-  
-  private int getComponentIndex(Component c) {
-    for (int i=0; i<dataPanels.size(); i++) {
-      Component component = (Component)dataPanels.get(i);
-      if (c == component) {
-        return i;
-      }
-    }    
-    return -1;
-  }
-
-  public void dragGestureRecognized(DragGestureEvent e) {
-    e.startDrag(DragSource.DefaultMoveDrop, new StringSelection(""), this);    
-  }
-
-  public void dragEnter(DragSourceDragEvent e) {}
-
-  public void dragOver(DragSourceDragEvent e) {
-    Point dragPoint = e.getLocation();
-    Point containerLocation = getLocationOnScreen();
-    dragPoint.translate(-containerLocation.x, -containerLocation.y);
-
-    Component overComponent = getComponentAt(dragPoint);
-    Component dragComponent = e.getDragSourceContext().getComponent();
-    
-    if (overComponent != null && overComponent != dragComponent) {
-      moveBefore(dragComponent, overComponent);
-    }
-  }
-
-  public void dropActionChanged(DragSourceDragEvent dsde) {}
-
-  public void dragExit(DragSourceEvent dse) {}
-
-  public void dragDropEnd(DragSourceDropEvent dsde) {}
 }

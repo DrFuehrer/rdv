@@ -31,84 +31,98 @@
 
 package org.nees.buffalo.rdv.ui;
 
-import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.KeyStroke;
 
 import org.nees.buffalo.rdv.Version;
 
 /**
  * @author Jason P. Hanley
  */
-public class AboutDialog extends JDialog {
+public class AboutDialog extends JDialog implements KeyEventDispatcher {
 		
 	public AboutDialog(JFrame owner) {
 		super(owner);
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			public void windowActivated(WindowEvent e) {
+				bindKeys();
+			}
+			public void windowDeactivated(WindowEvent e) {
+				unbindKeys();
+			}
+		});
 
 		setTitle("About RDV");
-    
-    JPanel container = new JPanel();
-    container.setLayout(new BorderLayout());
-    container.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
-    setContentPane(container);
-    
-    InputMap inputMap = container.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-    ActionMap actionMap = container.getActionMap();
-            		
-		JPanel aboutPanel = new JPanel();
-    aboutPanel.setLayout(new BoxLayout(aboutPanel, BoxLayout.Y_AXIS));
 		
-    aboutPanel.add(new JLabel("RDV - Realtime Data Viewer"));
-    aboutPanel.add(new JLabel("by Jason P. Hanley <jphanley@buffalo.edu>"));
-    aboutPanel.add(new JLabel(" "));
-    aboutPanel.add(new JLabel("Version: " + Version.major + "." + Version.minor + "." + Version.release + Version.build));
-    aboutPanel.add(new JLabel(" "));
-    aboutPanel.add(new JLabel("Copyright \251 2005 University at Buffalo"));
-    aboutPanel.add(new JLabel("Visit http://nees.buffalo.edu/"));
-    aboutPanel.add(new JLabel(" "));
-    aboutPanel.add(new JLabel("This work is supported in part by the"));
-    aboutPanel.add(new JLabel("George E. Brown, Jr. Network for Earthquake"));
-    aboutPanel.add(new JLabel("Engineering Simulation (NEES) Program of the"));
-    aboutPanel.add(new JLabel("National Science Foundation under Award"));
-    aboutPanel.add(new JLabel("Numbers CMS-0086611 and CMS-0086612."));
-    
-    container.add(aboutPanel, BorderLayout.CENTER);
-
-    Action disposeAction = new AbstractAction() {
-      public void actionPerformed(ActionEvent arg0) {
-        dispose();
-      }
-    };
-    disposeAction.putValue(Action.NAME, "OK");
-    inputMap.put(KeyStroke.getKeyStroke("ENTER"), "dispose");
-    inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "dispose");
-    actionMap.put("dispose", disposeAction);
-    
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.setLayout(new BorderLayout());
-    buttonPanel.setBorder(BorderFactory.createEmptyBorder(20,0,0,0));
-    buttonPanel.add(new JButton(disposeAction), BorderLayout.LINE_END);
-    container.add(buttonPanel, BorderLayout.SOUTH);
+		getContentPane().setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		c.fill = GridBagConstraints.NONE;
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.weightx = 0;
+		c.weighty = 0;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.anchor = GridBagConstraints.CENTER;
+		c.insets = new java.awt.Insets(20,20,20,20);
+		
+		JPanel container = new JPanel();
+		getContentPane().add(container, c);
+		
+		container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+		
+		container.add(new JLabel("RDV - Realtime Data Viewer"));
+		container.add(new JLabel("by Jason P. Hanley <jphanley@buffalo.edu>"));
+		container.add(new JLabel(" "));
+		container.add(new JLabel("Version: " + Version.major + "." + Version.minor + "." + Version.release + Version.build));
+		container.add(new JLabel(" "));
+		container.add(new JLabel("Copyright \251 2005 University at Buffalo"));
+		container.add(new JLabel("Visit http://nees.buffalo.edu/"));
+		container.add(new JLabel(" "));
+		container.add(new JLabel("This work is supported in part by the"));
+		container.add(new JLabel("George E. Brown, Jr. Network for Earthquake"));
+		container.add(new JLabel("Engineering Simulation (NEES) Program of the"));
+		container.add(new JLabel("National Science Foundation under Award"));
+		container.add(new JLabel("Numbers CMS-0086611 and CMS-0086612."));
 		
 		pack();
-    setLocationByPlatform(true);
+				
 		setVisible(true);
+	}
+	
+	private void bindKeys() {
+ 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+ 		focusManager.addKeyEventDispatcher(this);		
+	}
+	
+	private void unbindKeys() {
+ 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+ 		focusManager.removeKeyEventDispatcher(this);
 	}	
+
+	public boolean dispatchKeyEvent(KeyEvent keyEvent) {
+		int keyCode = keyEvent.getKeyCode();
+
+		if (keyCode == KeyEvent.VK_ESCAPE) {
+			dispose();
+			return true;
+		} else {
+			return false;
+		}
+	}
 }

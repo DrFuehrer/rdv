@@ -118,7 +118,7 @@ public class RBNBImport {
 	 * @param listener    the listener to post status too
 	 * @since             1.2
 	 */
-	public void startImport(final String sourceName, final File dataFile, final ProgressListener listener) {
+	public void startImport(final String sourceName, final File dataFile, final RBNBImportListener listener) {
 		new Thread() {
 			public void run() {
 				importData(sourceName, dataFile, listener);
@@ -135,12 +135,7 @@ public class RBNBImport {
 	 * @param listener    the listener to post status too, can be null
 	 * @since             1.2
 	 */
-	private synchronized void importData(String sourceName, File dataFile, ProgressListener listener) {
-    if (dataFile == null) {
-      listener.postError("Data file not specified.");
-      return;
-    }
-    
+	private synchronized void importData(String sourceName, File dataFile, RBNBImportListener listener) {
 		String delimiters = "\t";
 		int[] channels;
 		int numberOfChannels;
@@ -166,7 +161,7 @@ public class RBNBImport {
 				line = line.trim();
 				String[] tokens = line.split(delimiters);
 				numberOfChannels = tokens.length-1;
-				if (numberOfChannels <= 0) {
+				if (numberOfChannels == 0) {
 					source.CloseRBNBConnection();
 					listener.postError("Unable to read data file header");
 					return;
@@ -182,25 +177,6 @@ public class RBNBImport {
 				listener.postError("Unable to read data file header");
 				return;
 			}
-      
-      line = fileReader.readLine();
-      if (line != null) {
-        bytesRead += line.length() + 2;
-        line = line.trim();
-        String[] tokens = line.split(delimiters);
-        if ((numberOfChannels+1 == tokens.length) && tokens[0].equals("sec")) {
-          for (int i=0; i<numberOfChannels; i++) {
-            String unit = tokens[i+1].trim();
-            cmap.PutUserInfo(channels[i], "units=" + unit);
-          }
-        }
-      } else {
-        source.CloseRBNBConnection();
-        listener.postError("Unable to read data file headers");
-        return;
-      }
-      
-      source.Register(cmap);
 						
 			while ((line = fileReader.readLine()) != null && !cancelImport) {
 				bytesRead += line.length() + 2;
@@ -214,8 +190,10 @@ public class RBNBImport {
 				try {
 					double time = Double.parseDouble(tokens[0].trim());
 					cmap.PutTime(time, 0);
+					String dataString = "";
 					for (int i=0; i<numberOfChannels; i++) {
 						double[] data = {Double.parseDouble(tokens[i+1].trim()) };
+						dataString += data[0] + ", ";
 						cmap.PutDataAsFloat64(channels[i], data);
 					}
 					

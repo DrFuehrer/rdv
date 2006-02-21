@@ -149,13 +149,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.1
 	 */
 	double timeScale;
-  
-  /**
-   * The last posted state.
-   * 
-   * @since  1.3
-   */
-  double state;
 
 	/**
 	 * The UI component with toolbar.
@@ -229,7 +222,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		time = 0;
 		timeScale = 1;
-    state = RBNBController.STATE_DISCONNECTED;
 		
 		attached = true;
 		
@@ -279,7 +271,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 	public boolean setChannel(String channelName) {
 		if (channels.size() == 1 && channels.contains(channelName)) {
-			return false;
+			return true;
 		}
 		
 		removeAllChannels();
@@ -288,19 +280,18 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 	
 	public boolean addChannel(String channelName) {
+		Channel channel = rbnbController.getChannel(channelName);
+				
 		if (channels.contains(channelName)) {
 			return false;
 		}
 		
-		if (!rbnbController.subscribe(channelName, this)) {
-		  return false;
-    }
+		rbnbController.subscribe(channelName, this);
 
 		channels.add(channelName);
         
     component.setTitle(getTitleComponent());
-
-    Channel channel = rbnbController.getChannel(channelName);
+		
 		String unit = channel.getMetadata("units");
 		if (unit != null) {
 			units.put(channelName, unit);
@@ -425,8 +416,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 	
 	public void postState(int newState, int oldState) {
-    state = newState;
-    
     if (newState == Player.STATE_LOADING || (newState == Player.STATE_MONITORING && oldState != Player.STATE_MONITORING)) {
       clearData();  
     }
@@ -649,28 +638,25 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	
 	public void drop(DropTargetDropEvent e) {
 		try {
-      int dropAction = e.getDropAction();
-      if (dropAction == DnDConstants.ACTION_LINK) {
-  			DataFlavor stringFlavor = DataFlavor.stringFlavor;
-  			Transferable tr = e.getTransferable();
-  			if(e.isDataFlavorSupported(stringFlavor)) {
-  				String channelName = (String)tr.getTransferData(stringFlavor);
-  				e.acceptDrop(DnDConstants.ACTION_LINK);
-  				e.dropComplete(true);
-  
-  				boolean status;
-  				if (supportsMultipleChannels()) {
-  					status = addChannel(channelName);
-  				} else {
-  					status = setChannel(channelName);
-  				}
-  				if (!status) {
-  					//TODO display an error in the UI
-  				}
-  			} else {
-  				e.rejectDrop();
-  			}
-      }
+			DataFlavor stringFlavor = DataFlavor.stringFlavor;
+			Transferable tr = e.getTransferable();
+			if(e.isDataFlavorSupported(stringFlavor)) {
+				String channelName = (String)tr.getTransferData(stringFlavor);
+				e.acceptDrop(DnDConstants.ACTION_LINK);
+				e.dropComplete(true);
+
+				boolean status;
+				if (supportsMultipleChannels()) {
+					status = addChannel(channelName);
+				} else {
+					status = setChannel(channelName);
+				}
+				if (!status) {
+					//TODO display an error in the UI
+				}
+			} else {
+				e.rejectDrop();
+			}
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		} catch(UnsupportedFlavorException ufe) {

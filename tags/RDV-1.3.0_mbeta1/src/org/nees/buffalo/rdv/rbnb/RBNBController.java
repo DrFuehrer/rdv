@@ -103,7 +103,7 @@ public class RBNBController implements Player, MetadataListener {
 	
 	private final double PLAYBACK_REFRESH_RATE = 0.05;
 	
-	public RBNBController() {
+	public RBNBController(double location, double playbackRate, double timeScale) {
 		state = STATE_DISCONNECTED;
 		
 		rbnbHostName = DEFAULT_RBNB_HOST_NAME;
@@ -113,9 +113,9 @@ public class RBNBController implements Player, MetadataListener {
 		
 		dropData = true;
 		
-    location = System.currentTimeMillis()/1000d;
-		playbackRate = 1;
-		timeScale = 1;
+    this.location = location;
+		this.playbackRate = playbackRate;
+		this.timeScale = timeScale;
 
     requestedChannels = new ChannelMap();
     metaDataChannelTree = ChannelTree.EMPTY_TREE;
@@ -220,26 +220,17 @@ public class RBNBController implements Player, MetadataListener {
 	}
     
   private void processTimeScaleUpdate() {
-    if (updateTimeScale != -1) {
-      double oldTimeScale;
-      
-      synchronized (updateTimeScaleLock) {        
-        oldTimeScale = timeScale;
+    if (updateTimeScale != -1 && timeScale != updateTimeScale) {
+      synchronized (updateTimeScaleLock) {
         timeScale = updateTimeScale;
-        updateTimeScale = -1;        
-      }
-      
-      if (timeScale == oldTimeScale) {
-        return;
+        updateTimeScale = -1;
       }
       
       log.info("Setting time scale to " + timeScale + ".");
-      
-      if (timeScale > oldTimeScale) {    
-        //TODO make this loading smarter
-        if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
-          changeStateSafe(STATE_LOADING);
-        }
+    
+      //TODO make this loading smarter
+      if (state == STATE_STOPPED && requestedChannels.NumberOfChannels() > 0) {
+        changeStateSafe(STATE_LOADING);
       }
       
       fireTimeScaleChanged(timeScale);
@@ -247,17 +238,10 @@ public class RBNBController implements Player, MetadataListener {
   }
 	
 	private void processPlaybackRateUpdate() {
-    if (updatePlaybackRate != -1) {
-      double oldPlaybackRate;
-      
+    if (updatePlaybackRate != -1 && playbackRate != updatePlaybackRate) {
       synchronized (updatePlaybackRateLock) {
-        oldPlaybackRate = playbackRate;        
       	playbackRate = updatePlaybackRate;
-        updatePlaybackRate = -1;        
-      }
-      
-      if (playbackRate == oldPlaybackRate) {
-        return;
+        updatePlaybackRate = -1;
       }
 
       log.info("Setting playback rate to " + playbackRate + " seconds.");
@@ -399,11 +383,6 @@ public class RBNBController implements Player, MetadataListener {
 	// Subscription Methods
 	
 	private boolean subscribeSafe(String channelName, DataListener panel) {
-    //skip subscription if we are not connected
-    if (state == STATE_DISCONNECTED) {
-      return false;
-    }
-    
 		//subscribe to channel
 		try {
 			requestedChannels.Add(channelName);
@@ -436,11 +415,6 @@ public class RBNBController implements Player, MetadataListener {
 	}
 		
 	private boolean unsubscribeSafe(String channelName, DataListener panel) {
-    //skip unsubscription if we are not connected
-    if (state == STATE_DISCONNECTED) {
-      return false;
-    }
-    
 		channelManager.unsubscribe(channelName, panel);
 		
 		if (!channelManager.isChannelSubscribed(channelName)) {
@@ -650,7 +624,8 @@ public class RBNBController implements Player, MetadataListener {
 		//log.debug("Actual duration " + (playbackEndTime-playbackStartTime)/1000d + ", seconds desired duration " + playbackDuration/playbackRate + " seconds.");
 	}
 	
-	private void preFetchData(final double location, final double duration) {
+  // LJM made public to prefetch from ControlPanel. 
+	public void preFetchData(final double location, final double duration) {
 		preFetchChannelMap = null;
 		preFetchDone = false;
 
@@ -1051,12 +1026,6 @@ public class RBNBController implements Player, MetadataListener {
  			try { Thread.sleep(50); } catch (Exception e) {}
  		}
 	}
-  
-  public int setState(int state) {
-    //FIXME this is not thread safe!
-    changeStateSafe(state);
-    return this.state;
-  }
 	
 	public double getLocation() {
 		return location;
@@ -1199,6 +1168,22 @@ public class RBNBController implements Player, MetadataListener {
 	public void removeSubscriptionListener(SubscriptionListener subscriptionListener) {
 		subscriptionListeners.remove(subscriptionListener);
 	}
+  
+  /**
+    * LJM An accessor method to get the private @see CahnnelMap variable.
+    * implemented for use by the markerPanel in ControlPanel.
+    */
+  public ChannelMap getChannelMap () {
+    return requestedChannels;
+  }
+  
+  /**
+    * LJM An accessor method to get the @see com.rbnb.sapi.Sink
+    * @return sink private variable.
+    */
+  public Sink getSink () {
+    return this.sink;
+  }
 
 	
 	//Message Methods
@@ -1224,7 +1209,6 @@ public class RBNBController implements Player, MetadataListener {
 	public void removeMessageListener(MessageListener messageListener) {
 		messageListeners.remove(messageListener);
 	}
-	
 	
 	// Connection Listener Methods
 	
@@ -1310,35 +1294,6 @@ public class RBNBController implements Player, MetadataListener {
 		
 		return stateString;		
 	}
-  
-  /**
-   * Returns the state code for a givin state name
-   * 
-   * @param stateName  the state name
-   * @return           the state code
-   * @since            1.3
-   */
-  public static int getState(String stateName) {
-    int code;
-    
-    if (stateName.equals("loading")) {
-      code = STATE_LOADING;
-    } else if (stateName.equals("playing")) {
-      code = STATE_PLAYING;
-    } else if (stateName.equals("real time")) {
-      code = STATE_REALTIME;
-    } else if (stateName.equals("stopped")) {
-      code = STATE_STOPPED;
-    } else if (stateName.equals("exiting")) {
-      code = STATE_EXITING;
-    } else if (stateName.equals("disconnected")) {
-        code = STATE_DISCONNECTED;
-    } else {
-      code = -1; 
-    }
-    
-    return code;
-  }
 	
 	class SubscriptionRequest {
 		private String channelName;
@@ -1364,3 +1319,4 @@ public class RBNBController implements Player, MetadataListener {
 		}
 	}
 }
+

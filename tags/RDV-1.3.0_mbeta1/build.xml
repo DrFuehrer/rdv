@@ -37,6 +37,8 @@
 		
 	<!-- pull RBNB location from users' environment, this is checked in the build -->
 	<property name="rbnb.home" value="${env.RBNB_HOME}"/>
+	<!-- LJM pull event marker location from users' environment, this is checked in the build -->
+	<property name="marker.home" value="${env.MARKER_HOME}"/>
 	
 	<!-- classpath -->
 	<path id="classpath">
@@ -48,14 +50,23 @@
 		<fileset dir="${rbnb.home}/bin">
 			<include name="rbnb.jar"/>
 		</fileset>
+		<!-- LJM library for even markers -->
+    <fileset dir="${marker.home}/build/lib">
+			<include name="marker.jar"/>
+		</fileset>
 	</path>
 	
 	<target name="checkRBNB" unless="env.RBNB_HOME">
 		<fail message="RBNB_HOME must be defined in your environment."/>
 	</target>
 	
+  <!-- LJM -->
+  <target name="checkMarker" unless="env.MARKER_HOME">
+		<fail message="MARKER_HOME must be defined in your environment."/>
+	</target>
+  
 	<!-- Meta-target that depends on all environment variables -->
-	<target name="checkEnvVars" depends="checkRBNB" description="Check necessary environment variables"/>
+	<target name="checkEnvVars" depends="checkRBNB, checkMarker" description="Check necessary environment variables"/>
 	
 	<!-- target to make temp dirs -->
 	<target name="prepare" depends="checkEnvVars" description="Make directories">
@@ -125,7 +136,7 @@
 		</java>
 	</target>
 
-	<!-- Run the RDV (connect to localhost) -->
+	<!-- LJM Run the RDV (connect to localhost) -->
 	<target name="runLocalhost" depends="compile" description="Run application connecting to localhost">
 		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
  			<jvmarg value="-Xms64M"/>
@@ -154,6 +165,17 @@
 			<arg line="--host neestpm.sdsc.edu --channels FakeDAQ/0 'M1 cam1/video.jpg' --time-scale 10 --real-time"/>
 		</java>
 	</target>
+
+<!-- Run the RDV (connect to neestpm.sdsc.edu) -->
+    <target name="runMarkers" depends="compile" description="Run application connecting to localhost">
+        <java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+            <jvmarg value="-Xms64M"/>
+            <jvmarg value="-Xmx256M"/>
+            <jvmarg value="-Dsun.java2d.ddscale=true"/>
+            <arg line="--host localhost --channels Events/EventsChannel --time-scale 10 --real-time"/>
+        </java>
+    </target>	
+	
 	
 	
 	<target name="help" depends="compile" description="Show usage">

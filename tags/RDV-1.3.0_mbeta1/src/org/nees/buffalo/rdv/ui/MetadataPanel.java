@@ -170,8 +170,6 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
             s.append("<em>JPEG Video</em>");            
           } else if (mime.equals("text/plain")) {
             s.append("<em>Text</em>");
-          } else if (mime.startsWith("audio/")) {
-            s.append("<em>Audio</em>");
           } else {
             s.append("<em>" + mime + "</em>");
           }
@@ -188,23 +186,6 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
             String offset = channelMetadata.getMetadata("offset");
             if (scale != null && offset != null) {
               s.append("<br>scale=" + scale + ", offset=" + offset);
-            }
-          } else if (mime.startsWith("audio/")) {
-            String encoding = channelMetadata.getMetadata("encoding");
-            String channels = channelMetadata.getMetadata("channels");
-            String sampleRate = channelMetadata.getMetadata("samplerate");
-            String sampleSize = channelMetadata.getMetadata("samplesize");
-            String signed = channelMetadata.getMetadata("signed").equals("1")?"s":"u";
-            String endian = channelMetadata.getMetadata("endian").equals("1")?"be":"le";
-            if (encoding != null && channels != null && sampleRate != null && sampleSize != null && endian != null) {
-              s.append("<br>" + encoding + " (" + Float.parseFloat(sampleRate)/1000 + "kHz");
-              s.append("/" + channels + "ch");
-              s.append("/" + sampleSize + "b");
-              if (Integer.parseInt(sampleSize) > 1) {
-                s.append("/" + endian);
-              }
-              s.append("/" + signed);
-              s.append(")");
             }
           }
         }
