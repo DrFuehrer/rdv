@@ -2,8 +2,6 @@
 
 <project name="RDV" default="compile" basedir=".">
 	
-	<!-- name of the application -->
-	<property name="package.name" value="RDV"/>
 	
 	<!-- compile with debugging information -->
 	<property name="debug" value="on"/>
@@ -11,6 +9,8 @@
 	<!-- get version information -->
 	<property file="build.properties"/>
 	<property name="version" value="${version.major}.${version.minor}.${version.release}${version.build}"/>
+	<!-- name of the application -->
+	<property name="package.name" value="RDV-${version}"/>
 			
 	<!-- source directory -->
 	<property name="src.dir" value="src"/>
@@ -37,8 +37,8 @@
 		
 	<!-- pull RBNB location from users' environment, this is checked in the build -->
 	<property name="rbnb.home" value="${env.RBNB_HOME}"/>
-	<!-- LJM pull event marker location from users' environment, this is checked in the build -->
-	<property name="marker.home" value="${env.MARKER_HOME}"/>
+	<!-- LJM pull event marker location from users' environment, this is checked in the build >
+	<property name="marker.home" value="${env.MARKER_HOME}"/-->
 	
 	<!-- classpath -->
 	<path id="classpath">
@@ -50,23 +50,23 @@
 		<fileset dir="${rbnb.home}/bin">
 			<include name="rbnb.jar"/>
 		</fileset>
-		<!-- LJM library for even markers -->
+		<!-- LJM library for even markers >
     <fileset dir="${marker.home}/build/lib">
 			<include name="marker.jar"/>
-		</fileset>
+		</fileset-->
 	</path>
 	
 	<target name="checkRBNB" unless="env.RBNB_HOME">
 		<fail message="RBNB_HOME must be defined in your environment."/>
 	</target>
 	
-  <!-- LJM -->
+  <!-- LJM >
   <target name="checkMarker" unless="env.MARKER_HOME">
 		<fail message="MARKER_HOME must be defined in your environment."/>
-	</target>
+	</target-->
   
 	<!-- Meta-target that depends on all environment variables -->
-	<target name="checkEnvVars" depends="checkRBNB, checkMarker" description="Check necessary environment variables"/>
+	<target name="checkEnvVars" depends="checkRBNB" description="Check necessary environment variables"/>
 	
 	<!-- target to make temp dirs -->
 	<target name="prepare" depends="checkEnvVars" description="Make directories">
