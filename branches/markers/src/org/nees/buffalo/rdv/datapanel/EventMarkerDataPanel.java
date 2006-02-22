@@ -1,4 +1,3 @@
-// LJM 051129 - choking on panel and dataComponent
 /*
  * Created on Feb 7, 2005
  */
@@ -10,7 +9,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-// LJM 051129
+// LJM
 import org.nees.rbnb.marker.NeesEvent;
 import java.awt.Color;
 import java.awt.Font;
@@ -36,7 +35,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 	//private JComponent dataComponent;
 	private double lastTimeDisplayed;
   
-  // LJM 051021 - lifted from StringDataPanel
+  // LJM lifted from StringDataPanel
   private JPanel panel;
 	private JEditorPane messages;
 	private JScrollPane scrollPane;
@@ -55,11 +54,9 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 	}
 	
 	/**
-    * Initialize the UI component and pass it too the abstract class.
+    * Initialize the UI component and pass it to the abstract class.
 	 */
 	private void initDataComponent () {
-		// TODO create data component
-    // LJM 051021 - lifted from StringDataPanel
     panel = new JPanel ();
 		panel.setLayout (new BorderLayout ());
 		messages = new JEditorPane ();
@@ -73,8 +70,6 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 	}
   
 	void clearData() {
-		// TODO clear your data display
-    // LJM 051021
     messages.setText (null);
     messageBuffer.delete (0, messageBuffer.length ());
     messages.setBackground (Color.white);
@@ -87,7 +82,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 		return false;
 	}
   
-	/** LJM 051129
+	/**
     * A method to manage the graphical display of Event Markers.
     */
   public void postTime (double time) {
@@ -104,8 +99,6 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 			
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
-				// TODO display the data in your data component
-        // LJM 051021 copied from StringDataPanel.java, line 148
         String[] data = channelMap.GetDataAsString (channelIndex);
         NeesEvent[] eventData = new NeesEvent[data.length];
         double[] times = channelMap.GetTimes (channelIndex);
@@ -172,8 +165,8 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               messageBuffer.append ("Label: ");
               messageBuffer.append ( (String)(eventData[i].getProperty ("label")) + "\n" );
               messageBuffer.append ("Content: ");
-              messageBuffer.append ( (String)(eventData[i].getProperty ("content")) + "\n" );
-              messageBuffer.append ("Source: ");
+              /*messageBuffer.append ( (String)(eventData[i].getProperty ("content")) + "\n" );
+              messageBuffer.append ("Source: ");*/
               messageBuffer.append ( (String)(eventData[i].getProperty ("source")) );
               
               messages.setBackground (NeesEvent.noteColor);

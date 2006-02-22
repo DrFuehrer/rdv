@@ -256,7 +256,36 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     
 		JPanel container = new JPanel();
 		container.setLayout(new GridBagLayout());		
+    
+		JLabel locationLabel = new JLabel("Time");
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.weighty = 0;
+		c.gridx = 0;
+		c.gridy = 1;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;				
+		container.add(locationLabel, c);
 		
+    locationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 1);
+		locationScrollBar.addAdjustmentListener(this);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
+		c.gridx = 1;
+		c.gridy = 1;
+		c.gridwidth = GridBagConstraints.REMAINDER;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(5,5,5,5);
+		c.anchor = GridBagConstraints.NORTHWEST;		
+    container.add(locationScrollBar, c);
+    
     //////////////////////////////// LJM - various Y gridbag coordinates incremented
     // marker display panel    
     markerLabel = new JLabel ("Event Markers");
@@ -264,7 +293,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -286,8 +315,15 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
         // scale factor is pixels/time
         double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) +
                           markerPanel.getEventsChannelStartTime ());
-        location = guiTime;
-        setSliderLocation (guiTime);
+        
+        // Go to the end if the mouse click is close
+        if ((markerPanel.getWidth () - markerPanel.FUDGE_FACTOR) < e.getX ()) {
+          location = endTime;
+          setSliderLocation (endTime);
+        } else {
+          location = guiTime;
+          setSliderLocation (guiTime);
+        }
         locationChange ();
         // This updates the whole display
         rbnbController.setLocation (location);
@@ -312,7 +348,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.weightx = 1;
 		c.weighty = 1;
 		c.gridx = 1;
-		c.gridy = 1;
+		c.gridy = 2;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -321,36 +357,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;	
     container.add (markerPanel, c);
     log.info ("Added Marker Panel to Control Panel.");
-    //////////////////////////////////////////////////////////////////////////// LJM      
-    
-		JLabel locationLabel = new JLabel("Time");
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 2;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
-		container.add(locationLabel, c);
-		
-    locationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 1);
-		locationScrollBar.addAdjustmentListener(this);
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
-		c.weighty = 0;
-		c.gridx = 1;
-		c.gridy = 2;
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;		
-    container.add(locationScrollBar, c);
+    //////////////////////////////////////////////////////////////////////////// LJM 
     
 		JLabel timeScaleLabel = new JLabel("Time Scale");
 		c.fill = GridBagConstraints.NONE;
