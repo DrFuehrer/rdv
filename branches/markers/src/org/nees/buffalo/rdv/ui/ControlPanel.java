@@ -312,6 +312,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     markerPanel.addMouseListener (new MouseAdapter () {
       
       public void mouseClicked (MouseEvent e) {
+        //TODO disable the submission panel
+        if (! rbnbController.isConnected ()) {
+          return;
+        }
         // scale factor is pixels/time
         double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) +
                           markerPanel.getEventsChannelStartTime ());
@@ -692,6 +696,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		endButton.setEnabled(false);
 /////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.setEnabled (false);
+    markerPanel.clearDisplay ();
 /////////////////////////////////////////////////////////////////////////////LJM
     locationScrollBar.setEnabled(false);
 		playbackRateScrollBar.setEnabled(false);

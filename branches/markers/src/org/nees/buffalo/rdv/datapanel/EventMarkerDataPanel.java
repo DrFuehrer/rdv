@@ -165,16 +165,16 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               messageBuffer.append ("Label: ");
               messageBuffer.append ( (String)(eventData[i].getProperty ("label")) + "\n" );
               messageBuffer.append ("Content: ");
-              /*messageBuffer.append ( (String)(eventData[i].getProperty ("content")) + "\n" );
-              messageBuffer.append ("Source: ");*/
-              messageBuffer.append ( (String)(eventData[i].getProperty ("source")) );
+              messageBuffer.append ( (String)(eventData[i].getProperty ("content")) + "\n" );
+              /*messageBuffer.append ("Source: ");*
+              messageBuffer.append ( (String)(eventData[i].getProperty ("source")) );*/
               
               messages.setBackground (NeesEvent.noteColor);
               messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
             }
             
             messageBuffer.append ("\nTime Marker Generated:\n");
-            messageBuffer.append ( (String)(eventData[i].getProperty ("timestamp")) + " || ");
+            //messageBuffer.append ( (String)(eventData[i].getProperty ("timestamp")) + " || ");
             messageBuffer.append ( DataViewer.formatDate (Double.parseDouble (eventData[i].getProperty ("timestamp"))) );
             messageBuffer.append ("\nTime Marker Received:\n");
             messageBuffer.append ( DataViewer.formatDate (times[i]) );
