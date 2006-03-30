@@ -31,41 +31,48 @@
 
 package org.nees.buffalo.rdv;
 
+import java.io.IOException;
+import java.util.Properties;
+
 /**
  * A class to encapsulate the version of the application.
- * The version is displayed in the format of major.minor.release.build.
  * 
  * @author  Jason P. Hanley
  * @since   1.0
  */
 public final class Version {
+	
+	static {
+		load();
+	}
+	
 	/**
 	 * The major version number.
 	 * 
 	 * @since  1.0
 	 */
-	public static final int major = 1;
+	public static int major;
 	
 	/**
 	 * The minor version number
 	 * 
 	 * @since  1.0 
 	 */
-	public static final int minor = 3;
+	public static int minor;
 	
 	/**
 	 * The release number.
 	 * 
 	 * @since  1.0
 	 */
-	public static final int release = 0;
+	public static int release;
 	
 	/**
 	 * The build string.
 	 *
 	 * @since  1.2
 	 */
-	public static final String build = " svn";
+	public static String build;
 	
 	/**
 	 * This class can not be instantiated and it's constructor
@@ -74,4 +81,24 @@ public final class Version {
 	private Version() {
 		throw new UnsupportedOperationException("This class can not be instantiated.");
 	}
+	
+	/**
+	 * Load the version and build information from the .properties files
+	 */
+	private static void load() {
+		try {
+			Properties versionProperties = new Properties();
+			versionProperties.load(ClassLoader.getSystemResourceAsStream("version.properties"));
+			
+			Properties buildProperties = new Properties();
+			buildProperties.load(ClassLoader.getSystemResourceAsStream("build.properties"));
+			
+			major = Integer.parseInt(versionProperties.getProperty("version.major"));
+			minor = Integer.parseInt(versionProperties.getProperty("version.minor"));
+			release = Integer.parseInt(versionProperties.getProperty("version.release"));
+			build = buildProperties.getProperty("build.revision");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}	
 }

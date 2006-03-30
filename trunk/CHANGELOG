@@ -46,6 +46,23 @@
 -Extend data panel layout orientation to all cases.
 -Enable drag-and-drop moving of docked data panels.
 -Added unit column to tabular data panel.
+-Updated libs
+ -commons-cli 1.0
+ -commons-logging 1.0.4
+ -jcommon 1.0.0
+ -jfreechart 1.0.1
+ -jnt.FFT
+ -log4j 1.2.13
+ -looks 2.0.1
+ -tritonus_share 0.3.6
+-Remove xerces jars and code dependencies.
+-Update chart code because of API change in JFreeChart.
+-Move build.properties to version.properties.
+-Generate build information and embedded in jar.
+-Update Version.java to use build information.
+-Change jar target to be standalone.
+-Jar files are optimized with proguard
+-Added ant target to create windows exe from jar with launch4j.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

@@ -35,9 +35,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xerces.parsers.DOMParser;
 import org.nees.buffalo.rdv.datapanel.DataPanel;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
@@ -120,12 +122,11 @@ public class DataPanelManager {
 	 *
 	 * @since  1.2
 	 */
-	private void loadExtenionManifest() {
-		DOMParser xmlParser = new DOMParser();
+	private void loadExtenionManifest() {	
 		try {
 			ClassLoader cl = getClass().getClassLoader();
-			xmlParser.parse(cl.getResource(extensionsConfigFileName).toExternalForm());
-			Document xmlDocument = xmlParser.getDocument();
+			DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			Document xmlDocument = documentBuilder.parse(cl.getResource(extensionsConfigFileName).toExternalForm());
 			NodeList extensionNodes = xmlDocument.getElementsByTagName("extension");
 			for (int i=0; i<extensionNodes.getLength(); i++) {
 				Node extensionNode = extensionNodes.item(i);

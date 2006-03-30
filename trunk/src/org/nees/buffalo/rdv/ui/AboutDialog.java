@@ -32,8 +32,6 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -78,9 +76,10 @@ public class AboutDialog extends JDialog {
     aboutPanel.add(new JLabel("RDV - Realtime Data Viewer"));
     aboutPanel.add(new JLabel("by Jason P. Hanley <jphanley@buffalo.edu>"));
     aboutPanel.add(new JLabel(" "));
-    aboutPanel.add(new JLabel("Version: " + Version.major + "." + Version.minor + "." + Version.release + Version.build));
+    aboutPanel.add(new JLabel("Version " + Version.major + "." + Version.minor + "." + Version.release));
+    aboutPanel.add(new JLabel("Build " + Version.build));
     aboutPanel.add(new JLabel(" "));
-    aboutPanel.add(new JLabel("Copyright \251 2005 University at Buffalo"));
+    aboutPanel.add(new JLabel("Copyright \251 2005-2006 University at Buffalo"));
     aboutPanel.add(new JLabel("Visit http://nees.buffalo.edu/"));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("This work is supported in part by the"));
@@ -104,7 +103,7 @@ public class AboutDialog extends JDialog {
     JPanel buttonPanel = new JPanel();
     buttonPanel.setLayout(new BorderLayout());
     buttonPanel.setBorder(BorderFactory.createEmptyBorder(20,0,0,0));
-    buttonPanel.add(new JButton(disposeAction), BorderLayout.LINE_END);
+    buttonPanel.add(new JButton(disposeAction), BorderLayout.CENTER);
     container.add(buttonPanel, BorderLayout.SOUTH);
 		
 		pack();

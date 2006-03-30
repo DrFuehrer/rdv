@@ -188,7 +188,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			}
 		} else {
 			TimeSeries data = new TimeSeries(seriesName, FixedMillisecond.class);
-			data.setHistoryCount((int)(timeScale*1000*2));
+			data.setMaximumItemAge((int)(timeScale*1000*2));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
 		}
 		
@@ -286,7 +286,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			} else {
 				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
 				TimeSeries data = dataCollection.getSeries(i);
-				data.setHistoryCount((int)(timeScale*1000*2));
+				data.setMaximumItemAge((int)(timeScale*1000*2));
 			}
 		}
 		
