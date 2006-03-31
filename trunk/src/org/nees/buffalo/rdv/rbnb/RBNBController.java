@@ -433,7 +433,7 @@ public class RBNBController implements Player, MetadataListener {
 				loadData(channelName);
 				break;
 			case STATE_MONITORING:
-				monitor();
+				monitorData();
 				break;
 		}
 		
@@ -471,7 +471,7 @@ public class RBNBController implements Player, MetadataListener {
 		log.info("Unsubscribed from " + channelName + " for listener " + panel + ".");
 		
 		if (state == STATE_MONITORING) {
-			monitor();
+			monitorData();
 		}
 		
 		fireUnsubscriptionNotification(channelName);
