@@ -130,6 +130,8 @@ public class RBNBController implements Player, MetadataListener {
 		timeScaleChangeListeners = new ArrayList();
 		messageListeners = new ArrayList();
 		connectionListeners = new ArrayList();
+        
+		addStateListener(metadataManager);
 
 		run();
 	}
@@ -167,7 +169,6 @@ public class RBNBController implements Player, MetadataListener {
 					updateDataRealTime();
 					break;
 				case STATE_STOPPED:
-					initRBNB();
 				case STATE_DISCONNECTED:
 					try { Thread.sleep(50); } catch (Exception e) {}
 					break;
@@ -299,18 +300,9 @@ public class RBNBController implements Player, MetadataListener {
 			log.error("Can not transition out of exiting state to " + getStateName(state) + " state.");
 			return false;
  		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING && newState != STATE_DISCONNECTED) {
- 			fireConnecting();
-			if (!metadataManager.updateMetadata()) {
-        fireErrorMessage("Failed to connect to the RBNB server.");
-				fireConnectionFailed();
+			if (!initRBNB(true)) {
 				return false;
 			}
-			if (!initRBNB()) {
-				//FIXME we need to clear the channel list in this case
-				fireConnectionFailed();
-				return false;
-			}
-			fireConnected();
 		}
 		
 		switch (newState) {
@@ -347,24 +339,39 @@ public class RBNBController implements Player, MetadataListener {
 	
 	// RBNB Methods
 
-	private boolean initRBNB() {
+	private boolean initRBNB(boolean fireListener) {
 		if (sink == null) {			
 			sink = new Sink();
 		}  else {
 			return true;
 		}
+        
+    if (fireListener) {
+      fireConnecting();
+    }
 		
 		try {
 			sink.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, rbnbSinkName);
 		} catch (SAPIException e) {
 			log.error("Failed to connect to the RBNB server.");
+
+			if (fireListener) {
+			  fireConnectionFailed();
+			}
+
+			//FIXME this is redundant
 			fireErrorMessage("Failed to connect to the RBNB server.");
+
 			closeRBNB(true);
 			return false;	
 		}
-		
+
 		log.info("Connected to RBNB server.");
-		
+
+		if (fireListener) {
+		  fireConnected();
+    }
+
 		return true;
 	}
 
@@ -388,7 +395,7 @@ public class RBNBController implements Player, MetadataListener {
 			return false;
 		}
 		
-		if (!initRBNB()) {
+		if (!initRBNB(false)) {
 			return false;
 		}
 		

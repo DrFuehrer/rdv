@@ -50,80 +50,162 @@ import com.rbnb.sapi.Sink;
  * @author  Jason P. Hanley
  * @since   1.3
  */
-public class MetadataManager {
-    
+public class MetadataManager implements StateListener {
+
   static Log log = LogFactory.getLog(MetadataManager.class.getName());
     
   private RBNBController rbnbController;
 
+  /**
+   * Listeners for metadata updates.
+   */
   private ArrayList metadataListeners;
-  private boolean updatingMetadata;
   
+  /**
+   * Map of channel objects created from metadata.
+   */
   private HashMap channels;
   
+  /**
+   * Metadata channel tree.
+   */
   private ChannelTree ctree;
-    
+  
+  /**
+   * Whether the metadata update thread is running.
+   */
+  private boolean update;
+  
+  /**
+   * The thread updating the metadata periodically.
+   */
+  private Thread updateThread;
+  
+  /**
+   * The time to sleep between each metadata update.
+   */
+  private static final long updateRate = 10000;
+
+  /**
+   * Create the class using the RBNBController for connection information.
+   *  
+   * @param rbnbController the RBNBController to use
+   */
   public MetadataManager(RBNBController rbnbController) {
     this.rbnbController = rbnbController;
 
     metadataListeners =  new ArrayList();
     addMetadataListener(rbnbController);
         
-    updatingMetadata = false;
-		
     channels = new HashMap();
 		
     ctree = ChannelTree.EMPTY_TREE;
-  }   
-	
-  public boolean updateMetadataBackground() {
-    if (updatingMetadata) return true;
     
-    new Thread(new Runnable() {
-      public void run() {
-        updateMetadata();
-      }
-    }, "MetadataManager").start();
+    update = false;
+    updateThread = null;
+  }   
 
-    return true;
+  /**
+   * Triggers a metadata update. This will return immediately and the metadata
+   * will be posted to the listeners when available.
+   */
+  public void updateMetadataBackground() {
+    if (update) {
+      updateThread.interrupt();
+    }
   }
-	
-  public synchronized boolean updateMetadata() {
-    if (updatingMetadata) return true;
 
-    updatingMetadata = true;
-
-    log.info("Updating channel listing.");
-
-    Sink metadataSink = new Sink();
+  /**
+   * Start the thread that periodically updates the metadata.
+   */
+  private void startUpdating() {
+    if (update == true) {
+      return;
+    }
+    
+    final Sink metadataSink = new Sink();
     try {
       metadataSink.OpenRBNBConnection(rbnbController.getRBNBConnectionString(), "RDVMetadata");
     } catch (SAPIException e) {
-      log.error("Failed to connect to RBNB server.");
-      metadataSink.CloseRBNBConnection();
-      updatingMetadata = false;
-      return false;   
-    }
+      log.error("Failed to connect to RBNB server: " + e.getMessage());
+      e.printStackTrace();
+      return;
+    }    
 
-    //clear channel metadata objects
-    channels.clear();
-
-    //create metadata channel tree
-    ctree = getChannelTree(metadataSink);
-
-    metadataSink.CloseRBNBConnection();
-
-    fireMetadataUpdated(ctree);
-		
-    updatingMetadata = false;
-		
-    return true;
+    updateThread = new Thread("MetadataManager") {
+      public void run() {
+        log.info("RBNB Metadata thread is starting.");
+        
+        try {
+          updateMetadataThread(metadataSink);
+        } catch (Exception e) {
+          log.error("The metadata updater died: " + e.getMessage());
+          update = false;
+        }
+        
+        metadataSink.CloseRBNBConnection();
+        
+        log.info("RBNB Metadata thread is stopping.");        
+      }
+    };
+    updateThread.start();
+    update = true;
   }
-    
+  
+  /**
+   * Stops the metadata update thread.
+   */
+  private void stopUpdating() {
+    update = false;
+    if (updateThread != null) {
+      updateThread.interrupt();
+    }
+  }  
+  
+  /**
+   * Updates the metadata and sleeps <code>updateRate</code>. The
+   * <code>Sink</code> must be opened and will not be closed when this method
+   * exits.
+   * 
+   * @param metadataSink The sink connection to the RBNB server
+   */
+  private void updateMetadataThread(Sink metadataSink) {
+    while (update) {
+      if (rbnbController.isConnected()) {
+        log.info("Updating channel listing.");
+
+        synchronized (this) {
+          //clear channel metadata objects
+          channels.clear();
+      
+          //create metadata channel tree
+          ctree = getChannelTree(metadataSink);
+        }
+
+        fireMetadataUpdated(ctree);
+      }
+
+      try { Thread.sleep(updateRate); } catch (InterruptedException e) {}
+    }
+  }
+
+  /**
+   * Get the metadata channel tree for the whole server.
+   * 
+   * @param sink the sink connection to the RBNB server
+   * @return the metadata channel tree
+   */
   private ChannelTree getChannelTree(Sink sink) {
     return getChannelTree(sink, null);
   }
 
+  /**
+   * Get the metadata channel tree for the given <code>path</code>.
+   * 
+   * @param sink sink the sink connection to the RBNB server
+   * @param path the path for the desired metadata
+   * @return the metadata channel tree for the given path
+   */
   private ChannelTree getChannelTree(Sink sink, String path) {
     ChannelTree ctree = ChannelTree.EMPTY_TREE;
     try {
@@ -162,30 +244,75 @@ public class MetadataManager {
     } catch (SAPIException e) {
       log.error("Error retrieving metadata: " + e.getMessage());
     }
+
     return ctree;
   }
   
+  /**
+   * Return the latest metadata channel tree.
+   * 
+   * @return the metadata channel tree.
+   */
   public synchronized ChannelTree getMetadataChannelTree() {
     return ctree;
   }
 	
+  /**
+   * Return a channel object for the given <code>channelName</code>.
+   * 
+   * @param channelName the desired channel
+   * @return the channel object for the channel name, or null if the channel is
+   *         not found
+   */
   public synchronized Channel getChannel(String channelName) {
     return (Channel)channels.get(channelName);
   }   
 
+  /**
+   * Add a listener for metadata updates.
+   * 
+   * @param listener the metadata listener
+   */
   public void addMetadataListener(MetadataListener listener) {
     metadataListeners.add(listener);
   }
 
+  /**
+   * Remove a listener for metadata updates.
+   * 
+   * @param listener the metadata listener
+   */
   public void removeMetadataListener(MetadataListener listener) {
     metadataListeners.remove(listener);
   }
 
+  /**
+   * Post metadata updates to the subscribed listeners.
+   * 
+   * @param channelTree the new metadata channel tree
+   */
   private void fireMetadataUpdated(ChannelTree channelTree) {
     MetadataListener listener;
     for (int i=0; i<metadataListeners.size(); i++) {
       listener = (MetadataListener)metadataListeners.get(i);
       listener.channelTreeUpdated(channelTree);
+    }
+  }
+
+  /**
+   * Receives state notifications from the RBNB controller.
+   * 
+   * This controls the starting and stopping of the periodic metadata update
+   * thread. 
+   */
+  public void postState(int newState, int oldState) {
+    if (oldState == RBNBController.STATE_DISCONNECTED &&
+        newState != RBNBController.STATE_EXITING &&
+        newState != RBNBController.STATE_DISCONNECTED) {
+      startUpdating();
+    } else if (newState == RBNBController.STATE_DISCONNECTED ||
+               newState == RBNBController.STATE_EXITING) {
+      stopUpdating();
     }
   }
 }

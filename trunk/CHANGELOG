@@ -61,8 +61,9 @@
 -Generate build information and embedded in jar.
 -Update Version.java to use build information.
 -Change jar target to be standalone.
--Jar files are optimized with proguard
+-Jar files are optimized with proguard.
 -Added ant target to create windows exe from jar with launch4j.
+-Metadata is now automatically updated via periodic polling.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
