@@ -1059,10 +1059,8 @@ public class RBNBController implements Player, MetadataListener {
  		}
 	}
   
-  public int setState(int state) {
-    //FIXME this is not thread safe!
-    changeStateSafe(state);
-    return this.state;
+  public void setState(int state) {
+		requestStateChange(state);
   }
 	
 	public double getLocation() {
@@ -1187,7 +1185,45 @@ public class RBNBController implements Player, MetadataListener {
 	}
 		
 	public void connect() {
-		requestStateChange(STATE_STOPPED);
+    connect(false);
+  }
+  
+  public boolean connect(boolean block) {
+    if (isConnected()) {
+      return true;
+    }
+    
+    if (block) {
+      final Thread object = Thread.currentThread();
+      ConnectionListener listener = new ConnectionListener() {
+        public void connecting() {}
+        public void connected() {
+          synchronized (object) {
+            object.notify();
+          }
+        }
+        public void connectionFailed() {
+          object.interrupt();
+        }
+      };
+      addConnectionListener(listener);
+      
+      synchronized (object) {
+        requestStateChange(STATE_STOPPED);
+        
+        try {
+          object.wait();
+        } catch (InterruptedException e) {
+          return false;
+        }
+      }
+      
+      removeConnectionListener(listener);
+    } else {
+      requestStateChange(STATE_STOPPED);
+    }
+    
+    return true;
 	}
 	
 	public void disconnect() {
@@ -1253,7 +1289,6 @@ public class RBNBController implements Player, MetadataListener {
 		for (int i=0; i<connectionListeners.size(); i++) {
 			ConnectionListener connectionListener = (ConnectionListener)connectionListeners.get(i);
 			connectionListener.connectionFailed();
-      log.info("Sent error to listener.");
 		}		
 	}
 	
@@ -1333,7 +1368,7 @@ public class RBNBController implements Player, MetadataListener {
     } else if (stateName.equals("playing")) {
       code = STATE_PLAYING;
     } else if (stateName.equals("real time")) {
-      code = STATE_REALTIME;
+      code = STATE_MONITORING;
     } else if (stateName.equals("stopped")) {
       code = STATE_STOPPED;
     } else if (stateName.equals("exiting")) {

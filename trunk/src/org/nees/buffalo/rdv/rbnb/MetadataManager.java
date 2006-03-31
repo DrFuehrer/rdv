@@ -77,6 +77,11 @@ public class MetadataManager implements StateListener {
   private boolean update;
   
   /**
+   * Whether the update thread is sleeping.
+   */
+  private boolean sleeping;
+  
+  /**
    * The thread updating the metadata periodically.
    */
   private Thread updateThread;
@@ -99,9 +104,10 @@ public class MetadataManager implements StateListener {
         
     channels = new HashMap();
 		
-    ctree = ChannelTree.EMPTY_TREE;
+    ctree = null;
     
     update = false;
+    sleeping = false;
     updateThread = null;
   }   
 
@@ -110,7 +116,7 @@ public class MetadataManager implements StateListener {
    * will be posted to the listeners when available.
    */
   public void updateMetadataBackground() {
-    if (update) {
+    if (update && sleeping) {
       updateThread.interrupt();
     }
   }
@@ -145,11 +151,14 @@ public class MetadataManager implements StateListener {
         
         metadataSink.CloseRBNBConnection();
         
+        channels.clear();
+        ctree = null;
+        
         log.info("RBNB Metadata thread is stopping.");        
       }
     };
+    update = true;    
     updateThread.start();
-    update = true;
   }
   
   /**
@@ -157,7 +166,7 @@ public class MetadataManager implements StateListener {
    */
   private void stopUpdating() {
     update = false;
-    if (updateThread != null) {
+    if (updateThread != null && sleeping) {
       updateThread.interrupt();
     }
   }  
@@ -180,12 +189,18 @@ public class MetadataManager implements StateListener {
       
           //create metadata channel tree
           ctree = getChannelTree(metadataSink);
+          
+          //notify metadata listeners
+          fireMetadataUpdated(ctree);
+          
+          //notify methods waiting on initial metadata fetch
+          notifyAll();
         }
-
-        fireMetadataUpdated(ctree);
       }
 
+      sleeping = true;
       try { Thread.sleep(updateRate); } catch (InterruptedException e) {}
+      sleeping = false;
     }
   }
 
@@ -254,6 +269,10 @@ public class MetadataManager implements StateListener {
    * @return the metadata channel tree.
    */
   public synchronized ChannelTree getMetadataChannelTree() {
+    if (ctree == null) {
+      try { wait(); } catch (InterruptedException e) {}
+    }
+    
     return ctree;
   }
 	
@@ -265,6 +284,10 @@ public class MetadataManager implements StateListener {
    *         not found
    */
   public synchronized Channel getChannel(String channelName) {
+    if (ctree == null) {
+      try { wait(); } catch (InterruptedException e) {}
+    }
+    
     return (Channel)channels.get(channelName);
   }   
 

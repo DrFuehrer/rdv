@@ -278,9 +278,15 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
   }
 
 	public boolean setChannel(String channelName) {
+    //see if channel exists
+    Channel channel = rbnbController.getChannel(channelName);
+    if (channel == null) {
+      return false;
+    }
+    
 		if (channels.size() == 1 && channels.contains(channelName)) {
 			return false;
-		}
+		}    
 		
 		removeAllChannels();
 		
@@ -288,6 +294,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 	
 	public boolean addChannel(String channelName) {
+    //see if channel exists
+    Channel channel = rbnbController.getChannel(channelName);
+    if (channel == null) {
+      return false;
+    }    
+    
 		if (channels.contains(channelName)) {
 			return false;
 		}
@@ -300,7 +312,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
         
     component.setTitle(getTitleComponent());
 
-    Channel channel = rbnbController.getChannel(channelName);
 		String unit = channel.getMetadata("units");
 		if (unit != null) {
 			units.put(channelName, unit);

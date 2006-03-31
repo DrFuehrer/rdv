@@ -82,9 +82,8 @@ public class ApplicationApplet extends JApplet {
 
 		if (hostName != null && !hostName.equals("")) {
 			rbnbController.setRBNBHostName(hostName);
-      int state = rbnbController.setState(RBNBController.STATE_STOPPED);
 
-      if (state == RBNBController.STATE_STOPPED) {
+      if (rbnbController.connect(true)) {
   			if (channels != null) {
   				for (int i=0; i<channels.length; i++) {
   					String channel = channels[i];

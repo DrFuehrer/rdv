@@ -352,6 +352,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	}
 	
 	private void updateTimeBoundaries() {
+    // We haven't got the metadata channel tree yet
+    if (ctree == null) {
+      return;
+    }
+
 		double startTime = -1;
 		double endTime = -1;
 		

@@ -331,7 +331,10 @@ public class DataPanelManager {
       log.info("Creating data panel for channel " + channelName + " with extension " + extension.getName() + ".");
       try {
         DataPanel dataPanel = createDataPanel(extension);
-        dataPanel.setChannel(channelName);  
+        if (!dataPanel.setChannel(channelName)) {
+          log.error("Failed to add channel " + channelName + ".");
+          closeDataPanel(dataPanel);
+        }
       } catch (Exception e) {
         log.error("Failed to create data panel and add channel.");
         e.printStackTrace();

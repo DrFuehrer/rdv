@@ -145,7 +145,7 @@ public class ConfigurationManager {
     ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
     
     if (rbnb.getState() != RBNBController.STATE_DISCONNECTED) {
-      rbnb.setState(RBNBController.STATE_STOPPED);
+      rbnb.pause();
     }
     dataPanelManager.closeAllDataPanels();
     
@@ -191,7 +191,9 @@ public class ConfigurationManager {
       
       int state = RBNBController.getState(findChildNodeText(rbnbNodes, "state"));
       if (state != RBNBController.STATE_DISCONNECTED) {
-        rbnb.setState(RBNBController.STATE_STOPPED);
+        if (!rbnb.connect(true)) {
+          return;
+        }
       }
 
       NodeList dataPanelNodes = (NodeList)xp.evaluate("/rdv/dataPanel", document, XPathConstants.NODESET);
@@ -207,7 +209,9 @@ public class ConfigurationManager {
         NodeList channelNodes = (NodeList)xp.evaluate("channels/channel", dataPanelNode, XPathConstants.NODESET);
         for (int j=0; j<channelNodes.getLength(); j++) {
           String channel = channelNodes.item(j).getTextContent();
-          dataPanel.addChannel(channel);
+          if (!dataPanel.addChannel(channel)) {
+            log.error("Failed to add channel " + channel + ".");
+          }
         }
       }
       
