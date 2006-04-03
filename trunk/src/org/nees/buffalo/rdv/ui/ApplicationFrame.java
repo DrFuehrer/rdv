@@ -38,6 +38,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -825,6 +826,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
  	public void connecting() {
  		busyDialog = new BusyDialog(this);
+    busyDialog.setCancelActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        rbnb.cancelConnect();
+      }
+    });
  		busyDialog.start();
     startThrobber();
 	}

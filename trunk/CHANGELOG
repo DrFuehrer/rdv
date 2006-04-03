@@ -68,6 +68,7 @@
 -Added popup menu to jpeg panel with save image menu.
 -Added popup menu item to jpeg panel to copy image to clipboard.
 -Added popup menu item to jpeg panel to print image.
+-Added cancel button to connection progress dialog.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

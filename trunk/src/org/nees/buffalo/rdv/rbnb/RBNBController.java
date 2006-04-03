@@ -52,6 +52,8 @@ public class RBNBController implements Player, MetadataListener {
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
 
 	private final String rbnbSinkName = "RDV";
+  
+  private Thread rbnbThread;
 
  	private int state;
  	
@@ -137,11 +139,12 @@ public class RBNBController implements Player, MetadataListener {
 	}
 	
 	private void run() {
-		new Thread(new Runnable() {
+		rbnbThread = new Thread(new Runnable() {
 			public void run() {
 				runRBNB();
 			}
-		}, "RBNB").start();
+		}, "RBNB");
+    rbnbThread.start();
 	}
 	
 	private void runRBNB() {
@@ -353,14 +356,19 @@ public class RBNBController implements Player, MetadataListener {
 		try {
 			sink.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, rbnbSinkName);
 		} catch (SAPIException e) {
-			log.error("Failed to connect to the RBNB server.");
+      String message = e.getMessage();
+      
+      // detect nested excpetions
+      if (message.contains("java.io.InterruptedIOException")) {
+        log.info("RBNB Server connection canceled by user.");
+      } else {
+  			log.error("Failed to connect to the RBNB server.");
+  			fireErrorMessage("Failed to connect to the RBNB server.");
+      }
 
-			if (fireListener) {
-			  fireConnectionFailed();
-			}
-
-			//FIXME this is redundant
-			fireErrorMessage("Failed to connect to the RBNB server.");
+      if (fireListener) {
+        fireConnectionFailed();
+      }
 
 			closeRBNB(true);
 			return false;	
@@ -1225,6 +1233,15 @@ public class RBNBController implements Player, MetadataListener {
     
     return true;
 	}
+  
+  /**
+   * Cancel a connection attempt.
+   */
+  public void cancelConnect() {
+    if (rbnbThread != null) {
+      rbnbThread.interrupt();
+    }
+  }
 	
 	public void disconnect() {
 		requestStateChange(STATE_DISCONNECTED);

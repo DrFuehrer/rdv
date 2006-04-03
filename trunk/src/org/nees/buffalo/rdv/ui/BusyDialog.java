@@ -35,7 +35,9 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -61,6 +63,13 @@ public class BusyDialog extends JDialog {
 	 * @since  1.2
 	 */
 	JProgressBar busyProgressBar;
+  
+  /**
+   * The button to cancel the action
+   * 
+   * @since  1.3
+   */
+  JButton cancelButton;
 	
 	/**
 	 * Construct a dialog box showing a progress bar with no progress.
@@ -89,31 +98,49 @@ public class BusyDialog extends JDialog {
 		container.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.anchor = GridBagConstraints.CENTER;
+		c.anchor = GridBagConstraints.WEST;
 		c.weightx = 0.5;
-		c.weighty = 0.5;
-		c.gridwidth = 1;
+		c.weighty = 0.5;		
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
+    c.gridy = 0;
 		c.gridx = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);		
 
 		JLabel messageLabel = new JLabel("Connecting to server...");
-		c.gridy = 0;
+    c.gridwidth = 2;
 		c.insets = new java.awt.Insets(5,5,5,5);
 		container.add(messageLabel, c);
 		
 		busyProgressBar = new JProgressBar(0, 1);
 		busyProgressBar.setPreferredSize(new Dimension(250, 17));
+    c.gridwidth = 1;
+    c.weightx = 1;
 		c.gridy = 1;
 		c.insets = new java.awt.Insets(0,5,5,5);
 		container.add(busyProgressBar, c);
+    
+    cancelButton = new JButton("Cancel");
+    c.gridx = 1;
+    c.weightx = 0;
+    c.insets = new java.awt.Insets(0,5,5,5);
+    container.add(cancelButton, c);    
 		
 		pack();
 		centerOnOwner();
 		setVisible(true);
 	}
+  
+  /**
+   * Associate this action listener with a cancel action.
+   * 
+   * @param al  action listener to use
+   * @since     1.2
+   */
+  public void setCancelActionListener(ActionListener al) {
+    cancelButton.addActionListener(al);
+  }
 	
 	/**
 	 * Center the dialog box on the owner frame.
