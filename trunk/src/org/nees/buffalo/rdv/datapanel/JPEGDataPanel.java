@@ -46,9 +46,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.VolatileImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Printable;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -108,31 +111,45 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		panel.add(image, BorderLayout.CENTER);
     
     JPopupMenu popupMenu = new JPopupMenu();
-
-    // create a popup to save an image
-    final JMenuItem saveImageMenuItem = new JMenuItem("Save image");
-    saveImageMenuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        saveImage();
-      }
-    });
-    popupMenu.add(saveImageMenuItem);
     
     // create a popup to copy an image to the clipboard
-    final JMenuItem copyImageMenuItem = new JMenuItem("Copy image");
+    final JMenuItem copyImageMenuItem = new JMenuItem("Copy");
     copyImageMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         copyImage();
       }
     });
-    popupMenu.add(copyImageMenuItem);    
-    
+    popupMenu.add(copyImageMenuItem);
+
+    popupMenu.addSeparator();
+
+    // create a popup to save an image
+    final JMenuItem saveImageMenuItem = new JMenuItem("Save as...");
+    saveImageMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        saveImage();
+      }
+    });
+    popupMenu.add(saveImageMenuItem);    
+
+    popupMenu.addSeparator();
+
+    // create a popup to copy an image to the clipboard
+    final JMenuItem printImageMenuItem = new JMenuItem("Print...");
+    printImageMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        printImage();
+      }
+    });
+    popupMenu.add(printImageMenuItem);
+
     // enable the save image popup if an image is being displayed
     popupMenu.addPopupMenuListener(new PopupMenuListener() {
       public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
         boolean enable = displayedImageData != null;
         saveImageMenuItem.setEnabled(enable);
         copyImageMenuItem.setEnabled(enable);
+        printImageMenuItem.setEnabled(enable);
       }
       public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
       public void popupMenuCanceled(PopupMenuEvent arg0) {}
@@ -175,7 +192,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
           return (f.isDirectory() || f.getName().toLowerCase().endsWith(".jpg"));
         }
         public String getDescription() {
-          return "JPEG Images";
+          return "JPEG Image Files";
         }
       });
       
@@ -288,6 +305,79 @@ public class JPEGDataPanel extends AbstractDataPanel {
       }
 
       return image;
+    }
+  }
+  
+  /**
+   * Print the displayed image. If no image is being displayed, this will method
+   * will do nothing.
+   */
+  private void printImage() {
+    // get the displayed image
+    final Image displayedImage = image.getImage();
+    if (displayedImage == null) {
+      return;
+    }
+
+    // setup a print job
+    PrinterJob printJob = PrinterJob.getPrinterJob();
+    
+    // set the renderer for the image
+    printJob.setPrintable(new Printable() {
+      public int print(Graphics g, PageFormat pageFormat, int pageIndex) throws PrinterException {
+        //we only have one page to print
+        if (pageIndex != 0) {
+          return Printable.NO_SUCH_PAGE;
+        }
+        
+        Graphics2D g2d = (Graphics2D)g;
+        
+        // move to corner of imageable page
+        g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
+        
+        // get page dimensions
+        double pageWidth = pageFormat.getImageableWidth();
+        double pageHeight = pageFormat.getImageableHeight();
+        
+        // get image dimensions
+        int imageWidth = displayedImage.getWidth(null);
+        int imageHeight = displayedImage.getHeight(null);
+
+        // get scale factor for image
+        double widthScale = pageWidth/imageWidth;
+        double heightScale = pageHeight/imageHeight;
+        double scale = Math.min(widthScale, heightScale);
+        
+        // draw image with width and height scaled to page
+        int scaledWidth = (int)(scale*imageWidth);
+        int scaledHeight = (int)(scale*imageHeight);
+        g2d.drawImage(displayedImage, 0, 0, scaledWidth, scaledHeight, null);
+       
+        return Printable.PAGE_EXISTS;
+      }
+
+    });
+    
+    // set the job name to the channel name (plus jpg extension)
+    // this is used as a hint for a file name when printing to file
+    String channelName = (String)channels.iterator().next();
+    String jobName = channelName.replace("/", " - ");
+    if (!jobName.endsWith(".jpg")) {
+      jobName += ".jpg";
+    }
+    printJob.setJobName(jobName);
+    
+    // show the print dialog and print if ok clicked
+    if (printJob.printDialog()) {
+      try { 
+        printJob.print();
+      } catch(PrinterException pe) {
+        JOptionPane.showMessageDialog(null,
+            "Failed to print image.",
+            "Print Image Error",
+            JOptionPane.ERROR_MESSAGE);        
+        pe.printStackTrace();
+      }
     }
   }
   

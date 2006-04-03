@@ -67,6 +67,7 @@
 -Fixed bug that would disconnect incorrectly when viewing data in real-time.
 -Added popup menu to jpeg panel with save image menu.
 -Added popup menu item to jpeg panel to copy image to clipboard.
+-Added popup menu item to jpeg panel to print image.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
