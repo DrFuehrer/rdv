@@ -248,66 +248,8 @@ public class JPEGDataPanel extends AbstractDataPanel {
     
     // set the clipboard contents to the image transferable
     clipboard.setContents(contents, null);
-  }
-  
-  /**
-   * A class to transfer image data.
-   * 
-   * @author Jason P. Hanley
-   */
-  class ImageSelection implements Transferable {
-    /**
-     * The image to transfer.
-     */
-    Image image;
-    
-    /**
-     * Creates this class to transfer the <code>image</code>.
-     * 
-     * @param image the image to transfer
-     */
-    public ImageSelection(Image image) {
-      this.image = image;
-    }
+  }  
 
-    /**
-     * Returns the transfer data flavors support. This returns an array with one
-     * element representing the {@link DataFlavor#imageFlavor}.
-     * 
-     * @return an array of transfer data flavors supported
-     */
-    public DataFlavor[] getTransferDataFlavors() {
-      return new DataFlavor[] {DataFlavor.imageFlavor};
-    }
-
-    /**
-     * Returns true if the specified data flavor is supported. The only data
-     * flavor supported by this class is the {@link DataFlavor#imageFlavor}.
-     * 
-     * @return true if the transfer data flavor is supported
-     */
-    public boolean isDataFlavorSupported(DataFlavor flavor) {
-      return DataFlavor.imageFlavor.equals(flavor);      
-    }
-
-    /**
-     * Returns the {@link Image} object to be transfered if the flavor is
-     * {@link DataFlavor#imageFlavor}. Otherwise it throws an
-     * {@link UnsupportedFlavorException}.
-     * 
-     * @return the image object transfered by this class
-     * @throws UnsupportedFlavorException
-     */
-    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
-      if (!DataFlavor.imageFlavor.equals(flavor)) 
-      {
-        throw new UnsupportedFlavorException(flavor);
-      }
-
-      return image;
-    }
-  }
-  
   /**
    * Print the displayed image. If no image is being displayed, this will method
    * will do nothing.

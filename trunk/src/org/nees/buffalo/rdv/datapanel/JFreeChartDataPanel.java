@@ -32,28 +32,32 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartMouseEvent;
-import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.title.TextTitle;
@@ -64,7 +68,6 @@ import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.ui.VerticalAlignment;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
@@ -118,7 +121,23 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		}
 		
 		chart.setAntiAlias(false);
+
 		chartPanel = new ChartPanel(chart, true);
+
+    // get the chart panel standard popup menu
+    JPopupMenu popupMenu = chartPanel.getPopupMenu();
+    
+    // create a popup menu item to copy an image to the clipboard
+    final JMenuItem copyChartMenuItem = new JMenuItem("Copy");
+    copyChartMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        copyChart();
+      }
+    });
+    popupMenu.insert(copyChartMenuItem, 2);
+
+    popupMenu.insert(new JPopupMenu.Separator(), 3);
+
         chartPanel.addMouseListener(new MouseAdapter() {
           public void mouseEntered(MouseEvent e) {
             chartPanel.setHorizontalAxisTrace(true);
@@ -162,6 +181,22 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		chartPanelPanel.setLayout(new BorderLayout());
 		chartPanelPanel.add(chartPanel, BorderLayout.CENTER);
 	}
+  
+  /**
+   * Takes the chart and puts it on the clipboard as an image.
+   */
+  private void copyChart() {
+    // get the system clipboard
+    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    
+    // create an image of the chart with the preferred dimensions
+    Dimension preferredDimension = chartPanel.getPreferredSize();
+    Image image = chart.createBufferedImage((int)preferredDimension.getWidth(), (int)preferredDimension.getHeight());
+    
+    // wrap image in the transferable and put on the clipboard
+    ImageSelection contents = new ImageSelection(image);
+    clipboard.setContents(contents, null);
+  }
 		
 	public boolean supportsMultipleChannels() {
 		return true;
