@@ -183,13 +183,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
           s.append("<br>" + DataViewer.formatBytes(size));
         }
         if (mime != null) {
-          if (mime.equals("application/octet-stream")) {
-            String scale = channelMetadata.getMetadata("scale");
-            String offset = channelMetadata.getMetadata("offset");
-            if (scale != null && offset != null) {
-              s.append("<br>scale=" + scale + ", offset=" + offset);
-            }
-          } else if (mime.startsWith("audio/")) {
+          if (mime.startsWith("audio/")) {
             String encoding = channelMetadata.getMetadata("encoding");
             String channels = channelMetadata.getMetadata("channels");
             String sampleRate = channelMetadata.getMetadata("samplerate");
