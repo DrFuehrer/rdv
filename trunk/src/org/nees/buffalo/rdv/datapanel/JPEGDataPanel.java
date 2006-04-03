@@ -37,14 +37,26 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.VolatileImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -66,6 +78,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
  	boolean keepAspectRatio;
  	
  	double displayedImageTime;
+  byte[] displayedImageData;
  	 	
 	public JPEGDataPanel() {
 		super();
@@ -86,8 +99,103 @@ public class JPEGDataPanel extends AbstractDataPanel {
 
 		image = new JPEGPanel();
 
-		panel.add(image, BorderLayout.CENTER);	
+		panel.add(image, BorderLayout.CENTER);
+    
+    JPopupMenu popupMenu = new JPopupMenu();
+
+    // create a popup to save an image
+    final JMenuItem saveImageMenuItem = new JMenuItem("Save image");
+    saveImageMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        saveImage();
+      }
+    });
+    popupMenu.add(saveImageMenuItem);
+    
+    // enable the save image popup if an image is being displayed
+    popupMenu.addPopupMenuListener(new PopupMenuListener() {
+      public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+        log.info("In pop will be visible.");
+        boolean enable = displayedImageData != null;
+        saveImageMenuItem.setEnabled(enable);
+      }
+      public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
+      public void popupMenuCanceled(PopupMenuEvent arg0) {}
+    });
+    
+    // set component popup and mouselistener to trigger it
+    panel.setComponentPopupMenu(popupMenu);
+    panel.addMouseListener(new MouseInputAdapter() {});
 	}
+  
+  /**
+   * If an image is currently being displayed, save it to a file. This will
+   * bring up a file chooser to select the file.
+   */
+  private void saveImage() {
+    saveImage(null);
+  }
+
+  /**
+   * If an image is currently being displayed, save it to a file. This will
+   * bring up a file chooser to select the file.
+   * 
+   * @param directory the directory to start the file chooser in
+   */
+  private void saveImage(File directory) {
+    if (displayedImageData != null) {
+      JFileChooser chooser = new JFileChooser();
+      
+      // create default file name
+      String channelName = (String)channels.iterator().next();
+      String fileName = channelName.replace("/", " - ");
+      if (!fileName.endsWith(".jpg")) {
+        fileName += ".jpg";
+      }
+      chooser.setSelectedFile(new File(directory, fileName));
+      
+      // create filter to only show files that end with '.jpg'
+      chooser.setFileFilter(new FileFilter() {
+        public boolean accept(File f) {
+          return (f.isDirectory() || f.getName().toLowerCase().endsWith(".jpg"));
+        }
+        public String getDescription() {
+          return "JPEG Images";
+        }
+      });
+      
+      // show dialog
+      int returnVal = chooser.showSaveDialog(null);
+      if (returnVal == JFileChooser.APPROVE_OPTION) {
+        File outFile = chooser.getSelectedFile();
+        
+        // prompt for overwrite if file already exists
+        if (outFile.exists()) {
+          int overwriteReturn = JOptionPane.showConfirmDialog(null,
+              outFile.getName() + " already exists. Do you want to replace it?",
+              "Replace image?",
+              JOptionPane.YES_NO_OPTION);
+          if (overwriteReturn == JOptionPane.NO_OPTION) {
+            saveImage(outFile.getParentFile());
+            return;
+          }
+        }
+
+        // write image file
+        try {
+          FileOutputStream out = new FileOutputStream(outFile);
+          out.write(displayedImageData);
+          out.close();
+        } catch (Exception e) {
+          JOptionPane.showMessageDialog(null,
+              "Filed to write image file.",
+              "Save Image Error",
+              JOptionPane.ERROR_MESSAGE);
+          e.printStackTrace();
+        }        
+      }      
+    }
+  }
 	
 	public boolean supportsMultipleChannels() {
 		return false;
@@ -193,8 +301,11 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			byte[][] imageData = channelMap.GetDataAsByteArray(channelIndex);
 			
 			if (imageData.length > 0) {
+				// save raw image data
+        displayedImageData = imageData[imageIndex];
+        
 				//draw image on screen
- 				image.update(imageData[imageIndex]);
+ 				image.update(displayedImageData);
  				
 				//update the image index currently displayed for this channel map
 				displayedImageTime = imageTime;

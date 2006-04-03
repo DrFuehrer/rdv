@@ -65,7 +65,7 @@
 -Added ant target to create windows exe from jar with launch4j.
 -Metadata is now automatically updated via periodic polling.
 -Fixed bug that would disconnect incorrectly when viewing data in real-time.
-
+-Added popup menu to jpeg panel with save image menu.
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
 -Added tabular data panel
