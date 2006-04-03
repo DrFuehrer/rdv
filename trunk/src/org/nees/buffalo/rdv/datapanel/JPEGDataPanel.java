@@ -41,7 +41,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.AffineTransform;
 import java.awt.image.VolatileImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
@@ -53,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
@@ -80,16 +80,12 @@ public class JPEGDataPanel extends AbstractDataPanel {
 
 	JPEGPanel image;
 	JPanel panel;
-				
- 	boolean keepAspectRatio;
  	
  	double displayedImageTime;
   byte[] displayedImageData;
  	 	
 	public JPEGDataPanel() {
 		super();
-		
-		keepAspectRatio = true;
 		
 		displayedImageTime = -1;
 	
@@ -139,6 +135,16 @@ public class JPEGDataPanel extends AbstractDataPanel {
       }
     });
     popupMenu.add(printImageMenuItem);
+
+    popupMenu.addSeparator();
+
+    final JCheckBoxMenuItem scaleMenuItem = new  JCheckBoxMenuItem("Scale", true);
+    scaleMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        image.setScaled(scaleMenuItem.isSelected());
+      }      
+    });
+    popupMenu.add(scaleMenuItem);
 
     // enable the save image popup if an image is being displayed
     popupMenu.addPopupMenuListener(new PopupMenuListener() {
@@ -461,8 +467,19 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		private Image image;
 		private VolatileImage volatileImage;
 		
-		private boolean newFrame;	
-		
+		private boolean newFrame;
+
+    /**
+     * Controls scaling of the drawn image.
+     */
+    private boolean scale;
+
+    /**
+     * Controls the scaling of the drawn image by keep the ratio between the
+     * width and height the same.
+     */
+    private boolean keepAspectRatio;
+
 		public JPEGPanel() {
 			super();
 			
@@ -470,6 +487,9 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			volatileImage = null;
 
 			newFrame = false;
+
+      scale = true;
+      keepAspectRatio = true;
 		}
 		
 		private void createBackBuffer() {
@@ -512,28 +532,40 @@ public class JPEGDataPanel extends AbstractDataPanel {
 				} else if (valCode == VolatileImage.IMAGE_INCOMPATIBLE) {
 					createBackBuffer();
 				}
-								
-				// scale both width and height
+
+        // get component dimensions
 				int componentWidth = getWidth();
 				int componentHeight = getHeight();
 				
 				g.setBackground(Color.BLACK);
 				g.clearRect(0, 0, componentWidth, componentHeight);
 				
+        // get image dimensions
 				int imageWidth = volatileImage.getWidth();
 				int imageHeight = volatileImage.getHeight();
 
-				float widthScale = componentWidth/(float)imageWidth;
-				float heightScale = componentHeight/(float)imageHeight;
-				if (keepAspectRatio && widthScale != heightScale) {
-					widthScale = heightScale = Math.min(widthScale, heightScale);
-				}
-				int scaledWidth = (int)(imageWidth * widthScale);
-				int scaledHeight = (int)(imageHeight * heightScale);
+        // get dimensions to draw image
+        int scaledWidth;
+        int scaledHeight;
+        if (scale) {
+          float widthScale = componentWidth/(float)imageWidth;
+          float heightScale = componentHeight/(float)imageHeight;
+  				if (keepAspectRatio && widthScale != heightScale) {
+  					widthScale = heightScale = Math.min(widthScale, heightScale);
+  				}
+          scaledWidth = (int)(imageWidth * widthScale);
+          scaledHeight = (int)(imageHeight * heightScale);
+        } else {
+          scaledWidth = imageWidth;
+          scaledHeight = imageHeight;
+        }
+
+        // calculate offsets to center image
 				int widthOffset = (componentWidth - scaledWidth)/2;
 				int heightOffset = (componentHeight - scaledHeight)/2;
-				AffineTransform af = new AffineTransform(widthScale, 0f, 0f, heightScale, widthOffset, heightOffset);
-				g.drawImage(volatileImage, af, this);
+        
+        // draw image
+				g.drawImage(volatileImage, widthOffset, heightOffset, scaledWidth, scaledHeight, null);
 			} while (volatileImage.contentsLost());						
 		}
 			
@@ -554,6 +586,21 @@ public class JPEGDataPanel extends AbstractDataPanel {
     
     public Image getImage() {
       return image;
+    }
+    
+    /**
+     * If set the image will be scaled to the container. If not the image will
+     * be displayed in it's original size and may be clipped if too large.
+     * <p>
+     * The default is to scale the image.
+     * 
+     * @param scale if true, scale the image to the container
+     */
+    public void setScaled(boolean scale) {
+      if (this.scale != scale) {
+        this.scale = scale;
+        repaint();
+      }
     }
 		
 		private void showImage(Image newImage) {
