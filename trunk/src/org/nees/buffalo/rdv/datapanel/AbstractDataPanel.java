@@ -720,7 +720,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
    * 
    * @since  1.3
    */
-  static class ImageSelection implements Transferable {
+  class ImageSelection implements Transferable {
     /**
      * The image to transfer.
      */
