@@ -37,12 +37,18 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.VolatileImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -112,12 +118,21 @@ public class JPEGDataPanel extends AbstractDataPanel {
     });
     popupMenu.add(saveImageMenuItem);
     
+    // create a popup to copy an image to the clipboard
+    final JMenuItem copyImageMenuItem = new JMenuItem("Copy image");
+    copyImageMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        copyImage();
+      }
+    });
+    popupMenu.add(copyImageMenuItem);    
+    
     // enable the save image popup if an image is being displayed
     popupMenu.addPopupMenuListener(new PopupMenuListener() {
       public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-        log.info("In pop will be visible.");
         boolean enable = displayedImageData != null;
         saveImageMenuItem.setEnabled(enable);
+        copyImageMenuItem.setEnabled(enable);
       }
       public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
       public void popupMenuCanceled(PopupMenuEvent arg0) {}
@@ -196,7 +211,86 @@ public class JPEGDataPanel extends AbstractDataPanel {
       }      
     }
   }
-	
+
+  /**
+   * Copy the currently displayed image to the clipboard. If no image is being
+   * displayed, nothing will be copied to the clipboard.
+   */
+  private void copyImage() {
+    // get the displayed image
+    Image displayedImage = image.getImage();
+    if (displayedImage == null) {
+      return;
+    }
+    
+    // get the system clipboard
+    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    
+    // create the transferable to transfer an image
+    ImageSelection contents = new ImageSelection(displayedImage);
+    
+    // set the clipboard contents to the image transferable
+    clipboard.setContents(contents, null);
+  }
+  
+  /**
+   * A class to transfer image data.
+   * 
+   * @author Jason P. Hanley
+   */
+  class ImageSelection implements Transferable {
+    /**
+     * The image to transfer.
+     */
+    Image image;
+    
+    /**
+     * Creates this class to transfer the <code>image</code>.
+     * 
+     * @param image the image to transfer
+     */
+    public ImageSelection(Image image) {
+      this.image = image;
+    }
+
+    /**
+     * Returns the transfer data flavors support. This returns an array with one
+     * element representing the {@link DataFlavor#imageFlavor}.
+     * 
+     * @return an array of transfer data flavors supported
+     */
+    public DataFlavor[] getTransferDataFlavors() {
+      return new DataFlavor[] {DataFlavor.imageFlavor};
+    }
+
+    /**
+     * Returns true if the specified data flavor is supported. The only data
+     * flavor supported by this class is the {@link DataFlavor#imageFlavor}.
+     * 
+     * @return true if the transfer data flavor is supported
+     */
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+      return DataFlavor.imageFlavor.equals(flavor);      
+    }
+
+    /**
+     * Returns the {@link Image} object to be transfered if the flavor is
+     * {@link DataFlavor#imageFlavor}. Otherwise it throws an
+     * {@link UnsupportedFlavorException}.
+     * 
+     * @return the image object transfered by this class
+     * @throws UnsupportedFlavorException
+     */
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
+      if (!DataFlavor.imageFlavor.equals(flavor)) 
+      {
+        throw new UnsupportedFlavorException(flavor);
+      }
+
+      return image;
+    }
+  }
+  
 	public boolean supportsMultipleChannels() {
 		return false;
 	}
@@ -428,6 +522,10 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			image = null;
 			repaint();
 		}
+    
+    public Image getImage() {
+      return image;
+    }
 		
 		private void showImage(Image newImage) {
 			synchronized(this) {	

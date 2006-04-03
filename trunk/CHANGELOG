@@ -66,6 +66,8 @@
 -Metadata is now automatically updated via periodic polling.
 -Fixed bug that would disconnect incorrectly when viewing data in real-time.
 -Added popup menu to jpeg panel with save image menu.
+-Added popup menu item to jpeg panel to copy image to clipboard.
+
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
 -Added tabular data panel
