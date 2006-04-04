@@ -39,8 +39,8 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.Iterator;
 
 import javax.swing.JComponent;
@@ -53,13 +53,13 @@ import javax.swing.border.EmptyBorder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.Title;
 import org.jfree.data.time.FixedMillisecond;
@@ -110,19 +110,48 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	private void initChart() {
 		if (xyMode) {
 			dataCollection = new XYSeriesCollection();
-			chart = ChartFactory.createXYLineChart(null, null, null, dataCollection, PlotOrientation.VERTICAL, false, false, false);
-			((NumberAxis)((XYPlot)chart.getPlot()).getDomainAxis()).setAutoRangeIncludesZero(true);
-			((NumberAxis)((XYPlot)chart.getPlot()).getRangeAxis()).setAutoRangeIncludesZero(true);
-
+      
+      NumberAxis domainAxis = new NumberAxis();
+      domainAxis.setAutoRangeIncludesZero(true);
+      
+      NumberAxis rangeAxis = new NumberAxis();
+      rangeAxis.setAutoRangeIncludesZero(true);
+      
+      StandardXYToolTipGenerator toolTipGenerator = new StandardXYToolTipGenerator("{1} , {2}",
+          new DecimalFormat(),
+          new DecimalFormat());
+      StandardXYItemRenderer renderer = new StandardXYItemRenderer(StandardXYItemRenderer.LINES,
+          toolTipGenerator);
+      renderer.setDefaultEntityRadius(6);      
+      
+      XYPlot xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
+      
+      chart = new JFreeChart(null, null, xyPlot, false);
 		} else {
 			dataCollection = new TimeSeriesCollection();
-			chart = ChartFactory.createTimeSeriesChart(null, "Time", null, dataCollection, true, false, false);
-			((NumberAxis)((XYPlot)chart.getPlot()).getRangeAxis()).setAutoRangeIncludesZero(true);
+      
+      DateAxis domainAxis = new DateAxis();
+      domainAxis.setLabel("Time");
+      
+      NumberAxis rangeAxis = new NumberAxis();
+      rangeAxis.setAutoRangeIncludesZero(true);
+      
+      StandardXYToolTipGenerator toolTipGenerator = new StandardXYToolTipGenerator("{0}: {1} , {2}",
+          new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"),
+          new DecimalFormat());
+      StandardXYItemRenderer renderer = new StandardXYItemRenderer(StandardXYItemRenderer.LINES,
+          toolTipGenerator);
+      renderer.setDefaultEntityRadius(6);
+
+      XYPlot xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
+      
+      chart = new JFreeChart(xyPlot);
 		}
-		
+
 		chart.setAntiAlias(false);
 
 		chartPanel = new ChartPanel(chart, true);
+    chartPanel.setInitialDelay(0);
 
     // get the chart panel standard popup menu
     JPopupMenu popupMenu = chartPanel.getPopupMenu();
@@ -137,45 +166,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     popupMenu.insert(copyChartMenuItem, 2);
 
     popupMenu.insert(new JPopupMenu.Separator(), 3);
-
-        chartPanel.addMouseListener(new MouseAdapter() {
-          public void mouseEntered(MouseEvent e) {
-            chartPanel.setHorizontalAxisTrace(true);
-            chartPanel.setVerticalAxisTrace(true);
-          }
-          public void mouseExited(MouseEvent e) {
-            chartPanel.setHorizontalAxisTrace(false);
-            chartPanel.setVerticalAxisTrace(false);
-            chartPanel.repaint();
-          }
-        });
-
-        /* ArrayList subTitles = new ArrayList(1);
-        subTitles.add(emptyTitle);
-        chart.setSubtitles(subTitles);
-
-        chartPanel.addChartMouseListener(new ChartMouseListener() {
-          public void chartMouseClicked(ChartMouseEvent e) {}
-          public void chartMouseMoved(ChartMouseEvent e) {
-            Title subTitle;
-            if (e.getEntity() != null) {
-              XYItemEntity xyEntity = (XYItemEntity)e.getEntity();
-              double y = xyEntity.getDataset().getYValue(xyEntity.getSeriesIndex(), xyEntity.getItem());              
-              if (xyMode) {
-                double x = xyEntity.getDataset().getXValue(xyEntity.getSeriesIndex(), xyEntity.getItem());  
-                subTitle = new TextTitle(x + ", " + y);
-              } else {
-                String channelName = (String)((TimeSeriesCollection)dataCollection).getSeries(xyEntity.getSeriesIndex()).getKey();
-                subTitle = new TextTitle(channelName + ": " + y);
-              }
-            } else {
-              subTitle = emptyTitle;
-            }
-            ArrayList subTitles = new ArrayList(1);
-            subTitles.add(subTitle);
-            chart.setSubtitles(subTitles);
-          }         
-        }); */
 
 		chartPanelPanel = new JPanel();
 		chartPanelPanel.setLayout(new BorderLayout());

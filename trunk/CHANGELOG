@@ -71,6 +71,7 @@
 -Added cancel button to connection progress dialog.
 -Added popup menu item to chart panel to copy the chart to clipboard.
 -Added popup menu item to jpeg panel to control scaling.
+-Removed traces from JFreeChart data panel and added tooltips.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale
