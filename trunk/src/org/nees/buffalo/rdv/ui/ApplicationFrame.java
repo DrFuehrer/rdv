@@ -180,6 +180,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
 			frame.setBounds(0, 0, 800, 600);
 
+			frame.setIconImage(new ImageIcon(getClass().getClassLoader().getResource("icons/RDV.gif")).getImage());
+
 			frame.setTitle("RDV");
 		}
 
