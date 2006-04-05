@@ -120,14 +120,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     setBorder(null);
     setLayout(new BorderLayout());
     
-    ClassLoader cl = getClass().getClassLoader();
-    
     JPanel p = new JPanel();
     p.setBorder(null);
     p.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
-    beginButton = new JButton("Begining", new ImageIcon(cl.getResource("icons/begin.gif")));
+    beginButton = new JButton("Begining", DataViewer.getIcon("icons/begin.gif"));
     beginButton.setToolTipText("Go to beginning");
     beginButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -147,7 +145,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;				
  		p.add(beginButton, c);		
 		
-    pauseButton = new JButton("Pause", new ImageIcon(cl.getResource("icons/pause.gif")));
+    pauseButton = new JButton("Pause", DataViewer.getIcon("icons/pause.gif"));
     pauseButton.setToolTipText("Pause");
     pauseButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -167,7 +165,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;				
  		p.add(pauseButton, c);		
 		
-    monitorButton = new JButton("Real Time", new ImageIcon(cl.getResource("icons/rt.gif")));
+    monitorButton = new JButton("Real Time", DataViewer.getIcon("icons/rt.gif"));
     monitorButton.setToolTipText("Real Time");
     monitorButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
@@ -187,7 +185,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;				
 		p.add(monitorButton, c);
 		
-		startButton = new JButton("Play", new ImageIcon(cl.getResource("icons/play.gif")));
+		startButton = new JButton("Play", DataViewer.getIcon("icons/play.gif"));
  		startButton.setToolTipText("Play");
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -207,7 +205,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;				
 		p.add(startButton, c);
 		
-		endButton = new JButton("End", new ImageIcon(cl.getResource("icons/end.gif")));
+		endButton = new JButton("End", DataViewer.getIcon("icons/end.gif"));
  		endButton.setToolTipText("Go to end");
 		endButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

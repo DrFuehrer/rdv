@@ -170,7 +170,7 @@ public class DataViewer {
   public static Icon getIcon(String iconFileName) {
     ImageIcon icon = null;
     if (iconFileName != null) {
-      URL iconURL = ClassLoader.getSystemResource(iconFileName);    
+      URL iconURL = Thread.currentThread().getContextClassLoader().getResource(iconFileName);    
       if (iconURL != null) {
         icon = new ImageIcon(iconURL);
       }

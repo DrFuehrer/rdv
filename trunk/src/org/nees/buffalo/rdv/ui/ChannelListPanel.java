@@ -555,7 +555,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     });
     popup.add(menuItem);
     
-    menuItem = new JMenuItem("Export data...", DataViewer.getIcon("icons/import.gif"));
+    menuItem = new JMenuItem("Export data...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         frame.showExportDialog(RBNBUtilities.getAllChannels(ctree, showHiddenChannels));
@@ -611,7 +611,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       }
     });
     popup.add(menuItem);
-    menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/import.gif"));
+    menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         frame.showExportDialog(RBNBUtilities.getChildChannels(source, showHiddenChannels));
