@@ -1,0 +1,61 @@
+<extensions>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.JPEGDataPanel</id>
+		<name>Video/Photo Data Panel</name>
+		<mimeTypes>
+			<mimeType>image/jpeg</mimeType>
+			<mimeType>video/jpeg</mimeType>
+		</mimeTypes>
+	</extension>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.TimeSeriesDataPanel</id>
+		<name>Time Series Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>
+	</extension>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.XYDataPanel</id>
+		<name>XY Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>
+	</extension>	
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.TabularDataPanel</id>
+		<name>Tabular Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>		
+	</extension>	
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.StringDataPanel</id>
+		<name>Text Data Panel</name>
+		<mimeTypes>
+			<mimeType>text/plain</mimeType>
+		</mimeTypes>
+	</extension>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel</id>
+		<name>Spectrum Analyzer Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>
+	</extension>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.HelloWorldDataPanel</id>
+		<name>Hello World Data Panel</name>
+	</extension>
+<extension>
+   <name>Event Marker Data Panel</name>
+   <id>org.nees.buffalo.rdv.datapanel.EventMarkerDataPanel</id>
+   <!-- This needs to be MIME_TYPES from org.nees.rbnb.marker.NeesEvent -->
+   <mimeTypes>
+      <mimeType>x-neesEvent</mimeType>
+   </mimeTypes>
+</extension>
+<!-- extension>
+   <name>Event Marker Submission Data Panel</name>
+   <id>org.nees.buffalo.rdv.datapanel.EventMarkerSubmissionDataPanel</id>
+</extension -->
+</extensions>
