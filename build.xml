@@ -1,0 +1,255 @@
+<?xml version="1.0"?>
+
+<project name="RDV" default="compile" basedir=".">
+	
+	<!-- name of the application -->
+	<property name="package.name" value="RDV"/>
+	
+	<!-- compile with debugging information -->
+	<property name="debug" value="on"/>
+	
+	<!-- get version information -->
+	<property file="version.properties"/>
+	<property name="version" value="${version.major}.${version.minor}.${version.release}"/>
+			
+	<!-- source directory -->
+	<property name="src.dir" value="src"/>
+	
+	<!-- library dir -->
+	<property name="lib.dir" value="lib"/>
+	
+	<!-- documentation directory -->
+	<property name="doc.dir" value="docs"/>
+	
+	<!-- config directory -->
+	<property name="config.dir" value="config"/>
+	
+	<!-- icons directory -->
+	<property name="icons.dir" value="icons"/>
+	
+	<!-- temporary build dir -->
+	<property name="build.dir" value="build"/>
+	<property name="build.classes" value="${build.dir}/classes"/>
+	<property name="build.lib" value="${build.dir}/lib"/>
+	<property name="build.exe" value="${build.dir}/exe"/>
+	
+	<!-- environment access via env.* -->
+	<property environment="env"/>
+		
+	<!-- pull RBNB location from users' environment, this is checked in the build -->
+	<property name="rbnb.home" value="${env.RBNB_HOME}"/>
+	
+	<!-- classpath -->
+	<path id="classpath">
+		<pathelement location="${build.classes}"/>
+		<pathelement location="."/>
+		<fileset dir="${lib.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${rbnb.home}/bin">
+			<include name="rbnb.jar"/>
+		</fileset>
+	</path>
+	
+	<!-- define ant-contrib tasks -->
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+		<classpath>
+			<pathelement location="ant/ant-contrib.jar"/>
+		</classpath>
+	</taskdef>
+
+	<target name="checkRBNB" unless="env.RBNB_HOME">
+		<fail message="RBNB_HOME must be defined in your environment."/>
+	</target>
+	
+	<target name="checkLaunch4j" unless="env.LAUNCH4J_HOME">
+		<fail message="LAUNCH4J_HOME must be defined in your environment."/>
+	</target>
+	
+	<!-- Meta-target that depends on all environment variables -->
+	<target name="checkEnvVars" depends="checkRBNB" description="Check necessary environment variables"/>
+	
+	<!-- target to make temp dirs -->
+	<target name="prepare" depends="checkEnvVars" description="Make directories">
+		<mkdir dir="${build.dir}"/>
+		<mkdir dir="${build.classes}"/>
+		<mkdir dir="${build.lib}"/>
+		<mkdir dir="${build.exe}"/>
+		
+	    <exec executable="svnversion" outputproperty="svn.revision" failifexecutionfails="false">
+			<arg value="."/>
+		</exec>
+		
+		<property file="build.properties"/>
+		
+		<if>
+			<not>
+				<equals arg1="${svn.revision}" arg2="${build.revision}"/>
+			</not>
+			<then>
+				<property file="build.properties"/>
+				<propertyfile file="build.properties">
+					<entry key="build.revision" value="${svn.revision}"/>
+					<entry key="build.timestamp"
+						type="date"
+						pattern="yyyy-MM-dd'T'HH:mm:ss"
+						value="now"/>
+					<entry key="build.username" value="${user.name}"/>
+					<entry key="build.os" value="${os.name}"/>
+					<entry key="build.os.version" value="${os.version}"/>
+					<entry key="build.arch" value="${os.arch}"/>
+				</propertyfile>
+			</then>
+		</if>		
+	</target>
+	
+	<target name="clean" description="Remove all generated files">
+		<delete dir="${build.dir}"/>
+		<delete file="build.properties"/>
+	</target>
+	
+	<!-- Build target -->
+	<target name="compile" depends="prepare" description="Build from source">
+		<javac srcdir="${src.dir}" 
+			destdir="${build.classes}"
+			classpathref="classpath"
+			debug="${debug}">
+	  </javac>
+	</target>
+		
+	<!-- Package standalone jar -->
+	<target name="jar" depends="compile" description="Build jar">
+		<jar destfile="${build.lib}/${package.name}.jar" duplicate="preserve">
+			<fileset dir="${build.classes}"/>
+			<fileset file="version.properties"/>
+			<fileset file="build.properties"/>
+			<fileset file="log4j.properties"/>
+			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
+			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
+			<zipgroupfileset dir="${lib.dir}" excludes="log4j-1.2.13.jar,junit.jar"/>
+			<zipgroupfileset file="${rbnb.home}/bin/rbnb.jar"/>
+			<manifest>
+				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
+			</manifest>		
+		</jar>
+		
+		<taskdef resource="proguard/ant/task.properties"
+		         classpath="proguard/proguard.jar" />
+		<!-- proguard configuration="proguard/RDV.pro">
+			<injar path="${build.lib}/${package.name}.jar"/>
+			<outjar path="${build.lib}/${package.name}p.jar"/>
+		</proguard>
+		<move file="${build.lib}/${package.name}p.jar" tofile="${build.lib}/${package.name}.jar"/-->
+	</target>
+
+	<target name="exe" depends="checkLaunch4j,jar" description="Build windows executable">
+		<property name="launch4j.home" value="${env.LAUNCH4J_HOME}"/>
+		<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask"
+			classpath="${launch4j.home}/launch4j.jar:${launch4j.home}/lib/xstream.jar"/>
+		<launch4j configFile="launch4j/RDV-launch4j.xml"
+			jar="${build.lib}/${package.name}.jar"
+			outfile="${build.exe}/${package.name}.exe"
+			fileVersion="${version}.0"
+			txtFileVersion="${version} build ${svn.revision}"
+			productVersion="${version}.0"
+			txtProductVersion="${version} build ${svn.revision}"/>
+	</target>
+	
+	<target name="javadoc" description="Build documentation">
+		<mkdir dir="${doc.dir}/api"/>  
+		<javadoc packagenames="org.nees.buffalo.rdv.*" sourcepath="${src.dir}" defaultexcludes="yes" destdir="${doc.dir}/api" author="true" version="true" use="true" windowtitle="RDV API">
+			<link href="http://java.sun.com/j2se/1.4.2/docs/api/"/>
+		</javadoc>
+	</target>
+	
+  <!-- Run some unit tests for event markers -->
+  <target name="test"
+   depends="jar"
+    description="junit dev/QA test for event markers">
+  <!-- java.util.Properties test -->
+  <!--junit printsummary="withOutAndErr"-->
+  <junit printsummary="yes">
+      <classpath refid="classpath"/>
+    <test name="org.nees.rbnb.marker.TestNeesEventProps"
+     haltonfailure="no"
+      outfile="${build.lib}/${junit.log}"/>
+	<formatter type="plain"/>
+  </junit>
+  <!-- xml emission and setting from xml test -->
+  <!--junit printsummary="withOutAndErr"-->
+  <junit printsummary="yes">
+      <classpath refid="classpath"/>
+    <test name="org.nees.rbnb.marker.TestNeesEventXML"
+     haltonfailure="no"
+      outfile="${build.lib}/${junit.log}"/>
+	<formatter type="plain"/>
+  </junit>
+  <!-- DataTurbine submission test -->
+  <!--junit printsummary="withOutAndErr"-->
+  <junit printsummary="yes">
+      <classpath refid="classpath"/>
+    <test name="org.nees.rbnb.TestDataTurbine"
+     haltonfailure="no"
+      outfile="${build.lib}/${junit.log}"/>
+	<formatter type="plain"/>
+  </junit>
+</target>
+  
+	<!-- Run the RDV -->
+	<target name="run" depends="compile" description="Run application">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+ 			<jvmarg value="-Xms64M"/>
+ 			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Dsun.java2d.ddscale=true"/>			
+		</java>
+	</target>
+
+	<!-- Run the RDV (connect to localhost) -->
+	<target name="runLocalhost" depends="compile" description="Run application connecting to localhost">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+ 			<jvmarg value="-Xms64M"/>
+ 			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Dsun.java2d.ddscale=true"/>
+			<arg line="--host localhost --playback-rate 5 --time-scale 10"/>
+		</java>
+	</target>
+		
+	<!-- Run the RDV (connect to rbnb.nees.buffalo.edu) -->
+	<target name="runBuffalo" depends="compile" description="Run application connecting to Buffalo server">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+ 			<jvmarg value="-Xms64M"/>
+ 			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Dsun.java2d.ddscale=true"/>
+			<arg line="--host rbnb.nees.buffalo.edu --time-scale 10"/>
+		</java>
+	</target>
+	
+	<!-- Run the RDV (connect to neestpm.sdsc.edu) -->
+	<target name="runNEESit" depends="compile" description="Run application connecting to Buffalo server">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+ 			<jvmarg value="-Xms64M"/>
+ 			<jvmarg value="-Xmx256M"/>
+			<jvmarg value="-Dsun.java2d.ddscale=true"/>
+			<arg line="--host neestpm.sdsc.edu --channels FakeDAQ/0 'M1 cam1/video.jpg' --time-scale 10 --real-time"/>
+		</java>
+	</target>
+	
+	<!-- Run the RDV (connect to neestpm.sdsc.edu) -->
+  <target name="runMarkers" depends="compile" description="Run application connecting to localhost">
+    <java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+      <jvmarg value="-Xms64M"/>
+      <jvmarg value="-Xmx256M"/>
+      <jvmarg value="-Dsun.java2d.ddscale=true"/>
+      <arg line="--host localhost --channels Events/EventsChannel --time-scale 10 --real-time"/>
+     </java>
+  </target>	
+
+	<target name="help" depends="compile" description="Show usage">
+		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+			<arg line="--help"/>
+		</java>
+	</target>
+		
+	<!-- Catch-all target to aggregate everything -->
+	<target name="all" depends="clean,compile,jar" description="Clean, compile, jar"/>
+</project>
