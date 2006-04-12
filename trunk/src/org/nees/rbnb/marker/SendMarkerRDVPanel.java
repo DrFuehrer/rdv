@@ -47,12 +47,9 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
 {
   private static Log log = LogFactory.getLog (SendMarkerRDVPanel.class.getName ());
   private boolean debugging = false;
-  private DataTurbine myTurban;
+  protected DataTurbine myTurban;
   private JOptionPane turbanPane;
   private static final int FRAME_HEIGHT = 100, FRAME_WIDTH = 360;
-  /** A variable to flag cancellation of the submission action */
-  protected boolean doSubmission = false;
-  
   private JButton sendMarkerButton;
   // private JTextArea markerDisplayArea;
   /** variables to keep track of the text entry field GUI elements, which are
@@ -63,7 +60,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
   
   /** @see org.nees.rbnb.marker.NeesEvent */
   protected NeesEvent myEvent;
-  private String rbnbServerName;
+  protected String rbnbServerName;
   /** A variable that has the name of the channel to create on the rbnb source
     to which to submit markers. */
   private String rbnbSourceName = "_Events";
@@ -72,7 +69,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
   public static String RDVsourceLabel = SendMarkerRDVPanel.class.getName () +
     " from RDV";
   /** rdv's rbnb controller @see org.nees.buffalo.rdv.rbnb.RBNBController */
-  private RBNBController rdvRbnb;
+  protected RBNBController rdvRbnb;
   /** a variable to he=]old a reference to rdv's ApplicationFrame */
   private JFrame rdvFrame;
   /** An event marker timeline 
@@ -400,47 +397,6 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
           } else {
             markerDialog.setVisible (true);
           }
-          
-          /* at this point, control has just returned from markerDialog.
-           * doSubmission is a flag to detect if the user cancelled */
-          if (this.doSubmission == false) {
-            break;
-          }
-          
-        // make popup to prompt the user for a label for this marker
-        /* This is an artifact of previous usage on Java'a canned JOptionPane
-          that only allows input of a single string
-        String markerLabel = null;
-        markerLabel = JOptionPane.showInputDialog (this,
-          DataViewer.formatDate (markerCreateTime) + "\nEvent Marker Label:",
-          "Event Marker Submission",
-          JOptionPane.PLAIN_MESSAGE
-          );
-          
-        // this happens when the user cancels the popup text entry
-        if (markerLabel == null) {
-          break;
-        }
-          
-        myEvent.setProperty ("label", markerLabel);*/
-        myEvent.setProperty ("source", RDVsourceLabel);  
-        myEvent.setProperty ("timestamp", Double.toString (markerCreateTime));
-        
-        if (this.rbnbServerName.compareTo (this.rdvRbnb.getRBNBHostName ()) != 0) {
-          // then the DataTurbine server has changed; we need to change to keep with it
-          try {
-            changeTurbine (this.rdvRbnb.getRBNBHostName ());
-          } catch (SAPIException sae) {
-            log.error ("Couldn't change RBNB servers: " + sae);
-          }
-        } // if
-          
-        try {
-          this.myTurban.putMarker (myEvent, myEvent.rbnbChannel);
-        } catch (Exception ex) {
-          log.error ("Error putting the XML into the Turbine: " + ex);
-          ex.printStackTrace ();
-        }
       break;
         
     } // switch
