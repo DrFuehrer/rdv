@@ -9,17 +9,17 @@ package org.nees.rbnb.marker;
  * $LastChangedBy: ljmiller $
  * $HeadURL: https://svn.nees.org/svn/sandbox/ljmiller/boilerplate.java $
  */
+import com.rbnb.sapi.SAPIException;
+
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -27,48 +27,43 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
+import javax.swing.KeyStroke;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.rbnb.marker.SendMarkerRDVPanel;
-public class MarkerFieldDialog extends JDialog implements KeyEventDispatcher {
+
+public class MarkerFieldDialog extends JDialog {
   
  	static Log log = LogFactory.getLog (MarkerFieldDialog.class.getName());
 	
-  /////////// Event Markers
-	JLabel headerLabel;
-  JLabel markerTimeLabel;
-  
-	JLabel markerLabelLabel;
-	JTextField markerLabelTextField;
-  SendMarkerRDVPanel myCaller;
-	JLabel markerContentLabel;
-	JTextField markerContentTextField;
-  /////////// Event Markers
-  
-	JButton submitButton;
-	JButton cancelButton;
+	private JLabel headerLabel;
+  private JLabel markerTimeLabel;
+  private JLabel markerLabelLabel;
+	private JTextField markerLabelTextField;
+  private SendMarkerRDVPanel myCaller;
+	private JLabel markerContentLabel;
+	private JTextField markerContentTextField;
+  private double markerTimeStamp;
+	private JButton submitButton;
+	private JButton cancelButton;
 	
 	/** constructor */
-  public MarkerFieldDialog (JFrame owner, double markerTimeStamp, SendMarkerRDVPanel markerSender) {
+  public MarkerFieldDialog (JFrame owner, double markerTime, SendMarkerRDVPanel markerSender) {
 		super (owner, true);
 		
     this.myCaller = markerSender;
+    this.markerTimeStamp = markerTime;
     setDefaultCloseOperation (DISPOSE_ON_CLOSE);
-    addWindowListener (new WindowAdapter () {
-			public void windowActivated (WindowEvent e) {
-				bindKeys ();
-			}
-			public void windowDeactivated (WindowEvent e) {
-				unbindKeys ();
-			}
-		}); // addWindowListener
 		
-		setTitle ("Submit Event Marker");
+		setTitle ("XXXXX Submit Event Marker");
+    JPanel container = new JPanel ();
+    setContentPane (container);
+
+    InputMap inputMap = container.getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW);
+    ActionMap actionMap = container.getActionMap ();
     
-		getContentPane ().setLayout (new GridBagLayout ());
+		container.setLayout (new GridBagLayout ());
 		GridBagConstraints c = new GridBagConstraints ();
 		c.weighty    = 1;
 		c.gridwidth  = 1;
@@ -131,23 +126,29 @@ public class MarkerFieldDialog extends JDialog implements KeyEventDispatcher {
 		getContentPane ().add (markerContentTextField, c);
 		
 		JPanel buttonPanel = new JPanel ();
-				
-		submitButton = new JButton ("Submit");
-		submitButton.addActionListener (new ActionListener () {
-			public void actionPerformed (ActionEvent e) {
-				submitMarker ();
-			}
-		}); // submitButton
+		
+		Action submitAction = new AbstractAction () {
+      public void actionPerformed (ActionEvent e) {
+        submitMarker ();
+      }      
+    };
+    submitAction.putValue (Action.NAME, "Submit");
+    inputMap.put (KeyStroke.getKeyStroke ("ENTER"), "submit");
+    actionMap.put("submit", submitAction);
+		submitButton = new JButton (submitAction);
 		buttonPanel.add (submitButton);
 		
-		cancelButton = new JButton ("Cancel");
-		cancelButton.addActionListener (new ActionListener () {
-			public void actionPerformed (ActionEvent e) {
-				cancel ();
-			}
-		});
-		buttonPanel.add (cancelButton);
-		
+    Action cancelAction = new AbstractAction () {
+      public void actionPerformed (ActionEvent e) {
+        cancel ();
+      }      
+    };
+    cancelAction.putValue (Action.NAME, "Cancel");
+    inputMap.put (KeyStroke.getKeyStroke ("ESCAPE"), "cancel");
+    actionMap.put ("cancel", cancelAction);    
+    cancelButton = new JButton (cancelAction);
+    buttonPanel.add (cancelButton);
+    
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx   = 0.5;
 		c.gridx     = 0;
@@ -157,6 +158,7 @@ public class MarkerFieldDialog extends JDialog implements KeyEventDispatcher {
 		getContentPane ().add (buttonPanel, c);
 		
 		pack ();
+    setLocationByPlatform(true);
 		setVisible (true);
 	} // constructor ()
   
@@ -164,8 +166,6 @@ public class MarkerFieldDialog extends JDialog implements KeyEventDispatcher {
 	public void setVisible (boolean visible) {
 		if (visible) {
 			markerLabelTextField.requestFocusInWindow ();
-	 		//markerLabelTextField.setSelectionStart (0);
-	 		//markerLabelTextField.setSelectionEnd (markerLabelTextField.getText ().length ());			
 		}
 		super.setVisible (visible);
 	} // setVisible ()
@@ -180,42 +180,31 @@ public class MarkerFieldDialog extends JDialog implements KeyEventDispatcher {
     
     this.myCaller.myEvent.setProperty ("label", markerLabel);
     this.myCaller.myEvent.setProperty ("content", markerContent);
-    this.myCaller.doSubmission = true;
-    super.dispose ();
+    this.myCaller.myEvent.setProperty ("timestamp", Double.toString (this.markerTimeStamp));
+    
+    if (this.myCaller.rbnbServerName.compareTo (this.myCaller.rdvRbnb.getRBNBHostName ()) != 0) {
+      // then the DataTurbine server has changed; we need to change to keep with it
+      try {
+        this.myCaller.changeTurbine (this.myCaller.rdvRbnb.getRBNBHostName ());
+      } catch (SAPIException sae) {
+        log.error ("Couldn't change RBNB servers: " + sae);
+      }
+    } // if
+    
+    try {
+      this.myCaller.myTurban.putMarker (this.myCaller.myEvent, this.myCaller.myEvent.rbnbChannel);
+    } catch (Exception ex) {
+      log.error ("Error putting the XML into the Turbine: " + ex);
+      ex.printStackTrace ();
+    }
+    
+    dispose ();
 	} // submitMarker ()
 	
   
 	private void cancel () {
-		this.myCaller.doSubmission = false;
-    super.dispose ();		
+    dispose ();		
 	} // cancel ()
-  
-	
-	private void bindKeys () {
- 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
- 		focusManager.addKeyEventDispatcher (this);		
-	} // bindKeys ()
-	
-  
-	private void unbindKeys () {
- 		KeyboardFocusManager focusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager ();
- 		focusManager.removeKeyEventDispatcher (this);
-	} // unbindKeys ()
-  
-  
- 	public boolean dispatchKeyEvent (KeyEvent keyEvent) {
- 		int keyCode = keyEvent.getKeyCode ();
- 		
- 		if (keyCode == KeyEvent.VK_ENTER) {
- 			submitMarker ();
- 			return true;
- 		} else if (keyCode == KeyEvent.VK_ESCAPE) {
- 			cancel ();
- 			return true;
- 		} else {
- 			return false;
- 		}
- 	} //  dispatchKeyEvent ()
   
 } // class
 
