@@ -56,7 +56,7 @@ public class MarkerFieldDialog extends JDialog {
     this.markerTimeStamp = markerTime;
     setDefaultCloseOperation (DISPOSE_ON_CLOSE);
 		
-		setTitle ("XXXXX Submit Event Marker");
+		setTitle ("Submit Event Marker");
     JPanel container = new JPanel ();
     setContentPane (container);
 
