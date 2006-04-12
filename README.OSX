@@ -1,0 +1,17 @@
+Lawrence J. Miller
+4/12/06
+
+There are a couple acrobatics required to get RDV building/running under the
+OSX implementation of Java. This is a side-effect of packaging the RDV jar to
+contain all of its own dependencies, since it now wants to include some Java
+system classses. I tried this with ln, but had an issue with jnlp which was
+corrected by brute-force cp'ing.
+
+cp /System/Library/Frameworks/JavaVM.framework/CurrentJDK/Classes/classes.jar
+   /System/Library/Frameworks/JavaVM.framework/CurrentJDK/Home/lib/rt.jar
+
+cp /System/Library/Frameworks/JavaVM.framework/CurrentJDK/Classes/classes.jar
+   /System/Library/Frameworks/JavaVM.framework/CurrentJDK/Home/lib/rt.jar
+
+cp /System/Library/Frameworks/JavaVM.framework/CurrentJDK/Classes/jsse.jar
+   /System/Library/Frameworks/JavaVM.framework/CurrentJDK/Home/lib/jsse.jar
