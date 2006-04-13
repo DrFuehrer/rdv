@@ -87,7 +87,9 @@ public class DataViewer {
 		if (rbnb != null) {
 			rbnb.exit();
 		}
-		log.info("Exiting.");		
+		log.info("Exiting.");
+    /* This addresses the zomboid javaw processes left under Windows when RDV exits */
+    System.exit (0);
 	}
  	
  	public RBNBController getRBNBController() {
