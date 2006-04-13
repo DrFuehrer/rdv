@@ -418,7 +418,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  
-/////////////////////////////////////////////////////////////////////////////LJM
     showMarkerPanelAction = new DataViewerAction ("Show Event Markers", "", KeyEvent.VK_M, "icons/channels.gif") {
       public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();
@@ -431,7 +430,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         controlPanel.markerPanel.repaint ();
       }
     };
-/////////////////////////////////////////////////////////////////////////////LJM
  
  		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S, "icons/info.gif") {
  			public void actionPerformed(ActionEvent ae) {
@@ -440,18 +438,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
 
- 		dataPanelAction = new DataViewerAction("Data Panel", "Data Panel Sub-Menu", KeyEvent.VK_D);
+    // changed the name of this to "arrange" - more for case 4719
+ 		dataPanelAction = new DataViewerAction("Arrange", "Arrange Data Panel Orientation", KeyEvent.VK_D);
  		
      /* Display the data panels horizontally.
       * LJM exchanged HORIZONTAL and VERTICAL to invert semantics to apply to the
       * windows theselves, rather than their arrangement for case 4719 */
-		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Layout", "", -1, "icons/horizontal.gif") {
+		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Data Panel Orientation", "", -1, "icons/horizontal.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.VERTICAL_LAYOUT);
  			}			
  		}; 		
  		
-		dataPanelVerticalLayoutAction = new DataViewerAction("Vertical Layout", "", -1, "icons/vertical.gif") {
+		dataPanelVerticalLayoutAction = new DataViewerAction("Vertical Data Panel Orientation", "", -1, "icons/vertical.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.HORIZONTAL_LAYOUT);
  			}			
@@ -586,37 +585,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
  		
-/////////////////////////////////////////////////////////////////////////////LJM
     showMarkerMenuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
     showMarkerMenuItem.setSelected (false);
     viewMenu.add (showMarkerMenuItem);
-/////////////////////////////////////////////////////////////////////////////LJM
  		
  		menuItem = new JCheckBoxMenuItem(showStatusPanelAction);
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
- 		
  		viewMenu.addSeparator();
- 		
- 		JMenu dataPanelSubMenu = new JMenu(dataPanelAction);
- 		
- 		ButtonGroup dataLanelLayoutGroup = new ButtonGroup();
- 		
- 		menuItem = new JRadioButtonMenuItem(dataPanelHorizontalLayoutAction);
- 		dataPanelSubMenu.add(menuItem);
- 		dataLanelLayoutGroup.add(menuItem);
- 		
- 		menuItem = new JRadioButtonMenuItem(dataPanelVerticalLayoutAction);
-    // LJM - exchanged HORIZONTAL and VERTICAL
-    menuItem.setSelected(true);
- 		dataPanelSubMenu.add(menuItem);
- 		dataLanelLayoutGroup.add(menuItem);
- 		
- 		viewMenu.add(dataPanelSubMenu);
-
- 		viewMenu.addSeparator();
- 		
- 		menuItem = new JCheckBoxMenuItem(showHiddenChannelsAction);
+    
+    menuItem = new JCheckBoxMenuItem(showHiddenChannelsAction);
  		menuItem.setSelected(false);
  		viewMenu.add(menuItem);
 
@@ -651,17 +629,33 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		windowMenu.addSeparator();
  		
  		menuItem = new JMenuItem(closeAllDataPanelsAction);
-  		windowMenu.add(menuItem);
-  		menuBar.add(windowMenu);
+    windowMenu.add(menuItem);
   		
+    windowMenu.addSeparator();  
+    JMenu dataPanelSubMenu = new JMenu(dataPanelAction);
+    
+    ButtonGroup dataPanelLayoutGroup = new ButtonGroup();
+    
+    menuItem = new JRadioButtonMenuItem(dataPanelHorizontalLayoutAction);
+    dataPanelSubMenu.add(menuItem);
+    dataPanelLayoutGroup.add(menuItem);
+    
+    menuItem = new JRadioButtonMenuItem(dataPanelVerticalLayoutAction);
+    menuItem.setSelected(true);
+    dataPanelSubMenu.add(menuItem);
+    dataPanelLayoutGroup.add(menuItem);
+    windowMenu.add(dataPanelSubMenu);
+    
+    menuBar.add(windowMenu);
+    
  		JMenu helpMenu = new JMenu(helpAction);
-  
+    
  		menuItem = new JMenuItem(aboutAction);
   		helpMenu.add(menuItem);		
   		
   		menuBar.add(helpMenu);
       
-    menuBar.add(Box.createHorizontalGlue());
+      menuBar.add(Box.createHorizontalGlue());
     throbberStop = DataViewer.getIcon("icons/throbber.png");
     throbberAnim = DataViewer.getIcon("icons/throbber_anim.gif");
     throbber = new JLabel(throbberStop);
