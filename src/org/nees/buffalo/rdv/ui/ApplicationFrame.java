@@ -527,7 +527,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     fileMenu.addSeparator();
  		
     menuItem = new JMenuItem(importAction);
- 		fileMenu.add(menuItem);
+ 		// LJM 060413 - this function disabled for the 1.3 release
+    // fileMenu.add(menuItem);
 
     menuItem = new JMenuItem(exportAction);
     fileMenu.add(menuItem);
