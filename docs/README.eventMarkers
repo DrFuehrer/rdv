@@ -26,7 +26,47 @@ the event marker functionality, which merges all the data from all event marker
 sources, which are identified by a custom MIME type, "x-neesEvent".
 The EMT then displays a scaled timeline of all event markers as small marks and
 provides a user interface by which the labels of these marks can be displayed
-and all other data that is present in DaatTurbine at the point in time that the
+and all other data that is present in DataTurbine at the point in time that the
 mark is marking can be reviewed.
 - A custom RDV data panel has been made specifically for event markers in order
-to display custom views of their XML content. 
+to display custom views of their XML content. This can be used an can any RDV
+data panel.
+
+USAGE
+- Overall Functionality
+   The display of event marker functionality in the RDV interface can be toggled
+using the "View -> Show Event Markers" menu selection. This controls the
+visibility of the display of the EMT and of the EMSP when connected to a
+DataTurbine server.
+- Event Marker Data Panel
+   There is a custom view of the XML that composes event markers that is
+implemented as an RDV data panel. This allows real-time viewing of the textual
+content of event markers as they occur. These can be activated in the RDV user
+interface by double-clicking an event marker channel on the RDV Channel List
+Panel or by using the menu selection "Window -> Add Event Marker Data Panel" to
+create an empty data panel and then populating it with drag-n-drop.
+- Event Marker Submission Panel
+   This simple panel will become visible just above the RDV Status Panel. It
+contains a single button to create an event marker. When event marker creation
+is triggered a dialog asking to place RDV into real-time monitor mode is
+generated if RDV is not in real-time monitor mode. The reason that this is
+necessary is that RDV must know that the new event marker has been put into the
+DataTurbine ring buffer inorder to provide feedback to the user that it has been
+submitted. The time that teh creation button was clicked is recorded and a
+dialog prompting the user to provide textual input for the label and content of
+the event marker appears. Once the choice to submit the event marker is made,
+the submission occurs with the time stamp that creation was triggered, and the
+event markers timestamp in DataTurbine is set to this time.
+- Event Marker Timeline
+   This display serves an interface to jump back in time to a marked event of
+interest. It creates a small black mark for every event marker in the
+DataTurbine merged from all sources that generate event markers. It follows
+first-in-last-out stack semantic in that a newly incident event marker will
+appear on the far right of the timeline, shifting all other event markers left.
+This timeline is scaled to the union of all event marker time intervals in the
+DataTurbine ring buffer.
+   A tool-tip will display the label with which an event marker was submitted
+for the event marker nearest the mouse pointer when the mouse pointer is moved
+over this timeline.
+   Mouse-clicking on an event marker will move the time being viewed throughout
+RDV to the point in time at which that event marker was timestamped. 
