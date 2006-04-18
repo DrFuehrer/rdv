@@ -1,0 +1,32 @@
+Using Event Markers in RDV
+Lawrence J. Miller <ljmiller@sdsc.edu>
+4/18/06
+
+SUMMARY
+This feature allows a user of RDV to interact with the real-time data being
+viewed. Event markers are a functionality by which moments in time can be
+marked, annotated, and then later reviewed with all other historical data that
+is present in DataTurbine.
+
+DESIGN
+- The event marker functionality is unpecedented in the reagrd that it makes RDV
+into a DataTurbine source, meaning that it puts data into DataTurbine. Also 
+without precedent is that this functionality makes RDV a collaboration tool. It
+does this by creating a hiddeen source named "_Events*", where the * can be an 
+underscore followed by any number. This is necessary to have multiple _Events
+sources writing into DataTurbine at the same time which is necessary for
+collaborative use. Each such source contains a channel called "EventsChannel"
+that is populated with XML event markers.
+- An element called "Event Marker Submission Panel" (EMSP) provides a trigger
+with which a user can submit a new event marker and supply its label and textual
+content.
+- An element called "Event Marker Timeline" (EMT) has been added to the RDV
+control panel. This element serves as the ui display of the internal workings of
+the event marker functionality, which merges all the data from all event marker
+sources, which are identified by a custom MIME type, "x-neesEvent".
+The EMT then displays a scaled timeline of all event markers as small marks and
+provides a user interface by which the labels of these marks can be displayed
+and all other data that is present in DaatTurbine at the point in time that the
+mark is marking can be reviewed.
+- A custom RDV data panel has been made specifically for event markers in order
+to display custom views of their XML content. 
