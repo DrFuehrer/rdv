@@ -610,7 +610,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         frame.showImportDialog(sourceName);
       }
     });
-    popup.add(menuItem);
+    // LJM disabled for the NEESit 1.3 release
+    // popup.add(menuItem);
     menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
