@@ -86,6 +86,7 @@ import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
 import com.jgoodies.uif_lite.component.Factory;
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
+import com.rbnb.sapi.SAPIException;
 
 /**
  * Main frame for the application
@@ -268,10 +269,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				}			
 /////////////////////////////////////////////////////////////////////////////LJM
         // Clear out and disable event markers for changing to a new turbine
-        showMarkerMenuItem.setSelected (false);
+        /*showMarkerMenuItem.setSelected (false);
         markerFrame.setVisible (false);
         controlPanel.markerPanel.setVisible (false);
-        controlPanel.markerLabel.setVisible (false);
+        controlPanel.markerLabel.setVisible (false);*/
         controlPanel.markerPanel.clearData ();
 /////////////////////////////////////////////////////////////////////////////LJM
  			}			
@@ -293,7 +294,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				rbnb.disconnect();
 /////////////////////////////////////////////////////////////////////////////LJM
         controlPanel.markerPanel.clearData ();
-        // DOTOO disable the submit panel when not connected
+        markerFrame.setVisible (false);
 /////////////////////////////////////////////////////////////////////////////LJM
  			}			
  		};
@@ -942,8 +943,17 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     stopThrobber();
 /////////////////////////////////////////////////////////////////////////////LJM
     /* Going to a new turbine, so flush out the data from the old one. */
+    markerFrame.setVisible (
+                            showMarkerMenuItem.isSelected ()
+                            /*&& markerSubmitPanel.isConnected ()*/
+                            );    
+    try {
+      this.markerSubmitPanel.changeTurbine (this.rbnb.getRBNBHostName ());
+    } catch (SAPIException sae) {
+      log.error ("Could not change DataTurbine servers " + sae);
+    }
     controlPanel.markerPanel.clearData ();
-/////////////////////////////////////////////////////////////////////////////LJM
+//HACK//////////////////////////////////////////////////////////////////////////LJM
 	}
 
 	public void connectionFailed() {
