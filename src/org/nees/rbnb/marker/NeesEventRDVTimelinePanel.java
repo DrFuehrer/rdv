@@ -217,8 +217,8 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   }
   
   
-  /** This method is called from the ControlPanel when its channelTreeUpdated is called
-    * it updates theEvents
+  /** This method is called from the ControlPanel when its channelTreeUpdated is
+    * called it updates theEvents
     */
   public void updateCtree (ChannelTree newCtree) {
     this.ceeTree = newCtree;
