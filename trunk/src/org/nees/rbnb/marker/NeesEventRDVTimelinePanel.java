@@ -128,9 +128,9 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       this.findEventsChannel ();
     }
     
-    log.debug ("*** Created " + NeesEventRDVTimelinePanel.class.getName () +
+    /*log.debug ("*** Created " + NeesEventRDVTimelinePanel.class.getName () +
                " with ring buffer start at: " + DataViewer.formatDate (startTime) +
-               " and ring buffer end at: " + DataViewer.formatDate (endTime));
+               " and ring buffer end at: " + DataViewer.formatDate (endTime));*/
   } // constructor ()
   
   
@@ -147,7 +147,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   public void setEventsChannelStartTime (double newStart) {
     if (-1.0 < newStart) {
       this.eventsChannelStartTime = newStart;
-      log.debug ("*** Set marker channel START to: " +  DataViewer.formatDate (eventsChannelStartTime));
+      //log.debug ("*** Set marker channel START to: " +  DataViewer.formatDate (eventsChannelStartTime));
       updateMarkerPanelScaleFactor ();
     }
   }
@@ -158,7 +158,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   public void setEventsChannelEndTime (double newEnd) {
     if (this.eventsChannelEndTime < newEnd) {
       this.eventsChannelEndTime = newEnd;
-      log.debug ("*** Set marker channel END to: " +  DataViewer.formatDate (eventsChannelEndTime));
+      //log.debug ("*** Set marker channel END to: " +  DataViewer.formatDate (eventsChannelEndTime));
       updateMarkerPanelScaleFactor ();
     }
   }
@@ -278,7 +278,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         markerPanelG.fillRect (markerXcoordinate, 0, 2, 10);
         
         // verbose debug output
-        log.debug ("*** " + Integer.toString (i+1) + "of" + theEvents.length + " Drew \"" + markerType + "\" marker at x: " +
+        /*log.debug ("*** " + Integer.toString (i+1) + "of" + theEvents.length + " Drew \"" + markerType + "\" marker at x: " +
                    Integer.toString (markerXcoordinate) + 
                    " of: " + Integer.toString (this.getWidth ()) + 
                    "\n" +
@@ -286,12 +286,12 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
                    time2use + " nice: " +
                    DataViewer.formatDate (time2use) + "\n" +
                    "With scale factor: " + this.getScaleFactor ()
-                   );
+                   );*/
         
       } // for
-      log.debug ("--- End Draw ---");
+      //log.debug ("***--- End Draw ---");
     } else { // no markers
-      log.debug ("*** No Marker Data - null.");
+      //log.debug ("*** No Marker Data - null.");
     } // else
       // LJM
     markerPanelG.dispose ();
@@ -446,7 +446,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
           setEventsChannelEndTime (node.getStart() + node.getDuration());
         }
         
-        log.debug ("*** Marker Channel FOUND: " + sourceChannelName);
+        //log.debug ("*** Marker Channel FOUND: " + sourceChannelName);
         // If this is a newly incident channel, then subscribe to it to get updates
         if (! this.rbnbctl.isSubscribed (sourceChannelName)) {
           if (this.rbnbctl.subscribe (sourceChannelName, this)) {
