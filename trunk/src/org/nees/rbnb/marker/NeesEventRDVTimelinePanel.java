@@ -101,6 +101,8 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   /** A variable to offset the coordinates used to draw marker blips.
     * Needs to offset the scroll bar arrows on the location slider. */
   public static int FUDGE_FACTOR = 10;
+  /** A variable that guards the scanPastMarkers function */
+  boolean doScanPastMarkers = true;
   
   /** constructor */
   public NeesEventRDVTimelinePanel (RBNBController rbnb,
@@ -203,6 +205,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   
   
   public void clearData () {
+    this.doScanPastMarkers = true;
     this.theEvents = null;
     this.theEventsHistoryHash.clear();
     this.eventsChannelNames.clear ();
@@ -245,7 +248,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     //this.clearDisplay ();
     if (theEvents != null) {
       String markerType = null;
-      log.debug ("--- Start Draw ---");
+      // log.debug ("--- Start Draw ---");
       // loop though the events and draw them
       for (int i=0; i<theEvents.length; i++) {
         // log.debug (theEvents[i].toString ());
@@ -431,11 +434,17 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       
       // DOTOO move this call as an optimization
       this.updateMarkerPanelScaleFactor ();
+      // then an events channel has been found
       if (channelMime != null &&
           channelMime.compareToIgnoreCase (NeesEvent.MIME_TYPE) == 0)
       {
         this.eventsChannelNames.add (sourceChannelName);
         this.foundEventsChannel = true;
+        
+        // HACK
+        if (this.doScanPastMarkers) {
+          //scanPastMarkers ();
+        }
         
         // reset the time bounds based on the times found in this channel tree
         if (node.getStart() < this.getEventsChannelStartTime ()) {
@@ -461,6 +470,21 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     } // while
   } // findEventsChannel ()    
   
+  
+  /** A method to scan through the ring buffer to find all previous event
+    * HACK
+    * markers */
+  public void scanPastMarkers () {
+    if (! this.doScanPastMarkers) {
+      return;
+    } else { // scan the ring buffer
+      log.debug ("%%% scanPastMarkers ()");
+      this.doScanPastMarkers = false;
+      boolean wasMonitoring = (this.rbnbctl.getState () == org.nees.buffalo.rdv.rbnb.Player.STATE_MONITORING);
+      double locationTmp = this.rbnbctl.getLocation ();
+      //this.rbnbctl.setLocation ();
+    }
+  }
   
   /** A method to update theEvents with event data from a @param input rbnb data
     * channel. */
@@ -539,7 +563,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         }
         
         /* if this case doesn't get hit, then there are no timestamps at all
-          * HACK if start is less if end is more */
+          * if start is less if end is more */
         if (startStringTemp != null) {
           setEventsChannelStartTime (Double.parseDouble (startStringTemp));
         }
