@@ -49,7 +49,8 @@ public class DataTurbine
   
   public static int RBNB_CACHE_SIZE   = 5000; 
   public static int RBNB_ARCHIVE_SIZE = 10000;
-  public boolean keepRbnbData = false;
+  public boolean keepRbnbDataArchive = false;
+  public boolean keepRbnbDataCache = true;
   /** A variable to specify the archive mode as described in @see com.rbnb.sapi.Source
     * none   - no Archive is made.
     * load   - load an archive, but do not allow any further writing to it.
@@ -64,7 +65,7 @@ public class DataTurbine
     Runtime.getRuntime ().addShutdownHook (new Thread () {
       public void run () {
         try {
-          if (keepRbnbData) {
+          if (keepRbnbDataArchive || keepRbnbDataCache) {
             closeAndKeep ();
           } else {
             close ();
@@ -82,7 +83,7 @@ public class DataTurbine
     cache and archive the ring buffer. */
   protected void finalize () {
     try {
-      if (keepRbnbData) {
+      if (keepRbnbDataArchive || keepRbnbDataCache) {
         this.closeAndKeep ();
       } else {
         this.close ();
@@ -297,8 +298,8 @@ public class DataTurbine
   public void closeAndKeep () throws Exception {
     try {
       log.debug ("Closing turbine " + serverName + " with cache and archive.");
-      this.source.Detach ();
-      this.source.CloseRBNBConnection (keepRbnbData, keepRbnbData);
+      //this.source.Detach ();
+      this.source.CloseRBNBConnection (keepRbnbDataCache, keepRbnbDataArchive);
     } catch (Exception e) {
       log.error ("Error closing turbine: " + e);
       throw e;
