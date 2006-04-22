@@ -182,6 +182,8 @@ public class MarkerFieldDialog extends JDialog {
     this.myCaller.myEvent.setProperty ("content", markerContent);
     this.myCaller.myEvent.setProperty ("timestamp", Double.toString (this.markerTimeStamp));
     
+    /* This check has been supplanted by the connect () method in
+      @see org.nees.rbnb.marker.SendMarkerRDVPanel - left here for future reference.
     if (this.myCaller.rbnbServerName.compareTo (this.myCaller.rdvRbnb.getRBNBHostName ()) != 0) {
       // then the DataTurbine server has changed; we need to change to keep with it
       try {
@@ -190,6 +192,7 @@ public class MarkerFieldDialog extends JDialog {
         log.error ("Couldn't change RBNB servers: " + sae);
       }
     } // if
+    */
     
     try {
       this.myCaller.myTurban.putMarker (this.myCaller.myEvent, this.myCaller.myEvent.rbnbChannel);

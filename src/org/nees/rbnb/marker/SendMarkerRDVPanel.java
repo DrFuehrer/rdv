@@ -321,7 +321,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
     } catch (Exception ex) {
       log.error ("Error closing turbine: " + ex);
     }
-    this.rbnbServerName = "";
+    //this.rbnbServerName = "";
   } // closeTurbine ()
   
   
