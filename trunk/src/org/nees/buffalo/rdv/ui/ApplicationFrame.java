@@ -947,13 +947,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
                             showMarkerMenuItem.isSelected ()
                             /*&& markerSubmitPanel.isConnected ()*/
                             );    
-    try {
+    /* This check has been supplanted by the connect () method in
+      @see org.nees.rbnb.marker.SendMarkerRDVPanel - luft here for future reference.
+     try {
       this.markerSubmitPanel.changeTurbine (this.rbnb.getRBNBHostName ());
     } catch (SAPIException sae) {
       log.error ("Could not change DataTurbine servers " + sae);
     }
+    */
     controlPanel.markerPanel.clearData ();
-//HACK//////////////////////////////////////////////////////////////////////////LJM
+////////////////////////////////////////////////////////////////////////////LJM
 	}
 
 	public void connectionFailed() {

@@ -898,6 +898,10 @@ public class RBNBController implements Player, MetadataListener {
 	
 	// Listener Methods
 	
+  public void updateTimeListenersPublic (double updateLocation) {
+    updateTimeListeners (updateLocation);
+  }
+  
 	private void updateTimeListeners(double location) {
 		for (int i=0; i<timeListeners.size(); i++) {
 			TimeListener timeListener = (TimeListener)timeListeners.get(i);
@@ -1358,7 +1362,7 @@ public class RBNBController implements Player, MetadataListener {
 	}
   
   /**
-   * Returns the state code for a givin state name
+   * Returns the state code for a given state name
    * 
    * @param stateName  the state name
    * @return           the state code

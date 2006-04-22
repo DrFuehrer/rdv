@@ -195,7 +195,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     this.usingFakeEvents = flag;
   }
   
-  
+  /** A method for the @see org.nees.buffalo.rdv.rbnb.DataListener interface */
   public void postData (ChannelMap cMap) {
     this.channelMap = cMap;
     // REFACTOR this seems redundant, but is critical to operation
@@ -203,16 +203,18 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     this.repaint ();
   } // postData ()
   
-  
+  // HACK channel mappy stuff
   public void clearData () {
     this.doScanPastMarkers = true;
+    this.channelMap = null;
+    this.ceeTree = null;
     this.theEvents = null;
     this.theEventsHistoryHash.clear();
     this.eventsChannelNames.clear ();
     this.repaint ();
-  } //clearData ()
+  } // clearData ()
   
-  
+ /** A method for the @see org.nees.buffalo.rdv.rbnb.TimeListener interface */ 
   public void postTime (double newTime) {
     setEventsChannelEndTime (newTime);
     updateMarkerPanelScaleFactor ();
@@ -220,8 +222,8 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   }
   
   
-  /** This method is called from the ControlPanel when its channelTreeUpdated is
-    * called it updates theEvents
+  /** This method is called from the ControlPanel when its channelTreeUpdated ()
+    * method is called. it effectively updates theEvents
     */
   public void updateCtree (ChannelTree newCtree) {
     this.ceeTree = newCtree;
@@ -443,7 +445,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         
         // HACK
         if (this.doScanPastMarkers) {
-          //scanPastMarkers ();
+          // scanPastMarkers ();
         }
         
         // reset the time bounds based on the times found in this channel tree
@@ -475,14 +477,28 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     * HACK
     * markers */
   public void scanPastMarkers () {
-    if (! this.doScanPastMarkers) {
+    if ( (! this.doScanPastMarkers) || (eventsChannelStartTime == -1) ) {
+      log.debug ("%%% scanPastMarkers () short-circuited"); 
       return;
     } else { // scan the ring buffer
       log.debug ("%%% scanPastMarkers ()");
       this.doScanPastMarkers = false;
-      boolean wasMonitoring = (this.rbnbctl.getState () == org.nees.buffalo.rdv.rbnb.Player.STATE_MONITORING);
+      // backup rbnb controller's state
+      int stateTmp = (this.rbnbctl.getState ());
       double locationTmp = this.rbnbctl.getLocation ();
-      //this.rbnbctl.setLocation ();
+      log.debug ("%%% stateTmp: " + this.rbnbctl.getStateName (this.rbnbctl.getState ()));
+      
+      /** a variable for teh time increment in miliseconds at which to scan */
+      int scanIncrement = 1;
+      double timeToScan = -1;
+      for (int i=(int)(this.getEventsChannelStartTime ());
+           i<(int)(this.getEventsChannelEndTime ());
+           i+=scanIncrement) {
+        timeToScan = (double)i;
+        log.debug ("%%% scanning... " + DataViewer.formatDate (timeToScan));
+        this.rbnbctl.setLocation (timeToScan);
+        this.rbnbctl.updateTimeListenersPublic (timeToScan);
+      }
     }
   }
   
@@ -548,8 +564,8 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       }
       
       // this protects divide by zeros in the scale factor - if length =1, then start=end
-      if (theEvents != null && 1 <= theEvents.length) { // if it is, bad news, we shouldn't even be here
-                                                        // These get start and end because this array is now sorted
+      if (theEvents != null && 1 <= theEvents.length) {
+        // These get start and end because this array is now sorted
         String startStringTemp = theEvents[0].getProperty ("timestamp");
         String endStringTemp = theEvents[theEvents.length-1].getProperty ("timestamp");
         
@@ -564,19 +580,25 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         
         /* if this case doesn't get hit, then there are no timestamps at all
           * if start is less if end is more */
+        double startTemp =  -1.0;
+        double endTemp = -1.0;
         if (startStringTemp != null) {
-          setEventsChannelStartTime (Double.parseDouble (startStringTemp));
+          startTemp = Double.parseDouble (startStringTemp);
+          setEventsChannelStartTime (startTemp);
         }
         if (endStringTemp != null) {
-          setEventsChannelEndTime   (Double.parseDouble (endStringTemp));
-          
+          endTemp = Double.parseDouble (endStringTemp);
+          setEventsChannelEndTime (endTemp);
         }
-      }
-      
-      log.debug ("*** events channel times set - S: " +
+    
+        if (this.getEventsChannelStartTime () != startTemp ||
+          this.getEventsChannelEndTime () != endTemp) {
+          log.debug ("*** events channel times set - S: " +
                  DataViewer.formatDate (getEventsChannelStartTime ()) +
                  " E: " + DataViewer.formatDate (getEventsChannelEndTime ())
                  );
+          }
+      } // if
     } // else get the real deal
   } // getEventData ()
   
