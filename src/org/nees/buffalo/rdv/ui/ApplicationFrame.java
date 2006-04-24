@@ -445,13 +445,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
      /* Display the data panels horizontally.
       * LJM exchanged HORIZONTAL and VERTICAL to invert semantics to apply to the
       * windows theselves, rather than their arrangement for case 4719 */
-		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Data Panel Orientation", "", -1, "icons/horizontal.gif") {
+		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Data Panel Orientation", "", -1, "icons/vertical.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.VERTICAL_LAYOUT);
  			}			
  		}; 		
  		
-		dataPanelVerticalLayoutAction = new DataViewerAction("Vertical Data Panel Orientation", "", -1, "icons/vertical.gif") {
+		dataPanelVerticalLayoutAction = new DataViewerAction("Vertical Data Panel Orientation", "", -1, "icons/horizontal.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.HORIZONTAL_LAYOUT);
  			}			
@@ -532,7 +532,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     // fileMenu.add(menuItem);
 
     menuItem = new JMenuItem(exportAction);
-    fileMenu.add(menuItem);
+    // LJM 060424 - this function disabled for the 1.3 release
+    // fileMenu.add(menuItem);
         
  		fileMenu.addSeparator();
  		
