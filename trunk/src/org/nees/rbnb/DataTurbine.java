@@ -8,10 +8,10 @@ package org.nees.rbnb;
  * @since 050928
  * Copyright (c) 2005, NEES Cyberinfrastructure Center (NEESit), San Diego Supercomputer Center
  * All rights reserved. See full notice in the source, at the end of the file.
- * $LastChangedDate: 2002-07-22 21:42:37 -0700 (Mon, 22 Jul 2002) $
- * $LastChangedRevision: 144 $
- * $LastChangedBy: joe $
- * $HeadURL: http://svn.collab.net/repos/trunk/README $ 
+ * $LastChangedDate$
+ * $LastChangedRevision$
+ * $LastChangedBy$
+ * $HeadURL$ 
  */
 
 import com.rbnb.sapi.Source;

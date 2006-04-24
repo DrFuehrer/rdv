@@ -13,13 +13,13 @@ import javax.xml.transform.TransformerException;
  * @author NEES Cyberinfrastructure Center (NEESit), San Diego Supercomputer Center
  * @since 050916
  * Perforce RCS info:
- * $Id: $
+ * $Id$
  * $Header: $
- * $Date: $
+ * $Date$
  * $Change: $
  * $File: $
- * $Revision: $
- * $Author: $
+ * $Revision$
+ * $Author$
  *
  * Copyright (c) 2005, NEES Cyberinfrastructure Center (NEESit), San Diego Supercomputer Center
  * All rights reserved. See full notice in the source, at the end of the file.

@@ -4,10 +4,10 @@ package org.nees.rbnb.marker;
  * @author NEES Cyberinfrastructure Center (NEESit), San Diego Supercomputer Center
  * Please see copywrite information at the end of this file.
  * @since 051108
- * $LastChangedDate: 2006-03-28 16:10:01 -0800 (Tue, 28 Mar 2006) $
- * $LastChangedRevision: 773 $
- * $LastChangedBy: ljmiller $
- * $HeadURL: https://svn.nees.org/svn/sandbox/ljmiller/boilerplate.java $
+ * $LastChangedDate$
+ * $LastChangedRevision$
+ * $LastChangedBy$
+ * $HeadURL$
  */
 import com.rbnb.sapi.SAPIException;
 
