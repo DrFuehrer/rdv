@@ -23,10 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL: svn+ssh://jphanley@code.nees.buffalo.edu/repository/RDV/trunk/src/org/nees/buffalo/rdv/ui/RBNBConnectionDialog.java $
- * $Revision: 356 $
- * $Date: 2005-12-20 12:54:33 -0500 (Tue, 20 Dec 2005) $
- * $Author: jphanley $
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
  */
 
 package org.nees.buffalo.rdv.ui;

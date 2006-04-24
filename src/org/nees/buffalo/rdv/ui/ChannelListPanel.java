@@ -23,10 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL: svn+ssh://jphanley@code.nees.buffalo.edu/repository/RDV/trunk/src/org/nees/buffalo/rdv/ui/ChannelListPanel.java $
- * $Revision: 477 $
- * $Date: 2006-04-05 18:19:16 -0400 (Wed, 05 Apr 2006) $
- * $Author: jphanley $
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
  */
 
 package org.nees.buffalo.rdv.ui;

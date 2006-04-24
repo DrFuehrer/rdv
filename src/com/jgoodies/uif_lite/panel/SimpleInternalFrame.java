@@ -57,7 +57,7 @@ import com.jgoodies.looks.LookUtils;
  * be displayed as selected.
  * 
  * @author Karsten Lentzsch
- * @version $Revision: 316 $
+ * @version $Revision$
  * 
  * @see    javax.swing.JInternalFrame
  * @see    javax.swing.JDesktopPane

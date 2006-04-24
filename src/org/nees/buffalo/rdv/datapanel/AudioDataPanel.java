@@ -23,10 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL: svn+ssh://code.nees.buffalo.edu/repository/RDV/trunk/src/org/nees/buffalo/rdv/datapanel/JFreeChartDataPanel.java $
- * $Revision: 352 $
- * $Date: 2005-12-18 14:32:16 -0500 (Sun, 18 Dec 2005) $
- * $Author: jphanley $
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
  */
 package org.nees.buffalo.rdv.datapanel;
 

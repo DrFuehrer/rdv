@@ -23,10 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL: svn+ssh://jphanley@code.nees.buffalo.edu/repository/RDV/trunk/src/org/nees/buffalo/rdv/rbnb/Channel.java $
- * $Revision: 319 $
- * $Date: 2005-11-16 15:13:34 -0500 (Wed, 16 Nov 2005) $
- * $Author: jphanley $
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
  */
 
 package org.nees.buffalo.rdv.rbnb;
