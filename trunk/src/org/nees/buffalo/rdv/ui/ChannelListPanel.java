@@ -590,10 +590,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       popup.add(menuItem);
     }
     
+    /*
     if (extensions.size() > 0) {
       popup.addSeparator();
     }          
-    
+    */
+     
     if (dataPanelManager.isSourceSubscribed(sourceName)) {
       menuItem = new JMenuItem("Unsubscribe from source");
       menuItem.addActionListener(new ActionListener() {
