@@ -297,44 +297,44 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     markerPanel.setBorder (BorderFactory.createEtchedBorder ());
     markerPanel.setToolTipText ("tipsy");
     markerPanel.addMouseListener (new MouseAdapter () {
-      
       public void mouseClicked (MouseEvent e) {
         // DOTOO disable the submission panel
         if (! rbnbController.isConnected ()) {
           return;
         }
-        // scale factor is pixels/time
-        double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) +
+      
+        // Iff its a left-click, else we lose real-time state
+        if (e.getButton () ==  1) {
+          // scale factor is pixels/time
+          double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) +
                           markerPanel.getEventsChannelStartTime ());
         
-        // Go to the end if the mouse click is close
-        if ((markerPanel.getWidth () - markerPanel.FUDGE_FACTOR) < e.getX ()) {
-          location = endTime;
-          setSliderLocation (endTime);
-        } else {
-          location = guiTime;
-          setSliderLocation (guiTime);
-        }
-        locationChange ();
-        // This updates the whole display
-        rbnbController.setLocation (location);
-        
-        log.debug ("\nGUI Click Time: " + Double.toString (guiTime) + "\n" +
-                   "Nice GUI Click Time: " + DataViewer.formatDate (guiTime) + "\n" +
-                   "Location: " + location + "\n" +
-                   "Nice Location " + DataViewer.formatDate (location)
-                   );
-        
-        
-        
-        markerPanel.repaint ();
+          // Go to the end if the mouse click is close
+          if ((markerPanel.getWidth () - markerPanel.FUDGE_FACTOR) < e.getX ()) {
+            location = endTime;
+            setSliderLocation (endTime);
+          } else {
+            location = guiTime;
+            setSliderLocation (guiTime);
+          }
+          locationChange ();
+          // This updates the whole display
+          rbnbController.setLocation (location);
+          markerPanel.repaint ();
+        } // if click is button 1 ONLY
+      
       } // mouseClicked ()
       
       public void mouseDragged   (MouseEvent e) {}
       public void mouseEntered   (MouseEvent e) {}
       public void mouseExited    (MouseEvent e) {}
-      public void mousePressed   (MouseEvent e) {}
-      public void mouseReleased  (MouseEvent e) {}
+      public void mousePressed   (MouseEvent e) {
+        markerPanel.doPopup (e);
+      } // mousePressed ()
+      
+      public void mouseReleased  (MouseEvent e) {
+        markerPanel.doPopup (e);
+      } // mouseReleased ()
     } // MouseAdaptor definition
                                   ); // addMouseListener
  

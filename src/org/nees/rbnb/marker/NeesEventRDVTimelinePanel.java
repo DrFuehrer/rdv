@@ -25,6 +25,8 @@ import com.rbnb.sapi.Sink;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Arrays;
@@ -35,7 +37,10 @@ import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.xml.transform.TransformerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -203,7 +208,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     this.repaint ();
   } // postData ()
   
-  // HACK channel mappy stuff
+  // channel mappy stuff
   public void clearData () {
     this.doScanPastMarkers = true;
     this.channelMap = null;
@@ -366,11 +371,8 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
          (this.getWidth () - FUDGE_FACTOR) < e.getX () ) {
       // get the maximum key
       targetEvent = theEvents[theEvents.length-1];
-    }
-    
-    
+    } // if
     targetMarkerLabel = (targetEvent == null)? "" : (String)(targetEvent.getProperty ("label"));
-
     return (targetMarkerLabel);
   } // getToolTipText ()
   
@@ -601,6 +603,60 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       } // if
     } // else get the real deal
   } // getEventData ()
+  
+  
+  /** A method to display a popup when triggered from ContolPanel */
+  public void doPopup (final MouseEvent e) {
+    if (! e.isPopupTrigger ()) {
+      return;
+    }
+    final double guiTime = ((e.getX () / this.getScaleFactor ()) +
+                      this.getEventsChannelStartTime ());
+    JPopupMenu popup = new JPopupMenu (Double.toString (guiTime));
+    
+    JMenuItem popupItem = new JMenuItem ("View Event");
+    popupItem.addActionListener (new ActionListener () {
+      public void actionPerformed (ActionEvent notUsed) {
+        JOptionPane.showMessageDialog (rdvControlPanel,
+                                       formatMarker4Popup (guiTime, e),
+                                       "Event Marker Display",
+                                       JOptionPane.PLAIN_MESSAGE,
+                                       null);
+      } // actionPerformed ()
+    } // new ActionListener
+                                 ); // addActionListener
+    popup.add (popupItem);
+    popup.show (this, e.getX (), e.getY ());
+    
+  } // doPopup
+  
+  
+  /** A method to format event marker content as a verbose string */
+  public String formatMarker4Popup (double popupTime, MouseEvent e) {
+    String targetMarkerOutput = null;
+    double closestTime = getClosestTime (theEventsHistoryHash, popupTime);
+    NeesEvent targetEvent = (NeesEvent)( theEventsHistoryHash.get (closestTime) );
+    /* this case is for the boundary case when the mouse is right at the edge
+      * of this panel's display */
+    if ( e.getX () < this.getWidth () &&
+         (this.getWidth () - FUDGE_FACTOR) < e.getX () ) {
+      // get the maximum key
+      targetEvent = theEvents[theEvents.length-1];
+    } // if
+    
+    String tagretMarkerLabel   = (String)(targetEvent.get ("label"));
+    String tagretMarkerContent = (String)(targetEvent.get ("content"));
+    String tagretMarkerTime    =
+        DataViewer.formatDate (
+                Double.parseDouble ( (String)(targetEvent.get ("timestamp")) )
+                               );
+    
+    targetMarkerOutput = "Label: " + tagretMarkerLabel + "\n" +
+                         "Content: " + tagretMarkerContent + "\n" +
+                         "Time: " + tagretMarkerTime;
+    
+    return targetMarkerOutput;
+  } // formatMarker4Popup ()
   
 } // class
 
