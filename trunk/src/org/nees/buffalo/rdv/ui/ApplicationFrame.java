@@ -269,10 +269,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				}			
 /////////////////////////////////////////////////////////////////////////////LJM
         // Clear out and disable event markers for changing to a new turbine
-        /*showMarkerMenuItem.setSelected (false);
-        markerFrame.setVisible (false);
-        controlPanel.markerPanel.setVisible (false);
-        controlPanel.markerLabel.setVisible (false);*/
         controlPanel.markerPanel.clearData ();
 /////////////////////////////////////////////////////////////////////////////LJM
  			}			
@@ -426,12 +422,21 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
           menuItem.isSelected () &&
           markerSubmitPanel.isConnected ()
                                 );
+        
+       /*/ HACK
+        if (controlPanel.markerPanel.isVisible () &&
+            controlPanel.markerPanel.doScanPastMarkers) {
+          controlPanel.markerPanel.scanPastMarkers ();
+        }
+        // HACK  */
+        
         controlPanel.markerPanel.setVisible (menuItem.isSelected ());
         controlPanel.markerLabel.setVisible (menuItem.isSelected ());
         controlPanel.markerPanel.repaint ();
       }
     };
- 
+
+    
  		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S, "icons/info.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
@@ -948,15 +953,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
                             showMarkerMenuItem.isSelected ()
                             /*&& markerSubmitPanel.isConnected ()*/
                             );    
-    /* This check has been supplanted by the connect () method in
-      @see org.nees.rbnb.marker.SendMarkerRDVPanel - luft here for future reference.
-     try {
-      this.markerSubmitPanel.changeTurbine (this.rbnb.getRBNBHostName ());
-    } catch (SAPIException sae) {
-      log.error ("Could not change DataTurbine servers " + sae);
-    }
-    */
-    controlPanel.markerPanel.clearData ();
+      controlPanel.markerPanel.clearData ();
+    // HACK
+    // reset the scanning of past event markers when we first connect
+    controlPanel.markerPanel.doScanPastMarkers = true;
 ////////////////////////////////////////////////////////////////////////////LJM
 	}
 

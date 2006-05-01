@@ -58,13 +58,13 @@
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>
 	</extension-->	
-	<extension>
+	<!--extension>
 	   <name>Event Marker Data Panel</name>
 	   <id>org.nees.buffalo.rdv.datapanel.EventMarkerDataPanel</id>
 	   <mimeTypes>
     	  <mimeType>x-neesEvent</mimeType>
 	   </mimeTypes>
-	</extension>
+	</extension-->
 	<!--
 	<extension>
 		<id>org.nees.buffalo.rdv.datapanel.HelloWorldDataPanel</id>
