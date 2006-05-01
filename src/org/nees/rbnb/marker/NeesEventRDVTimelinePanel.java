@@ -85,10 +85,10 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     * this iseffectively a merge of different NeesEvent sources */
   private ArrayList eventsChannelNames = null;
   /** A pair of variables that will be used to make a synthetic data source. */
-  long timeNow = System.currentTimeMillis ();
+  private long timeNow = System.currentTimeMillis ();
   // This is all in miliseconds
-  double cannedTimeBase = (double)timeNow - 120000.0; // 2 min.
-  double cannedTimeInterval = 10000.0; // 10 sec.
+  private double cannedTimeBase = (double)timeNow - 120000.0; // 2 min.
+  private double cannedTimeInterval = 10000.0; // 10 sec.
   private double markerTimes[] = {
     cannedTimeBase + 1*cannedTimeInterval, cannedTimeBase + 2*cannedTimeInterval,
     cannedTimeBase + 3*cannedTimeInterval, cannedTimeBase + 4*cannedTimeInterval,
@@ -107,7 +107,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     * Needs to offset the scroll bar arrows on the location slider. */
   public static int FUDGE_FACTOR = 10;
   /** A variable that guards the scanPastMarkers function */
-  boolean doScanPastMarkers = true;
+  public boolean doScanPastMarkers = true;
   
   /** constructor */
   public NeesEventRDVTimelinePanel (RBNBController rbnb,
@@ -447,7 +447,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         
         // HACK
         if (this.doScanPastMarkers) {
-          // scanPastMarkers ();
+          // this.scanPastMarkers ();
         }
         
         // reset the time bounds based on the times found in this channel tree
@@ -475,8 +475,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   } // findEventsChannel ()    
   
   
-  /** A method to scan through the ring buffer to find all previous event
-    * HACK
+  /** HACK A method to scan through the ring buffer to find all previous event
     * markers */
   public void scanPastMarkers () {
     if ( (! this.doScanPastMarkers) || (eventsChannelStartTime == -1) ) {
@@ -485,24 +484,23 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     } else { // scan the ring buffer
       log.debug ("%%% scanPastMarkers ()");
       this.doScanPastMarkers = false;
-      // backup rbnb controller's state
-      int stateTmp = (this.rbnbctl.getState ());
-      double locationTmp = this.rbnbctl.getLocation ();
-      log.debug ("%%% stateTmp: " + this.rbnbctl.getStateName (this.rbnbctl.getState ()));
       
-      /** a variable for teh time increment in miliseconds at which to scan */
-      int scanIncrement = 1;
-      double timeToScan = -1;
-      for (int i=(int)(this.getEventsChannelStartTime ());
-           i<(int)(this.getEventsChannelEndTime ());
-           i+=scanIncrement) {
-        timeToScan = (double)i;
-        log.debug ("%%% scanning... " + DataViewer.formatDate (timeToScan));
-        this.rbnbctl.setLocation (timeToScan);
-        this.rbnbctl.updateTimeListenersPublic (timeToScan);
-      }
-    }
-  }
+      
+      
+      // backup rbnb controller's state
+      int stateTmp        = this.rbnbctl.getState ();
+      double locationTmp  = this.rbnbctl.getLocation ();
+      double timeScaleTmp = this.rbnbctl.getTimeScale ();
+      log.debug ("%%% rbnb state backup:\n" +
+                 "%%% stateTmp: " + this.rbnbctl.getStateName (stateTmp) + "\n" +
+                 "%%% locationTmp: " + Double.toString (locationTmp) + "\n" +
+                 "%%% timeScaleTmp: " + Double.toString (timeScaleTmp)
+                 );
+      
+      
+      
+    } // else
+  } // scanPastMarkers ()
   
   /** A method to update theEvents with event data from a @param input rbnb data
     * channel. */
