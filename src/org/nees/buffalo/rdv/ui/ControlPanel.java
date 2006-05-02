@@ -44,12 +44,18 @@ import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JToolTip;
+import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -138,13 +144,26 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     p.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
-    beginButton = new JButton("Begining", DataViewer.getIcon("icons/begin.gif"));
-    beginButton.setToolTipText("Go to beginning");
-    beginButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        setLocationBegin();
-      }
-    });
+    
+      InputMap inputMap = p.getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW);
+      ActionMap actionMap = p.getActionMap ();
+      
+      // TODO
+      Action gotoBeginningAction = new AbstractAction() {
+         public void actionPerformed(ActionEvent e) {
+            setLocationBegin();
+         }
+      };
+
+      gotoBeginningAction.putValue(Action.NAME, "gotoBeginning");
+      inputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "gotoBeginning");
+      actionMap.put("gotoBeginning", gotoBeginningAction);
+      beginButton = new JButton(gotoBeginningAction);
+      // beginButton = new JButton("Begining",
+      // DataViewer.getIcon("icons/begin.gif"));
+      beginButton.setToolTipText("Go to beginning");
+      // TODO
+    
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
 		c.weighty = 0;
