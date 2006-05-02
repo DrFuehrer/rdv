@@ -255,6 +255,9 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     //this.clearDisplay ();
     if (theEvents != null) {
       String markerType = null;
+      /* This call will find all events channels and call getEventData to 
+       * mutate theEvents */
+      this.findEventsChannel ();
       // log.debug ("--- Start Draw ---");
       // loop though the events and draw them
       for (int i=0; i<theEvents.length; i++) {
@@ -267,7 +270,6 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         } else {
           markerPanelG.setColor (Color.black);
         } // else
-        this.findEventsChannel ();
         
         /* use the time that the marker was generated with at the source */
         double time2use = (theEvents[i].getProperty ("timestamp") != null)?
@@ -285,25 +287,13 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         } else if ((this.getWidth ()) - FUDGE_FACTOR < markerXcoordinate && markerXcoordinate < this.getWidth ()) {
           markerXcoordinate = markerXcoordinate - FUDGE_FACTOR;
         }
-        markerPanelG.fillRect (markerXcoordinate, 0, 2, 10);
-        
-        // verbose debug output
-        /*log.debug ("*** " + Integer.toString (i+1) + "of" + theEvents.length + " Drew \"" + markerType + "\" marker at x: " +
-                   Integer.toString (markerXcoordinate) + 
-                   " of: " + Integer.toString (this.getWidth ()) + 
-                   "\n" +
-                   "at time (from XML): " +
-                   time2use + " nice: " +
-                   DataViewer.formatDate (time2use) + "\n" +
-                   "With scale factor: " + this.getScaleFactor ()
-                   );*/
-        
+        markerPanelG.fillRect (markerXcoordinate, 0, 1, 10);
       } // for
+    
       //log.debug ("***--- End Draw ---");
     } else { // no markers
       //log.debug ("*** No Marker Data - null.");
     } // else
-      // LJM
     markerPanelG.dispose ();
   } // paintComponent ()
   
@@ -447,7 +437,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         
         // HACK
         if (this.doScanPastMarkers) {
-          // this.scanPastMarkers ();
+          //this.scanPastMarkers ();
         }
         
         // reset the time bounds based on the times found in this channel tree
@@ -475,7 +465,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   } // findEventsChannel ()    
   
   
-  /** HACK A method to scan through the ring buffer to find all previous event
+  /** A method to scan through the ring buffer to find all previous event
     * markers */
   public void scanPastMarkers () {
     if ( (! this.doScanPastMarkers) || (eventsChannelStartTime == -1) ) {
@@ -484,18 +474,21 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     } else { // scan the ring buffer
       log.debug ("%%% scanPastMarkers ()");
       this.doScanPastMarkers = false;
-      
-      
-      
       // backup rbnb controller's state
       int stateTmp        = this.rbnbctl.getState ();
       double locationTmp  = this.rbnbctl.getLocation ();
       double timeScaleTmp = this.rbnbctl.getTimeScale ();
       log.debug ("%%% rbnb state backup:\n" +
                  "%%% stateTmp: " + this.rbnbctl.getStateName (stateTmp) + "\n" +
-                 "%%% locationTmp: " + Double.toString (locationTmp) + "\n" +
+                 "%%% locationTmp: " + DataViewer.formatDate (locationTmp) + "\n" +
                  "%%% timeScaleTmp: " + Double.toString (timeScaleTmp)
                  );
+      
+      
+      // HACK
+      /*this.rbnbctl.setState ();
+      this.rbnbctl.setLocation ();
+      this.rbnbctl.setTimeScale ();*/
       
       
       
