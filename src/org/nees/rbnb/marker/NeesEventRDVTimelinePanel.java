@@ -2,7 +2,8 @@ package org.nees.rbnb.marker;
 
 /**
 * A class that gets @see org.nees.rbnb.marker.NeesEvent data from a channel
- * whose name is passed in an accessor call.
+ * whose name is passed in an accessor call. Graph of major functionality:
+ * paintComponent () -> findEventsChannel () -> getEventData ()
  * @author Lawrence J. Miller <ljmiller@sdsc.edu>
  * @author NEES Cyberinfrastructure Center (NEESit), San Diego Supercomputer Cen
  ter
@@ -106,27 +107,19 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   /** A variable to offset the coordinates used to draw marker blips.
     * Needs to offset the scroll bar arrows on the location slider. */
   public static int FUDGE_FACTOR = 10;
-  /** A variable that guards the scanPastMarkers function */
+  /** A variable that guards the scanPastMarkers () function */
   public boolean doScanPastMarkers = true;
   
   /** constructor */
-  public NeesEventRDVTimelinePanel (RBNBController rbnb,
-                                    ChannelTree ctree,
-                                    ControlPanel cpanel,
-                                    double sTime,
-                                    double eTime,
-                                    JLabel panelLabel
-                                    ) {
+  public NeesEventRDVTimelinePanel (ControlPanel cpanel) {
     super ();
     // DOTOO make this not get black and ugly when it clearDisplay's
     this.channelMap = null;
-    this.rbnbctl = rbnb;
     /** required if there is preexisting data to be looked at upon startup */
-    this.ceeTree = ctree;
-    this.startTime = sTime;
-    this.endTime = eTime;
     this.rdvControlPanel = cpanel;
-    this.controlPanelLabel = panelLabel;
+    this.rbnbctl = this.rdvControlPanel.rbnbController;
+    this.ceeTree = this.rdvControlPanel.ctree;
+    this.controlPanelLabel = this.rdvControlPanel.markerLabel;
     eventsChannelNames = new ArrayList ();
     theEventsHistoryHash = new HashMap ();
     theEventsHistoryHashKeys = theEventsHistoryHash.keySet ();
@@ -134,10 +127,6 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     if (this.rbnbctl.isConnected ()) {
       this.findEventsChannel ();
     }
-    
-    /*log.debug ("*** Created " + NeesEventRDVTimelinePanel.class.getName () +
-               " with ring buffer start at: " + DataViewer.formatDate (startTime) +
-               " and ring buffer end at: " + DataViewer.formatDate (endTime));*/
   } // constructor ()
   
   
@@ -252,7 +241,12 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     super.paintComponent (markerPanelG);
     
     // if we have some events to look at, display them.
-    //this.clearDisplay ();
+    // this.clearDisplay ();
+    //  HACK
+    if (this.doScanPastMarkers) {
+      // this.scanPastMarkers ();
+    }
+    
     if (theEvents != null) {
       String markerType = null;
       /* This call will find all events channels and call getEventData to 
@@ -386,16 +380,10 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     int closestTimeDex = -1;
     
     for (int i=0; i<keySetObj.length; i++) {
-      currTargetDiff = Math.abs ( 
-                                  target - ( (Double)(keySetObj[i]) ).doubleValue ()
-                                );
-      /* log.debug ("$$$ searchSpace " + Integer.toString (i+1) + "of" +
-                 Integer.toString (keySetObj.length) + " - " + 
-                 Double.toString ((Double)keySetObj[i])); */
+      currTargetDiff = Math.abs (target - ( (Double)(keySetObj[i]) ).doubleValue () );
       if (currTargetDiff < targetDiff) { // then found a new minmum
         targetDiff = currTargetDiff;
         closestTimeDex = i;
-        // log.debug ("$$$ new min diff: " + Double.toString (targetDiff));
       } // if
     } // for
     
@@ -414,6 +402,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     if (ceeTree == null) {
       return;
     }
+  
     Iterator it = ceeTree.iterator ();
     ChannelTree.Node node;
     String sourceChannelName = null;
@@ -434,11 +423,6 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       {
         this.eventsChannelNames.add (sourceChannelName);
         this.foundEventsChannel = true;
-        
-        // HACK
-        if (this.doScanPastMarkers) {
-          //this.scanPastMarkers ();
-        }
         
         // reset the time bounds based on the times found in this channel tree
         if (node.getStart() < this.getEventsChannelStartTime ()) {
@@ -468,29 +452,45 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   /** A method to scan through the ring buffer to find all previous event
     * markers */
   public void scanPastMarkers () {
-    if ( (! this.doScanPastMarkers) || (eventsChannelStartTime == -1) ) {
-      log.debug ("%%% scanPastMarkers () short-circuited"); 
+    if ( (! this.doScanPastMarkers) || (this.rdvControlPanel.startTime < 0) ) {
+      log.debug ("%%% scanPastMarkers () short-circuited");
+      log.debug ("%%% this.rdvControlPanel.startTime: " + DataViewer.formatDate (this.rdvControlPanel.startTime));
       return;
     } else { // scan the ring buffer
       log.debug ("%%% scanPastMarkers ()");
+      // necessary here because the repaint () call makes a loop
       this.doScanPastMarkers = false;
       // backup rbnb controller's state
       int stateTmp        = this.rbnbctl.getState ();
       double locationTmp  = this.rbnbctl.getLocation ();
       double timeScaleTmp = this.rbnbctl.getTimeScale ();
-      log.debug ("%%% rbnb state backup:\n" +
+      log.debug ("%%% rbnb state BACKUP:\n" +
                  "%%% stateTmp: " + this.rbnbctl.getStateName (stateTmp) + "\n" +
                  "%%% locationTmp: " + DataViewer.formatDate (locationTmp) + "\n" +
-                 "%%% timeScaleTmp: " + Double.toString (timeScaleTmp)
+                 "%%% timeScaleTmp: " + Double.toString (timeScaleTmp) + "\n" +
+                 "%%% this.rdvControlPanel.startTime: " + DataViewer.formatDate (this.rdvControlPanel.startTime)
                  );
       
-      
       // HACK
-      /*this.rbnbctl.setState ();
-      this.rbnbctl.setLocation ();
-      this.rbnbctl.setTimeScale ();*/
+      this.rbnbctl.setLocation (this.rdvControlPanel.startTime);
+      this.rdvControlPanel.setSliderLocation (this.rdvControlPanel.startTime);
+      this.rdvControlPanel.locationChange ();
+      this.repaint ();
+      this.rbnbctl.setTimeScale (this.rdvControlPanel.timeScales[(this.rdvControlPanel.timeScales.length) - 1]);
+  
+      log.debug ("%%% rbnbstate CHANGED:\n" + 
+                 "%%% location: " + DataViewer.formatDate (this.rbnbctl.getLocation ()) + "\n" +
+                 "%%% timeScale: " + Double.toString (this.rbnbctl.getTimeScale ())
+                  );
       
-      
+      // restore the rbnbctl's beginning state
+      this.rbnbctl.setState (stateTmp);
+      this.rbnbctl.setLocation (locationTmp);
+      this.rbnbctl.setTimeScale (timeScaleTmp);
+      log.debug ("%%% rbnbstate RESTORED:\n" + 
+                 "%%% location: " + DataViewer.formatDate (this.rbnbctl.getLocation ()) + "\n" +
+                 "%%% timeScale: " + Double.toString (this.rbnbctl.getTimeScale ())
+                 );
       
     } // else
   } // scanPastMarkers ()
