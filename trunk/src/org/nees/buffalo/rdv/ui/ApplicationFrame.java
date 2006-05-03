@@ -343,7 +343,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		controlAction = new DataViewerAction("Control", "Control Menu", KeyEvent.VK_C);
  
- 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "icons/rt.gif") {
+ 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "icons/rt.gif") {
  			public void actionPerformed(ActionEvent ae) {
 //////////////////////////////////////////////////////////////////////////// LJM 				
         // DOTOO refetch markers and repaint the panel
@@ -353,25 +353,25 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  		
- 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "icons/play.gif") {
+ 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.play();
  			}			
  		};
  
- 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "icons/play.gif") {
+ 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_U, 0), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.pause();
  			}			
  		};
  
- 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0), "icons/begin.gif") {
+ 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_B, 0), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
 				controlPanel.setLocationBegin();
  			}			
  		};
  
- 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), "icons/end.gif") {
+ 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, 0), "icons/end.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				controlPanel.setLocationEnd();
  			}			

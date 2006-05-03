@@ -148,21 +148,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       InputMap inputMap = p.getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW);
       ActionMap actionMap = p.getActionMap ();
       
-      // TODO
-      Action gotoBeginningAction = new AbstractAction() {
-         public void actionPerformed(ActionEvent e) {
-            setLocationBegin();
-         }
-      };
-
-      gotoBeginningAction.putValue(Action.NAME, "gotoBeginning");
-      inputMap.put(KeyStroke.getKeyStroke("PAGE_UP"), "gotoBeginning");
-      actionMap.put("gotoBeginning", gotoBeginningAction);
-      beginButton = new JButton(gotoBeginningAction);
-      // beginButton = new JButton("Begining",
-      // DataViewer.getIcon("icons/begin.gif"));
-      beginButton.setToolTipText("Go to beginning");
-      // TODO
+      beginButton = new JButton("Begin", DataViewer.getIcon("icons/begin.gif"));
+      beginButton.setToolTipText("Begin");
+      beginButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+           setLocationBegin();
+        }
+      });    
     
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
