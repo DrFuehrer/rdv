@@ -79,7 +79,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
-	private RBNBController rbnbController;
+	public RBNBController rbnbController;
 
 	private JButton monitorButton;
 	private JButton startButton;
@@ -91,18 +91,18 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	private JScrollBar playbackRateScrollBar;
 	private JScrollBar timeScaleScrollBar;
 
- 	private double timeScales[] = {1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
+ 	public double timeScales[] = {1e-6, 2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
 //////////////////////////////////////////////////////////////////////////// LJM
   protected NeesEventRDVTimelinePanel markerPanel = null;
-  protected JLabel markerLabel = null;
+  public JLabel markerLabel = null;
   protected JToolTip markerPanelToolTip = null;
   /* Marker panel interval limits */
   /** An array of event markers generated from an appropriate channel in
     * in the DataTurbine to which this RDV is connected. */
 //////////////////////////////////////////////////////////////////////////// LJM
  	
-	private double startTime;
+	public double startTime;
 	private double endTime;
 	private double location;
 	private double playbackRate;
@@ -112,7 +112,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	
 	int playerState;
 	
-	ChannelTree ctree;
+	public ChannelTree ctree;
 
 	public ControlPanel(RBNBController rbnbController) {
 		super();
@@ -289,7 +289,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;		
 		container.add(locationScrollBar, c);
 
-    //////////////////////////// LJM - various Y gridbag coordinates incremented
     // marker display panel    
     markerLabel = new JLabel ("Event Marker");
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -306,12 +305,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		container.add (markerLabel, c);
     
     /** A panel that displays a time-line-like view of markers present in the turbine */
-    markerPanel = new NeesEventRDVTimelinePanel (this.rbnbController,
-                                                 this.ctree,
-                                                 this,
-                                                 this.startTime,
-                                                 this.endTime,
-                                                 this.markerLabel);
+    markerPanel = new NeesEventRDVTimelinePanel (this);
     
     markerPanel.setBorder (BorderFactory.createEtchedBorder ());
     markerPanel.setToolTipText ("tipsy");
@@ -588,7 +582,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     }    
   }
 
-	private void locationChange() {	
+	public void locationChange() {	
 		int sliderLocation = locationScrollBar.getValue();
 		
 		if (this.sliderLocation != sliderLocation) {
