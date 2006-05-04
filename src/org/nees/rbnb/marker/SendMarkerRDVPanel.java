@@ -21,6 +21,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -83,7 +85,19 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
     this.timeLine = tl;
     this.rbnbServerName = rdvRbnb.getRBNBHostName ();
     this.rdvFrame = frame;
+    
+    
+//  This gets the system host name and appends it to the source name
+    try {
+       InetAddress addr = InetAddress.getLocalHost();
+       String hostname = addr.getHostName();
+       this.rbnbSourceName += "@" + hostname;
+    } catch (UnknownHostException e) {
+       log.error ("couldn't get the system host name");
+    }
     this.myTurban = new DataTurbine (this.rbnbSourceName);
+
+    
     try {
       setRbnbServer (this.rbnbServerName);
       log.info ("Opened RBNB connection.");
