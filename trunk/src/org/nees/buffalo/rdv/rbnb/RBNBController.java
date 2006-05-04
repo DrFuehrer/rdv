@@ -31,6 +31,8 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Vector;
@@ -51,7 +53,7 @@ public class RBNBController implements Player, MetadataListener {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
 
-	private final String rbnbSinkName = "RDV";
+	private String rbnbSinkName = "RDV";
   
   private Thread rbnbThread;
 
@@ -106,7 +108,17 @@ public class RBNBController implements Player, MetadataListener {
 	private final double PLAYBACK_REFRESH_RATE = 0.05;
 	
 	public RBNBController() {
-		state = STATE_DISCONNECTED;
+		
+      // This gets the system host name and appends it to the sink name
+       try {
+          InetAddress addr = InetAddress.getLocalHost();
+          String hostname = addr.getHostName();
+          rbnbSinkName += "@" + hostname;
+       } catch (UnknownHostException e) {
+          log.error ("couldn't get the system host name");
+       }
+          
+      state = STATE_DISCONNECTED;
 		
 		rbnbHostName = DEFAULT_RBNB_HOST_NAME;
 		rbnbPortNumber = DEFAULT_RBNB_PORT_NUMBER;
