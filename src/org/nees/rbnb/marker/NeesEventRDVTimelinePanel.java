@@ -84,7 +84,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   private double eventsChannelStartTime = -1, eventsChannelEndTime = -1;
   /** an ArrayList to track multiple event sources as they are discovered.
     * this iseffectively a merge of different NeesEvent sources */
-  private ArrayList eventsChannelNames = null;
+  private HashMap eventsChannelNames = null;
   /** A pair of variables that will be used to make a synthetic data source. */
   private long timeNow = System.currentTimeMillis ();
   // This is all in miliseconds
@@ -120,7 +120,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     this.rbnbctl = this.rdvControlPanel.rbnbController;
     this.ceeTree = this.rdvControlPanel.ctree;
     this.controlPanelLabel = this.rdvControlPanel.markerLabel;
-    eventsChannelNames = new ArrayList ();
+    eventsChannelNames = new HashMap ();
     theEventsHistoryHash = new HashMap ();
     theEventsHistoryHashKeys = theEventsHistoryHash.keySet ();
     
@@ -202,6 +202,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     this.doScanPastMarkers = true;
     this.channelMap = null;
     this.ceeTree = null;
+    // HACK run through and unsubscibe from channels
     this.theEvents = null;
     this.theEventsHistoryHash.clear();
     this.eventsChannelNames.clear ();
@@ -246,12 +247,12 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     if (this.doScanPastMarkers) {
       // this.scanPastMarkers ();
     }
+    /* This call will find all events channels and call getEventData to 
+     * mutate theEvents */
+    this.findEventsChannel ();
     
     if (theEvents != null) {
       String markerType = null;
-      /* This call will find all events channels and call getEventData to 
-       * mutate theEvents */
-      this.findEventsChannel ();
       // log.debug ("--- Start Draw ---");
       // loop though the events and draw them
       for (int i=0; i<theEvents.length; i++) {
@@ -421,8 +422,10 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       if (channelMime != null &&
           channelMime.compareToIgnoreCase (NeesEvent.MIME_TYPE) == 0)
       {
-        this.eventsChannelNames.add (sourceChannelName);
+        this.eventsChannelNames.put (sourceChannelName, sourceChannelName);
         this.foundEventsChannel = true;
+        
+        log.debug ("*** FOUND events channel. my list: " + this.eventsChannelNames);
         
         // reset the time bounds based on the times found in this channel tree
         if (node.getStart() < this.getEventsChannelStartTime ()) {
@@ -475,7 +478,6 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       this.rbnbctl.setLocation (this.rdvControlPanel.startTime);
       this.rdvControlPanel.setSliderLocation (this.rdvControlPanel.startTime);
       this.rdvControlPanel.locationChange ();
-      this.repaint ();
       this.rbnbctl.setTimeScale (this.rdvControlPanel.timeScales[(this.rdvControlPanel.timeScales.length) - 1]);
   
       log.debug ("%%% rbnbstate CHANGED:\n" + 
@@ -491,7 +493,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
                  "%%% location: " + DataViewer.formatDate (this.rbnbctl.getLocation ()) + "\n" +
                  "%%% timeScale: " + Double.toString (this.rbnbctl.getTimeScale ())
                  );
-      
+      this.repaint ();
     } // else
   } // scanPastMarkers ()
   
