@@ -237,7 +237,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   
   
   public void paintComponent (Graphics gra) {
-    /* Following the guidelines in http://java.sun.com/docs/books/tutorial/uiswing/14painting/concepts2.html */
+    /* Following the gui guidelines in http://java.sun.com/docs/books/tutorial/uiswing/14painting/concepts2.html */
     Graphics2D markerPanelG = (Graphics2D)gra.create ();
     super.paintComponent (markerPanelG);
     
@@ -425,7 +425,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         this.eventsChannelNames.put (sourceChannelName, sourceChannelName);
         this.foundEventsChannel = true;
         
-        log.debug ("*** FOUND events channel. my list: " + this.eventsChannelNames);
+        log.debug ("*** FOUND events channel. my list: " + this.eventsChannelNames.keySet());
         
         // reset the time bounds based on the times found in this channel tree
         if (node.getStart() < this.getEventsChannelStartTime ()) {
@@ -435,8 +435,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         if ( this.getEventsChannelEndTime () < (node.getStart() + node.getDuration()) ) {
           setEventsChannelEndTime (node.getStart() + node.getDuration());
         }
-        
-        //log.debug ("*** Marker Channel FOUND: " + sourceChannelName);
+       
         // If this is a newly incident channel, then subscribe to it to get updates
         if (! this.rbnbctl.isSubscribed (sourceChannelName)) {
           if (this.rbnbctl.subscribe (sourceChannelName, this)) {
@@ -467,12 +466,11 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       int stateTmp        = this.rbnbctl.getState ();
       double locationTmp  = this.rbnbctl.getLocation ();
       double timeScaleTmp = this.rbnbctl.getTimeScale ();
-      log.debug ("%%% rbnb state BACKUP:\n" +
-                 "%%% stateTmp: " + this.rbnbctl.getStateName (stateTmp) + "\n" +
-                 "%%% locationTmp: " + DataViewer.formatDate (locationTmp) + "\n" +
-                 "%%% timeScaleTmp: " + Double.toString (timeScaleTmp) + "\n" +
-                 "%%% this.rdvControlPanel.startTime: " + DataViewer.formatDate (this.rdvControlPanel.startTime)
-                 );
+      log.debug ("%%% rbnb state BACKUP:");
+      log.debug ("%%% stateTmp: "     + this.rbnbctl.getStateName (stateTmp));
+      log.debug ("%%% locationTmp: "  + DataViewer.formatDate (locationTmp));
+      log.debug ("%%% timeScaleTmp: " + Double.toString (timeScaleTmp));
+      log.debug ("%%% this.rdvControlPanel.startTime: " + DataViewer.formatDate (this.rdvControlPanel.startTime));
       
       // HACK
       this.rbnbctl.setLocation (this.rdvControlPanel.startTime);
@@ -480,19 +478,20 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       this.rdvControlPanel.locationChange ();
       this.rbnbctl.setTimeScale (this.rdvControlPanel.timeScales[(this.rdvControlPanel.timeScales.length) - 1]);
   
-      log.debug ("%%% rbnbstate CHANGED:\n" + 
-                 "%%% location: " + DataViewer.formatDate (this.rbnbctl.getLocation ()) + "\n" +
-                 "%%% timeScale: " + Double.toString (this.rbnbctl.getTimeScale ())
-                  );
+      log.debug ("%%% rbnbstate CHANGED:\n");
+      log.debug ("%%% location: "  + DataViewer.formatDate (this.rbnbctl.getLocation ()) );
+      log.debug ("%%% timeScale: " + Double.toString (this.rbnbctl.getTimeScale ()) );
+          
+      // find the events and get them
+      this.repaint();
       
       // restore the rbnbctl's beginning state
       this.rbnbctl.setState (stateTmp);
       this.rbnbctl.setLocation (locationTmp);
       this.rbnbctl.setTimeScale (timeScaleTmp);
-      log.debug ("%%% rbnbstate RESTORED:\n" + 
-                 "%%% location: " + DataViewer.formatDate (this.rbnbctl.getLocation ()) + "\n" +
-                 "%%% timeScale: " + Double.toString (this.rbnbctl.getTimeScale ())
-                 );
+      log.debug ("%%% rbnbstate RESTORED:\n");
+      log.debug ("%%% location: "  + DataViewer.formatDate (this.rbnbctl.getLocation ()) );
+      log.debug ("%%% timeScale: " + Double.toString (this.rbnbctl.getTimeScale ()) );
       this.repaint ();
     } // else
   } // scanPastMarkers ()
