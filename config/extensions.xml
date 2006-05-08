@@ -27,7 +27,14 @@
 		<mimeTypes>
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>		
-	</extension>	
+	</extension>
+	<!--extension>
+		<id>org.nees.buffalo.rdv.datapanel.DigitalTabularDataPanel</id>
+		<name>Digital Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>		
+	</extension-->		
 	<extension>
 		<id>org.nees.buffalo.rdv.datapanel.StringDataPanel</id>
 		<name>Text Data Panel</name>
