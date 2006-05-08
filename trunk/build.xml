@@ -62,9 +62,9 @@
 		<fail message="RBNB_HOME must be defined in your environment."/>
 	</target>
 	
-	<target name="checkLaunch4j" unless="env.LAUNCH4J_HOME">
+	<!--target name="checkLaunch4j" unless="env.LAUNCH4J_HOME">
 		<fail message="LAUNCH4J_HOME must be defined in your environment."/>
-	</target>
+	</target-->
 	
 	<!-- Meta-target that depends on all environment variables -->
 	<target name="checkEnvVars" depends="checkRBNB" description="Check necessary environment variables"/>
@@ -133,16 +133,16 @@
 			</manifest>		
 		</jar>
 		
-		<taskdef resource="proguard/ant/task.properties"
+		<!--taskdef resource="proguard/ant/task.properties"
 		         classpath="proguard/proguard.jar" />
-		<!-- proguard configuration="proguard/RDV.pro">
+		<proguard configuration="proguard/RDV.pro">
 			<injar path="${build.lib}/${package.name}.jar"/>
 			<outjar path="${build.lib}/${package.name}p.jar"/>
 		</proguard>
 		<move file="${build.lib}/${package.name}p.jar" tofile="${build.lib}/${package.name}.jar"/-->
 	</target>
 
-	<target name="exe" depends="checkLaunch4j,jar" description="Build windows executable">
+	<!--target name="exe" depends="checkLaunch4j,jar" description="Build windows executable">
 		<property name="launch4j.home" value="${env.LAUNCH4J_HOME}"/>
 		<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.home}/launch4j.jar:${launch4j.home}/lib/xstream.jar"/>
@@ -153,7 +153,7 @@
 			txtFileVersion="${version} build ${svn.revision}"
 			productVersion="${version}.0"
 			txtProductVersion="${version} build ${svn.revision}"/>
-	</target>
+	</target-->
 	
 	<target name="javadoc" description="Build documentation">
 		<mkdir dir="${doc.dir}/api"/>  

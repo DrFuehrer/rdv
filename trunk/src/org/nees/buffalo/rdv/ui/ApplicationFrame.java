@@ -422,14 +422,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
           menuItem.isSelected () &&
           markerSubmitPanel.isConnected ()
                                 );
-        
-       /*/ HACK
-        if (controlPanel.markerPanel.isVisible () &&
-            controlPanel.markerPanel.doScanPastMarkers) {
-          controlPanel.markerPanel.scanPastMarkers ();
-        }
-        // HACK  */
-        
         controlPanel.markerPanel.setVisible (menuItem.isSelected ());
         controlPanel.markerLabel.setVisible (menuItem.isSelected ());
         controlPanel.markerPanel.repaint ();
@@ -954,7 +946,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
                             /*&& markerSubmitPanel.isConnected ()*/
                             );    
       controlPanel.markerPanel.clearData ();
-    // HACK
+    // TODO
     // reset the scanning of past event markers when we first connect
     controlPanel.markerPanel.doScanPastMarkers = true;
 ////////////////////////////////////////////////////////////////////////////LJM

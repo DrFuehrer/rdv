@@ -1,4 +1,6 @@
 1.3.0
+-Addition of event markers functionality to submit/view event markers as points
+in time that can be returned to as a collaboration tool.
 -Tweak hide/view channel list menu item
 -Fix issues in RBNB Controller with rapid UI changes
 -Move metadata code to MetadataManager class
