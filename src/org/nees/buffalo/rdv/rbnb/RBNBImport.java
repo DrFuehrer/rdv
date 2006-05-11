@@ -141,7 +141,7 @@ public class RBNBImport {
       return;
     }
     
-		String delimiters = "\t";
+		String delimiters = "[\t,;]";
 		int[] channels;
 		int numberOfChannels;
 		
@@ -153,32 +153,54 @@ public class RBNBImport {
 		
 		long fileLength = dataFile.length();
 		long bytesRead = 0;
+    
+    int dataChannelOffset = 1;
+    boolean hasTimeStampChannel = false;
 		
 		try {
-			Source source = new Source(1, "create", archiveSize);
-			source.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, sourceName);
 			ChannelMap cmap = new ChannelMap();
 			
 			BufferedReader fileReader = new BufferedReader(new FileReader(dataFile));
-			String line = fileReader.readLine();
+      
+      // Skip header until channel names row. This assumes the first channel
+      // name starts with 'time' (case insensitive).
+			String line = null;;
+      while ((line = fileReader.readLine()) != null) {
+        bytesRead += line.length() + 2;
+        if (line.matches("^\"?(?i:time).*")) {
+          break;
+        }
+      }
+      
 			if (line != null) {
 				bytesRead += line.length() + 2;
 				line = line.trim();
 				String[] tokens = line.split(delimiters);
-				numberOfChannels = tokens.length-1;
-				if (numberOfChannels <= 0) {
-					source.CloseRBNBConnection();
+        if (tokens.length == 1) {
+          delimiters = " +";
+          tokens = line.split(delimiters);
+        }
+
+				if (tokens.length == 1) {
 					listener.postError("Unable to read data file header");
 					return;
 				}
+
+        if (tokens.length >= 2 && stripCell(tokens[1]).toLowerCase().equals("timestamp")) {
+          numberOfChannels = tokens.length-2;
+          dataChannelOffset++;
+          hasTimeStampChannel = true;
+        } else {
+          numberOfChannels = tokens.length-1;          
+        }
+
 				channels = new int[numberOfChannels];
 				for (int i=0; i<numberOfChannels; i++) {
-					String channelName = tokens[i+1].trim();
+					String channelName = stripCell(tokens[i+dataChannelOffset]);
 					channels[i] = cmap.Add(channelName);
 					cmap.PutMime(channels[i], "application/octet-stream");
 				}
 			} else {
-				source.CloseRBNBConnection();
 				listener.postError("Unable to read data file header");
 				return;
 			}
@@ -188,35 +210,47 @@ public class RBNBImport {
         bytesRead += line.length() + 2;
         line = line.trim();
         String[] tokens = line.split(delimiters);
-        if ((numberOfChannels+1 == tokens.length) && tokens[0].equals("sec")) {
+        if ((numberOfChannels+dataChannelOffset == tokens.length) && stripCell(tokens[0]).toLowerCase().startsWith("sec")) {
           for (int i=0; i<numberOfChannels; i++) {
-            String unit = tokens[i+1].trim();
+            String unit = stripCell(tokens[i+dataChannelOffset]);
             cmap.PutUserInfo(channels[i], "units=" + unit);
           }
         }
       } else {
-        source.CloseRBNBConnection();
         listener.postError("Unable to read data file headers");
         return;
       }
       
+      Source source = new Source(1, "create", archiveSize);
+      source.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, sourceName);      
       source.Register(cmap);
+      
+      double startTime = System.currentTimeMillis()/1000d;
 						
 			while ((line = fileReader.readLine()) != null && !cancelImport) {
 				bytesRead += line.length() + 2;
 				line = line.trim();
 				String[] tokens = line.split(delimiters);
-				if (tokens.length != numberOfChannels+1) {
+				if (tokens.length != numberOfChannels+dataChannelOffset) {
 					log.info("Skipping this line of data: " + line);
 					continue;
 				}
 				
 				try {
-					double time = Double.parseDouble(tokens[0].trim());
-					cmap.PutTime(time, 0);
+					double timestamp;
+          if (hasTimeStampChannel) {
+            timestamp = RBNBUtilities.ISO8601ToSeconds(tokens[1].trim());
+          } else {
+            timestamp = startTime + Double.parseDouble(tokens[0].trim());
+          }
+					cmap.PutTime(timestamp, 0);
+
 					for (int i=0; i<numberOfChannels; i++) {
-						double[] data = {Double.parseDouble(tokens[i+1].trim()) };
-						cmap.PutDataAsFloat64(channels[i], data);
+            String dataString = tokens[i+dataChannelOffset].trim();
+            if (dataString.length() > 0) {
+  						double[] data = {Double.parseDouble(dataString) };
+  						cmap.PutDataAsFloat64(channels[i], data);
+            }
 					}
 					
 					if (++bufferSize == bufferCapacity) {
@@ -242,8 +276,6 @@ public class RBNBImport {
 			if (bufferSize > 0) {
 				source.Flush(cmap, true);
 			}
-			
-			log.info("Final status: " + ((double)bytesRead)/((double)fileLength)*100 + "%");
 			
 			if (listener != null) {
 				if (!cancelImport) {
@@ -280,4 +312,23 @@ public class RBNBImport {
 	public void cancelImport() {
 		cancelImport = true;
 	}
+  
+  /**
+   * Removes leading and trailing white space from a string. If the string is
+   * quoted, the quotes are also stripped.
+   * 
+   * @param cell  the string to strip
+   * @return      the stripped string
+   */
+  private String stripCell(String cell) {
+    cell = cell.trim();
+    if (cell.startsWith("\"") && cell.endsWith("\"")) {
+      if (cell.length() > 2) {
+        cell = cell.substring(1, cell.length()-1).trim();
+      } else {
+        cell = "";
+      }
+    }
+    return cell;
+  }
 }

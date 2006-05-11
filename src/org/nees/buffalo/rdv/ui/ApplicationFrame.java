@@ -52,7 +52,6 @@ import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -315,9 +314,22 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         int returnVal = chooser.showSaveDialog(frame);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
           File file = chooser.getSelectedFile();
+
           if (file.getName().indexOf(".") == -1) {
             file = new File(file.getAbsolutePath() + ".rdv");
           }
+
+          // prompt for overwrite if file already exists
+          if (file.exists()) {
+            int overwriteReturn = JOptionPane.showConfirmDialog(null,
+                file.getName() + " already exists. Do you want to overwrite it?",
+                "Overwrite file?",
+                JOptionPane.YES_NO_OPTION);
+            if (overwriteReturn == JOptionPane.NO_OPTION) {
+              return;
+            }
+          }
+
           dataViewer.getConfigurationManager().saveConfiguration(file);
         }     
       }     

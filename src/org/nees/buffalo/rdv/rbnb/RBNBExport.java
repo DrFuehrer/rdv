@@ -33,10 +33,13 @@ package org.nees.buffalo.rdv.rbnb;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -107,18 +110,18 @@ public class RBNBExport {
    * @param dataFile   the data file to write the data to
    * @param startTime  the start time of the data to export
    * @param endTime    the end time of the data to export
-   * @param deltaT     save a time channel relative to the startTime
    * @param listener   a listener to post progress to
    * @since            1.3
    */
   public void startExport(final List channels,
                           final File dataFile,
+                          final List multimediaChannels,
+                          final File dataDirectory,                          
                           final double startTime, final double endTime,
-                          final boolean deltaT,
                           final ProgressListener listener) {
-    new Thread() {
+    new Thread("RBNBExport") {
       public void run() {
-        exportData(channels, dataFile, startTime, endTime, deltaT, listener);
+        exportData(channels, dataFile, multimediaChannels, dataDirectory, startTime, endTime, listener);
       }
     }.start();        
   }
@@ -131,14 +134,14 @@ public class RBNBExport {
    * @param dataFile   the data file to write the data to
    * @param startTime  the start time of the data to export
    * @param endTime    the end time of the data to export
-   * @param deltaT     save a time channel relative to the startTime
    * @param listener   a listener to post progress to
    * @since            1.3
    */
-  private synchronized void exportData(List channels,
+  private synchronized void exportData(List numericChannels,
                                        File dataFile,
+                                       List multimediaChannels,
+                                       File dataDirectory,
                                        double startTime, double endTime,
-                                       boolean deltaT,
                                        ProgressListener listener) {
        
      
@@ -151,14 +154,27 @@ public class RBNBExport {
       };
     }
     
-    if (channels == null || channels.size() == 0) {
+    if (numericChannels == null) {
+      numericChannels = new ArrayList();
+    }
+    
+    if (multimediaChannels == null) {
+      multimediaChannels = new ArrayList();
+    }
+    
+    if (numericChannels.size() == 0 && multimediaChannels.size() == 0) {
       listener.postError("No channels were specified.");
       return;
     }
      
-    if (dataFile == null) {
+    if (numericChannels.size() > 0 && dataFile == null) {
       listener.postError("Data file not specified.");
       return;
+    }
+    
+    if (dataDirectory == null || !dataDirectory.isDirectory()) {
+      listener.postError("Data directory is invalid.");
+      return;      
     }
     
     if (startTime > endTime) {
@@ -172,62 +188,69 @@ public class RBNBExport {
       Sink sink = new Sink();
       sink.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, "RDVExport");
       ChannelMap cmap = new ChannelMap();
-      for (int i=0; i<channels.size(); i++) {
-        cmap.Add((String)channels.get(i));
+      for (int i=0; i<numericChannels.size(); i++) {
+        cmap.Add((String)numericChannels.get(i));
+      }
+      for (int i=0; i<multimediaChannels.size(); i++) {
+        cmap.Add((String)multimediaChannels.get(i));
+      }      
+      
+      BufferedWriter fileWriter = null;
+      if (numericChannels.size() > 0) {
+        fileWriter = new BufferedWriter(new FileWriter(dataFile));
       }
       
-      BufferedWriter fileWriter = new BufferedWriter(new FileWriter(dataFile));
-      
-      fileWriter.write("Start time: " + RBNBUtilities.secondsToISO8601(startTime) + "\r\n");
-      fileWriter.write("End time: " + RBNBUtilities.secondsToISO8601(endTime) + "\r\n");
-      fileWriter.write("Export time: " + RBNBUtilities.millisecondsToISO8601(System.currentTimeMillis()) + "\r\n");
-      fileWriter.write("\r\n");
-
-      // write channel names
-      fileWriter.write("Time\t");
-      if (deltaT) {
-        fileWriter.write("Relative Time\t");
-      }
-      for (int i=0; i<channels.size(); i++) {
-        String channel = (String)channels.get(i);
-        String[] channelParts = channel.split("/");
-        fileWriter.write(channelParts[channelParts.length-1]);
-        if (i != channels.size()-1) {
+      if (fileWriter != null) {
+        fileWriter.write("Start time: " + RBNBUtilities.secondsToISO8601(startTime) + "\r\n");
+        fileWriter.write("End time: " + RBNBUtilities.secondsToISO8601(endTime) + "\r\n");
+        fileWriter.write("Export time: " + RBNBUtilities.millisecondsToISO8601(System.currentTimeMillis()) + "\r\n");
+        fileWriter.write("\r\n");
+  
+        // write channel names
+        fileWriter.write("Time\t");
+        fileWriter.write("Timestamp\t");
+        for (int i=0; i<numericChannels.size(); i++) {
+          String channel = (String)numericChannels.get(i);
+          String[] channelParts = channel.split("/");
+          fileWriter.write(channelParts[channelParts.length-1]);
+          if (i != numericChannels.size()-1) {
+            fileWriter.write('\t');
+          }
+        }
+        fileWriter.write("\r\n");
+  
+        // fetch channel metadata and write channel units (if available)
+        sink.RequestRegistration(cmap);
+        ChannelMap rmap = sink.Fetch(-1);
+        
+        fileWriter.write("Seconds\t");
+        fileWriter.write("ISO8601\t");
+        for (int i=0; i<numericChannels.size(); i++) {
+          String channel = (String)numericChannels.get(i);
+          String unit = null;
+          int index = rmap.GetIndex(channel);
+          String[] metadata = rmap.GetUserInfo(index).split("\t|,");
+          for (int j=0; j<metadata.length; j++) {
+            String[] elements = metadata[j].split("=");
+            if (elements.length == 2 && elements[0].equals("units")) {
+              unit = elements[1];
+              break;
+            }     
+          }       
+          if (unit != null) {
+            fileWriter.write(unit);
+          }
           fileWriter.write('\t');
         }
+        fileWriter.write("\r\n");
       }
-      fileWriter.write("\r\n");
 
-      // fetch channel metadata and write channel units (if available)
-      sink.RequestRegistration(cmap);
-      ChannelMap rmap = sink.Fetch(-1);
-      fileWriter.write("ISO8601\t");
-      if (deltaT) {
-        fileWriter.write("Seconds\t");
-      }
-      for (int i=0; i<channels.size(); i++) {
-        String channel = (String)channels.get(i);
-        String unit = null;
-        int index = rmap.GetIndex(channel);
-        String[] metadata = rmap.GetUserInfo(index).split("\t|,");
-        for (int j=0; j<metadata.length; j++) {
-          String[] elements = metadata[j].split("=");
-          if (elements.length == 2 && elements[0].equals("units")) {
-            unit = elements[1];
-            break;
-          }     
-        }       
-        if (unit != null) {
-          fileWriter.write(unit);
-        }
-        fileWriter.write('\t');
-      }
-      fileWriter.write("\r\n");
-      
       listener.postProgress(0);
+      
+      double dataStartTime = -1;
 
       while (time < endTime && !cancelExport) {
-        double duration = 5;
+        double duration = 2;
         if (time + duration > endTime) {
           duration = endTime - time;
         }
@@ -236,14 +259,22 @@ public class RBNBExport {
         ChannelMap dmap = sink.Fetch(-1);
         
         ArrayList samples = new ArrayList();
-        for (int i=0; i<channels.size(); i++) {
-          String channel = (String)channels.get(i);
+        for (int i=0; i<numericChannels.size(); i++) {
+          String channel = (String)numericChannels.get(i);
           int index = dmap.GetIndex(channel);
           if (index != -1) {
             int type = dmap.GetType(index);
             double[] times = dmap.GetTimes(index);
             for (int j=0; j<times.length; j++) {
               Sample sample;
+              
+              /* Skip data that isn't in the requested time bounds. This is due
+               * to overlap between requests for data. 
+               */
+              if (times[j] > startTime && times[j] <= time) {
+                continue;
+              }
+              
               switch (type) {  
                 case ChannelMap.TYPE_INT32:
                   sample = new Sample(channel, dmap.GetDataAsInt32(index)[j], times[j]);
@@ -279,12 +310,15 @@ public class RBNBExport {
         
         while (!end) {
           double t = s.getTime();
-          fileWriter.write(RBNBUtilities.secondsToISO8601(t) + "\t");
-          if (deltaT) {
-            fileWriter.write(Double.toString(t-startTime) + "\t");
+          
+          if (dataStartTime == -1) {
+            dataStartTime = t;
           }
-          for (int i=0; i<channels.size(); i++) {
-            String c = (String)channels.get(i);
+          
+          fileWriter.write(Double.toString(t-dataStartTime) + "\t");
+          fileWriter.write(RBNBUtilities.secondsToISO8601(t) + "\t");
+          for (int i=0; i<numericChannels.size(); i++) {
+            String c = (String)numericChannels.get(i);
             if (c.equals(s.getChannel()) && t == s.getTime()) {
               fileWriter.write(s.getData());
               if (it.hasNext()) {
@@ -295,10 +329,48 @@ public class RBNBExport {
                 break;
               }
             }
-            if (i == channels.size()-1) {
+            if (i == numericChannels.size()-1) {
               fileWriter.write("\r\n");
             } else {
               fileWriter.write('\t');
+            }
+          }
+        }
+        
+        for (int i=0; i<multimediaChannels.size(); i++) {
+          String channel = (String)multimediaChannels.get(i);
+          int index = dmap.GetIndex(channel);
+          if (index != -1) {
+            int type = dmap.GetType(index);
+            if (type == ChannelMap.TYPE_BYTEARRAY) {
+              double[] times = dmap.GetTimes(index);
+              byte[][] datas = dmap.GetDataAsByteArray(index);
+              for (int j=0; j<times.length; j++) {
+                byte[] data = datas[j];
+                // write image file
+                try {
+                  String fileName = channel;
+                  if (fileName.endsWith(".jpg")) {
+                    fileName = fileName.substring(0, fileName.length()-4);
+                  }
+                  if (fileName.endsWith("/video")) {
+                    fileName = fileName.substring(0, fileName.length()-6);
+                  }
+                  fileName = fileName.replace("/", "-");
+                  
+                  SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH.mm.ss.SSS'Z'");
+                  //dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+                  String timeStamp = dateFormat.format(new Date((long)(times[j]*1000)));
+                  
+                  fileName += "_" + timeStamp + ".jpg";
+                  File outputFile = new File(dataDirectory, fileName);
+                  FileOutputStream out = new FileOutputStream(outputFile);
+                  out.write(data);
+                  out.close();
+                } catch (Exception e) {
+                  e.printStackTrace();
+                }
+              }
             }
           }
         }
@@ -308,7 +380,9 @@ public class RBNBExport {
         listener.postProgress((time-startTime)/(endTime-startTime));
       }
       
-      fileWriter.close();
+      if (fileWriter != null) {
+        fileWriter.close();
+      }
       
       sink.CloseRBNBConnection();
       
@@ -320,7 +394,7 @@ public class RBNBExport {
       }
     } catch (Exception e) {
       e.printStackTrace();
-      listener.postError("Error importing data file: " + e.getMessage());
+      listener.postError("Error exporting data: " + e.getMessage());
       return;
     }
 

@@ -32,7 +32,13 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -46,14 +52,21 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.border.EtchedBorder;
 
+import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Version;
 
 /**
  * @author Jason P. Hanley
  */
 public class AboutDialog extends JDialog {
+  
+  LicenseDialog licenseDialog;
 		
 	public AboutDialog(JFrame owner) {
 		super(owner);
@@ -64,13 +77,17 @@ public class AboutDialog extends JDialog {
     
     JPanel container = new JPanel();
     container.setLayout(new BorderLayout());
-    container.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+    container.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
     setContentPane(container);
     
     InputMap inputMap = container.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     ActionMap actionMap = container.getActionMap();
             		
 		JPanel aboutPanel = new JPanel();
+    aboutPanel.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createEtchedBorder(EtchedBorder.LOWERED),
+        BorderFactory.createEmptyBorder(5,5,5,5)));
+    aboutPanel.setBackground(Color.white);
     aboutPanel.setLayout(new BoxLayout(aboutPanel, BoxLayout.Y_AXIS));
 		
     aboutPanel.add(new JLabel("RDV - Realtime Data Viewer"));
@@ -90,6 +107,11 @@ public class AboutDialog extends JDialog {
     aboutPanel.add(new JLabel("Numbers CMS-0086611 and CMS-0086612."));
     
     container.add(aboutPanel, BorderLayout.CENTER);
+    
+    JLabel logoLabel = new JLabel(DataViewer.getIcon("icons/RDV.gif"));
+    logoLabel.setVerticalAlignment(SwingConstants.TOP);
+    logoLabel.setBorder(BorderFactory.createEmptyBorder(0,0,0,10));
+    container.add(logoLabel, BorderLayout.WEST);
 
     Action disposeAction = new AbstractAction() {
       public void actionPerformed(ActionEvent arg0) {
@@ -100,15 +122,113 @@ public class AboutDialog extends JDialog {
     inputMap.put(KeyStroke.getKeyStroke("ENTER"), "dispose");
     inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "dispose");
     actionMap.put("dispose", disposeAction);
-    
+       
     JPanel buttonPanel = new JPanel();
+    buttonPanel.setBorder(BorderFactory.createEmptyBorder(10,0,0,0));
     buttonPanel.setLayout(new BorderLayout());
-    buttonPanel.setBorder(BorderFactory.createEmptyBorder(20,0,0,0));
-    buttonPanel.add(new JButton(disposeAction), BorderLayout.CENTER);
+
+    JButton licenseButton = new JButton("License");
+    licenseButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        showLicense();
+      }
+    });
+    buttonPanel.add(licenseButton, BorderLayout.WEST);
+    
+    JButton okButton = new JButton(disposeAction);
+    buttonPanel.add(okButton, BorderLayout.EAST);
+
     container.add(buttonPanel, BorderLayout.SOUTH);
 		
 		pack();
+
+    okButton.requestFocusInWindow();
+
     setLocationByPlatform(true);
-		setVisible(true);
-	}	
+    setVisible(true);
+	}
+  
+  private void showLicense() {
+    if (licenseDialog == null) {
+      licenseDialog = new LicenseDialog(this);
+    } else {
+      licenseDialog.setVisible(true);
+    }
+  }
+
+  class LicenseDialog extends JDialog {
+    public LicenseDialog(JDialog owner) {
+      super(owner);
+      
+      setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+      setTitle("RDV License");
+      
+      JPanel container = new JPanel();
+      container.setLayout(new BorderLayout());
+      container.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+      setContentPane(container);
+      
+      InputMap inputMap = container.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+      ActionMap actionMap = container.getActionMap();
+
+      Action disposeAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent arg0) {
+          dispose();
+        }
+      };
+
+      disposeAction.putValue(Action.NAME, "OK");
+      inputMap.put(KeyStroke.getKeyStroke("ENTER"), "dispose");
+      inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "dispose");
+      actionMap.put("dispose", disposeAction);     
+      
+      JTextArea textArea = new JTextArea();
+      textArea.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+      textArea.setBackground(Color.white);
+      textArea.setEditable(false);      
+      textArea.setLineWrap(true);
+      textArea.setWrapStyleWord(true);
+
+      JScrollPane scrollPane = 
+          new JScrollPane(textArea,
+                          JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                          JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+      scrollPane.setPreferredSize(new Dimension(500, 300));
+      container.add(scrollPane, BorderLayout.CENTER);
+      
+      JPanel buttonPanel = new JPanel();
+      buttonPanel.setLayout(new BorderLayout());
+      buttonPanel.setBorder(BorderFactory.createEmptyBorder(10,0,0,0));
+      
+      JButton okButton = new JButton(disposeAction);
+      buttonPanel.add(okButton, BorderLayout.EAST);      
+      
+      container.add(buttonPanel, BorderLayout.SOUTH);
+      
+      loadLicense(textArea);
+      textArea.setCaretPosition(0);
+      
+      pack();
+
+      okButton.requestFocusInWindow();
+
+      setLocationByPlatform(true);
+      setVisible(true);      
+    }
+    
+    private void loadLicense(JTextArea textArea) {
+      try {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(DataViewer.getResourceAsStream("LICENSE")));
+
+        String s = null;
+        while ((s = reader.readLine()) != null) {
+          textArea.append(s);
+          textArea.append("\n");
+        }
+      } catch (IOException e) {
+        e.printStackTrace();
+      }      
+    }
+  }
 }

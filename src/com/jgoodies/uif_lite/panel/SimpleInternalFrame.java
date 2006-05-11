@@ -165,7 +165,7 @@ public class SimpleInternalFrame extends JPanel {
         }
         
         if (newTitle != null) {
-          gradientPanel.add(newTitle, BorderLayout.WEST);
+          gradientPanel.add(newTitle, BorderLayout.CENTER);
         }
         
         this.title = newTitle;
@@ -274,7 +274,7 @@ public class SimpleInternalFrame extends JPanel {
             new GradientPanel(new BorderLayout(), getHeaderBackground());
         label.setOpaque(false);
 
-        gradientPanel.add(label, BorderLayout.WEST);
+        gradientPanel.add(label, BorderLayout.CENTER);
         gradientPanel.setBorder(BorderFactory.createEmptyBorder(3, 4, 3, 1));
 
         headerPanel = new JPanel(new BorderLayout());

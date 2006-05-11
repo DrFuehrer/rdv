@@ -31,6 +31,7 @@
 
 package org.nees.buffalo.rdv.datapanel;
 
+import java.util.Properties;
 import java.util.Set;
 
 import org.nees.buffalo.rdv.DataPanelManager;
@@ -172,4 +173,20 @@ public interface DataPanel {
    * @since              1.3
    */
   public boolean isChannelSubscribed(String channelName);
+  
+  /**
+   * Get a list of properties associated with this data panel. These properties
+   * describe the configuration specific to this data panel.
+   * 
+   * @return the properties for this data panel.
+   */
+  public Properties getProperties();
+  
+  /**
+   * Set a property for this data panel.
+   * 
+   * @param key    the name of the property
+   * @param value  the value of the property
+   */
+  public void setProperty(String key, String value);
 }

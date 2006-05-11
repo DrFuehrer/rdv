@@ -31,6 +31,7 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -228,7 +229,7 @@ public final class RBNBUtilities {
     return list;
   }
   
-  private static class HumanComparator implements Comparator {
+  public static class HumanComparator implements Comparator {
     private Pattern p;
     
     public HumanComparator() {
@@ -236,8 +237,21 @@ public final class RBNBUtilities {
     }
     
     public int compare(Object o1, Object o2) {      
-      String s1 = ((ChannelTree.Node)o1).getName().toLowerCase();
-      String s2 = ((ChannelTree.Node)o2).getName().toLowerCase();
+      String s1;
+      if (o1 instanceof ChannelTree.Node) {
+        s1 = ((ChannelTree.Node)o1).getName();
+      } else {
+        s1 = (String)o1;
+      }
+      s1 = s1.toLowerCase();
+      
+      String s2;
+      if (o2 instanceof ChannelTree.Node) {
+        s2 = ((ChannelTree.Node)o2).getName();        
+      } else {
+        s2 = (String)o2;
+      }
+      s2 = s2.toLowerCase();
       
       if (s1.equals(s2)) {
         return 0;  
@@ -342,6 +356,17 @@ public final class RBNBUtilities {
    */
   public static String secondsToISO8601(double date) {
     return ISO8601_DATE_FORMAT.format(new Date(((long)(date*1000))));
+  }
+  
+  /**
+   * Converts an ISO8601 timestamp into a RBNB timestamp.
+   * 
+   * @param iso8601          an IS8601 timestamp
+   * @return                 a RBNB timestamp
+   * @throws ParseException  if the timestamp is not valid
+   */
+  public static double ISO8601ToSeconds(String iso8601) throws ParseException {
+    return ISO8601_DATE_FORMAT.parse(iso8601).getTime()/1000d;
   }
   
   /**

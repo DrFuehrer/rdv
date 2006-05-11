@@ -31,6 +31,7 @@
 
 package org.nees.buffalo.rdv.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -42,11 +43,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -69,9 +72,11 @@ import javax.swing.UIManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBExport;
 import org.nees.buffalo.rdv.rbnb.ProgressListener;
+import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 
 /**
  * @author  Jason P. Hanley
@@ -86,18 +91,22 @@ public class ExportDialog extends JDialog implements ProgressListener {
   RBNBExport export;
   boolean exporting;
   
-  JList channelList;
-  DefaultListModel channelModel;
-
-  JCheckBox deltaTCheckBox;
+  JList numericChannelList;
+  DefaultListModel numericChannelModel;
+  
   JTextField dataFileTextField;
-  JFileChooser dataFileChooser;
-  JButton dataFileButton;
+  
+  JList multimediaChannelList;
+  DefaultListModel multimediaChannelModel;
+  
+  JTextField dataDirectoryTextField;
+  JFileChooser dataDirectoryChooser;
+  JButton dataDirectoryButton;  
+  
   JProgressBar exportProgressBar;
+  
   JButton exportButton;
   JButton cancelButton;
-  
-  File dataFile;
   
   List channels;
 
@@ -107,7 +116,9 @@ public class ExportDialog extends JDialog implements ProgressListener {
     this.dialog = this;
     
     this.rbnb = rbnb;
+
     this.channels = channels;
+    Collections.sort(channels, new RBNBUtilities.HumanComparator());
     
     export = new RBNBExport(rbnb.getRBNBHostName(), rbnb.getRBNBPortNumber());
     exporting = false;
@@ -120,9 +131,19 @@ public class ExportDialog extends JDialog implements ProgressListener {
   }
 
   private void initComponents() {
-    channelModel = new DefaultListModel();
+    numericChannelModel = new DefaultListModel();
+    multimediaChannelModel = new DefaultListModel();
     for (int i=0; i<channels.size(); i++) {
-      channelModel.addElement(new ExportChannel((String)channels.get(i)));
+      String channelName = (String)channels.get(i);
+      Channel channel = rbnb.getChannel(channelName);
+
+      String mime = RBNBUtilities.fixMime(channel.getMetadata("mime"), channelName);
+      
+      if (mime.equals("application/octet-stream")) {
+        numericChannelModel.addElement(new ExportChannel(channelName));
+      } else if (mime.equals("image/jpeg")) {
+        multimediaChannelModel.addElement(new ExportChannel(channelName));
+      }
     }
     
     JPanel container = new JPanel();
@@ -138,51 +159,56 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.gridheight = 1;
     c.ipadx = 0;
     c.ipady = 0;
-    c.insets = new java.awt.Insets(10,10,10,10);
 
-    JLabel headerLabel = new JLabel("Select the channels to export:");
+    JLabel headerLabel = new JLabel("Select the data channels to export.");
+    headerLabel.setBackground(Color.white);
+    headerLabel.setOpaque(true);
+    headerLabel.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createMatteBorder(0,0,1,0,Color.gray),
+        BorderFactory.createEmptyBorder(10,10,10,10)));    
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 0;
     c.gridx = 0;
     c.gridy = 0;
     c.gridwidth = GridBagConstraints.REMAINDER;
     c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new java.awt.Insets(0,0,0,0);    
     container.add(headerLabel, c);
     
-    channelList = new JList(channelModel);
-    channelList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    channelList.setCellRenderer(new CheckListRenderer());
-    channelList.setVisibleRowCount(15);
-    channelList.addMouseListener(new MouseAdapter() {
+    JLabel numericHeaderLabel = new JLabel("Numeric channels:");
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 0;
+    c.gridx = 0;
+    c.gridy = 1;
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new java.awt.Insets(10,10,10,10);
+    container.add(numericHeaderLabel, c);    
+    
+    numericChannelList = new JList(numericChannelModel);
+    numericChannelList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    numericChannelList.setCellRenderer(new CheckListRenderer());
+    numericChannelList.setVisibleRowCount(10);
+    numericChannelList.addMouseListener(new MouseAdapter() {
       public void mouseClicked(MouseEvent e) {
-        int index = channelList.locationToIndex(e.getPoint());
-        ExportChannel item = (ExportChannel)channelList.getModel().getElementAt(index);
+        int index = numericChannelList.locationToIndex(e.getPoint());
+        ExportChannel item = (ExportChannel)numericChannelList.getModel().getElementAt(index);
         item.setSelected(!item.isSelected());
-        Rectangle rect = channelList.getCellBounds(index, index);
-        channelList.repaint(rect);
+        Rectangle rect = numericChannelList.getCellBounds(index, index);
+        numericChannelList.repaint(rect);
       }
     });
-    JScrollPane scrollPane = new JScrollPane(channelList);
+    JScrollPane scrollPane = new JScrollPane(numericChannelList);
     c.fill = GridBagConstraints.BOTH;
     c.weightx = 0;
     c.weighty = 1;
     c.gridx = 0;
-    c.gridy = 1;
+    c.gridy = 2;
     c.gridwidth = GridBagConstraints.REMAINDER;
     c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new java.awt.Insets(0,10,10,10);
     container.add(scrollPane, c);
     
-    deltaTCheckBox = new JCheckBox("Include relative time channel", true);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 0;
-    c.weighty = 0;
-    c.gridx = 0;
-    c.gridy = 2;
-    c.gridwidth = GridBagConstraints.REMAINDER;
-    c.anchor = GridBagConstraints.NORTHEAST;
-    container.add(deltaTCheckBox, c);    
-        
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0;
     c.weighty = 0;
@@ -191,49 +217,104 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new java.awt.Insets(0,10,10,5);
-    container.add(new JLabel("Data file: "), c);
+    container.add(new JLabel("Numeric file name: "), c);
     
+    dataFileTextField = new JTextField(20);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1;
     c.gridx = 1;
     c.gridy = 3;
-    c.gridwidth = 1;
-    c.anchor = GridBagConstraints.NORTHWEST;    
-    dataFileTextField = new JTextField(20);
-    dataFileTextField.setEditable(false);
-    c.insets = new java.awt.Insets(0,0,10,5);
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new java.awt.Insets(0,0,10,10);
     container.add(dataFileTextField, c);
     
-    dataFileChooser = new JFileChooser();
-    dataFileButton = new JButton("Browse");
-    dataFileButton.addActionListener(new ActionListener() {
+    JLabel multimediaHeaderLabel = new JLabel("Multimedia channels:");
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 0;
+    c.gridx = 0;
+    c.gridy = 4;
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new java.awt.Insets(0,10,10,10);
+    container.add(multimediaHeaderLabel, c);    
+    
+    multimediaChannelList = new JList(multimediaChannelModel);
+    multimediaChannelList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    multimediaChannelList.setCellRenderer(new CheckListRenderer());
+    multimediaChannelList.setVisibleRowCount(10);
+    multimediaChannelList.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        int index = multimediaChannelList.locationToIndex(e.getPoint());
+        ExportChannel item = (ExportChannel)multimediaChannelList.getModel().getElementAt(index);
+        item.setSelected(!item.isSelected());
+        Rectangle rect = multimediaChannelList.getCellBounds(index, index);
+        multimediaChannelList.repaint(rect);
+      }
+    });
+    JScrollPane scrollPane2 = new JScrollPane(multimediaChannelList);
+    c.fill = GridBagConstraints.BOTH;
+    c.weightx = 0;
+    c.weighty = 1;
+    c.gridx = 0;
+    c.gridy = 5;
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.anchor = GridBagConstraints.NORTHEAST;
+    container.add(scrollPane2, c);    
+    
+    c.fill = GridBagConstraints.NONE;
+    c.weightx = 0;
+    c.weighty = 0;
+    c.gridx = 0;
+    c.gridy = 6;
+    c.gridwidth = 1;
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new java.awt.Insets(0,10,10,5);
+    container.add(new JLabel("Data directory: "), c);    
+    
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1;
+    c.gridx = 1;
+    c.gridy = 6;
+    c.gridwidth = 1;
+    c.anchor = GridBagConstraints.NORTHWEST;    
+    dataDirectoryTextField = new JTextField(20);
+    c.insets = new java.awt.Insets(0,0,10,5);
+    container.add(dataDirectoryTextField, c);
+    
+    dataDirectoryChooser = new JFileChooser();
+    dataDirectoryChooser.setDialogTitle("Select export directory");
+    dataDirectoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    dataDirectoryTextField.setText(dataDirectoryChooser.getCurrentDirectory().getAbsolutePath());
+    dataDirectoryButton = new JButton("Browse");
+    dataDirectoryButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        int status = dataFileChooser.showSaveDialog(dialog);
+        dataDirectoryChooser.setCurrentDirectory(new File(dataDirectoryTextField.getText()));
+        int status = dataDirectoryChooser.showDialog(dialog, "OK");
         if (status == JFileChooser.APPROVE_OPTION) {
-          dataFile = dataFileChooser.getSelectedFile();
-          dataFileTextField.setText(dataFile.getAbsolutePath());
+          dataDirectoryTextField.setText(dataDirectoryChooser.getSelectedFile().getAbsolutePath());
         }
       }
     });
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0;
     c.gridx = 2;
-    c.gridy = 3;
+    c.gridy = 6;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;
-    c.insets = new java.awt.Insets(0,10,10,10);
-    container.add(dataFileButton, c);
+    c.insets = new java.awt.Insets(0,0,10,10);
+    container.add(dataDirectoryButton, c);
     
     exportProgressBar = new JProgressBar(0, 100000);
     exportProgressBar.setStringPainted(true);
     exportProgressBar.setValue(0);
-    exportProgressBar.setVisible(false);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 0.5;
     c.gridx = 0;
-    c.gridy = 4;
+    c.gridy = 7;
     c.gridwidth = GridBagConstraints.REMAINDER;;
     c.anchor = GridBagConstraints.CENTER;
+    c.insets = new java.awt.Insets(0,10,10,10);
     container.add(exportProgressBar, c);        
        
     JPanel panel = new JPanel();
@@ -264,52 +345,73 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.5;
     c.gridx = 0;
-    c.gridy = 5;
+    c.gridy = 9;
     c.gridwidth = GridBagConstraints.REMAINDER;;
     c.anchor = GridBagConstraints.LINE_END;
     c.insets = new java.awt.Insets(0,0,10,5);
     container.add(panel, c);    
 
     pack();
+    if (getWidth() < 600) {
+      setSize(600, getHeight());
+    }
+    
+    dataFileTextField.requestFocusInWindow();
+    
     setLocationByPlatform(true);
     setVisible(true);
   }
   
   private void disableUI() {
-    channelList.setEnabled(false);
+    numericChannelList.setEnabled(false);
     dataFileTextField.setEnabled(false);
-    dataFileButton.setEnabled(false);
+    multimediaChannelList.setEnabled(false);
+    dataDirectoryTextField.setEnabled(false);
+    dataDirectoryButton.setEnabled(false);
     exportButton.setEnabled(false);
   }
   
   private void enableUI() {
-    channelList.setEnabled(true);
+    numericChannelList.setEnabled(true);
     dataFileTextField.setEnabled(true);
-    dataFileButton.setEnabled(true);
+    multimediaChannelList.setEnabled(true);
+    dataDirectoryTextField.setEnabled(true);
+    dataDirectoryButton.setEnabled(true);
     exportButton.setEnabled(true);    
   }  
   
   private void exportData() {
     disableUI();
     
-    List selectedChannels = new ArrayList();
-    for (int i=0; i<channelModel.size(); i++) {
-      ExportChannel channel = (ExportChannel)channelModel.get(i);
+    List selectedNumericChannels = new ArrayList();
+    for (int i=0; i<numericChannelModel.size(); i++) {
+      ExportChannel channel = (ExportChannel)numericChannelModel.get(i);
       if (channel.isSelected()) {
-        selectedChannels.add(channel.toString());
+        selectedNumericChannels.add(channel.toString());
       }
     }
+    
+    List selectedMultimediaChannels = new ArrayList();
+    for (int i=0; i<multimediaChannelModel.size(); i++) {
+      ExportChannel channel = (ExportChannel)multimediaChannelModel.get(i);
+      if (channel.isSelected()) {
+        selectedMultimediaChannels.add(channel.toString());
+      }
+    }    
     
     double end = rbnb.getLocation();
     double start = end - rbnb.getTimeScale();
     
-    boolean deltaT = deltaTCheckBox.isSelected();
+    File numericDataFile = new File(dataDirectoryTextField.getText(),
+        dataFileTextField.getText());
+    File dataDirectory = new File(dataDirectoryTextField.getText());
         
-    exportProgressBar.setVisible(true);
-    pack();
-    
     exporting = true;
-    export.startExport(selectedChannels, dataFile, start, end, deltaT, this);
+    export.startExport(selectedNumericChannels, numericDataFile,
+        selectedMultimediaChannels,
+        dataDirectory,
+        start, end,
+        this);
   }
   
   private void cancel() {
@@ -332,7 +434,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
 
   public void postError(String errorMessage) {
     exportProgressBar.setValue(0);
-    exportProgressBar.setVisible(false);
     exporting = false;
     enableUI();
     JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
@@ -362,16 +463,17 @@ public class ExportDialog extends JDialog implements ProgressListener {
   
   class CheckListRenderer extends JCheckBox implements ListCellRenderer {
     
-    public CheckListRenderer() {
-      setBackground(UIManager.getColor("List.textBackground"));
-      setForeground(UIManager.getColor("List.textForeground"));
-    }
-    
     public Component getListCellRendererComponent(JList list, Object value,
                                                   int index, boolean isSelected,
                                                   boolean hasFocus) {
       setEnabled(list.isEnabled());
       setSelected(((ExportChannel)value).isSelected());
+      if (index % 2 == 0) {
+        setBackground(UIManager.getColor("List.textBackground"));
+      } else {
+        setBackground(new Color(230,230,230));
+      }
+      setForeground(UIManager.getColor("List.textForeground"));
       setFont(list.getFont());
       setText(value.toString());
       return this;

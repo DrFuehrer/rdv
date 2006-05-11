@@ -123,7 +123,7 @@
 			<fileset dir="${build.classes}"/>
 			<fileset file="version.properties"/>
 			<fileset file="build.properties"/>
-			<fileset file="log4j.properties"/>
+			<fileset file="LICENSE"/>
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
 			<zipgroupfileset dir="${lib.dir}" excludes="log4j-1.2.13.jar,junit.jar"/>

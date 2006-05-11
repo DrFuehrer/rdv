@@ -40,6 +40,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -84,7 +85,7 @@ public class RBNBConnectionDialog extends JDialog {
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
-		setTitle("Select RBNB Server");
+		setTitle("Connect to RBNB Server");
     
     JPanel container = new JPanel();
     setContentPane(container);
@@ -99,25 +100,31 @@ public class RBNBConnectionDialog extends JDialog {
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new Insets(10,10,10,10);
 		
-		headerLabel = new JLabel("Please specify your RBNB connection.");
+		headerLabel = new JLabel("Please specify the RBNB server connection information.");
+    headerLabel.setBackground(Color.white);
+    headerLabel.setOpaque(true);
+    headerLabel.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createMatteBorder(0,0,1,0,Color.gray),
+        BorderFactory.createEmptyBorder(10,10,10,10)));
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new Insets(0,0,0,0);
     container.add(headerLabel, c);
 		
 		c.gridwidth = 1;
 		
-		rbnbHostNameLabel = new JLabel("Host");
+		rbnbHostNameLabel = new JLabel("Host:");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.gridx = 0;
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new Insets(10,10,10,5);
     container.add(rbnbHostNameLabel, c);
 		
 		rbnbHostNameTextField = new JTextField(rbnb.getRBNBHostName(), 25);
@@ -126,14 +133,16 @@ public class RBNBConnectionDialog extends JDialog {
 		c.gridx = 1;
 		c.gridy = 1;
 		c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new Insets(10,0,10,10);
     container.add(rbnbHostNameTextField, c);
 		
-		rbnbPortLabel = new JLabel("Port");
+		rbnbPortLabel = new JLabel("Port:");
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.gridx = 0;
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new Insets(0,10,10,5);
     container.add(rbnbPortLabel, c);
 
 		rbnbPortTextField = new JTextField(Integer.toString(rbnb.getRBNBPortNumber()));
@@ -142,6 +151,7 @@ public class RBNBConnectionDialog extends JDialog {
 		c.gridx = 1;
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new Insets(0,0,10,10);
     container.add(rbnbPortTextField, c);
 		
 		JPanel buttonPanel = new JPanel();
@@ -174,7 +184,7 @@ public class RBNBConnectionDialog extends JDialog {
 		c.gridy = 3;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.LINE_END;
-    c.insets = new Insets(10,10,10,5);
+    c.insets = new Insets(0,10,10,5);
     container.add(buttonPanel, c);
 		
 		pack();

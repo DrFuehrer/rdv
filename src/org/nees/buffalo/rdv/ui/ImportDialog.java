@@ -31,6 +31,7 @@
 
 package org.nees.buffalo.rdv.ui;
 
+import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -41,6 +42,7 @@ import java.io.File;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -126,15 +128,20 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(10,10,10,10);
 
 		JLabel headerLabel = new JLabel("Please specify the desired source name and the data file to import.");
+    headerLabel.setBackground(Color.white);
+    headerLabel.setOpaque(true);
+    headerLabel.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createMatteBorder(0,0,1,0,Color.gray),
+        BorderFactory.createEmptyBorder(10,10,10,10)));    
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new java.awt.Insets(0,0,0,0);
     container.add(headerLabel, c);
 		
 		c.fill = GridBagConstraints.NONE;
@@ -143,7 +150,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridy = 1;
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.NORTHEAST;
-		c.insets = new java.awt.Insets(0,10,10,5);
+		c.insets = new java.awt.Insets(10,10,10,5);
     container.add(new JLabel("Source name: "), c);
 		
 		sourceNameTextField = new JTextField();
@@ -153,7 +160,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridy = 1;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.NORTHWEST;
-		c.insets = new java.awt.Insets(0,0,10,10);
+		c.insets = new java.awt.Insets(10,0,10,10);
     container.add(sourceNameTextField, c);
 		
 		c.fill = GridBagConstraints.NONE;
@@ -184,6 +191,14 @@ public class ImportDialog extends JDialog implements ProgressListener {
 				if (status == JFileChooser.APPROVE_OPTION) {
 					dataFile = dataFileChooser.getSelectedFile();
 					dataFileTextField.setText(dataFile.getAbsolutePath());
+          if (sourceNameTextField.getText().length() == 0) {
+            String testName = dataFile.getName();
+            int dotIndex = testName.lastIndexOf('.');
+            if (dotIndex != -1) {
+              testName = testName.substring(0, dotIndex);
+            }
+            sourceNameTextField.setText(testName);
+          }
 				}
 			}
 		});
@@ -193,7 +208,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridy = 2;
 		c.gridwidth = 1;
 		c.anchor = GridBagConstraints.NORTHWEST;
-		c.insets = new java.awt.Insets(0,10,10,10);
+		c.insets = new java.awt.Insets(0,0,10,10);
     container.add(dataFileButton, c);
 		
 		importProgressBar = new JProgressBar(0, 100000);
@@ -206,6 +221,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.gridy = 3;
 		c.gridwidth = GridBagConstraints.REMAINDER;;
 		c.anchor = GridBagConstraints.CENTER;
+    c.insets = new java.awt.Insets(0,10,10,10);
     container.add(importProgressBar, c);		
 		
 		JPanel panel = new JPanel();
@@ -243,6 +259,9 @@ public class ImportDialog extends JDialog implements ProgressListener {
     container.add(panel, c);
 		
 		pack();
+    
+    sourceNameTextField.requestFocusInWindow();
+    
     setLocationByPlatform(true);
 		setVisible(true);
 	}

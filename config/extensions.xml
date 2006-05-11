@@ -57,7 +57,11 @@
 			<mimeType>audio/L8</mimeType>
 			<mimeType>audio/L16</mimeType>
 		</mimeTypes>
-	</extension-->	
+	</extension-->
+ 	<extension>
+ 		<id>org.nees.buffalo.rdv.datapanel.WebDataPanel</id>
+ 		<name>Web Data Panel</name>
+ 	</extension>
 	<!--extension>
 		<id>org.nees.buffalo.rdv.datapanel.RendererDataPanel</id>
 		<name>3D Renderer Data Panel</name>

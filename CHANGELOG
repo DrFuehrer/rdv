@@ -79,6 +79,31 @@ in time that can be returned to as a collaboration tool.
 -Merged NEESit's markers code.
  -Meaning of data panel layout is now reversed.
  -Added junit jar.
+ -Fixed bug with stale process left over after JNLP launching.
+ -Added RDV icon to JNLP. Changed base location.
+ -Added command line option to load configuration file.
+ -Add UI elements for load/save configuration warnings and errors.
+ -Cleaned-up about dialog, added license sub-dialog.
+ -Expanded export to support jpeg images.
+ -Added ability to add a description to title bar of AbstractDataPanel.
+ -Added option to hide channel listing in the title bar of AbstractDataPanel.
+ -Added WebDataPanel to display websites.
+ -Added data panel specific properties for load/save configuration.
+ -Added option to show/hide address bar of web data panel.
+ -Force export to always output time channel first, then timestamp channel
+ -Improve import to handle different type of delimiters and headers.
+ -Using a better system timer for data playback, if available.
+ -Added icon to the go button in web data panel.
+ -Added offset controls to tabular data panel.
+ -Added decimal or engineering formatting to tabular data panel.
+ -Added popup menu to tabular data panel to copy and print.
+ -Set max and min columns to be hidden by default in tabular data panel.
+ -Fixed bug with file overwrite prompt when saving setup.
+ -When loading a setup, the data panel properties are now set before the channels
+  are added.
+ -Fixed bug when loading data for xy data panel.
+ -Added support for load/saving bounds of jfreechart derived data panels.
+ -Hide legend when only displaying a single channel in time series data panel.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

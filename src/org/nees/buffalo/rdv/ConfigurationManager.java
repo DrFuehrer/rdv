@@ -36,8 +36,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -110,13 +112,28 @@ public class ConfigurationManager {
     while (it.hasNext()) {
       DataPanel dataPanel = (DataPanel)it.next();
       out.println("  <dataPanel id=\"" + dataPanel.getClass().getName() + "\">");
-      out.println("    <channels>");
-      Iterator channels = dataPanel.subscribedChannels().iterator();
-      while (channels.hasNext()) {
-        String channel = (String)channels.next();
-        out.println("      <channel>" + channel + "</channel>");
+      
+      if (dataPanel.subscribedChannelCount() > 0) {
+        out.println("    <channels>");
+        Iterator channels = dataPanel.subscribedChannels().iterator();
+        while (channels.hasNext()) {
+          String channel = (String)channels.next();
+          out.println("      <channel>" + channel + "</channel>");
+        }     
+        out.println("    </channels>");
       }
-      out.println("    </channels>");
+
+      Properties properties = dataPanel.getProperties();
+      if (properties.size() > 0) {
+        out.println("    <properties>");
+        for (Enumeration keys = properties.propertyNames(); keys.hasMoreElements() ;) {
+           String key = (String)keys.nextElement();
+           String value = properties.getProperty(key);
+           out.println("      <entry key=\"" + key + "\">" + value + "</entry>");
+        }
+        out.println("    </properties>");
+      }
+
       out.println("  </dataPanel>");
     }
     
@@ -140,6 +157,17 @@ public class ConfigurationManager {
   }
   
   private void loadConfigurationWorker(File configFile) {
+    if (configFile == null) {
+      dataViewer.alertError("The configuration file does not exist.");
+      return;
+    } else if (!configFile.exists()) {
+      dataViewer.alertError("The configuration file \"" + configFile.getName() + "\" does not exist.");
+      return;
+    } else if (!configFile.isFile()) {
+      dataViewer.alertError("\"" + configFile.getName() + "\" is not a file.");
+      return;
+    }
+    
     RBNBController rbnb = dataViewer.getRBNBController();
     DataPanelManager dataPanelManager = dataViewer.getDataPanelManager();
     ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
@@ -206,13 +234,21 @@ public class ConfigurationManager {
         } catch (Exception e) {
           continue;
         }
+
+        NodeList entryNodes = (NodeList)xp.evaluate("properties/entry", dataPanelNode, XPathConstants.NODESET);
+        for (int j=0; j<entryNodes.getLength(); j++) {
+          String key = entryNodes.item(j).getAttributes().getNamedItem("key").getNodeValue();
+          String value = entryNodes.item(j).getTextContent();
+          dataPanel.setProperty(key, value);
+        }        
+
         NodeList channelNodes = (NodeList)xp.evaluate("channels/channel", dataPanelNode, XPathConstants.NODESET);
         for (int j=0; j<channelNodes.getLength(); j++) {
           String channel = channelNodes.item(j).getTextContent();
           if (!dataPanel.addChannel(channel)) {
             log.error("Failed to add channel " + channel + ".");
           }
-        }
+        }        
       }
       
       rbnb.setState(state);
