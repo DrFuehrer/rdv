@@ -80,6 +80,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
 
 	JPEGPanel image;
 	JPanel panel;
+  JCheckBoxMenuItem scaleMenuItem;
  	
  	double displayedImageTime;
   byte[] displayedImageData;
@@ -138,10 +139,10 @@ public class JPEGDataPanel extends AbstractDataPanel {
 
     popupMenu.addSeparator();
 
-    final JCheckBoxMenuItem scaleMenuItem = new  JCheckBoxMenuItem("Scale", true);
+    scaleMenuItem = new  JCheckBoxMenuItem("Scale", true);
     scaleMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
-        image.setScaled(scaleMenuItem.isSelected());
+        setScaled(scaleMenuItem.isSelected());
       }      
     });
     popupMenu.add(scaleMenuItem);
@@ -326,6 +327,12 @@ public class JPEGDataPanel extends AbstractDataPanel {
     }
   }
   
+  private void setScaled(boolean scale) {
+    image.setScaled(scale);
+    scaleMenuItem.setSelected(scale);
+    properties.setProperty("scale", Boolean.toString(scale));
+  }
+  
 	public boolean supportsMultipleChannels() {
 		return false;
 	}
@@ -458,6 +465,14 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		//TODO should we clear here?
 		//clearImage();
 	}
+  
+  public void setProperty(String key, String value) {
+    super.setProperty(key, value);
+    
+    if (key != null && key.equals("scale") && Boolean.parseBoolean(value) == false) {
+      setScaled(false);
+    }
+  }  
 	
 	public String toString() {
 		return "JPEG Data Panel";

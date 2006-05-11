@@ -631,26 +631,21 @@ public class RBNBController implements Player, MetadataListener {
  		
 		channelManager.postData(getmap);					
 		
-		//log.debug("Playing back " + playbackRate + " seconds of data for " + channelList.length + " channels at location " + formatDate(location) + ".");
-		
-		double playbackRate = this.playbackRate; //FIXME not really needed anymore
 		double playbackDuration = playbackRate;
 		double playbackRefreshRate = PLAYBACK_REFRESH_RATE;
 		double playbackStepTime = playbackRate * playbackRefreshRate;
 		long playbackSteps = (long)(playbackDuration / playbackStepTime);
 		
 		double locationStartTime = location;
-		long playbackStartTime = System.currentTimeMillis();
+		long playbackStartTime = System.nanoTime();
 		
-		int i = 0;
+		long i = 0;
 		while (i<playbackSteps && stateChangeRequests.size() == 0 && updateLocation == -1 && updateTimeScale == -1 && updatePlaybackRate == -1) {			
-			double timeDifference = (playbackRefreshRate*(i+1)) - ((System.currentTimeMillis() - playbackStartTime)/1000d);
+			double timeDifference = (playbackRefreshRate*(i+1)) - ((System.nanoTime() - playbackStartTime)/1000000000d);
  			if (dropData && timeDifference < -playbackRefreshRate) {
 				int stepsToSkip = (int)((timeDifference*-1) / playbackRefreshRate);
- 				//log.debug("Skipping " + (long)(timeDifference*-1000) + " ms of data.");
 				i += stepsToSkip;
  			} else if (timeDifference > playbackRefreshRate) {
-				//log.debug("Sleeping for " + ((long)(timeDifference*1000)) + " ms.");
 				try { Thread.sleep((long)(timeDifference*1000)); } catch (Exception e) { e.printStackTrace(); }
 			}
 			
@@ -659,9 +654,6 @@ public class RBNBController implements Player, MetadataListener {
 			location = locationStartTime + (playbackStepTime) * i;
 			updateTimeListeners(location);
 		}
-		
-		//long playbackEndTime = System.currentTimeMillis();
-		//log.debug("Actual duration " + (playbackEndTime-playbackStartTime)/1000d + ", seconds desired duration " + playbackDuration/playbackRate + " seconds.");
 	}
 	
 	private void preFetchData(final double location, final double duration) {
@@ -974,7 +966,6 @@ public class RBNBController implements Player, MetadataListener {
         Iterator it = ctree.iterator();
 		while (it.hasNext()) {
             ChannelTree.Node node = (ChannelTree.Node)it.next();
-			String channelName = node.getFullName();
 			double channelEndTime = node.getStart() + node.getDuration();
 			if (channelEndTime != -1) {
 				endTime = Math.max(endTime, channelEndTime);

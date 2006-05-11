@@ -32,14 +32,31 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.print.PrinterException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import javax.swing.ButtonGroup;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
+import javax.swing.TransferHandler;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -72,6 +89,28 @@ public class TabularDataPanel extends AbstractDataPanel {
    * @since  1.3
    */
   private JTable table;
+
+  /**
+   * The cell renderer for the data
+   * 
+   * @since  1.3
+   */
+  private DoubleTableCellRenderer doubleCellRenderer;  
+  
+  /**
+   * The button to set decimal data rendering
+   */
+  private JToggleButton decimalButton;
+  
+  /**
+   * The button to set engineering data renderering
+   */
+  private JToggleButton engineeringButton;
+
+  /**
+   * The check box menu item to control max/min column visibility
+   */
+  private JCheckBoxMenuItem showMaxMinMenuItem;
 
   /**
    * The last time data was displayed in the UI
@@ -107,6 +146,9 @@ public class TabularDataPanel extends AbstractDataPanel {
     
     tableModel = new DataTableModel();
     table = new JTable(tableModel);
+    doubleCellRenderer = new DoubleTableCellRenderer();
+    table.getColumn("Value").setCellRenderer(doubleCellRenderer);
+
     table.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
         updateRowHeight();
@@ -115,8 +157,139 @@ public class TabularDataPanel extends AbstractDataPanel {
     
     mainPanel.add(table.getTableHeader(), BorderLayout.NORTH);
     mainPanel.add(table, BorderLayout.CENTER);
+    
+    JPanel buttonPanel = new JPanel();
+    buttonPanel.setLayout(new BorderLayout());
+    
+    JPanel offsetsPanel = new JPanel();
+    
+    final JCheckBox useOffsetsCheckBox = new JCheckBox("Use Offsets");
+    useOffsetsCheckBox.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        boolean checked = ((JCheckBox)ae.getSource()).isSelected();
+        tableModel.useOffsets(checked);
+        table.repaint();
+      }      
+    });
+    offsetsPanel.add(useOffsetsCheckBox);
+
+    JButton takeOffsetsButton = new JButton("Take Offsets");
+    takeOffsetsButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        tableModel.takeOffsets();
+        tableModel.useOffsets(true);
+        useOffsetsCheckBox.setSelected(true);
+        table.repaint();
+      }      
+    });
+    offsetsPanel.add(takeOffsetsButton);
+    
+    buttonPanel.add(offsetsPanel, BorderLayout.WEST);
+    
+    JPanel formatPanel = new JPanel();
+    
+    decimalButton = new JToggleButton("Decimal", true);
+    decimalButton.setSelected(true);
+    decimalButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        useEngineeringRenderer(false);
+      }
+    });
+    formatPanel.add(decimalButton);
+
+    engineeringButton = new JToggleButton("Engineering");
+    engineeringButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        useEngineeringRenderer(true);
+      }
+    });
+    formatPanel.add(engineeringButton);
+    
+    ButtonGroup formatButtonGroup = new ButtonGroup();
+    formatButtonGroup.add(decimalButton);
+    formatButtonGroup.add(engineeringButton);
+    
+    buttonPanel.add(formatPanel, BorderLayout.EAST);
+    
+    mainPanel.add(buttonPanel, BorderLayout.SOUTH);    
+    
+    // popup menu for panel
+    JPopupMenu popupMenu = new JPopupMenu();
+    
+    final JMenuItem copyMenuItem = new JMenuItem("Copy");
+    popupMenu.addPopupMenuListener(new PopupMenuListener() {
+      public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+        copyMenuItem.setEnabled(table.getSelectedRowCount() > 0);
+      }
+      public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
+      public void popupMenuCanceled(PopupMenuEvent arg0) {}
+    });
+    copyMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        TransferHandler.getCopyAction().actionPerformed(
+            new ActionEvent(table, ae.getID(),ae.getActionCommand(),
+                ae.getWhen(), ae.getModifiers()));
+      }
+    });
+    popupMenu.add(copyMenuItem);
+    
+    popupMenu.addSeparator();
+    
+    JMenuItem printMenuItem = new JMenuItem("Print...");
+    printMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        try {
+          table.print(JTable.PrintMode.FIT_WIDTH);
+        } catch (PrinterException pe) {}
+      }      
+    });
+    popupMenu.add(printMenuItem);
+    
+    popupMenu.addSeparator();
+    
+    showMaxMinMenuItem = new  JCheckBoxMenuItem("Show max/min columns", false);
+    showMaxMinMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setMaxMinVisible(showMaxMinMenuItem.isSelected());
+      }      
+    });
+    popupMenu.add(showMaxMinMenuItem);    
+
+    // set component popup and mouselistener to trigger it
+    mainPanel.setComponentPopupMenu(popupMenu);
+    table.setComponentPopupMenu(popupMenu);
+    mainPanel.addMouseListener(new MouseInputAdapter() {});    
 	}
   
+  private void useEngineeringRenderer(boolean useEngineeringRenderer) {
+    doubleCellRenderer.setShowEngineeringFormat(useEngineeringRenderer);
+    table.repaint();
+    if (useEngineeringRenderer) {
+      engineeringButton.setSelected(true);
+      properties.setProperty("renderer", "engineering");
+    } else {
+      decimalButton.setSelected(true);
+      properties.remove("renderer");
+    }
+  }
+
+  private void setMaxMinVisible(boolean maxMinVisible) {
+    if (tableModel.getMaxMinVisibile() != maxMinVisible) {
+      tableModel.setMaxMinVisible(maxMinVisible);
+      showMaxMinMenuItem.setSelected(maxMinVisible);
+      
+      table.getColumn("Value").setCellRenderer(doubleCellRenderer);
+      
+      if (maxMinVisible) {
+        table.getColumn("Min").setCellRenderer(doubleCellRenderer);
+        table.getColumn("Max").setCellRenderer(doubleCellRenderer);
+
+        properties.setProperty("maxMinVisible", "true");
+      } else {
+        properties.remove("maxMinVisible");
+      }
+    }
+  }
 
 	void clearData() {
     tableModel.clearData();
@@ -245,6 +418,18 @@ public class TabularDataPanel extends AbstractDataPanel {
       tableModel.updateData(channelName, data);
     }
 	}
+  
+  public void setProperty(String key, String value) {
+    super.setProperty(key, value);
+    
+    if (key != null && value != null) {
+      if (key.equals("renderer") && value.equals("engineering")) {
+        useEngineeringRenderer(true);
+      } else if (key.equals("maxMinVisible") && value.equals("true")) {
+        setMaxMinVisible(true);
+      }
+    }
+  }
 	
 	public String toString() {
 		return "Tabular Data Panel";
@@ -262,10 +447,16 @@ public class TabularDataPanel extends AbstractDataPanel {
     
     private boolean cleared;
     
+    private boolean maxMinVisible;
+    
+    private boolean useOffsets;
+    
     public DataTableModel() {
       super();
       rows = new ArrayList();
       cleared = true;
+      maxMinVisible = false;
+      useOffsets = false;
     }
     
     public void addRow(String name, String unit) {
@@ -306,13 +497,28 @@ public class TabularDataPanel extends AbstractDataPanel {
       }
       fireTableDataChanged();
     }
+    
+    public void takeOffsets() {
+      for (int i=0; i<rows.size(); i++) {
+        DataRow dataRow = (DataRow)rows.get(i);
+        dataRow.setOffset(dataRow.getData());
+      }
+      fireTableDataChanged();
+    }
+    
+    public void useOffsets(boolean useOffsets) {
+      if (this.useOffsets != useOffsets) {
+        this.useOffsets = useOffsets;
+        fireTableDataChanged();
+      }
+    }       
 
     public int getRowCount() {
       return rows.size();
     }
 
     public int getColumnCount() {
-      return columnNames.length;
+      return columnNames.length-(maxMinVisible?0:2);
     }
     
     public String getColumnName(int col) {
@@ -327,17 +533,28 @@ public class TabularDataPanel extends AbstractDataPanel {
       DataRow dataRow = (DataRow)rows.get(row);
       switch (col) {
         case 0:
-          return dataRow.name;  
+          return dataRow.getName();  
         case 1:
-          return new Double(dataRow.value);
+          return new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
         case 2:
-          return dataRow.unit;
+          return dataRow.getUnit();
         case 3:
-          return new Double(dataRow.min);
+          return new Double(dataRow.getMinimum() - (useOffsets?dataRow.getOffset():0));
         case 4:
-          return new Double(dataRow.max);
+          return new Double(dataRow.getMaximum() - (useOffsets?dataRow.getOffset():0));
         default:
           return null;
+      }
+    }
+    
+    public boolean getMaxMinVisibile() {
+      return maxMinVisible;
+    }
+      
+    public void setMaxMinVisible(boolean maxMinVisible) {
+      if (this.maxMinVisible != maxMinVisible) {
+        this.maxMinVisible = maxMinVisible;
+        fireTableStructureChanged();
       }
     }    
   }
@@ -348,6 +565,9 @@ public class TabularDataPanel extends AbstractDataPanel {
     double value;
     double min;
     double max;
+    double offset;
+    boolean cleared;
+    
     
     public DataRow(String name, String unit) {
       this.name = name;
@@ -355,16 +575,82 @@ public class TabularDataPanel extends AbstractDataPanel {
       clearData();
     }
     
-    public void setData(double data) {
-      value = data;
-      min = min==-1? data:Math.min(min, data);
-      max = max==-1? data:Math.max(max, data);
+    public String getName() {
+      return name;
+    }
+
+    public String getUnit() {
+      return unit;
     }
     
+    public double getData() {
+      return value;
+    }    
+    
+    public void setData(double data) {
+      value = data;
+      min = cleared? data:Math.min(min, data);
+      max = cleared? data:Math.max(max, data);
+      cleared = false;
+    }
+    
+    public double getMinimum() {
+      return min;
+    }
+    
+    public double getMaximum() {
+      return max;
+    }
+
+    public double getOffset() {
+      return offset;
+    }
+
+    public void setOffset(double offset) {
+      this.offset = offset;
+    }
+
     public void clearData() {
-      value = 0;
-      min = -1;
-      max = -1;      
+      value = min = max = 0;
+      cleared = true;
+    }
+  }
+  
+  private class DoubleTableCellRenderer extends DefaultTableCellRenderer {
+    private boolean showEngineeringFormat;
+    
+    private DecimalFormat decimalFormatter;
+    private DecimalFormat engineeringFormatter;
+    
+    public DoubleTableCellRenderer() {
+      this(false);
+    }
+    
+    public DoubleTableCellRenderer(boolean showEngineeringFormat) {
+      super();
+      
+      this.showEngineeringFormat = showEngineeringFormat;
+      
+      setHorizontalAlignment(SwingConstants.RIGHT);
+
+      decimalFormatter = new DecimalFormat("0.000000000");
+      engineeringFormatter = new DecimalFormat("##0.000000000E0");
+    }
+    
+    public void setValue(Object value) {
+      if (value != null && value instanceof Number) {
+        if (showEngineeringFormat) {
+          setText(engineeringFormatter.format(value));
+        } else {
+          setText(decimalFormatter.format(value));
+        }
+      } else {
+        super.setValue(value);
+      }
+    }
+
+    public void setShowEngineeringFormat(boolean showEngineeringFormat) {
+      this.showEngineeringFormat = showEngineeringFormat;
     }
   }
 }

@@ -32,7 +32,9 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
@@ -53,15 +55,22 @@ import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Properties;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.MouseInputAdapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -218,6 +227,23 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
  	 * @since  1.1
  	 */
 	ChannelMap channelMap;
+  
+  /**
+   * A description of the data panel.
+   * 
+   * @since  1.4
+   */
+  String description;
+  
+  /**
+   * Wheather to show the channel names in the title;
+   */
+  boolean showChannelsInTitle;
+  
+  /**
+   * Properties list for data panel.
+   */
+  Properties properties;
 
 	/**
 	 * Initialize the list of channels and units. Set parameters to defaults.
@@ -237,6 +263,10 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		maximized = false;
 
 		paused = false;
+    
+    showChannelsInTitle = true;
+    
+    properties = new Properties();
 	}
 	
 	public void openPanel(final DataPanelManager dataPanelManager) {
@@ -244,7 +274,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		this.dataPanelContainer = dataPanelManager.getDataPanelContainer();
 		this.rbnbController = dataPanelManager.getRBNBController();    
         
-    component = new SimpleInternalFrame("", createToolBar(), dataComponent);
+    component = new SimpleInternalFrame(getTitleComponent(), createToolBar(), dataComponent);
 		
 		dataPanelContainer.addDataPanel(component);
 		
@@ -311,16 +341,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 
 		channels.add(channelName);
         
-    component.setTitle(getTitleComponent());
-
 		String unit = channel.getMetadata("units");
 		if (unit != null) {
 			units.put(channelName, unit);
 		}
 		
-		if (!attached) {
-			frame.setTitle(getTitle());
-		}
+    updateTitle();
 		
 		return true;
 	}
@@ -335,13 +361,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		rbnbController.unsubscribe(channelName, this);
     
-    component.setTitle(getTitleComponent());
-    
     units.remove(channelName);
 
-		if (!attached) {
-			frame.setTitle(getTitle());
-		}
+    updateTitle();
 		
 		return true;
 	}
@@ -388,7 +410,11 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.1
 	 */
 	String getTitle() {
-		String titleString = "";
+    if (description != null) {
+      return description;
+    }
+
+    String titleString = "";
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
 			titleString += i.next();
@@ -412,16 +438,142 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
    */
   JComponent getTitleComponent() {
     JPanel titleBar = new JPanel();
-    titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
     titleBar.setOpaque(false);
+    titleBar.setLayout(new BorderLayout());
+
+    JPopupMenu popupMenu = new JPopupMenu();
+
+    final String title;
+    if (description != null) {
+      title = "Edit description";
+    } else {
+      title = "Add description";
+    }    
+    
+    JMenuItem addDescriptionMenuItem = new JMenuItem(title);
+    addDescriptionMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        String response = (String)JOptionPane.showInputDialog(null, "Enter a description",
+            title, JOptionPane.QUESTION_MESSAGE, null, null, description);
+        if (response == null) {
+          return;
+        } else if (response.length() == 0) {
+          setDescription(null);
+        } else {
+          setDescription(response);
+        }
+      }
+    });
+    popupMenu.add(addDescriptionMenuItem);
+    
+    if (description != null) {
+      JMenuItem removeDescriptionMenuItem = new JMenuItem("Remove description");
+      removeDescriptionMenuItem.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent ae) {
+          setDescription(null);
+        }
+      });
+      popupMenu.add(removeDescriptionMenuItem);
+    }
+    
+    popupMenu.addSeparator();
+    
+    final JCheckBoxMenuItem showChannelsInTitleMenuItem = new JCheckBoxMenuItem("Show channels in title", showChannelsInTitle);
+    showChannelsInTitleMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setShowChannelsInTitle(showChannelsInTitleMenuItem.isSelected());
+      }
+    });
+    popupMenu.add(showChannelsInTitleMenuItem);    
+    
+    if (channels.size() > 0) {
+      popupMenu.addSeparator();
+      
+      Iterator i = channels.iterator();
+      while (i.hasNext()) {
+        final String channelName = (String)i.next();
+        
+        JMenuItem unsubscribeChannelMenuItem = new JMenuItem("Unsubscribe from " + channelName);
+        unsubscribeChannelMenuItem.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent ae) {
+            removeChannel(channelName);
+          }
+        });
+        popupMenu.add(unsubscribeChannelMenuItem);      
+      }
+    }
+
+    // set component popup and mouselistener to trigger it
+    titleBar.setComponentPopupMenu(popupMenu);
+    titleBar.addMouseListener(new MouseInputAdapter() {});
+
+    if (description != null) {  
+      titleBar.add(getDescriptionComponent(), BorderLayout.WEST);
+    }
+    
+    if (channels.size() > 0) {
+      titleBar.add(getChannelComponent(), BorderLayout.CENTER);
+    }
+    
+    return titleBar;
+  }
+  
+  JComponent getDescriptionComponent() {
+    JLabel descriptionLabel = new JLabel(description);
+    descriptionLabel.setBorder(BorderFactory.createEmptyBorder(0,0,0,10));
+    descriptionLabel.setFont(descriptionLabel.getFont().deriveFont(Font.BOLD));
+    descriptionLabel.setForeground(Color.white);
+    return descriptionLabel;
+  }
+  
+  JComponent getChannelComponent() {
+    JPanel channelBar = new JPanel();
+    channelBar.setOpaque(false);
+    channelBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
     
     Iterator i = channels.iterator();
     while (i.hasNext()) {
       String channelName = (String)i.next();
-      titleBar.add(new ChannelTitle(channelName));
+      
+      if (showChannelsInTitle) {
+        channelBar.add(new ChannelTitle(channelName));
+      }      
     }
     
-    return titleBar;
+    return channelBar;
+  }
+  
+  /**
+   * Update the title of the data panel. This includes the text displayed in the
+   * header panel and the text displayed in the frame if the data panel is
+   * detached.
+   */
+  void updateTitle() {
+    component.setTitle(getTitleComponent());
+    
+    if (!attached) {
+      frame.setTitle(getTitle());
+    }
+  }
+  
+  void setShowChannelsInTitle(boolean showChannelsInTitle) {
+    if (this.showChannelsInTitle != showChannelsInTitle) {
+      this.showChannelsInTitle = showChannelsInTitle;
+      properties.setProperty("showChannelsInTitle", Boolean.toString(showChannelsInTitle));
+      updateTitle();
+    }
+  }
+  
+  void setDescription(String description) {
+    if (this.description != description) {
+      this.description = description;
+      if (description != null) {
+        properties.setProperty("description", description);
+      } else {
+        properties.remove("description");
+      }
+      updateTitle();
+    }
   }
 	
 	public void postData(ChannelMap channelMap) {
@@ -493,6 +645,20 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
   public boolean isChannelSubscribed(String channelName) {
     return channels.contains(channelName);
   }
+
+  public Properties getProperties() {
+    return properties;
+  }
+  
+  public void setProperty(String key, String value) {
+    if (key.equals("showChannelsInTitle")) {
+      setShowChannelsInTitle(Boolean.parseBoolean(value));
+    } else if (key.equals("description")) {
+      setDescription(value);
+    } else if (key.equals("attached") && Boolean.parseBoolean(value) == false) {
+      detachPanel();
+    }
+  }
 	
 	/**
 	 * Toggle detaching the UI component from the data panel container.
@@ -518,6 +684,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 */
 	void detachPanel() {
 		attached = false;
+    properties.setProperty("attached", "false");
 		dataPanelContainer.removeDataPanel(component);
     
     achButton.setIcon(attachIconFileName);
@@ -551,6 +718,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		if (addToContainer) {
 			attached = true;
+      properties.setProperty("attached", "true");
       
       achButton.setIcon(detachIconFileName);
       

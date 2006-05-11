@@ -57,11 +57,13 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.event.AxisChangeEvent;
+import org.jfree.chart.event.AxisChangeListener;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
-import org.jfree.chart.title.TextTitle;
-import org.jfree.chart.title.Title;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -80,17 +82,20 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	static Log log = LogFactory.getLog(JFreeChartDataPanel.class.getName());
 	
 	JFreeChart chart;
+  ValueAxis domainAxis;
+  NumberAxis rangeAxis;
 	ChartPanel chartPanel;
 	XYDataset dataCollection;
+  LegendTitle rangeLegend;
 	
 	JPanel chartPanelPanel;
 	
 	final boolean xyMode;
 	
 	int lastXYDataIndex;
+  
+  ChannelMap cachedChannelMap;
     
-    static Title emptyTitle = new TextTitle(" ");
-
 	public JFreeChartDataPanel() {
 		this(false);
 	}
@@ -113,8 +118,14 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       
       NumberAxis domainAxis = new NumberAxis();
       domainAxis.setAutoRangeIncludesZero(true);
+      domainAxis.addChangeListener(new AxisChangeListener() {
+        public void axisChanged(AxisChangeEvent ace) {
+          boundsChanged();
+        }        
+      });
+      this.domainAxis = domainAxis;
       
-      NumberAxis rangeAxis = new NumberAxis();
+      rangeAxis = new NumberAxis();
       rangeAxis.setAutoRangeIncludesZero(true);
       
       StandardXYToolTipGenerator toolTipGenerator = new StandardXYToolTipGenerator("{1} , {2}",
@@ -130,10 +141,10 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		} else {
 			dataCollection = new TimeSeriesCollection();
       
-      DateAxis domainAxis = new DateAxis();
+      domainAxis = new DateAxis();
       domainAxis.setLabel("Time");
       
-      NumberAxis rangeAxis = new NumberAxis();
+      rangeAxis = new NumberAxis();
       rangeAxis.setAutoRangeIncludesZero(true);
       
       StandardXYToolTipGenerator toolTipGenerator = new StandardXYToolTipGenerator("{0}: {1} , {2}",
@@ -147,7 +158,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       
       chart = new JFreeChart(xyPlot);
 		}
-
+    
+    rangeAxis.addChangeListener(new AxisChangeListener() {
+      public void axisChanged(AxisChangeEvent ace) {
+        boundsChanged();
+      }        
+    });    
+    
 		chart.setAntiAlias(false);
 
 		chartPanel = new ChartPanel(chart, true);
@@ -187,6 +204,26 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     ImageSelection contents = new ImageSelection(image);
     clipboard.setContents(contents, null);
   }
+  
+  private void boundsChanged() {
+    if (xyMode) {
+      if (domainAxis.isAutoRange()) {
+        properties.remove("domainLowerBound");
+        properties.remove("domainUpperBound");        
+      } else {
+        properties.setProperty("domainLowerBound", Double.toString(domainAxis.getLowerBound()));
+        properties.setProperty("domainUpperBound", Double.toString(domainAxis.getUpperBound()));        
+      }
+    }
+    
+    if (rangeAxis.isAutoRange()) {
+      properties.remove("rangeLowerBound");
+      properties.remove("rangeUpperBound");
+    } else {
+      properties.setProperty("rangeLowerBound", Double.toString(rangeAxis.getLowerBound()));
+      properties.setProperty("rangeUpperBound", Double.toString(rangeAxis.getUpperBound()));
+    }
+  }
 		
 	public boolean supportsMultipleChannels() {
 		return true;
@@ -212,6 +249,17 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 				((XYSeriesCollection)dataCollection).addSeries(data);
 			}
 		} else {
+      if (channels.size() == 1) {
+        rangeLegend = chart.getLegend();
+        chart.removeLegend();
+        rangeAxis.setLabel(seriesName);
+      } else {
+        if (chart.getLegend() == null) {
+          chart.addLegend(rangeLegend);
+        }
+        rangeAxis.setLabel(null);
+      }
+      
 			TimeSeries data = new TimeSeries(seriesName, FixedMillisecond.class);
 			data.setMaximumItemAge((int)(timeScale*1000*2));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
@@ -232,12 +280,25 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		log.info("Removing channel: " + channelName + ".");
 		
 		if (xyMode) {
+      clearData();
 			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
 			//TODO add this functionality
-		} else {
+		} else {      
 			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
 			TimeSeries data = dataCollection.getSeries(seriesName);
 			dataCollection.removeSeries(data);
+
+      if (channels.size() == 1) {
+        rangeLegend = chart.getLegend();
+        chart.removeLegend();
+        Object[] channelsArray = channels.toArray();
+        rangeAxis.setLabel(getSeriesName((String)channelsArray[0]));
+      } else {
+        if (chart.getLegend() == null) {
+          chart.addLegend(rangeLegend);
+        }
+        rangeAxis.setLabel(null);
+      }      
 		}
 		
 		return true;
@@ -252,7 +313,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		}
 	}
   
-  JComponent getTitleComponent() {
+  JComponent getChannelComponent() {
     if (xyMode && channels.size() == 2) {
       JPanel titleBar = new JPanel();
       titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -270,7 +331,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       
       return titleBar;
     } else {
-      return super.getTitleComponent();
+      return super.getChannelComponent();
     }
   }  
 	
@@ -281,11 +342,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			if (channels.size() == 1) {
 				String channelName = (String)channelsArray[0];
 				String seriesName = getSeriesName(channelName);
-				((XYPlot)chart.getPlot()).getDomainAxis().setLabel(seriesName);
+				domainAxis.setLabel(seriesName);
 			} else if (channels.size() == 2) {
 				String channelName = (String)channelsArray[1];
 				String seriesName = getSeriesName(channelName);
-				((XYPlot)chart.getPlot()).getRangeAxis().setLabel(seriesName);
+				rangeAxis.setLabel(seriesName);
 			}
 		}
 	}
@@ -321,6 +382,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	}
 	
 	public void postData(ChannelMap channelMap) {
+    cachedChannelMap = this.channelMap;
+    
 		super.postData(channelMap);
 		
 		if (xyMode) {
@@ -455,14 +518,25 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		int xChannelIndex = channelMap.GetIndex(xChannelName);
 		int yChannelIndex = channelMap.GetIndex(yChannelName);
 
-		//return if this channel map doesn't have data for both the x and y channel
-		if(xChannelIndex == -1 || yChannelIndex == -1) {
-			return;
+    int firstXChannelIndex = -1;    
+    
+		//return if this channel map doesn't have data for the y channel
+		if(yChannelIndex == -1) {
+      return;
+    } else if (xChannelIndex == -1) {
+      //see if we cached data for the x channel
+      firstXChannelIndex = (cachedChannelMap==null) ?
+          -1 :
+          cachedChannelMap.GetIndex(xChannelName);
+      if (firstXChannelIndex == -1) {
+        cachedChannelMap = null;
+        return;
+      }
 		}
 				
 		try {
 			//TODO make sure data is at the same timestamp
-			double[] times = channelMap.GetTimes(xChannelIndex); //FIXME go over all channel times
+			double[] times = channelMap.GetTimes(yChannelIndex); //FIXME go over all channel times
 
 			int startIndex = lastXYDataIndex + 1;
 			int endIndex = startIndex;
@@ -485,48 +559,60 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			xySeriesData = dataCollection.getSeries(0);
 			
 			//FIXME assume data of same type
-			int typeID = channelMap.GetType(xChannelIndex);
+			int typeID = channelMap.GetType(yChannelIndex);
 					
 			chart.setNotify(false);
 			
 			switch (typeID) {
 				case ChannelMap.TYPE_FLOAT64:
-					double[] xDoubleData = channelMap.GetDataAsFloat64(xChannelIndex);
+					double[] xDoubleData = firstXChannelIndex == -1?
+					    channelMap.GetDataAsFloat64(xChannelIndex) :
+              cachedChannelMap.GetDataAsFloat64(firstXChannelIndex);
 					double[] yDoubleData = channelMap.GetDataAsFloat64(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						xySeriesData.add(xDoubleData[i], yDoubleData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_FLOAT32:
-					float[] xFloatData = channelMap.GetDataAsFloat32(xChannelIndex);
+					float[] xFloatData = firstXChannelIndex == -1?
+              channelMap.GetDataAsFloat32(xChannelIndex) :
+              cachedChannelMap.GetDataAsFloat32(firstXChannelIndex);
 					float[] yFloatData = channelMap.GetDataAsFloat32(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						xySeriesData.add(xFloatData[i], yFloatData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_INT64:
-					long[] xLongData = channelMap.GetDataAsInt64(xChannelIndex);
+					long[] xLongData = firstXChannelIndex == -1?
+              channelMap.GetDataAsInt64(xChannelIndex) :
+              cachedChannelMap.GetDataAsInt64(firstXChannelIndex);
 					long[] yLongData = channelMap.GetDataAsInt64(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						xySeriesData.add(xLongData[i], yLongData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT32:
-					int[] xIntData = channelMap.GetDataAsInt32(xChannelIndex);
+					int[] xIntData = firstXChannelIndex == -1?
+              channelMap.GetDataAsInt32(xChannelIndex) :
+              cachedChannelMap.GetDataAsInt32(firstXChannelIndex);
 					int[] yIntData = channelMap.GetDataAsInt32(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						xySeriesData.add(xIntData[i], yIntData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT16:
-					short[] xShortData = channelMap.GetDataAsInt16(xChannelIndex);
+					short[] xShortData = firstXChannelIndex == -1?
+              channelMap.GetDataAsInt16(xChannelIndex) :
+              cachedChannelMap.GetDataAsInt16(firstXChannelIndex);
 					short[] yShortData = channelMap.GetDataAsInt16(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						xySeriesData.add(xShortData[i], yShortData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_INT8:
-					byte[] xByteData = channelMap.GetDataAsInt8(xChannelIndex);
+					byte[] xByteData = firstXChannelIndex == -1?
+              channelMap.GetDataAsInt8(xChannelIndex) :
+              cachedChannelMap.GetDataAsInt8(firstXChannelIndex);
 					byte[] yByteData = channelMap.GetDataAsInt8(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
 						xySeriesData.add(xByteData[i], yByteData[i]);
@@ -541,7 +627,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			
 			chart.setNotify(true);
 			chart.fireChartChanged();
-			
+      
+      //make sure cached channel map can be freeded
+      cachedChannelMap = null;
 		} catch (Exception e) {
 			log.error("Problem plotting data for channels " + xChannelName + " and " + yChannelName + ".");
 			e.printStackTrace();
@@ -555,9 +643,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			return;
 		}
 		
-		XYPlot xyPlot = (XYPlot)chart.getPlot();
-		DateAxis dateAxis = (DateAxis)xyPlot.getDomainAxis();
-		dateAxis.setRange((time-timeScale)*1000, time*1000);
+    domainAxis.setRange((time-timeScale)*1000, time*1000);
 	}	
 	
 	void clearData() {
@@ -579,6 +665,22 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		
 		log.info("Cleared data display.");
 	}
+  
+  public void setProperty(String key, String value) {
+    super.setProperty(key, value);
+    
+    if (key != null && value != null) {
+      if (key.equals("domainLowerBound")) {
+        domainAxis.setLowerBound(Double.parseDouble(value));
+      } else if (key.equals("domainUpperBound")) {
+        domainAxis.setUpperBound(Double.parseDouble(value));
+      } else if (key.equals("rangeLowerBound")) {
+        rangeAxis.setLowerBound(Double.parseDouble(value));
+      } else if (key.equals("rangeUpperBound")) {
+        rangeAxis.setUpperBound(Double.parseDouble(value));
+      }      
+    }
+  }
 	
 	public String toString() {
 		return "JFreeChart Data Panel";

@@ -33,12 +33,14 @@ package org.nees.buffalo.rdv;
 
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 import org.apache.commons.cli.CommandLine;
@@ -88,8 +90,8 @@ public class DataViewer {
 			rbnb.exit();
 		}
 		log.info("Exiting.");
-    /* This addresses the zomboid javaw processes left under Windows when RDV exits */
-    System.exit (0);
+
+		System.exit(0);
 	}
  	
  	public RBNBController getRBNBController() {
@@ -198,6 +200,10 @@ public class DataViewer {
     return icon;
   }  
 
+  public void alertError(String errorMessage) {
+    JOptionPane.showMessageDialog(applicationFrame, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
+  }
+
 	public static void main(String[] args) {
 		//enable dynamic layout during application resize
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -255,7 +261,8 @@ public class DataViewer {
 		options.addOption(playOption);
 		options.addOption(realTimeOption);			
 		options.addOption(helpOption);
-				
+
+		File configurationFile = null;
 		String hostName = null;
 		int portNumber = -1;
 		String[] channels = null;
@@ -274,7 +281,12 @@ public class DataViewer {
 	    		formatter.printHelp("DataViewer", options, true);
 	    		return;
 	    	}
-	    	
+
+		String[] leftOverOptions = line.getArgs();
+		if (leftOverOptions != null && leftOverOptions.length > 0) {
+			configurationFile = new File(leftOverOptions[0]);
+		}
+
 	    	if (line.hasOption('h')) {
 	    		hostName = line.getOptionValue('h');
 	    		log.info("Set host name to " + hostName + ".");
@@ -315,6 +327,11 @@ public class DataViewer {
 		
     RBNBController rbnbController = dataViewer.getRBNBController();
     ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
+
+    if (configurationFile != null) {
+      dataViewer.getConfigurationManager().loadConfiguration(configurationFile);
+      return;
+    }
     
 		if (playbackRate != -1) {
       controlPanel.setPlaybackRate(playbackRate);
