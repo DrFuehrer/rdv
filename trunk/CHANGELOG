@@ -106,6 +106,7 @@ in time that can be returned to as a collaboration tool.
  -Hide legend when only displaying a single channel in time series data panel.
 -Added scroll pane to tabular data panel and set minimum row height.
 -Optimized subscribing to channels.
+-Fix initial display of data after channel subscription for tabular data panel.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

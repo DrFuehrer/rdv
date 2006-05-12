@@ -379,8 +379,16 @@ public class TabularDataPanel extends AbstractDataPanel {
         
     int startIndex = -1;
     
+    // determine what time we should load data from
+    double dataStartTime;
+    if (lastTimeDisplayed == time) {
+      dataStartTime = time-timeScale;
+    } else {
+      dataStartTime = lastTimeDisplayed;
+    }
+
     for (int i=0; i<times.length; i++) {
-        if (times[i] > lastTimeDisplayed && times[i] <= time) {
+        if (times[i] > dataStartTime && times[i] <= time) {
             startIndex = i;
             break;
         }
@@ -551,13 +559,13 @@ public class TabularDataPanel extends AbstractDataPanel {
         case 0:
           return dataRow.getName();  
         case 1:
-          return new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
+          return dataRow.isCleared()? null : new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
         case 2:
           return dataRow.getUnit();
         case 3:
-          return new Double(dataRow.getMinimum() - (useOffsets?dataRow.getOffset():0));
+          return dataRow.isCleared()? null : new Double(dataRow.getMinimum() - (useOffsets?dataRow.getOffset():0));
         case 4:
-          return new Double(dataRow.getMaximum() - (useOffsets?dataRow.getOffset():0));
+          return dataRow.isCleared()? null : new Double(dataRow.getMaximum() - (useOffsets?dataRow.getOffset():0));
         default:
           return null;
       }
@@ -627,8 +635,11 @@ public class TabularDataPanel extends AbstractDataPanel {
     }
 
     public void clearData() {
-      value = min = max = 0;
       cleared = true;
+    }
+    
+    public boolean isCleared() {
+      return cleared;
     }
   }
   
