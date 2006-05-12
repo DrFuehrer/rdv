@@ -32,6 +32,7 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -48,6 +49,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
@@ -91,6 +93,10 @@ public class TabularDataPanel extends AbstractDataPanel {
   private JTable table;
 
   /**
+   * The scroll pane for the table
+   */
+  private JScrollPane tableScrollPane;
+  /**
    * The cell renderer for the data
    * 
    * @since  1.3
@@ -119,6 +125,10 @@ public class TabularDataPanel extends AbstractDataPanel {
    */
   double lastTimeDisplayed;
 
+  /**
+   * The minimum height (in pixels) for a row
+   */
+  private static final int MIN_ROW_HEIGHT = 12;
 	
   /**
    * Initialize the data panel.
@@ -155,8 +165,10 @@ public class TabularDataPanel extends AbstractDataPanel {
       }
     });
     
-    mainPanel.add(table.getTableHeader(), BorderLayout.NORTH);
-    mainPanel.add(table, BorderLayout.CENTER);
+    tableScrollPane = new JScrollPane(table);
+    tableScrollPane.getViewport().setBackground(Color.white);
+    
+    mainPanel.add(tableScrollPane, BorderLayout.CENTER);
     
     JPanel buttonPanel = new JPanel();
     buttonPanel.setLayout(new BorderLayout());
@@ -331,7 +343,11 @@ public class TabularDataPanel extends AbstractDataPanel {
   
   private void updateRowHeight() {
     if (channels.size() > 0) {
-      table.setRowHeight(table.getHeight()/channels.size());
+      int rowHeight = tableScrollPane.getViewport().getHeight()/channels.size();
+      if (rowHeight < MIN_ROW_HEIGHT) {
+        rowHeight = MIN_ROW_HEIGHT;
+      }
+      table.setRowHeight(rowHeight);
     }
   }
 	
