@@ -104,6 +104,8 @@ in time that can be returned to as a collaboration tool.
  -Fixed bug when loading data for xy data panel.
  -Added support for load/saving bounds of jfreechart derived data panels.
  -Hide legend when only displaying a single channel in time series data panel.
+-Added scroll pane to tabular data panel and set minimum row height.
+-Optimized subscribing to channels.
 
 1.2.0 - June 21, 2005
 -Added command line option (-s or --time-scale) to set the time scale

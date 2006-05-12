@@ -427,9 +427,6 @@ public class RBNBController implements Player, MetadataListener {
 			return false;
 		}
 		
-		//update metadata
-		metadataManager.updateMetadataBackground();
-
 		//notify channel manager
 		channelManager.subscribe(channelName, panel);
 		
