@@ -147,7 +147,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       StandardXYToolTipGenerator toolTipGenerator = new StandardXYToolTipGenerator("{1} , {2}",
           new DecimalFormat(),
           new DecimalFormat());
-      StandardXYItemRenderer renderer = new StandardXYItemRenderer(StandardXYItemRenderer.LINES,
+      StandardXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
           toolTipGenerator);
       renderer.setDefaultEntityRadius(6);      
       
@@ -166,7 +166,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       StandardXYToolTipGenerator toolTipGenerator = new StandardXYToolTipGenerator("{0}: {1} , {2}",
           new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"),
           new DecimalFormat());
-      StandardXYItemRenderer renderer = new StandardXYItemRenderer(StandardXYItemRenderer.LINES,
+      StandardXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
           toolTipGenerator);
       renderer.setDefaultEntityRadius(6);
 
