@@ -106,6 +106,8 @@ public class RBNBController implements Player, MetadataListener {
  	private boolean dropData;
 	
 	private final double PLAYBACK_REFRESH_RATE = 0.05;
+  
+  private final long LOADING_TIMEOUT = 30000;
 	
 	public RBNBController() {
 		
@@ -668,7 +670,7 @@ public class RBNBController implements Player, MetadataListener {
 				
 				if (requestStatus) {
 					try {
-						preFetchChannelMap = sink.Fetch(5000);
+						preFetchChannelMap = sink.Fetch(LOADING_TIMEOUT);
 					} catch (Exception e) {
  						log.error("Failed to fetch data.");
  						e.printStackTrace();
@@ -750,11 +752,11 @@ public class RBNBController implements Player, MetadataListener {
 		
 		ChannelMap getmap = null;
 
-		int timeout;
+		long timeout;
 		if (state == STATE_MONITORING) {
 			timeout = 500;
 		} else {
-			timeout = 5000;
+			timeout = LOADING_TIMEOUT;
 		}
 		
 		try {
