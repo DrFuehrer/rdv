@@ -112,8 +112,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
    * @since  1.3
    */
   private DoubleTableCellRenderer doubleCellRenderer;
-  //ÊTODO get this from each row
-  private DataTableCellRenderer dataCellRenderer;
+  //ÊDOTOO get this from each row
+  //private DataTableCellRenderer dataCellRenderer;
   
   /**
    * The button to set decimal data rendering
@@ -180,9 +180,11 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
           }); // MouseListener
     // XXX
  
-    // TODO get the rows and add from each one
-    DataTableCellRenderer dataCellRenderer = new DataTableCellRenderer ();
-    table.getColumn ("Value").setCellRenderer (dataCellRenderer);
+    // DOTOO get the rows and add from each one
+    //dataCellRenderer = new DataTableCellRenderer ();
+    //table.getColumn ("Value").setCellRenderer (dataCellRenderer);
+    doubleCellRenderer = new DoubleTableCellRenderer ();
+    table.getColumn ("Value").setCellRenderer (doubleCellRenderer);
 
     table.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
@@ -296,12 +298,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     mainPanel.setComponentPopupMenu(popupMenu);
     table.setComponentPopupMenu(popupMenu);
     mainPanel.addMouseListener(new MouseInputAdapter() {});
-    
-    // XXX
-    // setUpUnitsColumn (table, table.getColumn (5));
-    // TODO
-    // setUpDataColumn (table, table.getColumn ("Value"));
-    // XXX
 	}
   
   private void useEngineeringRenderer(boolean useEngineeringRenderer) {
@@ -321,8 +317,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       tableModel.setMaxMinVisible(maxMinVisible);
       showMaxMinMenuItem.setSelected(maxMinVisible);
       
-      // TODO make this a vector
-      table.getColumn("Value").setCellRenderer(dataCellRenderer);
+      //table.getColumn ("Value").setCellRenderer (dataCellRenderer);
+      table.getColumn ("Value").setCellRenderer (doubleCellRenderer);
       
       if (maxMinVisible) {
         table.getColumn("Min").setCellRenderer(doubleCellRenderer);
@@ -470,45 +466,85 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       default:
       	return;
       } // switch
-
-      // XXX try color changes here
-      int dataCellRowNumber = tableModel.getRowNumber (channelName);
-      Object col1data = tableModel.getValueAt (dataCellRowNumber, 1);
-      Object col4data = tableModel.getValueAt (dataCellRowNumber, 4);
-      double loThresh, hiThresh;
-
-      if (col1data!=null && col4data!=null) {
-         if (col1data.getClass().isInstance (new Double (-1.0)) ) {
-            log.debug ("^^^ col1's a Double");
-            loThresh = ( (Double)(tableModel.getValueAt (dataCellRowNumber, 1)) ).doubleValue ();
-            if (data < loThresh) { // set the cell color
-               // TODO make an indicator
-               tableModel.setValueAt (new String ("-"), dataCellRowNumber, 3);
-               //dataCellRenderer.setBackground (Color.red);
-            } else { // clear the cell color
-               tableModel.setValueAt (new String (""), dataCellRowNumber, 3);
-               //dataCellRenderer.setBackground (null);
-            }
-         } // col1
-
-         if (col4data.getClass().isInstance (new Double (-1.0)) )  {
-            log.debug ("^^^ col4's a Double");
-            hiThresh = ( (Double)(tableModel.getValueAt (dataCellRowNumber, 4)) ).doubleValue ();
-            if (hiThresh < data) { // set the cell color
-               tableModel.setValueAt (new String ("+"), dataCellRowNumber, 3);
-               //dataCellRenderer.setBackground (Color.yellow);
-            } else { //  clear the cell color
-               tableModel.setValueAt (new String (""), dataCellRowNumber, 3);
-               //dataCellRenderer.setBackground (null);
-            }
-         } // col4      
-      } // if not null
-      // XXX
-      
       tableModel.updateData(channelName, data);
-    } // for 
+      this.flagThreshold (tableModel.getRowNumber (channelName));
+    /*  
+      // TODO why isn't low indicator displaying?
+      int dataCellRowNumber = tableModel.getRowNumber (channelName);
+      Object minThreshData = tableModel.getValueAt (dataCellRowNumber, tableModel.findColumn ("Min Thresh"));
+      Object maxThreshData = tableModel.getValueAt (dataCellRowNumber, tableModel.findColumn ("Max Thresh"));
+      double loThresh;
+      double hiThresh;
+
+      if (minThreshData!=null && maxThreshData!=null) {
+         if (minThreshData.getClass().isInstance (new Double (-1.0)) ) {
+            loThresh = ((Double)minThreshData).doubleValue ();
+            if (data < loThresh) { // indicate it on the table
+               tableModel.setValueAt (new String ("***"), dataCellRowNumber, tableModel.findColumn ("Out Thresh"));
+               //dataCellRenderer.setBackground (Color.red);
+            } else { // clear the cell
+               tableModel.setValueAt (new String (""), dataCellRowNumber, tableModel.findColumn ("Out Thresh"));
+               //dataCellRenderer.setBackground (null);
+            }
+         } // min thresh
+
+         if (maxThreshData.getClass().isInstance (new Double (-1.0)) )  {
+            hiThresh = ((Double)maxThreshData).doubleValue ();
+            if (hiThresh < data) { // indicate it on the table
+               tableModel.setValueAt (new String ("+"), dataCellRowNumber, tableModel.findColumn ("Out Thresh"));
+               //dataCellRenderer.setBackground (Color.yellow);
+            } else { //  clear the cell
+               tableModel.setValueAt (new String (""), dataCellRowNumber, tableModel.findColumn ("Out Thresh"));
+               //dataCellRenderer.setBackground (null);
+            }
+         } // max thresh 
+      } // if not null
+      */
+     } // for 
 	} // postDataTabular ()
-  
+   
+   
+  /** TODO a method that will set the out of threshold flag by looking at the table's data value */
+ public void flagThreshold (int dataRow) {
+      Object minThreshData = tableModel.getValueAt (dataRow, tableModel.findColumn ("Min Thresh"));
+      Object dataData = tableModel.getValueAt (dataRow, tableModel.findColumn ("Value"));
+      Object maxThreshData = tableModel.getValueAt (dataRow, tableModel.findColumn ("Max Thresh"));
+      int outThreshColumn = tableModel.findColumn ("Out Thresh");
+      double loThresh;
+      double hiThresh;
+      double data;
+      if (minThreshData!=null && maxThreshData!=null && dataData!=null) {
+         
+         if (isADouble (maxThreshData) && isADouble (dataData)) {   
+            loThresh = ((Double)minThreshData).doubleValue ();
+            data = ((Double)dataData).doubleValue ();
+            if (data < loThresh) { // indicate it on the table
+               tableModel.setValueAt (new String ("***"), dataRow, outThreshColumn);
+               //dataCellRenderer.setBackground (Color.red);
+            } else { // clear the cell
+               tableModel.setValueAt (new String (""), dataRow, outThreshColumn);
+               //dataCellRenderer.setBackground (null);
+            }
+         } // min thresh
+
+         if (isADouble (maxThreshData) && isADouble (dataData))  {
+            hiThresh = ((Double)maxThreshData).doubleValue ();
+            data = ((Double)dataData).doubleValue ();
+            if (hiThresh < data) { // indicate it on the table
+               tableModel.setValueAt (new String ("+"), dataRow, outThreshColumn);
+               //dataCellRenderer.setBackground (Color.yellow);
+            } else { //  clear the cell
+               tableModel.setValueAt (new String (""), dataRow, outThreshColumn);
+               //dataCellRenderer.setBackground (null);
+            }
+         } // max thresh   
+      } // if not null
+   } // flagThreshold ()
+   
+ public boolean isADouble (Object isit) {
+    return ( isit.getClass().isInstance (new Double (-1.0)) );
+ } // isADouble ()
+ 
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
     
@@ -517,22 +553,20 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         useEngineeringRenderer(true);
       } else if (key.equals("maxMinVisible") && value.equals("true")) {
         setMaxMinVisible(true);
-      }
-    }
-  }
+      } // if
+    } // if
+  } // setProperty ()
 	
 	public String toString() {
 		return "Tabular Data Panel";
 	}
   
-    /** XXX a method for the @see TableModelListener interface */
-
+   /** XXX a method for the @see TableModelListener interface */
    public void tableChanged (TableModelEvent e) {
        int row = e.getFirstRow ();
        int column = e.getColumn ();
        TableModel model = (TableModel)e.getSource ();
        Object data = model.getValueAt (row, column);
-       // String columnName = model.getColumnName (column);
        /*
        if (true) {
           log.debug ("^^^ tableChange at: " + Integer.toString (row) + ", " + Integer.toString (column));
@@ -545,10 +579,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   private class DataTableModel extends AbstractTableModel {
     private String[] columnNames = {
         "Name",
-        "Min Threshold",
+        "Out Thresh",
+        "Min Thresh",
+        "Max Thresh",
         "Value",
-        "Out Of Range",
-        "Max Threshold",
         "Unit",
         "Min",
         "Max"};
@@ -571,7 +605,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     
     // XXX
     public boolean isCellEditable (int row, int col) {
-       return (col==1 || col==4); 
+       return (
+             col == this.findColumn ("Min Thresh") ||
+             col == this.findColumn ("Max Thresh")
+             );
     } // isCellEditable ()
     
     public void addRow(String name, String unit) {
@@ -668,13 +705,13 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         case 0:
           return dataRow.getName();
         case 1:
-           return (dataRow.minThresh == Double.MIN_VALUE)? null : new Double (dataRow.minThresh); 
-        case 2:
-          return dataRow.isCleared()? null : new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
-        case 3:
            return dataRow.threshOut;
+        case 2:
+           return (dataRow.minThresh == Double.MIN_VALUE)? null : new Double (dataRow.minThresh);
+        case 3:
+           return (dataRow.maxThresh == Double.MAX_VALUE)? null : new Double (dataRow.maxThresh); 
         case 4:
-           return (dataRow.maxThresh == Double.MAX_VALUE)? null : new Double (dataRow.maxThresh);       
+          return dataRow.isCleared()? null : new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
         case 5:
           return dataRow.getUnit();
         case 6:
@@ -691,22 +728,31 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         log.debug ("^^^ Setting value at " + row + "," + col + " to " + value);
         DataRow dataRow = (DataRow)rows.get (row);
         switch (col) {
-          case 1:
-             dataRow.minThresh = Double.parseDouble ((String)value);
+        case 1: // "Out Thresh"
+           dataRow.threshOut = (String)value;
+           fireTableCellUpdated (row, col);  
+        // TODO do the thresh indicator outside of update data
+        case 2: // "Min Thresh"
+             try {
+                dataRow.minThresh = Double.parseDouble ((String)value);
+             } catch (Throwable e) {
+                // log.debug ("^^^ Empty string in minThresh - breaking");
+                break;
+             }
              fireTableCellUpdated (row, col);
-             // XXX change color for thresholds
+             // TODO
+             flagThreshold (row);
              break;
-          // TODO
-          case 3: // out of threshold interval
-             dataRow.threshOut = (String)value;
-             fireTableCellUpdated (row, col);
-          case 4:
+          case 3: // "Max Thresh"
              try {
                 dataRow.maxThresh = Double.parseDouble ((String)value);
              } catch (Throwable e) {
-                log.debug ("^^^ Caught the buggy, now ???");
+                // log.debug ("^^^ Empty string in maxThresh - breaking");
+                break;
              }
              fireTableCellUpdated (row, col);
+             // TODO
+             flagThreshold (row);
              break;
           default:
             return; // do nothing
@@ -729,23 +775,21 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     String name;
     String unit;
     double value;
-    double min = Double.MIN_VALUE;
-    double max = Double.MAX_VALUE;
+    double min;
+    double max;
     
-    // XXX
-    double minThresh;
-    double maxThresh;
+    double minThresh = Double.MIN_VALUE;
+    double maxThresh = Double.MAX_VALUE;
     String threshOut;
+    // DOTOO
     DataTableCellRenderer dataCellRenderer;
-    // XXX
+ 
     double offset;
     boolean cleared;
-
     
     public DataRow(String name, String unit) {
       this.name = name;
       this.unit = unit;
-      // TODO
       this.dataCellRenderer = new DataTableCellRenderer ();
       clearData();
     }
