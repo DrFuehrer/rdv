@@ -49,6 +49,8 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -657,6 +659,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
       setDescription(value);
     } else if (key.equals("attached") && Boolean.parseBoolean(value) == false) {
       detachPanel();
+    } else if (key.equals("bounds")) {
+      loadBounds(value);
     }
   }
 	
@@ -697,10 +701,59 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		});
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);		
 
-		frame.getContentPane().add(component);
-		frame.pack();
+    frame.getContentPane().add(component);
+    
+    String bounds = properties.getProperty("bounds");
+    if (bounds != null) {
+      loadBounds(bounds);
+    } else {
+      frame.pack();      
+    }
+    
+    frame.addComponentListener(new ComponentAdapter() {
+      public void componentResized(ComponentEvent e) {
+        storeBounds();
+      }
+      public void componentMoved(ComponentEvent e) {
+        storeBounds();
+      }
+      public void componentShown(ComponentEvent e) {
+        storeBounds();
+      }
+    });
+    
 		frame.setVisible(true);
 	}
+  
+  void loadBounds(String bounds) {
+    if (bounds != null) {
+      properties.setProperty("bounds", bounds);
+
+      if (frame == null) {
+        return;
+      }
+
+      String[] boundsElements = bounds.split(",");
+      int x = Integer.parseInt(boundsElements[0]);
+      int y = Integer.parseInt(boundsElements[1]);
+      int width = Integer.parseInt(boundsElements[2]);
+      int height = Integer.parseInt(boundsElements[3]);
+      frame.setBounds(x,y,width,height);
+    }
+  }
+  
+  void storeBounds() {
+    if (frame == null) {
+      return;
+    }
+    
+    String bounds = frame.getX() + "," +
+    frame.getY() + "," +
+    frame.getWidth() + "," +
+    frame.getHeight();
+    
+    properties.setProperty("bounds", bounds);    
+  }
 	
 	/** Dispose of the frame for the UI component. Dock the UI component if
 	 * addToContainer is true.
@@ -718,7 +771,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		if (addToContainer) {
 			attached = true;
-      properties.setProperty("attached", "true");
+      properties.remove("attached");
       
       achButton.setIcon(detachIconFileName);
       
