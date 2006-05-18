@@ -111,7 +111,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
    * 
    * @since  1.3
    */
-  private DoubleTableCellRenderer doubleCellRenderer;  
+  private DoubleTableCellRenderer doubleCellRenderer;
+  //ÊTODO get this from each row
+  private DataTableCellRenderer dataCellRenderer;
   
   /**
    * The button to set decimal data rendering
@@ -156,7 +158,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 	}
 	
   /**
-   * Initialize the container and adds the header.
+   * Initialize the container and add the header.
    * 
    * @since  1.2
    */
@@ -178,8 +180,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
           }); // MouseListener
     // XXX
  
-    doubleCellRenderer = new DoubleTableCellRenderer();
-    table.getColumn("Value").setCellRenderer(doubleCellRenderer);
+    // TODO get the rows and add from each one
+    DataTableCellRenderer dataCellRenderer = new DataTableCellRenderer ();
+    table.getColumn ("Value").setCellRenderer (dataCellRenderer);
 
     table.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
@@ -295,7 +298,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     mainPanel.addMouseListener(new MouseInputAdapter() {});
     
     // XXX
-    // setUpUnitsColumn (table, table.getColumnModel ().getColumn (5));
+    // setUpUnitsColumn (table, table.getColumn (5));
+    // TODO
+    // setUpDataColumn (table, table.getColumn ("Value"));
     // XXX
 	}
   
@@ -316,7 +321,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       tableModel.setMaxMinVisible(maxMinVisible);
       showMaxMinMenuItem.setSelected(maxMinVisible);
       
-      table.getColumn("Value").setCellRenderer(doubleCellRenderer);
+      // TODO make this a vector
+      table.getColumn("Value").setCellRenderer(dataCellRenderer);
       
       if (maxMinVisible) {
         table.getColumn("Min").setCellRenderer(doubleCellRenderer);
@@ -468,31 +474,34 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       // XXX try color changes here
       int dataCellRowNumber = tableModel.getRowNumber (channelName);
       Object col1data = tableModel.getValueAt (dataCellRowNumber, 1);
-      Object col3data = tableModel.getValueAt (dataCellRowNumber, 3);
+      Object col4data = tableModel.getValueAt (dataCellRowNumber, 4);
       double loThresh, hiThresh;
 
-      DefaultTableCellRenderer dataCellRenderer = (DefaultTableCellRenderer)( table.getCellRenderer (dataCellRowNumber, 2) );
-
-      if (col1data!=null && col3data!=null) {
+      if (col1data!=null && col4data!=null) {
          if (col1data.getClass().isInstance (new Double (-1.0)) ) {
-            // log.debug ("^^^ col1's a Double");
+            log.debug ("^^^ col1's a Double");
             loThresh = ( (Double)(tableModel.getValueAt (dataCellRowNumber, 1)) ).doubleValue ();
             if (data < loThresh) { // set the cell color
-               dataCellRenderer.setBackground (Color.red);
+               // TODO make an indicator
+               tableModel.setValueAt (new String ("-"), dataCellRowNumber, 3);
+               //dataCellRenderer.setBackground (Color.red);
             } else { // clear the cell color
-               dataCellRenderer.setBackground (null);
+               tableModel.setValueAt (new String (""), dataCellRowNumber, 3);
+               //dataCellRenderer.setBackground (null);
             }
          } // col1
 
-         if (col3data.getClass().isInstance (new Double (-1.0)) )  {
-            // log.debug ("^^^ col3's a Double");
-            hiThresh = ( (Double)(tableModel.getValueAt (dataCellRowNumber, 3)) ).doubleValue ();
+         if (col4data.getClass().isInstance (new Double (-1.0)) )  {
+            log.debug ("^^^ col4's a Double");
+            hiThresh = ( (Double)(tableModel.getValueAt (dataCellRowNumber, 4)) ).doubleValue ();
             if (hiThresh < data) { // set the cell color
-               dataCellRenderer.setBackground (Color.yellow);
+               tableModel.setValueAt (new String ("+"), dataCellRowNumber, 3);
+               //dataCellRenderer.setBackground (Color.yellow);
             } else { //  clear the cell color
-               dataCellRenderer.setBackground (null);
+               tableModel.setValueAt (new String (""), dataCellRowNumber, 3);
+               //dataCellRenderer.setBackground (null);
             }
-         } // col3      
+         } // col4      
       } // if not null
       // XXX
       
@@ -531,29 +540,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
        }
        */
    } // tableChanged ()
-
- /** XXX a method to implement a custom cell editor or the units column */
- private void setUpUnitsColumn (JTable table, TableColumn unitsColumn)
- {
-    String[] unitTypes = new String[] {"engineering", "decimal", "other"};
-    JComboBox comboBox = new JComboBox();
-    for (int i=0; i<unitTypes.length; i++) {
-       comboBox.addItem (unitTypes[i]);
-    } //for
-    unitsColumn.setCellEditor (new DefaultCellEditor (comboBox));
- } // setUpUnitsColumn ()
- 
- /** XXX a method that will flag cell contents that are outside of threshold ranges */
-
- private void setUpDataColumn (JTable table, TableColumn dataColumn)
- {
-    /*TableCellRenderer dataCellRenderer = dataColumn.getCellRenderer ();
-    // XXX change color for threshold
-    /*if (data < dataRow.minThresh || dataRow.maxThresh < data) {
-       dataRow.getCellRenderer.setBackground (Color.red);
-    }*/
- } // setUpDataColumn ()
- 
  
  /** an inner class to implement the data model in this design pattern */ 
   private class DataTableModel extends AbstractTableModel {
@@ -561,9 +547,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         "Name",
         "Min Threshold",
         "Value",
+        "Out Of Range",
         "Max Threshold",
         "Unit",
-        // "Number Format",
         "Min",
         "Max"};
     
@@ -585,7 +571,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     
     // XXX
     public boolean isCellEditable (int row, int col) {
-       return (col==1 || col==3); // || col==5); 
+       return (col==1 || col==4); 
     } // isCellEditable ()
     
     public void addRow(String name, String unit) {
@@ -650,9 +636,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
      * given @param row name*/
     public int getRowNumber (String name) {
        DataRow dataRow = null;
-       for (int i=0; i<rows.size(); i++) {
-          dataRow = (DataRow)rows.get(i);
-          if (dataRow.name.equals(name)) {
+       for (int i=0; i<rows.size (); i++) {
+          dataRow = (DataRow)rows.get (i);
+          if (dataRow.name.equals (name)) {
              return i;
           } // if
        } // for
@@ -680,19 +666,20 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       DataRow dataRow = (DataRow)rows.get(row);
       switch (col) {
         case 0:
-          return dataRow.getName();  
-        
+          return dataRow.getName();
         case 1:
-        return (dataRow.minThresh == Double.MIN_VALUE)? null : new Double (dataRow.minThresh); 
+           return (dataRow.minThresh == Double.MIN_VALUE)? null : new Double (dataRow.minThresh); 
         case 2:
           return dataRow.isCleared()? null : new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
         case 3:
-        return (dataRow.maxThresh == Double.MAX_VALUE)? null : new Double (dataRow.maxThresh);       
+           return dataRow.threshOut;
         case 4:
-          return dataRow.getUnit();
+           return (dataRow.maxThresh == Double.MAX_VALUE)? null : new Double (dataRow.maxThresh);       
         case 5:
-          return dataRow.isCleared()? null : new Double(dataRow.getMinimum() - (useOffsets?dataRow.getOffset():0));
+          return dataRow.getUnit();
         case 6:
+          return dataRow.isCleared()? null : new Double(dataRow.getMinimum() - (useOffsets?dataRow.getOffset():0));
+        case 7:
           return dataRow.isCleared()? null : new Double(dataRow.getMaximum() - (useOffsets?dataRow.getOffset():0));
         default:
           return null;
@@ -702,8 +689,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     /** XXX a method that will update table data in response to user actions */
     public void setValueAt (Object value, int row, int col) {
         log.debug ("^^^ Setting value at " + row + "," + col + " to " + value);
-        //data[row][col] = value;
-        // get the right row and then jump to the right column
         DataRow dataRow = (DataRow)rows.get (row);
         switch (col) {
           case 1:
@@ -711,14 +696,18 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
              fireTableCellUpdated (row, col);
              // XXX change color for thresholds
              break;
-          case 3:
-             dataRow.maxThresh = Double.parseDouble ((String)value);
+          // TODO
+          case 3: // out of threshold interval
+             dataRow.threshOut = (String)value;
+             fireTableCellUpdated (row, col);
+          case 4:
+             try {
+                dataRow.maxThresh = Double.parseDouble ((String)value);
+             } catch (Throwable e) {
+                log.debug ("^^^ Caught the buggy, now ???");
+             }
              fireTableCellUpdated (row, col);
              break;
-         /* case 5:
-             dataRow.unitRepresentation = (String)value;
-             fireTableCellUpdated (row, col);
-             break; */
           default:
             return; // do nothing
         } // switch
@@ -746,15 +735,18 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     // XXX
     double minThresh;
     double maxThresh;
-    // String unitRepresentation = "decimal";
-    
+    String threshOut;
+    DataTableCellRenderer dataCellRenderer;
+    // XXX
     double offset;
     boolean cleared;
-    
+
     
     public DataRow(String name, String unit) {
       this.name = name;
       this.unit = unit;
+      // TODO
+      this.dataCellRenderer = new DataTableCellRenderer ();
       clearData();
     }
     
@@ -775,6 +767,14 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       min = cleared? data:Math.min(min, data);
       max = cleared? data:Math.max(max, data);
       cleared = false;
+    }
+    
+    public DataTableCellRenderer getDataCellRenderer () {
+       return this.dataCellRenderer;
+    }
+    
+    public void setDataCellRenderer (DataTableCellRenderer newRenderer) {
+       this.dataCellRenderer = newRenderer;
     }
     
     public double getMinimum() {
@@ -847,5 +847,14 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     public void setShowEngineeringFormat(boolean showEngineeringFormat) {
       this.showEngineeringFormat = showEngineeringFormat;
     }   
-  }
-}
+  } // inner class DoubleTableCellRenderer
+  
+  /** an inner calss that renders the data value cell by coloring it when it is outside
+   * of the threshold interval
+   */ 
+  private class DataTableCellRenderer extends DoubleTableCellRenderer {
+     public DataTableCellRenderer () {
+        super ();
+     }
+  } // inner class DataCellRenderer
+} // class
