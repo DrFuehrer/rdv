@@ -245,7 +245,14 @@ public class ConfigurationManager {
         NodeList channelNodes = (NodeList)xp.evaluate("channels/channel", dataPanelNode, XPathConstants.NODESET);
         for (int j=0; j<channelNodes.getLength(); j++) {
           String channel = channelNodes.item(j).getTextContent();
-          if (!dataPanel.addChannel(channel)) {
+          boolean added;
+          if (dataPanel.supportsMultipleChannels()) {
+            added = dataPanel.addChannel(channel);
+          } else {
+            added = dataPanel.setChannel(channel);
+          }
+          
+          if (!added) {
             log.error("Failed to add channel " + channel + ".");
           }
         }        
