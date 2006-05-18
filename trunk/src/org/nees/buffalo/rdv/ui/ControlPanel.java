@@ -66,6 +66,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
+import org.nees.rbnb.marker.NeesEvent;
 import org.nees.rbnb.marker.NeesEventRDVTimelinePanel;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
@@ -468,6 +469,12 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		while (it.hasNext()) {
             ChannelTree.Node node = (ChannelTree.Node)it.next();
 			String channelName = node.getFullName();
+      
+      // don't let event marker channels influence the time bounds
+      if (NeesEvent.MIME_TYPE.equals(node.getMime())) {
+        continue;
+      }
+      
 			if (rbnbController.isSubscribed(channelName)) {
 				double channelStart = node.getStart();
 				double channelDuration = node.getDuration();
