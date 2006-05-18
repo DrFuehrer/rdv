@@ -110,6 +110,11 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
    * @since  1.3
    */
   private HashMap dragGestures;
+  
+  /**
+   * The position of components that were in this container.
+   */
+  private HashMap<JComponent, Integer> previousPositions;
 	
 	/** 
 	 * Create the container and set the default layout to horizontal.
@@ -128,6 +133,8 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
     dragGestures =  new HashMap();
 		
 		layout = HORIZONTAL_LAYOUT;
+    
+    previousPositions = new HashMap<JComponent, Integer>();
 	}
 	
 	/**
@@ -137,7 +144,12 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 	 * @since            1.1
 	 */
 	public void addDataPanel(JComponent component) {
-		dataPanels.add(component);
+    Integer position = previousPositions.get(component);
+    if (position == null || position < 0 || position > dataPanels.size()) {
+      dataPanels.add(component);
+    } else {
+      dataPanels.add(position, component);
+    }
     
     DragSource dragSource = DragSource.getDefaultDragSource();
     DragGestureRecognizer dragGesture = dragSource.createDefaultDragGestureRecognizer(component, DnDConstants.ACTION_MOVE, this);
@@ -157,6 +169,8 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 	public void removeDataPanel(JComponent component) {
     DragGestureRecognizer dragGesture = (DragGestureRecognizer)dragGestures.remove(component);
     dragGesture.setComponent(null);
+
+    previousPositions.put(component, new Integer(dataPanels.indexOf(component)));
     
 		dataPanels.remove(component);
 		layoutDataPanels();
