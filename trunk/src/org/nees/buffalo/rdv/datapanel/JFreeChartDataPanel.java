@@ -49,6 +49,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
 
+import javax.swing.SwingUtilities;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -405,7 +406,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		if (xyMode) {
 			lastXYDataIndex = -1;
 		} else {
-			postDataTimeSeries();
+			SwingUtilities.invokeLater(new Runnable() {
+			  public void run() {
+				postDataTimeSeries();
+			  }
+			});
 		}
 	}
 
@@ -667,17 +672,22 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			return;
 		}
 		
-		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
-			if (xyMode) {
-				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
-				XYSeries data = dataCollection.getSeries(i);
-				data.clear();
-			} else {
-				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-				TimeSeries data = dataCollection.getSeries(i);
-				data.clear();				
-			}
-		}
+		final XYDataset dataCollectionInvokeLater = this.dataCollection;
+		SwingUtilities.invokeLater(new Runnable() {
+			  public void run() {
+				  for (int i=0; i<dataCollection.getSeriesCount(); i++) {
+					  if (xyMode) {
+						  XYSeriesCollection dataCollection = (XYSeriesCollection)dataCollectionInvokeLater;
+						  XYSeries data = dataCollection.getSeries(i);
+						  data.clear();
+					  } else {
+						  TimeSeriesCollection dataCollection = (TimeSeriesCollection)dataCollectionInvokeLater;
+						  TimeSeries data = dataCollection.getSeries(i);
+						  data.clear();				
+					  }
+				  }
+			  }
+		});		
 		
 		log.info("Cleared data display.");
 	}
