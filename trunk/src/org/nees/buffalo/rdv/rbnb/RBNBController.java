@@ -675,6 +675,19 @@ public class RBNBController implements Player, MetadataListener {
  						log.error("Failed to fetch data.");
  						e.printStackTrace();
 						changeStateSafe(STATE_STOPPED);
+
+					    String message = e.getMessage();
+					    if (message.contains("java.net.SocketException")) {
+					        log.error("RBNB Server connection error, retrying...");
+					 		try {
+					 			sink.CloseRBNBConnection();
+								sink.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, rbnbSinkName);
+							} catch (SAPIException error) {
+								log.error("Still cannot connect: " + error.getMessage());
+								error.printStackTrace();
+							}
+					    }
+						
 						return;
 					}
 				} else {
