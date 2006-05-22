@@ -103,6 +103,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private DataPanelManager dataPanelManager;
 	
  	private BusyDialog busyDialog;
+ 	private LoadingDialog loadingDialog;
 	
 	private JFrame frame;
 	private GridBagConstraints c;
@@ -173,6 +174,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		this.dataPanelManager = dataPanelManager;
 		
 		busyDialog = null;
+		loadingDialog = null;
 		
 		initFrame(isApplet);
 /////////////////////////////////////////////////////////////////////////////LJM
@@ -987,6 +989,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       startThrobber(); 
     } else {
       stopThrobber();
+    }
+    
+    if (newState == Player.STATE_LOADING) {
+ 		loadingDialog = new LoadingDialog(this);
+ 		loadingDialog.start();
+    } else {
+    	if (loadingDialog != null) {
+    	  loadingDialog.close();
+    	  loadingDialog = null;
+    	}
     }
   }
   
