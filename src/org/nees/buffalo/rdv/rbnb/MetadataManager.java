@@ -209,6 +209,17 @@ public class MetadataManager {
       ctree = getChannelTree(metadataSink);
     } catch (SAPIException e) {
       log.error("Failed to update metadata: " + e.getMessage() + ".");
+
+      if (!metadataSink.VerifyConnection()) {
+    	  log.error("Metadata RBNB connection is severed, try to reconnect to " + rbnbController.getRBNBConnectionString() + ".");
+    	  metadataSink.CloseRBNBConnection();
+    	  try {
+    	    metadataSink.OpenRBNBConnection(rbnbController.getRBNBConnectionString(), "RDVMetadata");
+    	  } catch (SAPIException error) {
+    	    log.error("Failed to connect to RBNB server: " + error.getMessage());
+    	    error.printStackTrace();
+    	  }
+      }     
       
       channels.clear();
       ctree = null;
