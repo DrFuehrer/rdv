@@ -393,8 +393,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				controlPanel.setLocationEnd();
  			}			
  		};
- 		
- 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, 0), "icons/begin.gif") {
+
+ 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				
  				if (jumpDateTimeDialog == null) {
