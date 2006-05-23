@@ -165,6 +165,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JLabel throbber;
   private Icon throbberStop;
   private Icon throbberAnim;
+  
+  private Action gotoTimeAction;
+  private JumpDateTimeDialog jumpDateTimeDialog;
  		
 	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager, boolean isApplet) {
 		super();
@@ -390,6 +393,17 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				controlPanel.setLocationEnd();
  			}			
  		};
+ 		
+ 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, 0), "icons/begin.gif") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				
+ 				if (jumpDateTimeDialog == null) {
+ 					jumpDateTimeDialog = new JumpDateTimeDialog(frame, rbnb, dataPanelManager);
+ 				} else {
+ 					jumpDateTimeDialog.setVisible(true);
+ 				}	
+ 			}			
+ 		};
  
  		updateChannelListAction = new DataViewerAction("Update Channel List", "Update the channel list", KeyEvent.VK_U, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "icons/refresh.gif") {
  			public void actionPerformed(ActionEvent ae) {
@@ -570,6 +584,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		controlMenu.add(menuItem);
  
  		menuItem = new JMenuItem(endAction);
+ 		controlMenu.add(menuItem);
+ 		
+ 		menuItem = new JMenuItem(gotoTimeAction);
  		controlMenu.add(menuItem);
  		
  		menuBar.add(controlMenu);
