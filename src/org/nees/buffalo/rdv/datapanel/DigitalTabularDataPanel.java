@@ -513,7 +513,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     // changed to access data model directly because the treshold columns may not be visible; must emulate getValueAt ()  
     // TODO Object minThreshData = tableModel.getValueAt (dataRow, tableModel.findColumn ("Min Thresh"));
     DataRow theRowAtDataRow = tableModel.getRowAt (dataRow); 
-    Object minThreshData = (theRowAtDataRow.minThresh == Double.MIN_VALUE)? null : new Double (theRowAtDataRow.minThresh);
+    Object minThreshData = (theRowAtDataRow.minThresh == (-1 * Double.MAX_VALUE))? null : new Double (theRowAtDataRow.minThresh);
 //  TODO Object maxThreshData = tableModel.getValueAt (dataRow, tableModel.findColumn ("Max Thresh"));
     Object maxThreshData = (theRowAtDataRow.minThresh == Double.MAX_VALUE)? null : new Double (theRowAtDataRow.maxThresh);
     
@@ -719,9 +719,13 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       }
       
       DataRow dataRow = (DataRow)rows.get(row);
+      // TODO LJM 060523
+      String[] nameSplit = dataRow.getName ().split ("/");
+      
       switch (col) {
         case 0:
-          return dataRow.getName();
+          //return dataRow.getName();
+           return ( nameSplit [nameSplit.length-1] );
         case 1:
            return dataRow.threshOut;
         case 2:
@@ -733,7 +737,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         case 5:
           return dataRow.isCleared()? null : new Double(dataRow.getMaximum() - (useOffsets?dataRow.getOffset():0));
         case 6:
-           return (dataRow.minThresh == Double.MIN_VALUE)? null : new Double (dataRow.minThresh);
+           return (dataRow.minThresh == (-1 * Double.MAX_VALUE))? null : new Double (dataRow.minThresh);
         case 7:
            return (dataRow.maxThresh == Double.MAX_VALUE)? null : new Double (dataRow.maxThresh); 
         default:
@@ -808,7 +812,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     double value;
     double min;
     double max;
-    double minThresh = Double.MIN_VALUE;
+    double minThresh = -1 * Double.MAX_VALUE;
     double maxThresh = Double.MAX_VALUE;
     String threshOut;
     // DOTOO
