@@ -23,10 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL: https://svn.nees.org/svn/telepresence/RDV/trunk/src/org/nees/buffalo/rdv/datapanel/TabularDataPanel.java $
- * $Revision: 1622 $
- * $Date: 2006-05-12 21:06:30 +0000 (Fri, 12 May 2006) $
- * $Author: jphanley $
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
  */
 
 package org.nees.buffalo.rdv.datapanel;
