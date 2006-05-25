@@ -33,6 +33,7 @@ package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -70,6 +71,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import com.rbnb.sapi.ChannelMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 /**
  * A Data Panel extension to display numeric data in a tabular form. Maximum and
@@ -81,6 +85,7 @@ import com.rbnb.sapi.ChannelMap;
  */
 public class DigitalTabularDataPanel extends AbstractDataPanel implements TableModelListener {
 
+	static Log log = LogFactory.getLog(DigitalTabularDataPanel.class.getName());
   /**
    * The main panel
    * 
@@ -113,7 +118,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
    */
   private DoubleTableCellRenderer doubleCellRenderer;
   //ÊDOTOO get this from each row
-  //private DataTableCellRenderer dataCellRenderer;
+  private DataTableCellRenderer dataCellRenderer;
   
   /**
    * The button to set decimal data rendering
@@ -187,10 +192,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
           }); // MouseListener
  
     // DOTOO get the rows and add from each one
-    // dataCellRenderer = new DataTableCellRenderer ();
+    dataCellRenderer = new DataTableCellRenderer ();
     // table.getColumn ("Value").setCellRenderer (dataCellRenderer);
     doubleCellRenderer = new DoubleTableCellRenderer ();
-    table.getColumn ("Value").setCellRenderer (doubleCellRenderer);
+    table.getColumn ("Value").setCellRenderer (dataCellRenderer);
 
     table.addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
@@ -333,8 +338,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       tableModel.setMaxMinVisible(maxMinVisible);
       showMaxMinMenuItem.setSelected(maxMinVisible);
       
-      //table.getColumn ("Value").setCellRenderer (dataCellRenderer);
-      table.getColumn ("Value").setCellRenderer (doubleCellRenderer);
+      table.getColumn ("Value").setCellRenderer (dataCellRenderer);
+      //table.getColumn ("Value").setCellRenderer (doubleCellRenderer);
       
       if (maxMinVisible) {
         table.getColumn("Min").setCellRenderer(doubleCellRenderer);
@@ -518,7 +523,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     Object maxThreshData = (theRowAtDataRow.minThresh == Double.MAX_VALUE)? null : new Double (theRowAtDataRow.maxThresh);
     
     Object dataData = tableModel.getValueAt (dataRow, tableModel.findColumn ("Value"));
-    int outThreshColumn = tableModel.findColumn ("Out");
+//    int outThreshColumn = tableModel.findColumn ("Out");
     double loThresh;
     double hiThresh;
     double data;
@@ -530,14 +535,14 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
           
           if (data < loThresh) { // indicate it on the table
              log.debug("^^^ LOW " + data + " < " + loThresh);
-             tableModel.setValueAt (new String ("-"), dataRow, outThreshColumn);
+//             tableModel.setValueAt (new String ("-"), dataRow, outThreshColumn);
              //dataCellRenderer.setBackground (Color.red);
           } else if (hiThresh < data) { // indicate it on the table
              log.debug("^^^ HI " + hiThresh + " < " + data);
-             tableModel.setValueAt (new String ("+"), dataRow, outThreshColumn);
+//             tableModel.setValueAt (new String ("+"), dataRow, outThreshColumn);
                //dataCellRenderer.setBackground (Color.yellow);
           } else { // clear the cell
-             tableModel.setValueAt (new String (""), dataRow, outThreshColumn);           
+//             tableModel.setValueAt (new String (""), dataRow, outThreshColumn);           
                //dataCellRenderer.setBackground (null);
           } // if in threshold
        } // if doubles
@@ -584,7 +589,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   private class DataTableModel extends AbstractTableModel {
     private String[] columnNames = {
         "Name",
-        "Out",
+ //       "Out",
         "Value",
         "Unit",
         "Min",
@@ -676,6 +681,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 
     /** a method that will get a data row from its index */
     public DataRow getRowAt (int rowdex) {
+    log.debug("RowIndex: " + rowdex);	
        return ( (DataRow)rows.get (rowdex) );
     }
     
@@ -726,19 +732,19 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         case 0:
           //return dataRow.getName();
            return ( nameSplit [nameSplit.length-1] );
+//        case 1:
+//           return dataRow.threshOut;
         case 1:
-           return dataRow.threshOut;
-        case 2:
           return dataRow.isCleared()? null : new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
-        case 3:
+        case 2:
           return dataRow.getUnit();
-        case 4:
+        case 3:
           return dataRow.isCleared()? null : new Double(dataRow.getMinimum() - (useOffsets?dataRow.getOffset():0));
-        case 5:
+        case 4:
           return dataRow.isCleared()? null : new Double(dataRow.getMaximum() - (useOffsets?dataRow.getOffset():0));
-        case 6:
+        case 5:
            return (dataRow.minThresh == (-1 * Double.MAX_VALUE))? null : new Double (dataRow.minThresh);
-        case 7:
+        case 6:
            return (dataRow.maxThresh == Double.MAX_VALUE)? null : new Double (dataRow.maxThresh); 
         default:
           return null;
@@ -750,10 +756,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         log.debug ("^^^ Setting value at " + row + "," + col + " to " + value);
         DataRow dataRow = (DataRow)rows.get (row);
         switch (col) {
-        case 1: // "Out"
-           dataRow.threshOut = (String)value;
-           fireTableCellUpdated (row, col);  
-        case 6: // "Min Thresh"
+//        case 1: // "Out"
+//           dataRow.threshOut = (String)value;
+//           fireTableCellUpdated (row, col);  
+        case 5: // "Min Thresh"
              try {
                 dataRow.minThresh = Double.parseDouble ((String)value);
              } catch (Throwable e) {
@@ -763,7 +769,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
              fireTableCellUpdated (row, col);
              flagThreshold (row);
              break;
-          case 7: // "Max Thresh"
+          case 6: // "Max Thresh"
              try {
                 dataRow.maxThresh = Double.parseDouble ((String)value);
              } catch (Throwable e) {
@@ -924,15 +930,66 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 
     public void setShowEngineeringFormat(boolean showEngineeringFormat) {
       this.showEngineeringFormat = showEngineeringFormat;
-    }   
+    }
+    
+    
   } // inner class DoubleTableCellRenderer
   
   /** an inner calss that renders the data value cell by coloring it when it is outside
-   * of the threshold interval
+   * of the threshold intervals
    */ 
   private class DataTableCellRenderer extends DoubleTableCellRenderer {
      public DataTableCellRenderer () {
         super ();
      }
+
+     public Component getTableCellRendererComponent(JTable aTable, 
+             Object aNumberValue, 
+             boolean aIsSelected, 
+             boolean aHasFocus, 
+             int aRow, int aColumn) {  
+		/* 
+		* Implementation Note :
+		* It is important that no "new" be present in this 
+		* implementation (excluding exceptions):
+		* if the table is large, then a large number of objects would be 
+		* created during rendering.
+		*/
+
+		if (aNumberValue == null || !(aNumberValue instanceof Number)) 
+			return this;
+		
+		Component renderer = super.getTableCellRendererComponent(aTable, 
+		                           aNumberValue, 
+		                           aIsSelected, 
+		                           aHasFocus, 
+		                           aRow, aColumn);
+		
+		Number numberValue = (Number)aNumberValue;
+		
+	    DataRow theRowAtDataRow = tableModel.getRowAt (aRow); 
+	    Object minThreshData = (theRowAtDataRow.minThresh == (-1 * Double.MAX_VALUE))? null : new Double (theRowAtDataRow.minThresh);
+	    Object maxThreshData = (theRowAtDataRow.minThresh == Double.MAX_VALUE)? null : new Double (theRowAtDataRow.maxThresh);
+
+	    if (minThreshData == null || maxThreshData == null) {
+			renderer.setBackground(Color.white);
+	    	renderer.setForeground(Color.black);
+	    	return this;
+	    }
+		if (numberValue.doubleValue() < (Double)minThreshData) {
+			renderer.setBackground(Color.red);
+		}
+		else if (numberValue.doubleValue() > (Double)maxThreshData){
+			renderer.setBackground(Color.yellow);
+		}
+		else {
+			renderer.setBackground(Color.white);
+		}
+		return this;
+	}
+     
   } // inner class DataCellRenderer
+  
+  
+  
 } // class
