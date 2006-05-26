@@ -79,7 +79,6 @@ import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
-import org.nees.rbnb.marker.SendMarkerRDVPanel;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -113,11 +112,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JSplitPane leftPanel;
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
-/////////////////////////////////////////////////////////////////////////////LJM
-  private SendMarkerRDVPanel markerSubmitPanel = null;
-  private JCheckBoxMenuItem showMarkerMenuItem = null;
-  private SimpleInternalFrame markerFrame;
-/////////////////////////////////////////////////////////////////////////////LJM
 	private StatusPanel statusPanel;
 	private DataPanelContainer dataPanelContainer;
  	private JSplitPane splitPane;
@@ -147,9 +141,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action showChannelListAction;
   private Action showMetadataPanelAction;
  	private Action showControlPanelAction;
-/////////////////////////////////////////////////////////////////////////////LJM
-  private Action showMarkerPanelAction;
-/////////////////////////////////////////////////////////////////////////////LJM
  	private Action showStatusPanelAction;
  	private Action dataPanelAction;
  	private Action dataPanelHorizontalLayoutAction;
@@ -180,13 +171,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		loadingDialog = null;
 		
 		initFrame(isApplet);
-/////////////////////////////////////////////////////////////////////////////LJM
-    // Initially, these should be off
-    markerFrame.setVisible (false);
-    controlPanel.markerPanel.setVisible (false);
-    controlPanel.markerLabel.setVisible (false);
-/////////////////////////////////////////////////////////////////////////////LJM
-
 	}
 	
 	private void initFrame(boolean isApplet) {
@@ -219,10 +203,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		initLeftPanel();
     
 		initRightPanel();
-		initControls();
-/////////////////////////////////////////////////////////////////////////////LJM    
-    initSubmit ();
-/////////////////////////////////////////////////////////////////////////////LJM        
+		initControls();    
 		initDataPanelContainer();		
 		initStatus();
     
@@ -250,10 +231,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	
   	rbnb.addMessageListener(this);
   	
-  	rbnb.addConnectionListener(this);
-/////////////////////////////////////////////////////////////////////////////LJM    
-    rbnb.addConnectionListener (markerSubmitPanel);
-/////////////////////////////////////////////////////////////////////////////LJM        
+  	rbnb.addConnectionListener(this);        
 
 		if (!isApplet) { 
       frame.setLocationByPlatform(true);
@@ -271,31 +249,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				} else {
  					rbnbConnectionDialog.setVisible(true);
  				}			
-/////////////////////////////////////////////////////////////////////////////LJM
-        // Clear out and disable event markers for changing to a new turbine
-        controlPanel.markerPanel.clearData ();
-/////////////////////////////////////////////////////////////////////////////LJM
  			}			
  		};
  		
  		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();
-/////////////////////////////////////////////////////////////////////////////LJM    
-        try {
-          markerSubmitPanel.sendClosingMarker ();
-          markerSubmitPanel.closeTurbine ();
-        } catch (IOException ioe) {
-          log.error ("Sending closing marker: " + ioe);
-        } catch (TransformerException te) {
-          log.error ("Sending closing marker: " + te);
-        }
-/////////////////////////////////////////////////////////////////////////////LJM 
  				rbnb.disconnect();
-/////////////////////////////////////////////////////////////////////////////LJM
-        controlPanel.markerPanel.clearData ();
-        markerFrame.setVisible (false);
-/////////////////////////////////////////////////////////////////////////////LJM
  			}			
  		};
     
@@ -361,11 +321,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		controlAction = new DataViewerAction("Control", "Control Menu", KeyEvent.VK_C);
  
  		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "icons/rt.gif") {
- 			public void actionPerformed(ActionEvent ae) {
-//////////////////////////////////////////////////////////////////////////// LJM 				
-        // DOTOO refetch markers and repaint the panel
-        controlPanel.markerPanel.repaint ();
-//////////////////////////////////////////////////////////////////////////// LJM        
+ 			public void actionPerformed(ActionEvent ae) {       
  				rbnb.monitor();
  			}			
  		};
@@ -443,20 +399,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  
-    showMarkerPanelAction = new DataViewerAction ("Show Event Markers", "", KeyEvent.VK_M, "icons/channels.gif") {
-      public void actionPerformed (ActionEvent ae) {
-        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();
-        markerFrame.setVisible (
-          menuItem.isSelected () &&
-          markerSubmitPanel.isConnected ()
-                                );
-        controlPanel.markerPanel.setVisible (menuItem.isSelected ());
-        controlPanel.markerLabel.setVisible (menuItem.isSelected ());
-        controlPanel.markerPanel.repaint ();
-      }
-    };
-
-    
  		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S, "icons/info.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
@@ -615,10 +557,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
  		
-    showMarkerMenuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
-    showMarkerMenuItem.setSelected (false);
-    viewMenu.add (showMarkerMenuItem);
- 		
  		menuItem = new JCheckBoxMenuItem(showStatusPanelAction);
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
@@ -762,32 +700,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		log.info("Added data panel container.");
 	}
-/////////////////////////////////////////////////////////////////////////////LJM
-  // Marker submission GUI panel
-  private void initSubmit () {
-  markerSubmitPanel = new SendMarkerRDVPanel (null, rbnb, this.controlPanel.markerPanel, this);
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 2;
-		c.gridwidth = 2;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets (0, 0, 5, 8);
-		c.anchor = GridBagConstraints.SOUTHWEST;				
-    markerFrame = new SimpleInternalFrame (
-                        DataViewer.getIcon("icons/info.gif"),
-                                            "Event Marker Submission",
-                                            null,
-                                            markerSubmitPanel
-                                          );
-    
-    rightPanel.add (markerFrame, c);
-    log.info ("Added Marker Submission Panel.");
-  } // initSubmit ()
-/////////////////////////////////////////////////////////////////////////////LJM  
+   
 	private void initStatus() {
 		statusPanel = new StatusPanel();
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -959,27 +872,12 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     });
  		busyDialog.start();
     startThrobber();
-/////////////////////////////////////////////////////////////////////////////LJM
-    /* Going to a new turbine, so flush out the data from the old one. */
-    controlPanel.markerPanel.clearData ();
-/////////////////////////////////////////////////////////////////////////////LJM
 	}
 
 	public void connected() {
 		busyDialog.close();
 		busyDialog = null;
     stopThrobber();
-/////////////////////////////////////////////////////////////////////////////LJM
-    /* Going to a new turbine, so flush out the data from the old one. */
-    markerFrame.setVisible (
-                            showMarkerMenuItem.isSelected ()
-                            /*&& markerSubmitPanel.isConnected ()*/
-                            );    
-      controlPanel.markerPanel.clearData ();
-    // TODO
-    // reset the scanning of past event markers when we first connect
-    controlPanel.markerPanel.doScanPastMarkers = true;
-////////////////////////////////////////////////////////////////////////////LJM
 	}
 
 	public void connectionFailed() {
