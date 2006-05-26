@@ -95,13 +95,8 @@ public class ExportDialog extends JDialog implements ProgressListener {
   DefaultListModel numericChannelModel;
   
   JTextField dataFileTextField;
-  
-  JList multimediaChannelList;
-  DefaultListModel multimediaChannelModel;
-  
-  JTextField dataDirectoryTextField;
-  JFileChooser dataDirectoryChooser;
-  JButton dataDirectoryButton;  
+  JFileChooser dataFileChooser;
+  JButton dataFileButton;  
   
   JProgressBar exportProgressBar;
   
@@ -132,7 +127,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
 
   private void initComponents() {
     numericChannelModel = new DefaultListModel();
-    multimediaChannelModel = new DefaultListModel();
+    
     for (int i=0; i<channels.size(); i++) {
       String channelName = (String)channels.get(i);
       Channel channel = rbnb.getChannel(channelName);
@@ -141,8 +136,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
       
       if (mime.equals("application/octet-stream")) {
         numericChannelModel.addElement(new ExportChannel(channelName));
-      } else if (mime.equals("image/jpeg")) {
-        multimediaChannelModel.addElement(new ExportChannel(channelName));
       }
     }
     
@@ -213,64 +206,11 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.weightx = 0;
     c.weighty = 0;
     c.gridx = 0;
-    c.gridy = 3;
-    c.gridwidth = 1;
-    c.anchor = GridBagConstraints.NORTHEAST;
-    c.insets = new java.awt.Insets(0,10,10,5);
-    container.add(new JLabel("Numeric file name: "), c);
-    
-    dataFileTextField = new JTextField(20);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 1;
-    c.gridx = 1;
-    c.gridy = 3;
-    c.gridwidth = GridBagConstraints.REMAINDER;
-    c.anchor = GridBagConstraints.NORTHWEST;
-    c.insets = new java.awt.Insets(0,0,10,10);
-    container.add(dataFileTextField, c);
-    
-    JLabel multimediaHeaderLabel = new JLabel("Multimedia channels:");
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 0;
-    c.gridx = 0;
-    c.gridy = 4;
-    c.gridwidth = GridBagConstraints.REMAINDER;
-    c.anchor = GridBagConstraints.NORTHEAST;
-    c.insets = new java.awt.Insets(0,10,10,10);
-    container.add(multimediaHeaderLabel, c);    
-    
-    multimediaChannelList = new JList(multimediaChannelModel);
-    multimediaChannelList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    multimediaChannelList.setCellRenderer(new CheckListRenderer());
-    multimediaChannelList.setVisibleRowCount(10);
-    multimediaChannelList.addMouseListener(new MouseAdapter() {
-      public void mouseClicked(MouseEvent e) {
-        int index = multimediaChannelList.locationToIndex(e.getPoint());
-        ExportChannel item = (ExportChannel)multimediaChannelList.getModel().getElementAt(index);
-        item.setSelected(!item.isSelected());
-        Rectangle rect = multimediaChannelList.getCellBounds(index, index);
-        multimediaChannelList.repaint(rect);
-      }
-    });
-    JScrollPane scrollPane2 = new JScrollPane(multimediaChannelList);
-    c.fill = GridBagConstraints.BOTH;
-    c.weightx = 0;
-    c.weighty = 1;
-    c.gridx = 0;
-    c.gridy = 5;
-    c.gridwidth = GridBagConstraints.REMAINDER;
-    c.anchor = GridBagConstraints.NORTHEAST;
-    container.add(scrollPane2, c);    
-    
-    c.fill = GridBagConstraints.NONE;
-    c.weightx = 0;
-    c.weighty = 0;
-    c.gridx = 0;
     c.gridy = 6;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,10,10,5);
-    container.add(new JLabel("Data directory: "), c);    
+    container.add(new JLabel("Data file: "), c);    
     
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1;
@@ -278,21 +218,21 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.gridy = 6;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;    
-    dataDirectoryTextField = new JTextField(20);
+    dataFileTextField = new JTextField(20);
     c.insets = new java.awt.Insets(0,0,10,5);
-    container.add(dataDirectoryTextField, c);
+    container.add(dataFileTextField, c);
     
-    dataDirectoryChooser = new JFileChooser();
-    dataDirectoryChooser.setDialogTitle("Select export directory");
-    dataDirectoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-    dataDirectoryTextField.setText(dataDirectoryChooser.getCurrentDirectory().getAbsolutePath());
-    dataDirectoryButton = new JButton("Browse");
-    dataDirectoryButton.addActionListener(new ActionListener() {
+    dataFileChooser = new JFileChooser();
+    dataFileChooser.setDialogTitle("Select export file");
+    dataFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    dataFileTextField.setText(dataFileChooser.getCurrentDirectory().getAbsolutePath() + File.separator + "data.dat");
+    dataFileButton = new JButton("Browse");
+    dataFileButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        dataDirectoryChooser.setCurrentDirectory(new File(dataDirectoryTextField.getText()));
-        int status = dataDirectoryChooser.showDialog(dialog, "OK");
+        dataFileChooser.setSelectedFile(new File(dataFileTextField.getText()));
+        int status = dataFileChooser.showDialog(dialog, "OK");
         if (status == JFileChooser.APPROVE_OPTION) {
-          dataDirectoryTextField.setText(dataDirectoryChooser.getSelectedFile().getAbsolutePath());
+          dataFileTextField.setText(dataFileChooser.getSelectedFile().getAbsolutePath());
         }
       }
     });
@@ -303,7 +243,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,0,10,10);
-    container.add(dataDirectoryButton, c);
+    container.add(dataFileButton, c);
     
     exportProgressBar = new JProgressBar(0, 100000);
     exportProgressBar.setStringPainted(true);
@@ -365,22 +305,30 @@ public class ExportDialog extends JDialog implements ProgressListener {
   private void disableUI() {
     numericChannelList.setEnabled(false);
     dataFileTextField.setEnabled(false);
-    multimediaChannelList.setEnabled(false);
-    dataDirectoryTextField.setEnabled(false);
-    dataDirectoryButton.setEnabled(false);
+    dataFileButton.setEnabled(false);
     exportButton.setEnabled(false);
   }
   
   private void enableUI() {
     numericChannelList.setEnabled(true);
     dataFileTextField.setEnabled(true);
-    multimediaChannelList.setEnabled(true);
-    dataDirectoryTextField.setEnabled(true);
-    dataDirectoryButton.setEnabled(true);
+    dataFileButton.setEnabled(true);
     exportButton.setEnabled(true);    
   }  
   
   private void exportData() {
+    File dataFile = new File(dataFileTextField.getText());
+    
+    if (dataFile.exists()) {
+      int overwriteReturn = JOptionPane.showConfirmDialog(null,
+          dataFile.getName() + " already exists. Do you want to overwrite it?",
+          "Overwrite file?",
+          JOptionPane.YES_NO_OPTION);
+      if (overwriteReturn == JOptionPane.NO_OPTION) {
+        return;
+      }      
+    }
+    
     disableUI();
     
     List selectedNumericChannels = new ArrayList();
@@ -391,25 +339,13 @@ public class ExportDialog extends JDialog implements ProgressListener {
       }
     }
     
-    List selectedMultimediaChannels = new ArrayList();
-    for (int i=0; i<multimediaChannelModel.size(); i++) {
-      ExportChannel channel = (ExportChannel)multimediaChannelModel.get(i);
-      if (channel.isSelected()) {
-        selectedMultimediaChannels.add(channel.toString());
-      }
-    }    
-    
     double end = rbnb.getLocation();
     double start = end - rbnb.getTimeScale();
     
-    File numericDataFile = new File(dataDirectoryTextField.getText(),
-        dataFileTextField.getText());
-    File dataDirectory = new File(dataDirectoryTextField.getText());
-        
     exporting = true;
-    export.startExport(selectedNumericChannels, numericDataFile,
-        selectedMultimediaChannels,
-        dataDirectory,
+    export.startExport(selectedNumericChannels, dataFile,
+        null,
+        null,
         start, end,
         this);
   }
