@@ -1001,7 +1001,6 @@ public class RBNBController implements Player, MetadataListener {
 		}
 		
 		ChannelTree.Node node = channelTree.findNode(channelName);
-      log.debug ("Looking for channel \"" + channelName + "\"");
 		if (node == null) {
 			log.error("Unable to find channel in metadata.");
 			return false;
