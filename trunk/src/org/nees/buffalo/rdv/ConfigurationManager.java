@@ -102,7 +102,6 @@ public class ConfigurationManager {
     out.println("    <host>" + rbnb.getRBNBHostName() + "</host>");
     out.println("    <port>" + rbnb.getRBNBPortNumber() + "</port>");
     out.println("    <state>" + RBNBController.getStateName(rbnb.getState()) + "</state>");
-    out.println("    <location>" + rbnb.getLocation() + "</location>");
     out.println("    <timeScale>" + rbnb.getTimeScale() + "</timeScale>");
     out.println("    <playbackRate>" + rbnb.getPlaybackRate() + "</playbackRate>");
     out.println("  </rbnb>");
@@ -205,9 +204,6 @@ public class ConfigurationManager {
         rbnb.setRBNBHostName(host);
         rbnb.setRBNBPortNumber(port);
       }
-      
-      double location = Double.parseDouble(findChildNodeText(rbnbNodes, "location"));
-      rbnb.setLocation(location);
       
       double timeScale = Double.parseDouble(findChildNodeText(rbnbNodes, "timeScale"));
       controlPanel.setTimeScale(timeScale);
