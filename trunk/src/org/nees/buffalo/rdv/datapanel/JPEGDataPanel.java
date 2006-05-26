@@ -890,7 +890,16 @@ public class JPEGDataPanel extends AbstractDataPanel {
 
 	public void postTime(double time) {
 		super.postTime(time);
-		
+    
+    postImage();
+    
+    //clear stale images
+    if (displayedImageTime != -1 && (displayedImageTime <= time-timeScale || displayedImageTime > time)) {
+      clearImage();
+    }
+  }
+  
+  private void postImage() {
 		if (channelMap == null) {
 			//no data to display yet
 			return;
@@ -922,9 +931,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			// TODO replace with function in the Abstract class
 			double[] times = channelMap.GetTimes(channelIndex);
 			for (int i=times.length-1; i>=0; i--) {
-				// TODO we could add a check for the duration as
-				//      as a lower bound here
-				if (times[i] <= time) {
+				if (times[i] <= time && times[i] > time-timeScale) {
 					imageIndex = i;
 					break;
 				}
@@ -974,10 +981,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		displayedImageTime = -1;
 	}
 
-	void clearData() {
-		//TODO should we clear here?
-		//clearImage();
-	}
+	void clearData() {}
   
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
