@@ -57,6 +57,8 @@ import javax.swing.event.MouseInputAdapter;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 
+import java.lang.reflect.Method;
+
 /**
  * A data panel to display a webpage. This data panel does not use the RBNB
  * server in any way, and instead opens webpages specified by the user.
@@ -134,7 +136,8 @@ public class WebDataPanel extends AbstractDataPanel {
     // the component to render the HTML
     htmlRenderer = new JEditorPane();
     htmlRenderer.setEditable(false);
-    htmlRenderer.setContentType("text/html");
+    //htmlRenderer.setContentType("text/html");
+    htmlRenderer.setContentType("application/pdf");
     htmlRenderer.addPropertyChangeListener("page", new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent pce) {
         pageLoaded();
@@ -197,28 +200,59 @@ public class WebDataPanel extends AbstractDataPanel {
     // clear out old document
     htmlRenderer.setDocument(htmlRenderer.getEditorKit().createDefaultDocument());
     
-    // clear description
+     // clear description
     setDescription(null);
         
     try {
       // make sure the protocol is http
-      if (!location.startsWith("http://")) {
-        if (location.matches("^[a-zA-Z]+://.*")) {
-           throw new MalformedURLException("We don't support this protocol");
-        } else {
-          // assume http if no protocol is specified
-          location = "http://" + location;
-        }
-      }      
+//      if (!location.startsWith("http://")) {
+//        if (location.matches("^[a-zA-Z]+://.*")) {
+//           throw new MalformedURLException("We don't support this protocol");
+//        } else {
+//          // assume http if no protocol is specified
+//          location = "http://" + location;
+//        }
+//      }      
       
-      URL url = new URL(location);
-      htmlRenderer.setPage(url);
-      htmlRenderer.requestFocusInWindow();
-    } catch (IOException e) {
+//      URL url = new URL(location);
+//      htmlRenderer.setPage(url);
+//      htmlRenderer.requestFocusInWindow();
+    
+    	// ======== Note: Below code is added in place of above to experiment to ensure whether it addresses the client's need.
+    	// The html data panel is no longer rendering the content, but instead a call to OS invokes the browser to handle the task
+    	// as the browser also takes care of special cases of file handling and to associate with the correct program to open! 
+    	// added by Moji========
+    	
+    	String osName = System.getProperty("os.name");
+    	if (osName.startsWith("Mac OS")) {
+    		Class fileMgr = Class.forName("com.apple.eio.FileManager");
+    		Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
+    		openURL.invoke(null, new Object[] {location});
+    	} else if (osName.startsWith("Windows"))
+    		Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + location);
+    	else { //assume Unix or Linux
+    		String[] browsers = { "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
+    		String browser = null;
+    		for (int count = 0; count < browsers.length && browser == null; count++)
+    			if (Runtime.getRuntime().exec( new String[] {"which", browsers[count]}).waitFor() == 0)
+    				browser = browsers[count];
+    		if (browser == null)
+    			throw new Exception("Could not find web browser");
+    		else Runtime.getRuntime().exec(new String[] {browser, location});
+    	}
+    	
+    } 
+    
+    catch (IOException e) {
       locationField.selectAll();
       JOptionPane.showMessageDialog(null,
           "Failed to load page: " + e.getMessage() + ".",
           "Web Data Panel Warning", JOptionPane.WARNING_MESSAGE);
+      
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(null,
+                "Error: " + ex.getMessage(),
+                "Web Data Panel Error", JOptionPane.ERROR_MESSAGE);
     }
   }
   
