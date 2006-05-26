@@ -129,6 +129,11 @@ public class TabularDataPanel extends AbstractDataPanel {
    * The minimum height (in pixels) for a row
    */
   private static final int MIN_ROW_HEIGHT = 12;
+  
+  /**
+   * The maximum number of channels allowed in this data panel;
+   */
+  private static final int MAX_CHANNELS = 75;
 	
   /**
    * Initialize the data panel.
@@ -313,6 +318,10 @@ public class TabularDataPanel extends AbstractDataPanel {
 	}
 	
 	public boolean addChannel(String channelName) {
+    if (channels.size() > MAX_CHANNELS) {
+      return false;
+    }
+    
 		if (!super.addChannel(channelName)) {
 			return false;
 		}
