@@ -562,8 +562,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         frame.showExportDialog(RBNBUtilities.getAllChannels(ctree, showHiddenChannels));
       }
     });
-    // LJM 060424 disabled for the NEESit 1.3 release
-    //popup.add(menuItem);
+    popup.add(menuItem);
     
     
     return popup;
@@ -590,11 +589,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       popup.add(menuItem);
     }
     
-    /*
     if (extensions.size() > 0) {
       popup.addSeparator();
     }          
-    */
      
     if (dataPanelManager.isSourceSubscribed(sourceName)) {
       menuItem = new JMenuItem("Unsubscribe from source");
@@ -615,14 +612,14 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     });
     // LJM disabled for the NEESit 1.3 release
     // popup.add(menuItem);
+
     menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         frame.showExportDialog(RBNBUtilities.getChildChannels(source, showHiddenChannels));
       }
     });
-    // LJM 060424 disabled for the NEESit 1.3 release
-    //popup.add(menuItem);          
+    popup.add(menuItem);          
     
     return popup;
   }
@@ -683,8 +680,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         frame.showExportDialog(channel);
       }
     });
-    // LJM 060424 disabled for the NEESit 1.3 release
-    //popup.add(menuItem);
+    popup.add(menuItem);
     
     return popup;    
   }

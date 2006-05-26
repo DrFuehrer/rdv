@@ -167,14 +167,24 @@ public class RBNBExport {
       return;
     }
      
-    if (numericChannels.size() > 0 && dataFile == null) {
-      listener.postError("Data file not specified.");
-      return;
+    if (numericChannels.size() > 0) {
+      if (dataFile == null) {
+        listener.postError("The data file is not specified.");
+        return;
+      } else if (dataFile.isDirectory()) {
+        listener.postError("The data file is a directory.");
+        return;
+      }
     }
     
-    if (dataDirectory == null || !dataDirectory.isDirectory()) {
-      listener.postError("Data directory is invalid.");
-      return;      
+    if (multimediaChannels.size() > 0) {
+      if (dataDirectory == null) {
+        listener.postError("Data directory is invalid.");
+        return;
+      } else if (!dataDirectory.isDirectory()) {
+        listener.postError("the data directory isn't a directory.");
+        return;        
+      }
     }
     
     if (startTime > endTime) {
