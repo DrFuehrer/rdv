@@ -87,6 +87,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.util.ShapeUtilities;
 import org.jfree.util.UnitType;
+import org.nees.buffalo.rdv.rbnb.Channel;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
@@ -358,10 +359,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	
 	private String getSeriesName(String channelName) {
 		String seriesName = channelName;
-		String unit = (String)units.get(channelName);
-		if (unit != null) {
-			seriesName += " (" + unit + ")";
-		}
+    Channel channel = rbnbController.getChannel(channelName);
+    if (channel != null) {
+      String unit = channel.getMetadata("units");
+  		if (unit != null) {
+  			seriesName += " (" + unit + ")";
+  		}
+    }
 		return seriesName;
 	}
 		
