@@ -835,15 +835,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
 			return false;
 		}
 		
-		if (super.setChannel(channelName)) {
-			clearImage();
-      
-      setupFlexTPSStream();
-      
-			return true;
-		} else {
-			return false;
-		}    
+		return super.setChannel(channelName);
 	}
 	
 	private boolean isChannelSupported(String channelName) {
@@ -873,15 +865,15 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		return false;
 	}
   
-  public boolean removeChannel(String channelName) {
-    if (!super.removeChannel(channelName)) {
-      return false;
-    }
-    
+  void channelAdded(String channelName) {
+    clearImage();
+    setupFlexTPSStream();    
+  }
+  
+  void channelRemoved(String channelName) {
+    clearImage();
     flexTPSStream = null;
     removeRoboticControls();
-    
-    return true;
   }
 	
 	public void postData(ChannelMap channelMap) {
