@@ -582,8 +582,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       menuItem = new JMenuItem("View source with " + extension.getName());
       menuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ae) {
-          List channels = RBNBUtilities.getSortedChildren(source, showHiddenChannels);
-          dataPanelManager.viewChannels(channels, extension);
+          final List channels = RBNBUtilities.getSortedChildren(source, showHiddenChannels);
+          new Thread() {
+            public void run() {
+              dataPanelManager.viewChannels(channels, extension);
+            }
+          }.start();
         }                
       });
       popup.add(menuItem);
