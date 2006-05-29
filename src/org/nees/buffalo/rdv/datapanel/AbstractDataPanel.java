@@ -56,9 +56,9 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Properties;
-import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -139,7 +139,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since  1.1
 	 */
-	LinkedHashSet channels;
+	List channels;
 	
 	/**
 	 * A list of units for channels.
@@ -262,8 +262,14 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since  1.1
 	 */
-	public AbstractDataPanel() {		
-		channels = new LinkedHashSet();
+	public AbstractDataPanel() {
+    /*
+     * We use a copy on write array list so traversals are thread safe. This
+     * allows the iterators used for posting of data to be inherintly thread
+     * safe at the cost of the time taken to add/remove channels.
+     */
+		channels = new CopyOnWriteArrayList();
+    
 		units = new Hashtable();
       lowerThresholds = new Hashtable ();
       upperThresholds = new Hashtable ();
@@ -349,10 +355,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			return false;
 		}
 		
-		if (!rbnbController.subscribe(channelName, this)) {
-		  return false;
-    }
-
 		channels.add(channelName);
         
 		String unit = channel.getMetadata("units");
@@ -387,26 +389,45 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
       log.debug ("&&& LOWER: " + lowerThreshold + " UPPER: " + upperThreshold);
       
     updateTitle();
-		
+    
+    channelAdded(channelName);
+    
+    rbnbController.subscribe(channelName, this);
+  	
 		return true;
 	}
+  
+  /**
+   * For use by subclasses to do any initialization needed when a channel has
+   * been added.
+   * 
+   * @param channelName  the name of the channel being added
+   */
+  void channelAdded(String channelName) {}
 	
 	public boolean removeChannel(String channelName) {		
 		if (!channels.contains(channelName)) {
 			return false;
 		}
-		
-		channels.remove(channelName);
-		units.remove(channelName);
-		
-		rbnbController.unsubscribe(channelName, this);
     
-    units.remove(channelName);
-
+    rbnbController.unsubscribe(channelName, this);
+    
+  	channels.remove(channelName);
+  	units.remove(channelName);
     updateTitle();
-		
+	
+    channelRemoved(channelName);
+    
 		return true;
 	}
+  
+  /**
+   * For use by subclasses to do any cleanup needed when a channel has been
+   * removed.
+   * 
+   * @param channelName  the name of the channel being removed
+   */
+  void channelRemoved(String channelName) {}
 	
 	/**
 	 * Calls removeChannel for each subscribed channel.
@@ -416,9 +437,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 *
 	 */
 	void removeAllChannels() {
-		Object[] channelNames = channels.toArray();
-		for (int i=0; i<channelNames.length; i++) {
-			removeChannel((String)channelNames[i]);
+		Iterator i = channels.iterator();
+		while (i.hasNext()) {
+			removeChannel((String)i.next());
 		}
 	}
 		
@@ -678,7 +699,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     return channels.size();
   }
   
-  public Set subscribedChannels() {
+  public List subscribedChannels() {
     return channels;
   }
   

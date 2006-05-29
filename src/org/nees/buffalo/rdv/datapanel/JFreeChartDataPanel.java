@@ -252,20 +252,18 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			return false;			
 		}
 		
-		if (!super.addChannel(channelName)) {
-			return false;
-		}
-		
-		String seriesName = getSeriesName(channelName);
-		
-		log.info("Adding channel: " + seriesName + ".");
-
-		if (xyMode) {
-			if (channels.size() == 1) {
-				XYSeries data = new XYSeries(seriesName, false, true);
-				((XYSeriesCollection)dataCollection).addSeries(data);
-			}
-		} else {
+		return super.addChannel(channelName);
+	}
+  
+  void channelAdded(String channelName) {
+    String seriesName = getSeriesName(channelName);
+    
+    if (xyMode) {
+      if (channels.size() == 1) {
+        XYSeries data = new XYSeries(seriesName, false, true);
+        ((XYSeriesCollection)dataCollection).addSeries(data);
+      }
+    } else {
       if (channels.size() == 1) {
         rangeLegend = chart.getLegend();
         chart.removeLegend();
@@ -282,19 +280,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			((TimeSeriesCollection)dataCollection).addSeries(data);
 		}
 		
-		setAxisName();
-		
-		return true;
-	}
+		setAxisName();    
+  }
 	
-	public boolean removeChannel(String channelName) {
+  void channelRemoved(String channelName) {
 		String seriesName = getSeriesName(channelName);
-		
-		if (!super.removeChannel(channelName)) {
-			return false;
-		}
-		
-		log.info("Removing channel: " + channelName + ".");
 		
 		if (xyMode) {
       clearData();
@@ -317,8 +307,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         rangeAxis.setLabel(null);
       }      
 		}
-		
-		return true;
 	}
 	
 	String getTitle() {
@@ -398,7 +386,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		}		
 	}
 	
-	public void postData(ChannelMap channelMap) {
+	public void postData(final ChannelMap channelMap) {
     cachedChannelMap = this.channelMap;
     
 		super.postData(channelMap);
@@ -408,13 +396,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		} else {
 			SwingUtilities.invokeLater(new Runnable() {
 			  public void run() {
-				postDataTimeSeries();
+			    postDataTimeSeries(channelMap);
 			  }
 			});
 		}
 	}
 
-	private void postDataTimeSeries() {
+	private void postDataTimeSeries(ChannelMap channelMap) {
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
 		while (i.hasNext()) {
@@ -423,17 +411,16 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
-				postDataTimeSeries(channelName, channelIndex);
+				postDataTimeSeries(channelMap, channelName, channelIndex);
 			}
 		}
 	}
 	
-	private void postDataTimeSeries(String channelName, int channelIndex) {		
+	private void postDataTimeSeries(ChannelMap channelMap, String channelName, int channelIndex) {
 		TimeSeries timeSeriesData = null;
 		TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
 		timeSeriesData = dataCollection.getSeries(getSeriesName(channelName));
     if (timeSeriesData == null) {
-      //FIXME why does this happen?
       log.error("We don't have a data collection to post this data.");
       return;
     }
@@ -509,13 +496,17 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		super.postTime(time);
 		
 		if (xyMode) {
-			postDataXY();
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          postDataXY(channelMap, cachedChannelMap);
+        }
+      });
 		} else {
 			setTimeAxis();
 		}		
 	}
 
-	private void postDataXY() {
+	private void postDataXY(ChannelMap channelMap, ChannelMap cachedChannelMap) {
 		if (!xyMode) {
 			log.error("Tried to post X vs. Y data when not in xy mode.");
 			return;

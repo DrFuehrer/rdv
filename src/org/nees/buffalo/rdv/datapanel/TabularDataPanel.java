@@ -322,32 +322,18 @@ public class TabularDataPanel extends AbstractDataPanel {
       return false;
     }
     
-		if (!super.addChannel(channelName)) {
-			return false;
-		}
-			
-		String labelText = channelName;
-		
-		String unit = (String)units.get(channelName);
-		if (unit != null) {
-			labelText += "(" + unit + ")";
-		}
-		
-		tableModel.addRow(channelName, unit);
-    updateRowHeight();
-    
-		return true;
+		return super.addChannel(channelName);
 	}
+  
+  void channelAdded(String channelName) {
+    String unit = (String)units.get(channelName);
+    tableModel.addRow(channelName, unit);
+    updateRowHeight();
+  }
 	
-	public boolean removeChannel(String channelName) {
-		if (!super.removeChannel(channelName)) {
-			return false;
-		}
-		
+  void channelRemoved(String channelName) {
 		tableModel.deleteRow(channelName);
     updateRowHeight();
-    
-		return true;
 	}
   
   private void updateRowHeight() {
