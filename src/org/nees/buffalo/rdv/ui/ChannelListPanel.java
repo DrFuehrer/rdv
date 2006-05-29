@@ -513,7 +513,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         ChannelTree.Node node = (ChannelTree.Node)o;
         if (node.getType() == ChannelTree.CHANNEL) {
           String channelName = node.getFullName();
-          dataPanelManager.viewChannel(channelName);
+          viewChannel(channelName);
         }
       }
     }    
@@ -582,12 +582,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       menuItem = new JMenuItem("View source with " + extension.getName());
       menuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ae) {
-          final List channels = RBNBUtilities.getSortedChildren(source, showHiddenChannels);
-          new Thread() {
-            public void run() {
-              dataPanelManager.viewChannels(channels, extension);
-            }
-          }.start();
+          List channels = RBNBUtilities.getSortedChildren(source, showHiddenChannels);
+          viewChannels(channels, extension);
         }                
       });
       popup.add(menuItem);
@@ -640,7 +636,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       menuItem = new JMenuItem("View with " + defaultExtension.getName());
       menuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ae) {
-          dataPanelManager.viewChannel(channelName, defaultExtension);
+          viewChannel(channelName, defaultExtension);
         }                
       });            
       popup.add(menuItem);
@@ -654,7 +650,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
             menuItem = new JMenuItem("View with " + extension.getName());
             menuItem.addActionListener(new ActionListener() {
               public void actionPerformed(ActionEvent ae) {
-                dataPanelManager.viewChannel(channelName, extension);
+                viewChannel(channelName, extension);
               }                
             });
             popup.add(menuItem);
@@ -687,6 +683,30 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     popup.add(menuItem);
     
     return popup;    
+  }
+  
+  private void viewChannel(final String channelName) {
+    new Thread() {
+      public void run() {
+        dataPanelManager.viewChannel(channelName);
+      }
+    }.start();
+  }
+  
+  private void viewChannel(final String channelName, final Extension extension) {
+    new Thread() {
+      public void run() {
+        dataPanelManager.viewChannel(channelName, extension);
+      }
+    }.start();    
+  }
+  
+  private void viewChannels(final List channels, final Extension extension) {
+    new Thread() {
+      public void run() {
+        dataPanelManager.viewChannels(channels, extension);
+      }
+    }.start();
   }
   
   private List getExtensionsForSource(ChannelTree.Node source) {
