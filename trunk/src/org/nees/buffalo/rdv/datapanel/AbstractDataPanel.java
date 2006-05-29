@@ -153,7 +153,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     */
    Hashtable lowerThresholds;
    
-   /** A list of lower threshold values for channels.
+   /** A list of upper threshold values for channels.
     *  @since 1.3
     */
    Hashtable upperThresholds;
@@ -362,10 +362,11 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
       
       /** these parameters are defined in the NEESit DAQ protocol.
-       * @see org.nees.rbnb.DaqToRbnb */
+       * @see org.nees.rbnb.DaqToRbnb
+       * see line 495 of https://svn.nees.org/svn/telepresence/fake_daq/fake_daq.c
+       */
       String lowerThreshold = channel.getMetadata ("lowerbound");
       String upperThreshold = channel.getMetadata ("upperbound");
-      // LJM print thresholds to log
       lowerThresholds.put (channelName, lowerThreshold);
       upperThresholds.put (channelName, upperThreshold);
       log.debug ("&&& LOWER: " + lowerThreshold + " UPPER: " + upperThreshold);
