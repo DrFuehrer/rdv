@@ -147,6 +147,16 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.1
 	 */
 	Hashtable units;
+   
+   /** A list of lower threshold values for channels.
+    *  @since 1.3
+    */
+   Hashtable lowerThresholds;
+   
+   /** A list of lower threshold values for channels.
+    *  @since 1.3
+    */
+   Hashtable upperThresholds;
 	
 	/**
 	 * The last posted time.
@@ -255,6 +265,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	public AbstractDataPanel() {		
 		channels = new LinkedHashSet();
 		units = new Hashtable();
+      lowerThresholds = new Hashtable ();
+      upperThresholds = new Hashtable ();
 		
 		time = 0;
 		timeScale = 1;
@@ -348,6 +360,16 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			units.put(channelName, unit);
 		}
 		
+      
+      /** these parameters are defined in the NEESit DAQ protocol.
+       * @see org.nees.rbnb.DaqToRbnb */
+      String lowerThreshold = channel.getMetadata ("lowerbound");
+      String upperThreshold = channel.getMetadata ("upperbound");
+      // LJM print thresholds to log
+      lowerThresholds.put (channelName, lowerThreshold);
+      upperThresholds.put (channelName, upperThreshold);
+      log.debug ("&&& LOWER: " + lowerThreshold + " UPPER: " + upperThreshold);
+      
     updateTitle();
 		
 		return true;
