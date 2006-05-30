@@ -282,7 +282,7 @@ public class RBNBController implements Player, MetadataListener {
       if (state == STATE_PLAYING) {
         if (!preFetchDone) {
           //wait for last prefetch to finish
-          getPreFetchChannelMap(-1);
+          getPreFetchChannelMap();
         }
         preFetchData(location, playbackRate);
       }
@@ -606,13 +606,13 @@ public class RBNBController implements Player, MetadataListener {
 		
 		ChannelMap getmap = null;
 		
-		getmap = getPreFetchChannelMap(5000);
+		getmap = getPreFetchChannelMap();
 		if (getmap == null) {
-			log.error("Failed to get pre-fetched data.");
+      fireErrorMessage("Stopping playback. Error retreiving data from server.");
 			changeStateSafe(STATE_STOPPED);
 			return;
 		} else if (getmap.GetIfFetchTimedOut()) {
-			log.error("Fetch timed out.");
+      fireErrorMessage("Stopping playback. The playback rate is too fast for this amount of data.");
 			changeStateSafe(STATE_STOPPED);
 			return;
 		}
@@ -687,8 +687,6 @@ public class RBNBController implements Player, MetadataListener {
 								error.printStackTrace();
 							}
 					    }
-						
-						return;
 					}
 				} else {
 					preFetchChannelMap = null;
@@ -702,16 +700,12 @@ public class RBNBController implements Player, MetadataListener {
 		}, "prefetch").start();				
 	}
 	
-	private ChannelMap getPreFetchChannelMap(long timeOut) {
+	private ChannelMap getPreFetchChannelMap() {
 		synchronized(preFetchLock) {
 			if (!preFetchDone) {
 				log.debug("Waiting for pre-fetch channel map.");
 				try {
-					if (timeOut == -1) {
-						preFetchLock.wait();
-					} else {
-						preFetchLock.wait(timeOut);
-					}
+					preFetchLock.wait();
  				} catch (Exception e) {
  					log.error("Failed to wait for channel map.");
  					e.printStackTrace();
@@ -848,7 +842,7 @@ public class RBNBController implements Player, MetadataListener {
 		
 		ChannelMap getmap = null;
 		
-		getmap = getPreFetchChannelMap(5000);
+		getmap = getPreFetchChannelMap();
 		if (getmap == null) {
 			log.error("Failed to get pre-fetched data.");
 			changeStateSafe(STATE_STOPPED);
