@@ -92,7 +92,7 @@ public class AboutDialog extends JDialog {
 		
     aboutPanel.add(new JLabel("RDV - Realtime Data Viewer"));
     aboutPanel.add(new JLabel("by Jason P. Hanley <jphanley@buffalo.edu>"));
-    aboutPanel.add(new JLabel("markers contribution by Lawrence J. Miller <ljmiller@sdsc.edu>"));
+    aboutPanel.add(new JLabel("with contribution by Lawrence J. Miller <ljmiller@sdsc.edu>"));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("Version " + Version.major + "." + Version.minor + "." + Version.release));
     aboutPanel.add(new JLabel("Build " + Version.build));
