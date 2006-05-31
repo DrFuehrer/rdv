@@ -39,23 +39,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
-import javax.swing.JToolTip;
-import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -135,9 +125,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		GridBagConstraints c = new GridBagConstraints();
 		
     
-      InputMap inputMap = p.getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW);
-      ActionMap actionMap = p.getActionMap ();
-      
       beginButton = new JButton("Begin", DataViewer.getIcon("icons/begin.gif"));
       beginButton.setToolTipText("Begin");
       beginButton.addActionListener(new ActionListener() {
@@ -377,12 +364,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
             ChannelTree.Node node = (ChannelTree.Node)it.next();
 			String channelName = node.getFullName();
       
-      // don't let event marker channels influence the time bounds
-/*      if (NeesEvent.MIME_TYPE.equals(node.getMime())) {
-        continue;
-      }
-*/
-      
 			if (rbnbController.isSubscribed(channelName)) {
 				double channelStart = node.getStart();
 				double channelDuration = node.getDuration();
@@ -576,11 +557,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		return index;
 	}
 	
-  // LJM
-  public double getTimeScale () {
-    return this.timeScale;
-  }
-  
 	private void timeScaleChange() {
 		double oldTimeScale = timeScale;
 	
