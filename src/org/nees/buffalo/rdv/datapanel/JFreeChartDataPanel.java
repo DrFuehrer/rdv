@@ -465,12 +465,10 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	}
 	
 	public void postData(final ChannelMap channelMap) {
+    cachedChannelMap = this.channelMap;
     
-        //This is a very expensive call when the time scale is large, so we're trying some optimization
-		//super.postData(channelMap);
-		this.channelMap = channelMap;
-        cachedChannelMap = this.channelMap;
-        
+		super.postData(channelMap);
+		
 		if (xyMode) {
 			lastXYDataIndex = -1;
 		} else {
