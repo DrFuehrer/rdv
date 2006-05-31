@@ -531,36 +531,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       	return;
       } // switch
       tableModel.updateData(channelName, data);
-      this.flagThreshold (tableModel.getRowNumber (channelName));
      } // for 
 	} // postDataTabular ()
-   
-   
-  /** a method that will set the out of threshold flag by looking at the table's data value */
- public void flagThreshold (int dataRow) {
-    // changed to access data model directly because the treshold columns may not be visible; must emulate getValueAt ()  
-    DataRow theRowAtDataRow = tableModel.getRowAt (dataRow); 
-    Object minThreshData = (theRowAtDataRow.minThresh == (-1 * Double.MAX_VALUE))? null : new Double (theRowAtDataRow.minThresh);
-    Object maxThreshData = (theRowAtDataRow.minThresh == Double.MAX_VALUE)? null : new Double (theRowAtDataRow.maxThresh);
-    
-    Object dataData = tableModel.getValueAt (dataRow, tableModel.findColumn ("Value"));
-    double loThresh;
-    double hiThresh;
-    double data;
-    if (minThreshData!=null && maxThreshData!=null && dataData!=null) {    
-       if (isADouble (minThreshData) && isADouble (maxThreshData) && isADouble (dataData)) {   
-          loThresh = ((Double)minThreshData).doubleValue ();
-          hiThresh = ((Double)maxThreshData).doubleValue ();
-          data = ((Double)dataData).doubleValue ();
-          if (data < loThresh) { // indicate it on the table
-             log.debug("^^^ LOW " + data + " < " + loThresh);
-          } else if (hiThresh < data) { // indicate it on the table
-             log.debug("^^^ HI " + hiThresh + " < " + data);
-          } else { // clear the cell
-          } // if in threshold
-       } // if doubles
-    } // if not null
-} // flagThreshold ()
    
  public boolean isADouble (Object isit) {
     return ( isit.getClass().isInstance (new Double (-1.0)) );
@@ -772,7 +744,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
                 break;
              }
              fireTableCellUpdated (row, col);
-             flagThreshold (row);
              break;
           case 6: // "Max Thresh"
              try {
@@ -782,7 +753,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
                 break;
              }
              fireTableCellUpdated (row, col);
-             flagThreshold (row);
              break;
           default:
             return; // do nothing
