@@ -171,7 +171,7 @@ public class WebDataPanel extends AbstractDataPanel {
     // the scroll bar for the HTML renderer
     JScrollPane scrollPane = new JScrollPane(htmlRenderer,
         JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     scrollPane.setBorder(null);
     panel.add(scrollPane, BorderLayout.CENTER);
 
