@@ -32,6 +32,7 @@
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
@@ -47,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.swing.SwingUtilities;
@@ -100,6 +102,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	static Log log = LogFactory.getLog(JFreeChartDataPanel.class.getName());
 	
 	JFreeChart chart;
+  XYPlot xyPlot;
   ValueAxis domainAxis;
   NumberAxis rangeAxis;
 	ChartPanel chartPanel;
@@ -113,6 +116,20 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	int lastXYDataIndex;
   
   ChannelMap cachedChannelMap;
+  
+  /**
+   * Plot colors for each channel (series)
+   */
+  HashMap<String,Color> colors;
+  
+  /**
+   * Colors used for the series
+   */
+  final static Color[] seriesColors = {Color.decode("#FF0000"), Color.decode("#0000FF"),
+                    Color.decode("#009900"), Color.decode("#FF9900"),
+                    Color.decode("#9900FF"), Color.decode("#FF0099"),
+                    Color.decode("#0099FF"), Color.decode("#990000"),
+                    Color.decode("#000099"), Color.black};
     
 	public JFreeChartDataPanel() {
 		this(false);
@@ -124,6 +141,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		this.xyMode = xyMode;
 		
 		lastXYDataIndex = -1;
+    
+    colors = new HashMap<String,Color>();
 		
 		initChart();
 		
@@ -153,7 +172,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
           toolTipGenerator);
       renderer.setDefaultEntityRadius(6);      
       
-      XYPlot xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
+      xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
       
       chart = new JFreeChart(null, null, xyPlot, false);
 		} else {
@@ -172,7 +191,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
           toolTipGenerator);
       renderer.setDefaultEntityRadius(6);
 
-      XYPlot xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
+      xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
       
       chart = new JFreeChart(xyPlot);
 		}
@@ -279,6 +298,21 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			TimeSeries data = new TimeSeries(seriesName, FixedMillisecond.class);
 			data.setMaximumItemAge((int)(timeScale*1000*2));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
+            
+      // find the least used color
+      int usage = -1;
+      Color color = null;
+      for (int i=0; i<seriesColors.length; i++) {
+        int seriesUsingColor = seriesUsingColor(seriesColors[i], channelName);
+        if (usage == -1 || seriesUsingColor < usage) {
+          usage = seriesUsingColor;
+          color = seriesColors[i]; 
+        }
+      }      
+      
+      // set the series color
+      colors.put(channelName, color);
+			setSeriesColors();
 		}
 		
 		setAxisName();    
@@ -306,9 +340,49 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
           chart.addLegend(rangeLegend);
         }
         rangeAxis.setLabel(null);
-      }      
+      }
+      
+      colors.remove(channelName);
+      setSeriesColors();
 		}
 	}
+  
+  /**
+   * Count the number of channels using the specified color for their series
+   * plot. The count will exclude the specified channel from the count.
+   * 
+   * @param color           the color to find
+   * @param excludeChannel  the channel to skip
+   * @return                the number of channels using this color
+   */
+  private int seriesUsingColor(Color color, String excludeChannel) {
+    if (color == null) {
+      return 0;
+    }
+    
+    int count = 0;
+    
+    for (int i=0; i<channels.size(); i++) {
+      String channel = (String)channels.get(i);
+      Paint p = (Color)xyPlot.getRenderer().getSeriesPaint(i);
+      if (p.equals(color) && !channel.equals(excludeChannel)) {
+        count++;
+      }
+    }
+    
+    return count;
+  }
+  
+  /**
+   * Set the series color for all the channels.
+   */
+  private void setSeriesColors() {
+    Iterator i = channels.iterator();
+    int index = 0;
+    while (i.hasNext()) {
+      xyPlot.getRenderer().setSeriesPaint(index++, colors.get(i.next()));
+    }
+  }
 	
 	String getTitle() {
 		if (xyMode && channels.size() == 2) {
