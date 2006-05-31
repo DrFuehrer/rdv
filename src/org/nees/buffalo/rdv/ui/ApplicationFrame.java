@@ -349,11 +349,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				
- 				if (jumpDateTimeDialog == null) {
+// 				if (jumpDateTimeDialog == null) {
  					jumpDateTimeDialog = new JumpDateTimeDialog(frame, rbnb, dataPanelManager);
- 				} else {
- 					jumpDateTimeDialog.setVisible(true);
- 				}	
+// 				} else {
+// 					jumpDateTimeDialog.setVisible(true);
+// 				}	
  			}			
  		};
  
