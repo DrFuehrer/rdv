@@ -434,13 +434,9 @@ public class RBNBController implements Player, MetadataListener {
 		
 		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
 		
-		switch (state) {
-			case STATE_STOPPED:
-				loadData(channelName);
-				break;
-			case STATE_MONITORING:
-				monitorData();
-				break;
+		loadData(channelName);
+    if (state == STATE_MONITORING) {
+      monitorData();
 		}
 		
 		fireSubscriptionNotification(channelName);
@@ -1046,6 +1042,9 @@ public class RBNBController implements Player, MetadataListener {
 	}
 
  	public void monitor() {
+    if (state != STATE_MONITORING) {
+      setLocation(System.currentTimeMillis()/1000d);
+    }
     requestStateChange(STATE_MONITORING);
 	}
 	

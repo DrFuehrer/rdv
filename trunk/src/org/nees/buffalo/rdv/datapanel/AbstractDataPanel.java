@@ -652,7 +652,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	public void postState(int newState, int oldState) {
     state = newState;
     
-    if (newState == Player.STATE_LOADING || (newState == Player.STATE_MONITORING && oldState != Player.STATE_MONITORING)) {
+    if (newState == Player.STATE_LOADING) {
       clearData();  
     }
 	}
