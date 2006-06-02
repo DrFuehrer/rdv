@@ -608,7 +608,7 @@ public class RBNBController implements Player, MetadataListener {
 			changeStateSafe(STATE_STOPPED);
 			return;
 		} else if (getmap.GetIfFetchTimedOut()) {
-      fireErrorMessage("Stopping playback. The playback rate is too fast for this amount of data.");
+      fireErrorMessage("Stopping playback. RDV cannot get enough data from server. The playback rate may be too fast or the server is busy.");
 			changeStateSafe(STATE_STOPPED);
 			return;
 		}
