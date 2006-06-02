@@ -595,7 +595,7 @@ public class RBNBController implements Player, MetadataListener {
 	
 	private synchronized void updateDataPlaying() {			
 		if (requestedChannels.NumberOfChannels() == 0) {
-			log.warn("No channels selected for data playback.");
+      fireErrorMessage("Stopping playback. No channels are selected.");
 			changeStateSafe(STATE_STOPPED);		
 			return;
 		}
@@ -748,7 +748,7 @@ public class RBNBController implements Player, MetadataListener {
 		//stop monitoring if no channels selected
 		//TODO see if this should be posible or indicates an error in the program
 		if (requestedChannels.NumberOfChannels() == 0) {
-			log.warn("No channels subscribed to monitor.");
+      fireErrorMessage("Stopping real time. No channels are selected.");
 			changeStateSafe(STATE_STOPPED);
 			return;
 		}
