@@ -613,10 +613,8 @@ public class RBNBController implements Player, MetadataListener {
 			return;
 		}
 		
-		String[] channelList = getmap.GetChannelList();
-
 		//stop if no data in fetch and past end time, most likely end of data
- 		if (channelList.length == 0 && !moreData(requestedChannels.GetChannelList(), metaDataChannelTree, location)) {
+ 		if (getmap.NumberOfChannels() == 0 && !moreData(requestedChannels.GetChannelList(), metaDataChannelTree, location)) {
 			log.warn("Received no data. Assuming end of channel.");
 			changeStateSafe(STATE_STOPPED);
 			return;
@@ -786,10 +784,8 @@ public class RBNBController implements Player, MetadataListener {
 			}
 		}
 
-		String[] channelList = getmap.GetChannelList();
-		
 		//received no data
-		if (channelList.length == 0) {
+		if (getmap.NumberOfChannels() == 0) {
 			return;			
 		} 
 
