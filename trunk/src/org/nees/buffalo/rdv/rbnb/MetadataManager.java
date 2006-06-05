@@ -182,14 +182,18 @@ public class MetadataManager {
    */
   private void updateMetadataThread(Sink metadataSink) {
     while (update) {
-      updateMetadata(metadataSink);
-
       synchronized(sleeping) {
         sleeping = true;
         try { Thread.sleep(updateRate); } catch (InterruptedException e) {}
         sleeping = false;
       }
+
+      if (update) {
+        updateMetadata(metadataSink);
+      }
     }
+    
+    fireMetadataUpdated(null);
   }
   
   /**
