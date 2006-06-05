@@ -801,8 +801,11 @@ public class RBNBController implements Player, MetadataListener {
 		
 		if (state == STATE_MONITORING) {
 			//update current location
-			location = getLastTime(getmap);
-			updateTimeListeners(location);
+			double newLocation = getLastTime(getmap);
+      if (newLocation > location) {
+        location = newLocation;
+        updateTimeListeners(location);
+      }
 		}
 	}
 	
@@ -907,10 +910,6 @@ public class RBNBController implements Player, MetadataListener {
 	
 	// Listener Methods
 	
-  public void updateTimeListenersPublic (double updateLocation) {
-    updateTimeListeners (updateLocation);
-  }
-  
 	private void updateTimeListeners(double location) {
 		for (int i=0; i<timeListeners.size(); i++) {
 			TimeListener timeListener = (TimeListener)timeListeners.get(i);
