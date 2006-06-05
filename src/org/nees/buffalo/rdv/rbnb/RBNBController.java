@@ -433,11 +433,18 @@ public class RBNBController implements Player, MetadataListener {
 		channelManager.subscribe(channelName, panel);
 		
 		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
-		
+
+    if (state == STATE_PLAYING) {
+      getPreFetchChannelMap();
+    }
+   
 		loadData(channelName);
+    
     if (state == STATE_MONITORING) {
       monitorData();
-		}
+		} else if (state == STATE_PLAYING) {
+      preFetchData(location, playbackRate);
+    }
 		
 		fireSubscriptionNotification(channelName);
 		
