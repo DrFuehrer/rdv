@@ -256,7 +256,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		ChannelTree oldChannelTree = ctree;
  		ctree = newChannelTree;
  		
- 		if (!root.equals(rbnb.getRBNBConnectionString())) {
+    if (newChannelTree == null) {
+      clearChannelList();
+      fireNoChannelsSelected();
+    } else if (!root.equals(rbnb.getRBNBConnectionString())) {
  				root = rbnb.getRBNBConnectionString();
  				fireRootChanged();
  				fireNoChannelsSelected();
@@ -827,8 +830,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
 	public void postState(int newState, int oldState) {
 		if (newState == Player.STATE_DISCONNECTED || newState == Player.STATE_EXITING) {
-			clearChannelList();
-			fireNoChannelsSelected();
 			metadataUpdateButton.setEnabled(false);
 		} else {
 			metadataUpdateButton.setEnabled(true);
