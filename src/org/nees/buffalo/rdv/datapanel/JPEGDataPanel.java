@@ -94,6 +94,7 @@ import org.xml.sax.SAXException;
 
 import com.rbnb.sapi.ChannelMap;
 
+import edu.ucsd.auth.GridAuth;
 /**
  * @author Jason P. Hanley
  */
@@ -813,9 +814,17 @@ public class JPEGDataPanel extends AbstractDataPanel {
     String host = channel.getMetadata("flexTPS_host");
     String feed = channel.getMetadata("flexTPS_feed");
     String stream = channel.getMetadata("flexTPS_stream");
+
+	// If user successfully login, gaSession should be valid
+    String gaSession = "";
+	GridAuth auth = dataPanelManager.getAuth();
+	if (auth != null)
+		gaSession = auth.get("session");
+	else
+		log.info("GridAuth is not initiated.");
     
     if (host != null && feed != null && stream != null) {
-      flexTPSStream = new FlexTPSStream(host, feed, stream);
+      flexTPSStream = new FlexTPSStream(host, feed, stream, gaSession);
       
       if (flexTPSStream.canDoRobotic()) {
         //state = rbnbController.getState();
@@ -1234,11 +1243,16 @@ public class JPEGDataPanel extends AbstractDataPanel {
     private final String ROBOTIC_IRIS_CLOSE = "ctrl=riris&amp;value=close";
     private final String ROBOTIC_IRIS_OPEN = "ctrl=riris&amp;value=open";
     private final String ROBOTIC_IRIS_AUTO = "ctrl=iris&amp;value=auto";
+    private String gaSession;
     
-    public FlexTPSStream(String host, String feed, String stream) {
+    public FlexTPSStream(String host, String feed, String stream, String gaSession) {
       this.host = host;
       this.feed = feed;
       this.stream = stream;
+      if ((gaSession == null) || (gaSession.length() == 0))
+    	  this.gaSession = "";
+      else
+    	  this.gaSession = "&amp;GAsession=" + gaSession;
       
       pan = tilt = zoom = focus = iris = false;
       
@@ -1250,7 +1264,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
     }
     
     private void loadStream() {
-      String streamURL = getBaseURL();
+      String streamURL = getBaseURL() + gaSession;
       
       Document document;
       try {
@@ -1306,7 +1320,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
     private void executeRoboticCommand(String command) {
       URL cameraURL = null;
       try {
-        cameraURL = new URL(getBaseURL() + "/robotic/?" + command);
+        cameraURL = new URL(getBaseURL() + "/robotic/?" + command + gaSession);
       } catch (MalformedURLException e) {
         e.printStackTrace();
         return;

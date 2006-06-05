@@ -99,6 +99,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	
  	private BusyDialog busyDialog;
  	private LoadingDialog loadingDialog;
+ 	private LoginDialog loginDialog;
 	
 	private JFrame frame;
 	private GridBagConstraints c;
@@ -118,6 +119,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action fileAction;
  	private Action connectAction;
  	private Action disconnectAction;
+ 	private Action loginAction;
+ 	private Action logoutAction;
   private Action loadAction;
   private Action saveAction;
  	private Action importAction;
@@ -254,7 +257,23 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				rbnb.disconnect();
  			}			
  		};
-    
+
+ 		loginAction = new DataViewerAction("Login NEES", "Login as a NEES user") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				if (loginDialog == null) {
+ 					loginDialog = new LoginDialog(frame, dataPanelManager);
+ 				} else {
+ 					loginDialog.setVisible(true);
+ 				}			
+ 			}			
+ 		};
+ 		
+ 		logoutAction = new DataViewerAction("Logout NEES", "Logout as a NEES user") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				dataPanelManager.setAuth(null);
+ 			}			
+ 		};
+ 		 		
     loadAction = new DataViewerAction("Load Setup", "Load data viewer setup from file") {
       public void actionPerformed(ActionEvent ae) {
         JFileChooser chooser = new JFileChooser();
@@ -480,7 +499,15 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem = new JMenuItem(disconnectAction);
  		fileMenu.add(menuItem);
  		
- 		fileMenu.addSeparator();	
+ 		fileMenu.addSeparator();
+ 		
+ 		menuItem = new JMenuItem(loginAction);
+ 		fileMenu.add(menuItem);
+ 		
+ 		menuItem = new JMenuItem(logoutAction);
+ 		fileMenu.add(menuItem);
+ 		
+ 		fileMenu.addSeparator();
     
     menuItem = new JMenuItem(loadAction);
     fileMenu.add(menuItem);
