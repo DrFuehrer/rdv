@@ -94,7 +94,7 @@ import java.awt.datatransfer.Transferable;
 /**
  * @author Jason P. Hanley
  */
-public class ChannelListPanel extends JPanel implements TreeModel, TreeSelectionListener, DragSourceListener, MouseListener, MetadataListener, StateListener {
+public class ChannelListPanel extends JPanel implements TreeModel, TreeSelectionListener, DragSourceListener, MouseListener, MetadataListener, StateListener, DragGestureListener {
 
 	static Log log = LogFactory.getLog(ChannelListPanel.class.getName());
 
@@ -135,7 +135,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		initPanel();
     
     DragSource dragSource = DragSource.getDefaultDragSource();
-//    dragSource.createDefaultDragGestureRecognizer(tree, DnDConstants.ACTION_LINK, this);    
+    dragSource.createDefaultDragGestureRecognizer(tree, DnDConstants.ACTION_LINK, this);    
 	}
 	
 	private void initPanel() {
@@ -509,22 +509,29 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 			fireChannelSelected(o);
 		}		
 	}
-/*	
+	
 	public void dragGestureRecognized(DragGestureEvent e) {
-		Point p = e.getDragOrigin();
-		TreePath treePath = tree.getPathForLocation((int)p.getX(), (int)p.getY());
-		if (treePath != null) {
-			Object o = treePath.getLastPathComponent();
-			if (o != root) {
-				ChannelTree.Node node = (ChannelTree.Node)o;
-				if (node.getType() == ChannelTree.CHANNEL) {
-					String channelName = node.getFullName();
-					e.startDrag(DragSource.DefaultLinkDrop, new StringSelection(channelName), this);
+		
+		try {
+			Point p = e.getDragOrigin();
+			TreePath treePath = tree.getPathForLocation((int)p.getX(), (int)p.getY());
+			if (treePath != null) {
+				Object o = treePath.getLastPathComponent();
+				if (o != root) {
+					ChannelTree.Node node = (ChannelTree.Node)o;
+					if (node.getType() == ChannelTree.CHANNEL) {
+						String channelName = node.getFullName();
+						e.startDrag(DragSource.DefaultLinkDrop, new StringSelection(channelName), this);
+					}
 				}
 			}
+			
+		} catch (Exception ex) { // Ignore
+			
+			log.error(ex.getMessage());
 		}
 	}
-*/	
+	
 	public void dragEnter(DragSourceDragEvent dsde) {}
 	public void dragOver(DragSourceDragEvent dsde) {}
 	public void dropActionChanged(DragSourceDragEvent dsde) {}
@@ -758,6 +765,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   
   private List getExtensionsForSource(ChannelTree.Node source) {
     List extensions = new ArrayList();
+    
     List children = RBNBUtilities.getSortedChildren(source, showHiddenChannels);
     Iterator it = children.iterator();
     while (it.hasNext()) {
