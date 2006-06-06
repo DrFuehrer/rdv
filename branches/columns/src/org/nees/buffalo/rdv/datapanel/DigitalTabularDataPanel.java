@@ -35,6 +35,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Component;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -42,6 +47,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.PrinterException;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -399,7 +405,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements
             tableModels.remove(currentTableCount - 1 - i);
          } // for
       }
-
    } // setTables ()
 
    /** a method that will clear all gui components from the panel display */
@@ -491,7 +496,53 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements
    public boolean supportsMultipleChannels() {
       return true;
    }
+   
+   /** an over-ridden method from @see org.nees.buffalo.rdv.datapanel.AbstractDataPanel
+    * for the @see DropTargetListener interface
+    */
+   public void drop(DropTargetDropEvent e) {
+      try {
+         int dropAction = e.getDropAction();
+         // calculate which table the x coordinate of the mouse corresponds to
+         double clickX = e.getLocation ().getX();
+         int compWidth = dataComponent.getWidth();
+         float targetTableTemp = (float)clickX * (float)columnGroupCount / (float)compWidth;
+         log.debug("%%% drop into table #" + targetTableTemp);
+         
+         if (dropAction == DnDConstants.ACTION_LINK) {
+            DataFlavor stringFlavor = DataFlavor.stringFlavor;
+            Transferable tr = e.getTransferable();
+            if (e.isDataFlavorSupported(stringFlavor)) {
+               String channels = (String) tr.getTransferData(stringFlavor);
+               String delim = ",";
+               String[] tokens = channels.split(delim);
+               String channelName = "";
+               for (int i = 0; i < tokens.length; i++) {
+                  channelName = tokens[i];
+                  e.acceptDrop(DnDConstants.ACTION_LINK);
+                  e.dropComplete(true);
 
+                  boolean status;
+                  if (supportsMultipleChannels()) {
+                     status = addChannel(channelName);
+                  } else {
+                     status = setChannel(channelName);
+                  }
+                  if (!status) {
+                     // TODO display an error in the UI
+                  }
+               }
+            } else {
+               e.rejectDrop();
+            }
+         }
+      } catch (IOException ioe) {
+         ioe.printStackTrace();
+      } catch (UnsupportedFlavorException ufe) {
+         ufe.printStackTrace();
+      }
+   } // drop ()
+   
    public boolean addChannel(String channelName) {
       if (channels.size() > MAX_CHANNELS) {
          return false;
