@@ -1260,7 +1260,7 @@ public class JPEGDataPanel extends AbstractDataPanel {
     }
     
     private String getBaseURL() {
-      return "http://" + host + "/feeds/" + feed + "/" + stream;
+      return "https://" + host + "/feeds/" + feed + "/" + stream;
     }
     
     private void loadStream() {
