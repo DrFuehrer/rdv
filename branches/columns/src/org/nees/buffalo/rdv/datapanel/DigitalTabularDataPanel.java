@@ -360,11 +360,11 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
           blankRowMenuItem.addActionListener (new ActionListener () {
             public void actionPerformed (ActionEvent e) {
                for (int i=0; i<columnGroupCount; i++) {
-                  ( (DataTableModel)tableModels.get (i) ).addRow (null, null, -1*Double.MAX_VALUE, Double.MAX_VALUE);
+                  ( (DataTableModel)tableModels.get (i) ).addRow (DataRow.BLANK_ROW_NAME, null, -1*Double.MAX_VALUE, Double.MAX_VALUE);
                } // for
             }      
           });
-          popupMenu.add (blankRowMenuItem);
+          // popupMenu.add (blankRowMenuItem);
       
           // set component popup and mouselistener to trigger it
           mainPanel.setComponentPopupMenu(popupMenu);
@@ -712,9 +712,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     
     public void addRow (String name, String unit, double lowerThresh, double upperThresh) {
       DataRow dataRow = new DataRow (name, unit, lowerThresh, upperThresh);
-      if (name==null) {
-         dataRow.setBlank (true);
-      }
       rows.add(dataRow);
       int row = rows.size()-1;
       fireTableRowsInserted(row, row);
@@ -812,14 +809,14 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       
       DataRow dataRow = (DataRow)rows.get(row);
       // TODO
-      if (dataRow.getName () == null) {return null;}
+      if (dataRow.isBlank ()) {return null;}
       String[] nameSplit = dataRow.getName ().split ("/");
       
       switch (col) {
         case 0:
            return ( nameSplit [nameSplit.length-1] );
         case 1:
-          return dataRow.isCleared()? null : new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
+          return ( dataRow.isCleared() || dataRow.isBlank ())? null : new Double(dataRow.getData() - (useOffsets?dataRow.getOffset():0));
         case 2:
           return dataRow.getUnit();
         case 3:
@@ -894,11 +891,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     double max;
     double minThresh = -1 * Double.MAX_VALUE;
     double maxThresh = Double.MAX_VALUE;
+    static final String BLANK_ROW_NAME = "blank";
  
     double offset;
     boolean cleared;
-    /** a variable to indicate whether or not this is a blank row */
-    boolean isBlank = false;
     
     public DataRow (String name, String unit, double lowerThresh, double upperThresh) {
       this.name = name;
@@ -909,11 +905,12 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     }
     
     public boolean isBlank () {
-       return this.isBlank;
+       boolean retval = this.name.compareTo (DataRow.BLANK_ROW_NAME) == 0;
+       return (retval);
     }
     
     public void setBlank (boolean isit) {
-       this.isBlank = isit;
+       this.name = DataRow.BLANK_ROW_NAME;
     }
     
     public String getName() {
@@ -1049,7 +1046,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         if (numberValue.doubleValue () < (Double)minThreshData) {
            renderer.setBackground (Color.red);
         } else if (numberValue.doubleValue () > (Double)maxThreshData){
-           renderer.setBackground (Color.yellow);
+           renderer.setBackground (Color.red);
         } else {
            renderer.setBackground (Color.white);
         }
