@@ -48,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -81,8 +82,11 @@ import org.jfree.chart.renderer.xy.XYItemRendererState;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
 import org.jfree.data.time.FixedMillisecond;
+import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.TimeSeriesDataItem;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -280,7 +284,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     if (xyMode) {
       if (channels.size() == 1) {
-        XYSeries data = new XYSeries(seriesName, false, true);
+        XYSeries data = new FastXYSeries(seriesName);
         ((XYSeriesCollection)dataCollection).addSeries(data);
       }
     } else {
@@ -295,7 +299,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         rangeAxis.setLabel(null);
       }
       
-			TimeSeries data = new TimeSeries(seriesName, FixedMillisecond.class);
+			TimeSeries data = new FastTimeSeries(seriesName, FixedMillisecond.class);
 			data.setMaximumItemAge((int)(timeScale*1000*2));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
             
@@ -451,11 +455,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
 				XYSeries data = dataCollection.getSeries(i);
 				//TODO add correspoding code for XYSeries
-				data.setMaximumItemCount((int)(256*timeScale*2));
+				data.setMaximumItemCount((int)(256*timeScale));
 			} else {
 				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
 				TimeSeries data = dataCollection.getSeries(i);
-				data.setMaximumItemAge((int)(timeScale*1000*2));
+				data.setMaximumItemAge((int)(timeScale*1000));
 			}
 		}
 		
@@ -495,9 +499,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	}
 	
 	private void postDataTimeSeries(ChannelMap channelMap, String channelName, int channelIndex) {
-		TimeSeries timeSeriesData = null;
 		TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-		timeSeriesData = dataCollection.getSeries(getSeriesName(channelName));
+    FastTimeSeries timeSeriesData = (FastTimeSeries)dataCollection.getSeries(getSeriesName(channelName));
     if (timeSeriesData == null) {
       log.error("We don't have a data collection to post this data.");
       return;
@@ -511,48 +514,50 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			FixedMillisecond time;
 			
 			chart.setNotify(false);
+      
+      timeSeriesData.startAdd(times.length);
 			
 			switch (typeID) {
 				case ChannelMap.TYPE_FLOAT64:					
 					double[] doubleData = channelMap.GetDataAsFloat64(channelIndex);
 					for (int i=0; i<doubleData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.addOrUpdate(time, doubleData[i]);
+						timeSeriesData.add(time, doubleData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_FLOAT32:
 					float[] floatData = channelMap.GetDataAsFloat32(channelIndex);
 					for (int i=0; i<floatData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.addOrUpdate(time, floatData[i]);
+						timeSeriesData.add(time, floatData[i]);
 					}
 				break;					
 				case ChannelMap.TYPE_INT64:
 					long[] longData = channelMap.GetDataAsInt64(channelIndex);
 					for (int i=0; i<longData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.addOrUpdate(time, longData[i]);
+						timeSeriesData.add(time, longData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT32:
 					int[] intData = channelMap.GetDataAsInt32(channelIndex);
 					for (int i=0; i<intData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.addOrUpdate(time, intData[i]);
+						timeSeriesData.add(time, intData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT16:
 					short[] shortData = channelMap.GetDataAsInt16(channelIndex);
 					for (int i=0; i<shortData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.addOrUpdate(time, shortData[i]);
+						timeSeriesData.add(time, shortData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_INT8:					
 					byte[] byteData = channelMap.GetDataAsInt8(channelIndex);
 					for (int i=0; i<byteData.length; i++) {
 						time = new FixedMillisecond((long)(times[i]*1000));
-						timeSeriesData.addOrUpdate(time, byteData[i]);
+						timeSeriesData.add(time, byteData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_STRING:
@@ -562,6 +567,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 					break;
 			}
 			
+      timeSeriesData.stopAdd();
+      
 			chart.setNotify(true);
 			chart.fireChartChanged();
 		} catch (Exception e) {
@@ -644,14 +651,15 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 
 			lastXYDataIndex = endIndex;
 			
-			XYSeries xySeriesData = null;
 			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
-			xySeriesData = dataCollection.getSeries(0);
+      FastXYSeries xySeriesData = (FastXYSeries)dataCollection.getSeries(0);
 			
 			//FIXME assume data of same type
 			int typeID = channelMap.GetType(yChannelIndex);
 					
 			chart.setNotify(false);
+      
+      xySeriesData.startAdd(times.length);
 			
 			switch (typeID) {
 				case ChannelMap.TYPE_FLOAT64:
@@ -714,6 +722,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 					log.error("Don't know how to handle data type for " + xChannelName + " and " + yChannelName + ".");
 					break;
 			}
+      
+      xySeriesData.stopAdd();
 			
 			chart.setNotify(true);
 			chart.fireChartChanged();
@@ -987,5 +997,102 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         addEntity(entities, entityArea, dataset, series, item, transX1, transY1);
       }
     }
-  }     
+  }
+  
+  /**
+   * This is an optimizied version of the TimeSeries class. It adds methods to
+   * support fast loading of large amounts of data. 
+   */
+  class FastTimeSeries extends TimeSeries {
+    public FastTimeSeries(String name, Class timePeriodClass) {
+      super(name, timePeriodClass);
+    }
+
+    /**
+     * Signal that a number of items will be added to the series.
+     * 
+     * This increases the capacity of this series to ensure it hold at least the
+     * number of elements specified plus the current number of elements.
+     * 
+     * @param items  the number of items to be added
+     */
+    public void startAdd(int items) {
+      ((ArrayList)data).ensureCapacity(data.size()+items);
+    }
+    
+    /**
+     * Adds a data item to the series. If the time period is less than the last
+     * time period, the item will not be added.
+     *
+     * @param period  the time period to add (<code>null</code> not permitted).
+     * @param value  the new value.
+     */
+    public void add(RegularTimePeriod period, double value) {
+      TimeSeriesDataItem item = new TimeSeriesDataItem(period, value);
+      int count = getItemCount();
+      if (count == 0) {
+        data.add(item);
+      } else {
+        RegularTimePeriod last = getTimePeriod(count-1);
+        if (period.compareTo(last) > 0) {
+          data.add(item);
+        }
+      }      
+    }
+    
+    /**
+     * Signal that the adding of items has ended.
+     * 
+     * This fires a series changed event.
+     */
+    public void stopAdd() {
+      removeAgedItems(false);
+
+      fireSeriesChanged();
+    }
+  }
+  
+  /**
+   * An optimized version of XYSeries. 
+   */
+  class FastXYSeries extends XYSeries {
+    public FastXYSeries(Comparable key) {
+      super(key, false, true);
+    }
+    
+    /**
+     * Signal that a number of items will be added to the series.
+     * 
+     * This increases the capacity of this series to ensure it hold at least the
+     * number of elements specified plus the current number of elements.
+     * 
+     * @param items  the number of items to be added
+     */
+    public void startAdd(int items) {
+      ((ArrayList)data).ensureCapacity(data.size()+items);
+    }
+
+    /**
+     * Adds a data item to the series.
+     *
+     * @param x  the x value.
+     * @param y  the y value.
+     */    
+    public void add(double x, double y) {
+      data.add(new XYDataItem(x, y));
+        
+      if (getItemCount() > getMaximumItemCount()) {
+        data.remove(0);
+      }
+    }    
+    
+    /**
+     * Signal that the adding of items has ended.
+     * 
+     * This fires a series changed event.
+     */
+    public void stopAdd() {
+      fireSeriesChanged();
+    }    
+  }
 }
