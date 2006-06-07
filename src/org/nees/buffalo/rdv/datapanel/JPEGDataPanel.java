@@ -57,6 +57,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import javax.net.ssl.SSLHandshakeException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -1270,6 +1271,10 @@ public class JPEGDataPanel extends AbstractDataPanel {
       try {
         DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         document = documentBuilder.parse(streamURL);
+      } catch (SSLHandshakeException e) {
+    	  // SSL exception will happen if the flexTPS server 
+    	  // certificate is not recognized but this won't be problem
+    	  return;
       } catch (IOException e) {
         e.printStackTrace();
         return;
@@ -1329,6 +1334,10 @@ public class JPEGDataPanel extends AbstractDataPanel {
       URLConnection cameraConnection = null;
       try {
         cameraConnection = cameraURL.openConnection();
+      } catch (SSLHandshakeException e) {
+    	  // SSL exception will happen if the flexTPS server 
+    	  // certificate is not recognized but this won't be problem
+    	  return;
       } catch (IOException e) {
         e.printStackTrace();
         return;
@@ -1336,6 +1345,10 @@ public class JPEGDataPanel extends AbstractDataPanel {
       
       try {
         cameraConnection.connect();
+      } catch (SSLHandshakeException e) {
+    	  // SSL exception will happen if the flexTPS server 
+    	  // certificate is not recognized but this won't be problem
+    	  return;
       } catch (IOException e) {
         e.printStackTrace();
         return;
