@@ -225,13 +225,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements
          table.setName(DigitalTabularDataPanel.class.getName() + " JTable #" + Integer.toString(i));
 
          table.getModel().addTableModelListener(this);
-         table.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-               JTable src = (JTable) (e.getComponent());
-               log.debug ("^^^ CLICK!! from " + src.getName() + " " + src.getSelectedRow () + "x" + src.getSelectedColumn () );
-            } // mouseClicked ()
-         }); // MouseListener
-
          table.getColumn("Value").setCellRenderer(new DataTableCellRenderer());
 
          table.addComponentListener(new ComponentAdapter() {
@@ -243,6 +236,84 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements
          tables.add(table);
          tableModels.add(tableModel);
          panelBox.add(new JScrollPane(table));
+
+         // popup menu for panel
+         JPopupMenu popupMenu = new JPopupMenu();
+
+         final JMenuItem copyMenuItem = new JMenuItem("Copy");
+         popupMenu.addPopupMenuListener(new PopupMenuListener() {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+
+               for (int i = 0; i < columnGroupCount; i++) {
+                  copyMenuItem.setEnabled(((JTable) tables.get(i))
+                        .getSelectedRowCount() > 0);
+               } // for     
+            }
+
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+            }
+
+            public void popupMenuCanceled(PopupMenuEvent arg0) {
+            }
+         });
+
+         popupMenu.add(copyMenuItem);
+
+         popupMenu.addSeparator();
+
+         JMenuItem printMenuItem = new JMenuItem("Print...");
+         printMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+               try {
+
+                  for (int i = 0; i < columnGroupCount; i++) {
+                     ((JTable) tables.get(i)).print(JTable.PrintMode.FIT_WIDTH);
+                  } // for
+               } catch (PrinterException pe) {
+               }
+
+            }
+         });
+         popupMenu.add(printMenuItem);
+         popupMenu.addSeparator();
+
+         showMaxMinMenuItem = new JCheckBoxMenuItem(
+               "Show max/min and threshold columns", false);
+         showMaxMinMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+               setMaxMinVisible(showMaxMinMenuItem.isSelected());
+            }
+         });
+         popupMenu.add(showMaxMinMenuItem);
+
+         /*
+          showThresholdMenuItem = new  JCheckBoxMenuItem ("Show threshold columns", false);
+          showThresholdMenuItem.addActionListener (new ActionListener () {
+          public void actionPerformed (ActionEvent ae) {
+          setThresholdVisible (showThresholdMenuItem.isSelected ());
+          }      
+          }); // actionListener
+          popupMenu.add (showThresholdMenuItem);
+          */
+
+         // TODO
+         JMenuItem blankRowMenuItem = new JMenuItem("Insert Blank Row");
+         blankRowMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+               for (int i = 0; i < columnGroupCount; i++) {
+                  ((DataTableModel) tableModels.get(i)).addRow(
+                        DataRow.BLANK_ROW_NAME, null, -1 * Double.MAX_VALUE,
+                        Double.MAX_VALUE);
+               } // for
+            }
+         });
+         popupMenu.add (blankRowMenuItem);
+
+         // set component popup and mouselistener to trigger it         
+         panelBox.setComponentPopupMenu(popupMenu);
+         table.setComponentPopupMenu(popupMenu);
+         
          if (i != 0 || i != columnGroupCount - 1) {
             panelBox.add(Box.createHorizontalStrut(7));
          }
@@ -312,82 +383,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements
 
       mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-      // popup menu for panel
-      JPopupMenu popupMenu = new JPopupMenu();
-
-      final JMenuItem copyMenuItem = new JMenuItem("Copy");
-      popupMenu.addPopupMenuListener(new PopupMenuListener() {
-         public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-
-            for (int i = 0; i < columnGroupCount; i++) {
-               copyMenuItem.setEnabled(((JTable) tables.get(i))
-                     .getSelectedRowCount() > 0);
-            } // for     
-         }
-
-         public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-         }
-
-         public void popupMenuCanceled(PopupMenuEvent arg0) {
-         }
-      });
-
-      popupMenu.add(copyMenuItem);
-
-      popupMenu.addSeparator();
-
-      JMenuItem printMenuItem = new JMenuItem("Print...");
-      printMenuItem.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e) {
-
-            try {
-
-               for (int i = 0; i < columnGroupCount; i++) {
-                  ((JTable) tables.get(i)).print(JTable.PrintMode.FIT_WIDTH);
-               } // for
-            } catch (PrinterException pe) {
-            }
-
-         }
-      });
-      popupMenu.add(printMenuItem);
-      popupMenu.addSeparator();
-
-      showMaxMinMenuItem = new JCheckBoxMenuItem(
-            "Show max/min and threshold columns", false);
-      showMaxMinMenuItem.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent ae) {
-            setMaxMinVisible(showMaxMinMenuItem.isSelected());
-         }
-      });
-      popupMenu.add(showMaxMinMenuItem);
-
-      /*
-       showThresholdMenuItem = new  JCheckBoxMenuItem ("Show threshold columns", false);
-       showThresholdMenuItem.addActionListener (new ActionListener () {
-       public void actionPerformed (ActionEvent ae) {
-       setThresholdVisible (showThresholdMenuItem.isSelected ());
-       }      
-       }); // actionListener
-       popupMenu.add (showThresholdMenuItem);
-       */
-
-      // TODO
-      JMenuItem blankRowMenuItem = new JMenuItem("Insert Blank Row");
-      blankRowMenuItem.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e) {
-            for (int i = 0; i < columnGroupCount; i++) {
-               ((DataTableModel) tableModels.get(i)).addRow(
-                     DataRow.BLANK_ROW_NAME, null, -1 * Double.MAX_VALUE,
-                     Double.MAX_VALUE);
-            } // for
-         }
-      });
-      // popupMenu.add (blankRowMenuItem);
-
-      // set component popup and mouselistener to trigger it
-      mainPanel.setComponentPopupMenu(popupMenu);
-      table.setComponentPopupMenu(popupMenu);
       mainPanel.addMouseListener(new MouseInputAdapter() {
       });
 
