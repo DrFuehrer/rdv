@@ -674,6 +674,7 @@ public class RBNBController implements Player, MetadataListener {
 						preFetchChannelMap = sink.Fetch(LOADING_TIMEOUT);
 					} catch (Exception e) {
  						log.error("Failed to fetch data.");
+ 			 			fireErrorMessage("Failed to get the data from the server. Please try again later.");
  						e.printStackTrace();
 						changeStateSafe(STATE_STOPPED);
 
@@ -771,6 +772,7 @@ public class RBNBController implements Player, MetadataListener {
 			getmap = sink.Fetch(timeout);
 		} catch (SAPIException e) {
  			log.error("Failed to fetch data.");
+ 			fireErrorMessage("Failed to get the data from the server. Please try again later.");
  			e.printStackTrace();
 			changeStateSafe(STATE_STOPPED);
 			return;
@@ -786,6 +788,7 @@ public class RBNBController implements Player, MetadataListener {
 				
 			} else {
 				log.error("Failed to fetch data.");
+	 			fireErrorMessage("Failed to get the data from the server. Please try again later.");
 				changeStateSafe(STATE_STOPPED);
 				return;
 			}
