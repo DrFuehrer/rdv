@@ -41,24 +41,19 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -67,7 +62,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-import javax.swing.TransferHandler;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -75,26 +69,24 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
 import com.rbnb.sapi.ChannelMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 /**
  * A Data Panel extension to display numeric data in a tabular form. Maximum and
  * minimum values are also displayed.
  * 
  * @author  Jason P. Hanley
- * @author Lawrence J. Miller <ljmiller@sdsc.edu>
+ * @author  Lawrence J. Miller <ljmiller@sdsc.edu>
  * @since   1.3
  */
 public class DigitalTabularDataPanel extends AbstractDataPanel implements TableModelListener {
 
 	static Log log = LogFactory.getLog(DigitalTabularDataPanel.class.getName());
+  
   /**
    * The main panel
    * 
@@ -103,50 +95,37 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   private JPanel mainPanel;
   
   /**
-   * a variable that has the number of groupings of columns to display
-   * @since  1.3
+   * The maximum number of column groups
    */
   private static final int MAX_COLUMN_GROUP_COUNT = 10;
 
+  /**
+   * The default number of column groupings
+   */
   private static final int DEFAULT_COLUMN_GROUP_COUNT = 2;
   
+  /**
+   * The current number of column groups
+   */
   private int columnGroupCount = DEFAULT_COLUMN_GROUP_COUNT;
   
   /**
    * The data models for the table
-   * @since  1.3
    */
-  private Vector<Object> tableModels;
+  private List<DataTableModel> tableModels;
 
   /**
-   * The table
-   * @since  1.3
+   * The tables
    */
-  private Vector<Object> tables;
-
-  private Box panelBox;
-  /**
-   * The data model for the table
-   * 
-   * @since  1.3
-   */
-  private DataTableModel tableModel;
+  private List<JTable> tables;
   
   /**
-   * The table
-   * 
-   * @since  1.3
+   * A map from channels to table indexes
    */
-  private JTable table;
+  private Map<String,Integer> channelTableMap;
 
   /**
-   * The scroll pane for the table
-   */
-  private JScrollPane tableScrollPane;
-  /**
    * The cell renderer for the data
-   * 
-   * @since  1.3
    */
   private DoubleTableCellRenderer doubleCellRenderer;
   private DataTableCellRenderer dataCellRenderer;
@@ -180,11 +159,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   double lastTimeDisplayed;
 
   /**
-   * The minimum height (in pixels) for a row
-   */
-  private static final int MIN_ROW_HEIGHT = 12;
-	
-  /**
    * The maximum number of channels allowed in this data panel;
    */
   private static final int MAX_CHANNELS = 75;
@@ -196,6 +170,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
    */
 	public DigitalTabularDataPanel() {
 	    super();
+      
+      tableModels = new ArrayList<DataTableModel>();
+      tables = new ArrayList<JTable>();
+      channelTableMap = new HashMap<String,Integer>();
 	
 	    String inputMessage = "How many groupings of columns shall the tabular panel display?";
 	    String errorInputMessage = "Please specify the count of grouping of columns as a positive integer less than or equal to "
@@ -234,15 +212,15 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       mainPanel = new JPanel();
       mainPanel.setLayout(new BorderLayout());
 
-      panelBox = Box.createHorizontalBox();
-      tableModels = new Vector<Object>();
+      Box panelBox = Box.createHorizontalBox();
 
       // a pair of temp variables to populate the arraylists
-      DataTableModel tableModel = null;
-      JTable table = null;
-
-      tables = new Vector<Object>();
+      DataTableModel tableModel;
+      JTable table;
       
+      dataCellRenderer = new DataTableCellRenderer ();
+      doubleCellRenderer = new DoubleTableCellRenderer ();
+
       for (int i = 0; i < columnGroupCount; i++) {
          tableModel = new DataTableModel();
          table = new JTable(tableModel);
@@ -252,17 +230,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
          table.setName(DigitalTabularDataPanel.class.getName() + " JTable #" + Integer.toString(i));
 
          table.getModel().addTableModelListener(this);
-         table.getColumn("Value").setCellRenderer(new DataTableCellRenderer());
+         table.getColumn("Value").setCellRenderer(dataCellRenderer);
          
-         table.addComponentListener(new ComponentAdapter() {
-            public void componentResized(ComponentEvent e) {
-               updateRowHeight();
-            }
-         });
-
          tables.add(table);
          tableModels.add(tableModel);
-         
  
          panelBox.add(new JScrollPane(table));
 
@@ -414,7 +385,11 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   
   private void useEngineeringRenderer(boolean useEngineeringRenderer) {
     doubleCellRenderer.setShowEngineeringFormat(useEngineeringRenderer);
-    table.repaint();
+    
+    for (JTable table : tables) {
+      table.repaint();
+    }
+    
     if (useEngineeringRenderer) {
       engineeringButton.setSelected(true);
       properties.setProperty("renderer", "engineering");
@@ -425,20 +400,27 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   }
 
   private void setMaxMinVisible(boolean maxMinVisible) {
-    if (tableModel.getMaxMinVisibile() != maxMinVisible) {
-      tableModel.setMaxMinVisible(maxMinVisible);
-      showMaxMinMenuItem.setSelected(maxMinVisible);
-      
-      table.getColumn ("Value").setCellRenderer (dataCellRenderer);
-      
-      if (maxMinVisible) {
-        table.getColumn("Min").setCellRenderer(doubleCellRenderer);
-        table.getColumn("Max").setCellRenderer(doubleCellRenderer);
-
-        properties.setProperty("maxMinVisible", "true");
-      } else {
-        properties.remove("maxMinVisible");
+    if (tableModels.get(0).getMaxMinVisibile() != maxMinVisible) {
+      for (int i=0; i< this.columnGroupCount; i++) {
+        DataTableModel tableModel = tableModels.get(i);
+        JTable table = tables.get(i);
+        
+        tableModel.setMaxMinVisible(maxMinVisible);
+        showMaxMinMenuItem.setSelected(maxMinVisible);
+        
+        table.getColumn ("Value").setCellRenderer (dataCellRenderer);
+        
+        if (maxMinVisible) {
+          table.getColumn("Min").setCellRenderer(doubleCellRenderer);
+          table.getColumn("Max").setCellRenderer(doubleCellRenderer);
+        }
       }
+    }
+    
+    if (maxMinVisible) {
+      properties.setProperty("maxMinVisible", "true");      
+    } else {
+      properties.remove("maxMinVisible");
     }
   }
 
@@ -524,85 +506,71 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
          ufe.printStackTrace();
       }
    } // drop ()
+   
+  public boolean addChannel(String channelName) {
+    return addChannel(channelName, 0);
+  }
 
 	public boolean addChannel(String channelName, int tableNum) {
-      if (channels.size() > MAX_CHANNELS) {
-         return false;
-       }
-      if (!super.addChannel(channelName)) {
-			return false;
-		}
-			
-		String labelText = channelName;
-		
-		String unit = (String)units.get(channelName);
-		if (unit != null) {
-			labelText += "(" + unit + ")";
-		}
-		
-      String lowerThresholdString = (String)( lowerThresholds.get (channelName) );
-      String upperThresholdString = (String)( upperThresholds.get (channelName) );
-      
-      // +/- Double.MAX_VALUE represents empty thresholds
-      double lowerThresholdTemp = -1 * Double.MAX_VALUE;
-      double upperThresholdTemp = Double.MAX_VALUE;
-      
-      // handle errors generated by daq - "Unknown command 'list-lowerbounds'"     
-      if (lowerThresholdString != null) {
-         try {
-            lowerThresholdTemp = Double.parseDouble (lowerThresholdString);
-         } catch (java.lang.NumberFormatException nfe) {
-            log.warn ("Non-numeric lower threshold in metadata: " + lowerThresholdString);
-         }
-      } // if
-      if (upperThresholdString != null) {
-         try {
-            upperThresholdTemp = Double.parseDouble (upperThresholdString);
-         } catch (java.lang.NumberFormatException nfe) {
-            log.warn ("Non-numeric upper threshold in metadata: " + upperThresholdString);
-         }
-      } // if
-      
-      ((DataTableModel) tableModels.get(tableNum)).addRow(channelName, unit,
-              lowerThresholdTemp, upperThresholdTemp);
-		updateRowHeight();
+    if (channels.size() > MAX_CHANNELS) {
+      return false;
+    }
     
-		return true;
+    if (channels.contains(channelName)) {
+      return false;
+    }
+    
+    channelTableMap.put(channelName, tableNum);
+    
+    if (super.addChannel(channelName)) {
+      return true;
+    } else {
+      channelTableMap.remove(channelName);
+      return false;
+    }
 	}
 	
-	public boolean removeChannel(String channelName) {
-		if (!super.removeChannel(channelName)) {
-			return false;
-		}
-		
-		tableModel.deleteRow(channelName);
-		updateRowHeight();
+  void channelAdded(String channelName) {
+    String labelText = channelName;
     
-		return true;
-	}
-   
-   /*
-   // LJM 060602 do we need this method?
-    void channelAdded(String channelName) {
-       String unit = (String)units.get(channelName);
-       tableModel.addRow(channelName, unit);
-       updateRowHeight();
-     } // channelAdded ()
+    String unit = (String)units.get(channelName);
+    if (unit != null) {
+      labelText += "(" + unit + ")";
+    }
     
-    // LJM 060602 do we need this method?
-    void channelRemoved(String channelName) {
-       tableModel.deleteRow(channelName);
-       updateRowHeight();
-    } // channelRemoved ()
-    */
-  
-  private void updateRowHeight() {
-
-	  for (int i = 0; i < columnGroupCount; i++) {
-          ((JTable) tables.get(i)).setRowHeight(MIN_ROW_HEIGHT);
-       } // for
+    String lowerThresholdString = (String)( lowerThresholds.get (channelName) );
+    String upperThresholdString = (String)( upperThresholds.get (channelName) );
+      
+    // +/- Double.MAX_VALUE represents empty thresholds
+    double lowerThreshold = -1 * Double.MAX_VALUE;
+    double upperThreshold = Double.MAX_VALUE;
+    
+    // handle errors generated by daq - "Unknown command 'list-lowerbounds'"     
+    if (lowerThresholdString != null) {
+      try {
+        lowerThreshold = Double.parseDouble (lowerThresholdString);
+      } catch (java.lang.NumberFormatException nfe) {
+         log.warn ("Non-numeric lower threshold in metadata: " + lowerThresholdString);
+      }
+    } // if
+    if (upperThresholdString != null) {
+      try {
+        upperThreshold = Double.parseDouble (upperThresholdString);
+      } catch (java.lang.NumberFormatException nfe) {
+        log.warn ("Non-numeric upper threshold in metadata: " + upperThresholdString);
+      }
+    } // if
+    
+    int tableNumber = channelTableMap.get(channelName);
+    tableModels.get(tableNumber).addRow(channelName, unit, lowerThreshold, upperThreshold);
   }
-	
+    
+  void channelRemoved(String channelName) {
+    int tableNumber = channelTableMap.get(channelName);
+    tableModels.get(tableNumber).deleteRow(channelName);
+    channelTableMap.remove(channelName);
+  }
+  
 	public void postTime(double time) {
 		super.postTime(time);
 		
