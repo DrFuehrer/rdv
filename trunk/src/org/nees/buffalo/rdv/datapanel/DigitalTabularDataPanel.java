@@ -34,6 +34,11 @@ package org.nees.buffalo.rdv.datapanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
@@ -41,10 +46,13 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.print.PrinterException;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Vector;
 
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
@@ -52,6 +60,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -93,6 +102,29 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
    */
   private JPanel mainPanel;
   
+  /**
+   * a variable that has the number of groupings of columns to display
+   * @since  1.3
+   */
+  private static final int MAX_COLUMN_GROUP_COUNT = 10;
+
+  private static final int DEFAULT_COLUMN_GROUP_COUNT = 2;
+  
+  private int columnGroupCount = DEFAULT_COLUMN_GROUP_COUNT;
+  
+  /**
+   * The data models for the table
+   * @since  1.3
+   */
+  private Vector<Object> tableModels;
+
+  /**
+   * The table
+   * @since  1.3
+   */
+  private Vector<Object> tables;
+
+  private Box panelBox;
   /**
    * The data model for the table
    * 
@@ -163,13 +195,34 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
    * @since  1.2
    */
 	public DigitalTabularDataPanel() {
-    super();
+	    super();
+	
+	    String inputMessage = "How many groupings of columns shall the tabular panel display?";
+	    String errorInputMessage = "Please specify the count of grouping of columns as a positive integer less than or equal to "
+	          + Integer.toString(MAX_COLUMN_GROUP_COUNT);
+	    String inputTitle = "Column Group Display Count";
+	    boolean gotGoodInput = false;
+	    while (!gotGoodInput) {
+	       try {
+	          this.columnGroupCount = Integer.parseInt(JOptionPane
+	                .showInputDialog(this.dataComponent, inputMessage,
+	                      inputTitle, JOptionPane.PLAIN_MESSAGE));
+	          gotGoodInput = ((0 < columnGroupCount) && (columnGroupCount <= MAX_COLUMN_GROUP_COUNT));
+	          if (!gotGoodInput) {
+	             throw new Exception("Bad Input for columnGroupCount");
+	          }
+	       } catch (Exception e) {
+	          JOptionPane.showMessageDialog(this.dataComponent,
+	                errorInputMessage, inputTitle, JOptionPane.PLAIN_MESSAGE);
+	       }
+	       
+	    } // while
     
-    lastTimeDisplayed = -1;
-    
-    initComponents();
-    
-    setDataComponent(mainPanel);
+	    lastTimeDisplayed = -1;
+	    
+	    initComponents();
+	    
+	    setDataComponent(mainPanel);
 	}
 	
   /**
@@ -178,147 +231,185 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
    * @since  1.2
    */
 	private void initComponents() {
-    mainPanel = new JPanel();
-    mainPanel.setLayout(new BorderLayout());
-    
-    tableModel = new DataTableModel();
-    table = new JTable(tableModel);
-    
-    table.setDragEnabled (true);
-    
-    table.getModel ().addTableModelListener (this);
-    table.addMouseListener (
-          new MouseAdapter () {
-                public void mouseClicked (MouseEvent e) {
-                   JTable src = (JTable)(e.getComponent());
-                   // log.debug ("^^^ CLICK!! from " + src.getSelectedRow () + "x" + src.getSelectedColumn () );
-                } // mouseClicked ()
-          }); // MouseListener
+      mainPanel = new JPanel();
+      mainPanel.setLayout(new BorderLayout());
+
+      panelBox = Box.createHorizontalBox();
+      tableModels = new Vector<Object>();
+
+      // a pair of temp variables to populate the arraylists
+      DataTableModel tableModel = null;
+      JTable table = null;
+
+      tables = new Vector<Object>();
+      
+      for (int i = 0; i < columnGroupCount; i++) {
+         tableModel = new DataTableModel();
+         table = new JTable(tableModel);
+
+         // TODO DRAGNDROP
+         table.setDragEnabled(true);
+         table.setName(DigitalTabularDataPanel.class.getName() + " JTable #" + Integer.toString(i));
+
+         table.getModel().addTableModelListener(this);
+         table.getColumn("Value").setCellRenderer(new DataTableCellRenderer());
+         
+         table.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+               updateRowHeight();
+            }
+         });
+
+         tables.add(table);
+         tableModels.add(tableModel);
+         
  
-    dataCellRenderer = new DataTableCellRenderer ();
-    doubleCellRenderer = new DoubleTableCellRenderer ();
-    table.getColumn ("Value").setCellRenderer (dataCellRenderer);
+         panelBox.add(new JScrollPane(table));
 
-    table.addComponentListener(new ComponentAdapter() {
-      public void componentResized(ComponentEvent e) {
-        updateRowHeight();
-      }
-    });
-    
-    tableScrollPane = new JScrollPane(table);
-    tableScrollPane.getViewport().setBackground(Color.white);
-    
-    mainPanel.add(tableScrollPane, BorderLayout.CENTER);
-    
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.setLayout(new BorderLayout());
-    
-    JPanel offsetsPanel = new JPanel();
-    
-    final JCheckBox useOffsetsCheckBox = new JCheckBox("Use Offsets");
-    useOffsetsCheckBox.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-        boolean checked = ((JCheckBox)ae.getSource()).isSelected();
-        tableModel.useOffsets(checked);
-        table.repaint();
-      }      
-    });
-    offsetsPanel.add(useOffsetsCheckBox);
+         // popup menu for panel
+         JPopupMenu popupMenu = new JPopupMenu();
 
-    JButton takeOffsetsButton = new JButton("Take Offsets");
-    takeOffsetsButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-        tableModel.takeOffsets();
-        tableModel.useOffsets(true);
-        useOffsetsCheckBox.setSelected(true);
-        table.repaint();
-      }      
-    });
-    offsetsPanel.add(takeOffsetsButton);
-    
-    buttonPanel.add(offsetsPanel, BorderLayout.WEST);
-    
-    JPanel formatPanel = new JPanel();
-    
-    decimalButton = new JToggleButton("Decimal", true);
-    decimalButton.setSelected(true);
-    decimalButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        useEngineeringRenderer(false);
-      }
-    });
-    formatPanel.add(decimalButton);
+         final JMenuItem copyMenuItem = new JMenuItem("Copy");
+         popupMenu.addPopupMenuListener(new PopupMenuListener() {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+                  copyMenuItem.setEnabled(true);
+            }
 
-    engineeringButton = new JToggleButton("Engineering");
-    engineeringButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        useEngineeringRenderer(true);
-      }
-    });
-    formatPanel.add(engineeringButton);
-    
-    ButtonGroup formatButtonGroup = new ButtonGroup();
-    formatButtonGroup.add(decimalButton);
-    formatButtonGroup.add(engineeringButton);
-    
-    buttonPanel.add(formatPanel, BorderLayout.EAST);
-    
-    mainPanel.add(buttonPanel, BorderLayout.SOUTH);    
-    
-    // popup menu for panel
-    JPopupMenu popupMenu = new JPopupMenu();
-    
-    final JMenuItem copyMenuItem = new JMenuItem("Copy");
-    popupMenu.addPopupMenuListener(new PopupMenuListener() {
-      public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-        copyMenuItem.setEnabled(table.getSelectedRowCount() > 0);
-      }
-      public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
-      public void popupMenuCanceled(PopupMenuEvent arg0) {}
-    });
-    copyMenuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-        TransferHandler.getCopyAction().actionPerformed(
-            new ActionEvent(table, ae.getID(),ae.getActionCommand(),
-                ae.getWhen(), ae.getModifiers()));
-      }
-    });
-    popupMenu.add(copyMenuItem);
-    
-    popupMenu.addSeparator();
-    
-    JMenuItem printMenuItem = new JMenuItem("Print...");
-    printMenuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        try {
-          table.print(JTable.PrintMode.FIT_WIDTH);
-        } catch (PrinterException pe) {}
-      }      
-    });
-    popupMenu.add(printMenuItem);
-    
-    popupMenu.addSeparator();
-    
-    showMaxMinMenuItem = new  JCheckBoxMenuItem("Show max/min and threshold columns", false);
-    showMaxMinMenuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-        setMaxMinVisible(showMaxMinMenuItem.isSelected());
-      }      
-    });
-    popupMenu.add(showMaxMinMenuItem);
-    
-    showThresholdMenuItem = new  JCheckBoxMenuItem ("Show threshold columns", false);
-    showThresholdMenuItem.addActionListener (new ActionListener () {
-      public void actionPerformed (ActionEvent ae) {
-        setThresholdVisible (showThresholdMenuItem.isSelected ());
-      }      
-    }); // actionListener
-    //popupMenu.add (showThresholdMenuItem);
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+            }
 
-    // set component popup and mouselistener to trigger it
-    mainPanel.setComponentPopupMenu(popupMenu);
-    table.setComponentPopupMenu(popupMenu);
-    mainPanel.addMouseListener(new MouseInputAdapter() {});
+            public void popupMenuCanceled(PopupMenuEvent arg0) {
+            }
+         });
+
+         popupMenu.add(copyMenuItem);
+
+         popupMenu.addSeparator();
+
+/*         
+	         JMenuItem printMenuItem = new JMenuItem("Print...");
+	         printMenuItem.addActionListener(new ActionListener() {
+	            public void actionPerformed(ActionEvent e) {
+
+	               try {
+
+//	                  for (int i = 0; i < columnGroupCount; i++) {
+	                     ((JTable) tables.get(i)).print(JTable.PrintMode.FIT_WIDTH);
+//	                  } // for
+	               } catch (PrinterException pe) {
+	               }
+
+	            }
+	         });
+	         popupMenu.add(printMenuItem);
+	         popupMenu.addSeparator();
+	*/
+         showMaxMinMenuItem = new JCheckBoxMenuItem(
+               "Show max/min and threshold columns", false);
+         showMaxMinMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+               setMaxMinVisible(showMaxMinMenuItem.isSelected());
+            }
+         });
+         popupMenu.add(showMaxMinMenuItem);
+
+         /*
+          showThresholdMenuItem = new  JCheckBoxMenuItem ("Show threshold columns", false);
+          showThresholdMenuItem.addActionListener (new ActionListener () {
+          public void actionPerformed (ActionEvent ae) {
+          setThresholdVisible (showThresholdMenuItem.isSelected ());
+          }      
+          }); // actionListener
+          popupMenu.add (showThresholdMenuItem);
+          */
+
+         final int index = i;
+         JMenuItem blankRowMenuItem = new JMenuItem("Insert Blank Row");
+         blankRowMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+              ((DataTableModel) tableModels.get(index)).addRow(
+                    DataRow.BLANK_ROW_NAME, null, -1 * Double.MAX_VALUE,
+                    Double.MAX_VALUE);
+            }
+         });
+         popupMenu.add (blankRowMenuItem);
+
+         // set component popup and mouselistener to trigger it         
+         panelBox.setComponentPopupMenu(popupMenu);
+         table.setComponentPopupMenu(popupMenu);
+         
+         if (i != 0 || i != columnGroupCount - 1) {
+            panelBox.add(Box.createHorizontalStrut(7));
+         }
+      } // for
+      mainPanel.add(panelBox, BorderLayout.CENTER);
+
+      log.debug("+++ " + tables.size() + " tables and " + tableModels.size()
+            + " tableModels");
+
+      JPanel buttonPanel = new JPanel();
+      buttonPanel.setLayout(new BorderLayout());
+
+      JPanel offsetsPanel = new JPanel();
+
+      final JCheckBox useOffsetsCheckBox = new JCheckBox("Use Offsets");
+      useOffsetsCheckBox.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent ae) {
+            boolean checked = ((JCheckBox) ae.getSource()).isSelected();
+
+            for (int i = 0; i < columnGroupCount; i++) {
+               ((DataTableModel) tableModels.get(i)).useOffsets(checked);
+               ((JTable) tables.get(i)).repaint();
+            } // for 
+         }
+      });
+      offsetsPanel.add(useOffsetsCheckBox);
+
+      JButton takeOffsetsButton = new JButton("Take Offsets");
+      takeOffsetsButton.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent ae) {
+            useOffsetsCheckBox.setSelected(true); // this moved from above repaint
+            for (int i = 0; i < columnGroupCount; i++) {
+               ((DataTableModel) tableModels.get(i)).takeOffsets();
+               ((DataTableModel) tableModels.get(i)).useOffsets(true);
+               ((JTable) tables.get(i)).repaint();
+            } // for
+         } // actionPerformed ()
+      }); // actionlistener
+      offsetsPanel.add(takeOffsetsButton);
+
+      buttonPanel.add(offsetsPanel, BorderLayout.WEST);
+
+      JPanel formatPanel = new JPanel();
+
+      decimalButton = new JToggleButton("Decimal", true);
+      decimalButton.setSelected(true);
+      decimalButton.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            useEngineeringRenderer(false);
+         }
+      });
+      formatPanel.add(decimalButton);
+
+      engineeringButton = new JToggleButton("Engineering");
+      engineeringButton.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+            useEngineeringRenderer(true);
+         }
+      });
+      formatPanel.add(engineeringButton);
+
+      ButtonGroup formatButtonGroup = new ButtonGroup();
+      formatButtonGroup.add(decimalButton);
+      formatButtonGroup.add(engineeringButton);
+
+      buttonPanel.add(formatPanel, BorderLayout.EAST);
+
+      mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+      mainPanel.addMouseListener(new MouseInputAdapter() {
+      });
+
 	}
   
   private void useEngineeringRenderer(boolean useEngineeringRenderer) {
@@ -352,34 +443,89 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   }
 
   private void setThresholdVisible (boolean thesholdVisible) {
-     if (tableModel.getThresholdVisible () != thesholdVisible) {
-       tableModel.setThresholdVisible (thesholdVisible);
-       showMaxMinMenuItem.setSelected (thesholdVisible);
-       
-       // LJM 060602 do we neeed this?
-       // table.getColumn ("Value").setCellRenderer (dataCellRenderer)
-       
-       if (thesholdVisible) {
-         table.getColumn ("Min Thresh").setCellRenderer (doubleCellRenderer);
-         table.getColumn ("Max Thresh").setCellRenderer (doubleCellRenderer);
 
-         properties.setProperty ("thresholdVisible", "true");
-       } else {
-         properties.remove ("thresholdVisible");
-       }
-     } // if
+	  for (int i = 0; i < columnGroupCount; i++) {
+         if (((DataTableModel) tableModels.get(i)).getThresholdVisible() != thesholdVisible) {
+            ((DataTableModel) tableModels.get(i))
+                  .setThresholdVisible(thesholdVisible);
+            showMaxMinMenuItem.setSelected(thesholdVisible);
+
+            // table.getColumn ("Value").setCellRenderer (dataCellRenderer);
+            // table.getColumn ("Value").setCellRenderer (doubleCellRenderer);
+
+            if (thesholdVisible) {
+               ((JTable) tables.get(i)).getColumn("Min Thresh")
+                     .setCellRenderer(doubleCellRenderer);
+               ((JTable) tables.get(i)).getColumn("Max Thresh")
+                     .setCellRenderer(doubleCellRenderer);
+
+               properties.setProperty("thresholdVisible", "true");
+            } else {
+               properties.remove("thresholdVisible");
+            }
+         } // if
+      } // for
    } // setThresholdVisible ()
   
 	void clearData() {
-    tableModel.clearData();
-    lastTimeDisplayed = -1;
+      
+      for (int i = 0; i < columnGroupCount; i++) {
+         ((DataTableModel) tableModels.get(i)).clearData();
+      }
+      
+      lastTimeDisplayed = -1;
 	}
 
 	public boolean supportsMultipleChannels() {
 		return true;
 	}
-	
-	public boolean addChannel(String channelName) {
+
+  /** an overridden method from @see org.nees.buffalo.rdv.datapanel.AbstractDataPanel
+    * for the @see DropTargetListener interface
+    */
+   public void drop(DropTargetDropEvent e) {
+      try {
+         int dropAction = e.getDropAction();
+         // calculate which table the x coordinate of the mouse corresponds to
+         double clickX = e.getLocation ().getX();   // get the mouse x coordinate 
+         int compWidth = dataComponent.getWidth();  // gets the width of this component
+         int tableNum = (int)(clickX * columnGroupCount / compWidth);
+         
+         if (dropAction == DnDConstants.ACTION_LINK) {
+            DataFlavor stringFlavor = DataFlavor.stringFlavor;
+            Transferable tr = e.getTransferable();
+            if (e.isDataFlavorSupported(stringFlavor)) {
+               String channels = (String) tr.getTransferData(stringFlavor);
+               String delim = ",";
+               String[] tokens = channels.split(delim);
+               String channelName = "";
+               for (int i = 0; i < tokens.length; i++) {
+                  channelName = tokens[i];
+                  e.acceptDrop(DnDConstants.ACTION_LINK);
+                  e.dropComplete(true);
+
+                  boolean status;
+                  if (supportsMultipleChannels()) {
+                     status = addChannel(channelName, tableNum);
+                  } else {
+                     status = setChannel(channelName);
+                  }
+                  if (!status) {
+                     // TODO display an error in the UI
+                  }
+               }
+            } else {
+               e.rejectDrop();
+            }
+         }
+      } catch (IOException ioe) {
+         ioe.printStackTrace();
+      } catch (UnsupportedFlavorException ufe) {
+         ufe.printStackTrace();
+      }
+   } // drop ()
+
+	public boolean addChannel(String channelName, int tableNum) {
       if (channels.size() > MAX_CHANNELS) {
          return false;
        }
@@ -417,7 +563,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
          }
       } // if
       
-		tableModel.addRow (channelName, unit, lowerThresholdTemp, upperThresholdTemp);
+      ((DataTableModel) tableModels.get(tableNum)).addRow(channelName, unit,
+              lowerThresholdTemp, upperThresholdTemp);
 		updateRowHeight();
     
 		return true;
@@ -450,13 +597,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     */
   
   private void updateRowHeight() {
-    if (channels.size() > 0) {
-      int rowHeight = tableScrollPane.getViewport().getHeight()/channels.size();
-      if (rowHeight < MIN_ROW_HEIGHT) {
-        rowHeight = MIN_ROW_HEIGHT;
-      }
-      table.setRowHeight(rowHeight);
-    }
+
+	  for (int i = 0; i < columnGroupCount; i++) {
+          ((JTable) tables.get(i)).setRowHeight(MIN_ROW_HEIGHT);
+       } // for
   }
 	
 	public void postTime(double time) {
@@ -546,7 +690,12 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       default:
       	return;
       } // switch
-      tableModel.updateData(channelName, data);
+
+      for (int ii = 0; ii < columnGroupCount; ii++) {
+          ((DataTableModel) tableModels.get(ii))
+                .updateData(channelName, data);
+       } // for 
+
      } // for 
 	} // postDataTabular ()
    
@@ -614,10 +763,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     } // isCellEditable ()
     
     public void addRow (String name, String unit, double lowerThresh, double upperThresh) {
-       DataRow dataRow = new DataRow (name, unit, lowerThresh, upperThresh);
-      rows.add(dataRow);
-      int row = rows.size()-1;
-      fireTableRowsInserted(row, row);
+    	DataRow dataRow = new DataRow (name, unit, lowerThresh, upperThresh);
+    	rows.add(dataRow);
+    	int row = rows.size()-1;
+    	fireTableRowsInserted(row, row);
     }
     
     public void deleteRow(String name) {
@@ -792,6 +941,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     double minThresh = -1 * Double.MAX_VALUE;
     double maxThresh = Double.MAX_VALUE;
  
+    static final String BLANK_ROW_NAME = "blank";
+    
     double offset;
     boolean cleared;
     
@@ -910,33 +1061,31 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 		if (aNumberValue == null || !(aNumberValue instanceof Number)) 
 			return this;
 		
-		Component renderer = super.getTableCellRendererComponent(aTable, 
-		                           aNumberValue, 
-		                           aIsSelected, 
-		                           aHasFocus, 
-		                           aRow, aColumn);
-		
-		Number numberValue = (Number)aNumberValue;
-		
-	    DataRow theRowAtDataRow = tableModel.getRowAt (aRow); 
-	    Object minThreshData = (theRowAtDataRow.minThresh == (-1 * Double.MAX_VALUE))? null : new Double (theRowAtDataRow.minThresh);
-	    Object maxThreshData = (theRowAtDataRow.minThresh == Double.MAX_VALUE)? null : new Double (theRowAtDataRow.maxThresh);
+        Component renderer = super.getTableCellRendererComponent(aTable,
+                aNumberValue, aIsSelected, aHasFocus, aRow, aColumn);
 
-	    if (minThreshData == null || maxThreshData == null) {
-			renderer.setBackground(Color.white);
-	    	renderer.setForeground(Color.black);
-	    	return this;
-	    }
-		if (numberValue.doubleValue() < (Double)minThreshData) {
-			renderer.setBackground(Color.red);
-		}
-		else if (numberValue.doubleValue() > (Double)maxThreshData){
-			renderer.setBackground(Color.yellow);
-		}
-		else {
-			renderer.setBackground(Color.white);
-		}
-		return this;
+          Number numberValue = (Number) aNumberValue;
+
+          DataRow theRowAtDataRow = ((DataTableModel) aTable.getModel())
+                .getRowAt(aRow);
+          Object minThreshData = (theRowAtDataRow.minThresh == (-1 * Double.MAX_VALUE)) ? null
+                : new Double(theRowAtDataRow.minThresh);
+          Object maxThreshData = (theRowAtDataRow.minThresh == Double.MAX_VALUE) ? null
+                : new Double(theRowAtDataRow.maxThresh);
+
+          if (minThreshData == null || maxThreshData == null) {
+             renderer.setBackground(Color.white);
+             renderer.setForeground(Color.black);
+             return this;
+          }
+          if (numberValue.doubleValue() < (Double) minThreshData) {
+             renderer.setBackground(Color.red);
+          } else if (numberValue.doubleValue() > (Double) maxThreshData) {
+             renderer.setBackground(Color.red);
+          } else {
+             renderer.setBackground(Color.white);
+          }
+          return this;
 	} // getTableCellRendererComponent ()
   } // inner class DataCellRenderer
 } // class
