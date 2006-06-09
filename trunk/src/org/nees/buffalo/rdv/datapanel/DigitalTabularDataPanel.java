@@ -158,6 +158,11 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   private static final int MAX_CHANNELS = 75;
   
   /**
+   * The percentage of warning value, when it is exceeded, yellow background should be shown
+   */
+  private static final Double WARNING_PERCENTAGE = new Double(0.75);
+  
+  /**
    * Initialize the data panel.
    * 
    * @since  1.2
@@ -921,16 +926,20 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 	    DataRow theRowAtDataRow = tableModel.getRowAt (aRow); 
 	    Object minThreshData = (theRowAtDataRow.minThresh == (-1 * Double.MAX_VALUE))? null : new Double (theRowAtDataRow.minThresh);
 	    Object maxThreshData = (theRowAtDataRow.minThresh == Double.MAX_VALUE)? null : new Double (theRowAtDataRow.maxThresh);
+      Double warningMinThreshData = WARNING_PERCENTAGE * (Double)minThreshData;
+      Double warningMaxThreshData = WARNING_PERCENTAGE * (Double)maxThreshData;
 
 	    if (minThreshData == null || maxThreshData == null) {
 			renderer.setBackground(Color.white);
 	    	renderer.setForeground(Color.black);
 	    	return this;
 	    }
-		if (numberValue.doubleValue() < (Double)minThreshData) {
+		if ((numberValue.doubleValue() < (Double)minThreshData) ||
+        (numberValue.doubleValue() > (Double)maxThreshData)) {
 			renderer.setBackground(Color.red);
 		}
-		else if (numberValue.doubleValue() > (Double)maxThreshData){
+		else if ((numberValue.doubleValue() < warningMinThreshData) ||
+      (numberValue.doubleValue() > warningMaxThreshData)) {
 			renderer.setBackground(Color.yellow);
 		}
 		else {
