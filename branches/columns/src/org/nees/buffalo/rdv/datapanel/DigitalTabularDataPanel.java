@@ -54,14 +54,17 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -95,19 +98,19 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   private JPanel mainPanel;
   
   /**
+   * The container for the tables
+   */
+  private Box panelBox;
+  
+  /**
    * The maximum number of column groups
    */
   private static final int MAX_COLUMN_GROUP_COUNT = 10;
 
   /**
-   * The default number of column groupings
-   */
-  private static final int DEFAULT_COLUMN_GROUP_COUNT = 2;
-  
-  /**
    * The current number of column groups
    */
-  private int columnGroupCount = DEFAULT_COLUMN_GROUP_COUNT;
+  private int columnGroupCount;
   
   /**
    * The data models for the table
@@ -175,27 +178,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       tables = new ArrayList<JTable>();
       channelTableMap = new HashMap<String,Integer>();
 	
-	    String inputMessage = "How many groupings of columns shall the tabular panel display?";
-	    String errorInputMessage = "Please specify the count of grouping of columns as a positive integer less than or equal to "
-	          + Integer.toString(MAX_COLUMN_GROUP_COUNT);
-	    String inputTitle = "Column Group Display Count";
-	    boolean gotGoodInput = false;
-	    while (!gotGoodInput) {
-	       try {
-	          this.columnGroupCount = Integer.parseInt(JOptionPane
-	                .showInputDialog(this.dataComponent, inputMessage,
-	                      inputTitle, JOptionPane.PLAIN_MESSAGE));
-	          gotGoodInput = ((0 < columnGroupCount) && (columnGroupCount <= MAX_COLUMN_GROUP_COUNT));
-	          if (!gotGoodInput) {
-	             throw new Exception("Bad Input for columnGroupCount");
-	          }
-	       } catch (Exception e) {
-	          JOptionPane.showMessageDialog(this.dataComponent,
-	                errorInputMessage, inputTitle, JOptionPane.PLAIN_MESSAGE);
-	       }
-	       
-	    } // while
-    
 	    lastTimeDisplayed = -1;
 	    
 	    initComponents();
@@ -212,113 +194,14 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       mainPanel = new JPanel();
       mainPanel.setLayout(new BorderLayout());
 
-      Box panelBox = Box.createHorizontalBox();
+      panelBox = Box.createHorizontalBox();
 
-      // a pair of temp variables to populate the arraylists
-      DataTableModel tableModel;
-      JTable table;
-      
       dataCellRenderer = new DataTableCellRenderer ();
       doubleCellRenderer = new DoubleTableCellRenderer ();
 
-      for (int i = 0; i < columnGroupCount; i++) {
-         tableModel = new DataTableModel();
-         table = new JTable(tableModel);
-
-         // TODO DRAGNDROP
-         table.setDragEnabled(true);
-         table.setName(DigitalTabularDataPanel.class.getName() + " JTable #" + Integer.toString(i));
-
-         table.getModel().addTableModelListener(this);
-         table.getColumn("Value").setCellRenderer(dataCellRenderer);
+      addColumn();
          
-         tables.add(table);
-         tableModels.add(tableModel);
- 
-         JScrollPane tableScrollPane = new JScrollPane(table);
-         panelBox.add(tableScrollPane);
-
-         // popup menu for panel
-         JPopupMenu popupMenu = new JPopupMenu();
-
-         final JMenuItem copyMenuItem = new JMenuItem("Copy");
-         popupMenu.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-                  copyMenuItem.setEnabled(true);
-            }
-
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-            }
-
-            public void popupMenuCanceled(PopupMenuEvent arg0) {
-            }
-         });
-
-         popupMenu.add(copyMenuItem);
-
-         popupMenu.addSeparator();
-
-/*         
-	         JMenuItem printMenuItem = new JMenuItem("Print...");
-	         printMenuItem.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-
-	               try {
-
-//	                  for (int i = 0; i < columnGroupCount; i++) {
-	                     ((JTable) tables.get(i)).print(JTable.PrintMode.FIT_WIDTH);
-//	                  } // for
-	               } catch (PrinterException pe) {
-	               }
-
-	            }
-	         });
-	         popupMenu.add(printMenuItem);
-	         popupMenu.addSeparator();
-	*/
-         showMaxMinMenuItem = new JCheckBoxMenuItem(
-               "Show max/min and threshold columns", false);
-         showMaxMinMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-               setMaxMinVisible(showMaxMinMenuItem.isSelected());
-            }
-         });
-         popupMenu.add(showMaxMinMenuItem);
-
-         /*
-          showThresholdMenuItem = new  JCheckBoxMenuItem ("Show threshold columns", false);
-          showThresholdMenuItem.addActionListener (new ActionListener () {
-          public void actionPerformed (ActionEvent ae) {
-          setThresholdVisible (showThresholdMenuItem.isSelected ());
-          }      
-          }); // actionListener
-          popupMenu.add (showThresholdMenuItem);
-          */
-
-         final int index = i;
-         JMenuItem blankRowMenuItem = new JMenuItem("Insert Blank Row");
-         blankRowMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-              ((DataTableModel) tableModels.get(index)).addRow(
-                    DataRow.BLANK_ROW_NAME, null, -1 * Double.MAX_VALUE,
-                    Double.MAX_VALUE);
-            }
-         });
-         popupMenu.add (blankRowMenuItem);
-
-         // set component popup and mouselistener to trigger it         
-         panelBox.setComponentPopupMenu(popupMenu);
-         table.setComponentPopupMenu(popupMenu);
-         tableScrollPane.setComponentPopupMenu(popupMenu);
-         
-         if (i != 0 || i != columnGroupCount - 1) {
-            panelBox.add(Box.createHorizontalStrut(7));
-         }
-      } // for
       mainPanel.add(panelBox, BorderLayout.CENTER);
-
-      log.debug("+++ " + tables.size() + " tables and " + tableModels.size()
-            + " tableModels");
 
       JPanel buttonPanel = new JPanel();
       buttonPanel.setLayout(new BorderLayout());
@@ -384,6 +267,171 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       });
 
 	}
+  
+  private void addColumn() {
+    if (columnGroupCount == MAX_COLUMN_GROUP_COUNT) {
+      return;
+    }
+    
+    if (columnGroupCount != 0) {
+      panelBox.add(Box.createHorizontalStrut(7));
+    }        
+    
+    DataTableModel tableModel = new DataTableModel();
+    JTable table = new JTable(tableModel);
+
+    // TODO DRAGNDROP
+    table.setDragEnabled(true);
+    table.setName(DigitalTabularDataPanel.class.getName() + " JTable #" + Integer.toString(columnGroupCount));
+
+    table.getModel().addTableModelListener(this);
+    table.getColumn("Value").setCellRenderer(dataCellRenderer);
+    
+    tables.add(table);
+    tableModels.add(tableModel);
+
+    JScrollPane tableScrollPane = new JScrollPane(table);
+    panelBox.add(tableScrollPane);
+
+    // popup menu for panel
+    JPopupMenu popupMenu = new JPopupMenu();
+
+    final JMenuItem copyMenuItem = new JMenuItem("Copy");
+    popupMenu.addPopupMenuListener(new PopupMenuListener() {
+       public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+             copyMenuItem.setEnabled(true);
+       }
+
+       public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
+       }
+
+       public void popupMenuCanceled(PopupMenuEvent arg0) {
+       }
+    });
+
+    popupMenu.add(copyMenuItem);
+
+    popupMenu.addSeparator();
+
+/*         
+      JMenuItem printMenuItem = new JMenuItem("Print...");
+      printMenuItem.addActionListener(new ActionListener() {
+         public void actionPerformed(ActionEvent e) {
+
+            try {
+
+//               for (int i = 0; i < columnGroupCount; i++) {
+                  ((JTable) tables.get(i)).print(JTable.PrintMode.FIT_WIDTH);
+//               } // for
+            } catch (PrinterException pe) {
+            }
+
+         }
+      });
+      popupMenu.add(printMenuItem);
+      popupMenu.addSeparator();
+*/
+    showMaxMinMenuItem = new JCheckBoxMenuItem(
+          "Show max/min and threshold columns", false);
+    showMaxMinMenuItem.addActionListener(new ActionListener() {
+       public void actionPerformed(ActionEvent ae) {
+          setMaxMinVisible(showMaxMinMenuItem.isSelected());
+       }
+    });
+    popupMenu.add(showMaxMinMenuItem);
+
+    /*
+     showThresholdMenuItem = new  JCheckBoxMenuItem ("Show threshold columns", false);
+     showThresholdMenuItem.addActionListener (new ActionListener () {
+     public void actionPerformed (ActionEvent ae) {
+     setThresholdVisible (showThresholdMenuItem.isSelected ());
+     }      
+     }); // actionListener
+     popupMenu.add (showThresholdMenuItem);
+     */
+
+    final int index = columnGroupCount;
+    JMenuItem blankRowMenuItem = new JMenuItem("Insert Blank Row");
+    blankRowMenuItem.addActionListener(new ActionListener() {
+       public void actionPerformed(ActionEvent e) {
+         ((DataTableModel) tableModels.get(index)).addRow(
+               DataRow.BLANK_ROW_NAME, null, -1 * Double.MAX_VALUE,
+               Double.MAX_VALUE);
+       }
+    });
+    popupMenu.add (blankRowMenuItem);
+    
+    popupMenu.addSeparator();
+    
+    JMenu numberOfColumnsMenu = new JMenu("Number of columns");
+    numberOfColumnsMenu.addMenuListener(new MenuListener() {
+     public void menuSelected(MenuEvent me) {
+       JMenu menu = (JMenu)me.getSource();
+       for (int j=0; j<MAX_COLUMN_GROUP_COUNT; j++) {
+         JMenuItem menuItem = menu.getItem(j);
+         boolean selected = (j==(columnGroupCount-1));
+         menuItem.setSelected(selected);
+       }
+     }
+     public void menuDeselected(MenuEvent me) {}
+     public void menuCanceled(MenuEvent me) {}           
+    });
+    
+    for (int i=0; i<MAX_COLUMN_GROUP_COUNT; i++) {
+      final int number = i+1;
+      JRadioButtonMenuItem item = new JRadioButtonMenuItem(Integer.toString(number));
+      item.addActionListener(new ActionListener() {
+       public void actionPerformed(ActionEvent ae) {
+         setNumberOfColumns(number);
+       }             
+      });
+      numberOfColumnsMenu.add(item);
+    }
+    popupMenu.add(numberOfColumnsMenu);    
+
+    // set component popup and mouselistener to trigger it
+    table.setComponentPopupMenu(popupMenu);
+    tableScrollPane.setComponentPopupMenu(popupMenu);
+    
+    panelBox.revalidate();
+    
+    columnGroupCount++;
+  }
+  
+  private void removeColumn() {
+    if (columnGroupCount == 1) {
+      return;
+    }
+    
+    columnGroupCount--;
+    
+    Iterator i = channels.iterator();
+    while (i.hasNext()) {
+      String channelName = (String)i.next();
+      if (channelTableMap.get(channelName) == columnGroupCount) {
+        removeChannel(channelName);
+      }
+    }
+    
+    tables.remove(columnGroupCount);
+    tableModels.remove(columnGroupCount);
+    
+    panelBox.remove(columnGroupCount*2);
+    panelBox.remove(columnGroupCount*2-1);
+    panelBox.revalidate();
+  }
+  
+  private void setNumberOfColumns(int columns) {
+    if (columnGroupCount < columns) {
+      for (int i=columnGroupCount; i<columns; i++) {
+        addColumn();
+      }
+    } else if (columnGroupCount > columns) {
+      for (int i=columnGroupCount; i>columns; i--) {
+        removeColumn();
+      }
+    }
+  }  
   
   private void useEngineeringRenderer(boolean useEngineeringRenderer) {
     doubleCellRenderer.setShowEngineeringFormat(useEngineeringRenderer);
