@@ -279,7 +279,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       panelBox.add(Box.createHorizontalStrut(7));
     }        
     
-    DataTableModel tableModel = new DataTableModel();
+    final DataTableModel tableModel = new DataTableModel();
     final JTable table = new JTable(tableModel);
 
     // TODO DRAGNDROP
@@ -347,16 +347,15 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
      popupMenu.add (showThresholdMenuItem);
      */
 
-    final int index = columnGroupCount;
-    JMenuItem blankRowMenuItem = new JMenuItem("Insert Blank Row");
+    popupMenu.addSeparator();    
+    
+    JMenuItem blankRowMenuItem = new JMenuItem("Insert blank row");
     blankRowMenuItem.addActionListener(new ActionListener() {
-       public void actionPerformed(ActionEvent e) {
-         ((DataTableModel) tableModels.get(index)).addRow(
-               DataRow.BLANK_ROW_NAME, null, -1 * Double.MAX_VALUE,
-               Double.MAX_VALUE);
-       }
+      public void actionPerformed(ActionEvent e) {
+        tableModel.addBlankRow();
+      }
     });
-    popupMenu.add (blankRowMenuItem);
+    popupMenu.add(blankRowMenuItem);
     
     popupMenu.addSeparator();
     
@@ -564,6 +563,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       tableNumber = index;
     }
     
+    if (channelName.startsWith("BLANK ")) {
+      tableNumber = Integer.parseInt(channelName.substring(6));
+    }    
+
     return addChannel(channelName, tableNumber);
   }
 
@@ -579,6 +582,12 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     if (tableNum >= columnGroupCount) {
       setNumberOfColumns(tableNum+1);
     }
+    
+    // add a blank row
+    if (channelName.startsWith("BLANK ")) {
+      tableModels.get(tableNum).addBlankRow();
+      return true;
+    }    
     
     if (channels.contains(channelName)) {
       return false;
@@ -737,6 +746,24 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     return ( isit.getClass().isInstance (new Double (-1.0)) );
  } // isADouble ()
  
+  public List subscribedChannels() {
+    List allChannels = new ArrayList();
+    
+    for (int i=0; i<tableModels.size(); i++) {
+      DataTableModel tableModel = tableModels.get(i);
+      for (int j=0; j<tableModel.getRowCount(); j++) {
+        DataRow dataRow = tableModel.getRowAt(j);
+        String name = dataRow.getName();
+        if (name.length() == 0) {
+          name = "BLANK " +  i;
+        }
+        allChannels.add(name);
+      }
+    }
+    
+    return allChannels;
+  }
+
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
     
@@ -787,6 +814,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     private boolean thresholdVisible;
     private boolean useOffsets;
     
+    private final DataRow BLANK_ROW = new DataRow(new String(), null, 0, 0);
+    
     public DataTableModel() {
       super();
       rows = new ArrayList();
@@ -803,8 +832,15 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
              );
     } // isCellEditable ()
     
-    public void addRow (String name, String unit, double lowerThresh, double upperThresh) {
-    	DataRow dataRow = new DataRow (name, unit, lowerThresh, upperThresh);
+    public void addRow(String name, String unit, double lowerThresh, double upperThresh) {
+    	addRow(new DataRow (name, unit, lowerThresh, upperThresh));
+    }
+    
+    public void addBlankRow() {
+      addRow(BLANK_ROW);
+    }
+    
+    public void addRow(DataRow dataRow) {
     	rows.add(dataRow);
     	int row = rows.size()-1;
     	fireTableRowsInserted(row, row);
@@ -900,6 +936,11 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       }
       
       DataRow dataRow = (DataRow)rows.get(row);
+      
+      if (dataRow == BLANK_ROW) {
+        return null;
+      }
+      
       String[] nameSplit = dataRow.getName ().split ("/");
       
       switch (col) {
@@ -982,8 +1023,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     double minThresh = -1 * Double.MAX_VALUE;
     double maxThresh = Double.MAX_VALUE;
  
-    static final String BLANK_ROW_NAME = "blank";
-    
     double offset;
     boolean cleared;
     
@@ -1099,11 +1138,13 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 		* created during rendering.
 		*/
 
-		if (aNumberValue == null || !(aNumberValue instanceof Number)) 
-			return this;
 		
         Component renderer = super.getTableCellRendererComponent(aTable,
                 aNumberValue, aIsSelected, aHasFocus, aRow, aColumn);
+        
+        if (aNumberValue == null || !(aNumberValue instanceof Number)) 
+          return renderer;
+        
 
           Number numberValue = (Number) aNumberValue;
 
