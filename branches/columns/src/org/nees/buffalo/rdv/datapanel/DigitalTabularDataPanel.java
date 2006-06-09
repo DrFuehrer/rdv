@@ -563,12 +563,14 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     
     int tableNumber = channelTableMap.get(channelName);
     tableModels.get(tableNumber).addRow(channelName, unit, lowerThreshold, upperThreshold);
+    properties.setProperty("channelTable_"+channelName, Integer.toString(tableNumber));
   }
     
   void channelRemoved(String channelName) {
     int tableNumber = channelTableMap.get(channelName);
     tableModels.get(tableNumber).deleteRow(channelName);
     channelTableMap.remove(channelName);
+    properties.remove("channelTable_"+channelName);
   }
   
 	public void postTime(double time) {
