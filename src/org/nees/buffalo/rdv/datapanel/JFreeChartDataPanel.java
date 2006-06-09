@@ -447,21 +447,25 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		return seriesName;
 	}
 		
-	public void timeScaleChanged(double timeScale) {
-		super.timeScaleChanged(timeScale);
-			
-		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
-			if (xyMode) {
-				XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
-				XYSeries data = dataCollection.getSeries(i);
-				//TODO add correspoding code for XYSeries
-				data.setMaximumItemCount((int)(256*timeScale));
-			} else {
-				TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-				TimeSeries data = dataCollection.getSeries(i);
-				data.setMaximumItemAge((int)(timeScale*1000));
-			}
-		}
+	public void timeScaleChanged(double newTimeScale) {
+		super.timeScaleChanged(newTimeScale);
+
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {    
+    		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
+    			if (xyMode) {
+    				XYSeriesCollection xySeriesDataCollection = (XYSeriesCollection)dataCollection;
+    				XYSeries data = xySeriesDataCollection.getSeries(i);
+    				//TODO add correspoding code for XYSeries
+    				data.setMaximumItemCount((int)(256*timeScale));
+    			} else {
+    				TimeSeriesCollection timeSeriesDataCollection = (TimeSeriesCollection)dataCollection;
+    				TimeSeries data = timeSeriesDataCollection.getSeries(i);
+    				data.setMaximumItemAge((int)(timeScale*1000));
+    			}
+    		}
+      }
+    });
 		
 		if (!xyMode) {
 			setTimeAxis();
