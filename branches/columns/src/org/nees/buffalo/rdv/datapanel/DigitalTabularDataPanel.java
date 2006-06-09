@@ -41,6 +41,7 @@ import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -316,24 +317,17 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 
     popupMenu.addSeparator();
 
-/*         
-      JMenuItem printMenuItem = new JMenuItem("Print...");
-      printMenuItem.addActionListener(new ActionListener() {
-         public void actionPerformed(ActionEvent e) {
+    JMenuItem printMenuItem = new JMenuItem("Print...");
+    printMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        try {
+          table.print(JTable.PrintMode.FIT_WIDTH);
+        } catch (PrinterException pe) {}
+      }
+    });
+    popupMenu.add(printMenuItem);
+    popupMenu.addSeparator();
 
-            try {
-
-//               for (int i = 0; i < columnGroupCount; i++) {
-                  ((JTable) tables.get(i)).print(JTable.PrintMode.FIT_WIDTH);
-//               } // for
-            } catch (PrinterException pe) {
-            }
-
-         }
-      });
-      popupMenu.add(printMenuItem);
-      popupMenu.addSeparator();
-*/
     showMaxMinMenuItem = new JCheckBoxMenuItem(
           "Show max/min and threshold columns", false);
     showMaxMinMenuItem.addActionListener(new ActionListener() {
