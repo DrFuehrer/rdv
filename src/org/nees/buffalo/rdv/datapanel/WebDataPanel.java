@@ -58,6 +58,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 
 import org.nees.buffalo.rdv.DataPanelManager;
@@ -106,6 +107,11 @@ public class WebDataPanel extends AbstractDataPanel {
    */
   private JCheckBoxMenuItem showAddressBarMenuItem; 
 
+  /**
+   * The menu item to reload the page
+   */
+  JMenuItem reloadMenuItem;
+  
   /**
    * The menu containing items for auto reloading
    */
@@ -222,7 +228,8 @@ public class WebDataPanel extends AbstractDataPanel {
     
     popupMenu.addSeparator();
     
-    JMenuItem reloadMenuItem = new JMenuItem("Reload");
+    reloadMenuItem = new JMenuItem("Reload");
+    reloadMenuItem.setEnabled(false);
     reloadMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
         loadPage();
@@ -231,6 +238,7 @@ public class WebDataPanel extends AbstractDataPanel {
     popupMenu.add(reloadMenuItem);
     
     autoReloadMenu = new JMenu("Reload every");
+    autoReloadMenu.setEnabled(false);
     
     enableAutoReloadMenuItem = new JCheckBoxMenuItem("Enable");
     enableAutoReloadMenuItem.addActionListener(new ActionListener() {
@@ -368,7 +376,11 @@ public class WebDataPanel extends AbstractDataPanel {
     
     TimerTask reloadTimerTask = new TimerTask() {
       public void run() {
-        loadPage();
+        SwingUtilities.invokeLater(new Runnable() {
+          public void run() {
+            loadPage();
+          }
+        });
       }
     };
 
@@ -442,16 +454,15 @@ public class WebDataPanel extends AbstractDataPanel {
  	  }
  
     } 
-    catch (IOException e) {
+    catch (Exception e) {
       locationField.selectAll();
       JOptionPane.showMessageDialog(null,
           "Failed to load page: " + e.getMessage() + ".",
-          "Web Data Panel Warning", JOptionPane.WARNING_MESSAGE);
+          "Error loading page", JOptionPane.ERROR_MESSAGE);
       
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(null,
-                "Error: " + ex.getMessage(),
-                "Web Data Panel Error", JOptionPane.ERROR_MESSAGE);
+      stopAutoReload();
+      reloadMenuItem.setEnabled(false);
+      autoReloadMenu.setEnabled(false);
     }
   }
   
@@ -464,6 +475,9 @@ public class WebDataPanel extends AbstractDataPanel {
     locationField.setText(location);
     
     setDescription(getTitle());
+    
+    reloadMenuItem.setEnabled(true);
+    autoReloadMenu.setEnabled(true);
   }
   
   public void openPanel(final DataPanelManager dataPanelManager) {
