@@ -235,7 +235,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
          tables.add(table);
          tableModels.add(tableModel);
  
-         panelBox.add(new JScrollPane(table));
+         JScrollPane tableScrollPane = new JScrollPane(table);
+         panelBox.add(tableScrollPane);
 
          // popup menu for panel
          JPopupMenu popupMenu = new JPopupMenu();
@@ -308,6 +309,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
          // set component popup and mouselistener to trigger it         
          panelBox.setComponentPopupMenu(popupMenu);
          table.setComponentPopupMenu(popupMenu);
+         tableScrollPane.setComponentPopupMenu(popupMenu);
          
          if (i != 0 || i != columnGroupCount - 1) {
             panelBox.add(Box.createHorizontalStrut(7));
