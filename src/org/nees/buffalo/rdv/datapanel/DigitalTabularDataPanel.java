@@ -385,20 +385,21 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 	}
 	
 	public boolean addChannel(String channelName) {
-      if (channels.size() > MAX_CHANNELS) {
-         return false;
-       }
-      if (!super.addChannel(channelName)) {
-			return false;
-		}
-			
-		String labelText = channelName;
-		
-		String unit = (String)units.get(channelName);
-		if (unit != null) {
-			labelText += "(" + unit + ")";
-		}
-		
+	  if (channels.size() > MAX_CHANNELS) {
+	    return false;
+	  }
+      
+    return super.addChannel(channelName);			
+	}
+	
+  void channelAdded(String channelName) {
+    String labelText = channelName;
+    
+    String unit = (String)units.get(channelName);
+    if (unit != null) {
+      labelText += "(" + unit + ")";
+    }
+    
       String lowerThresholdString = (String)( lowerThresholds.get (channelName) );
       String upperThresholdString = (String)( upperThresholds.get (channelName) );
       
@@ -422,37 +423,14 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
          }
       } // if
       
-		tableModel.addRow (channelName, unit, lowerThresholdTemp, upperThresholdTemp);
-		updateRowHeight();
-    
-		return true;
-	}
-	
-	public boolean removeChannel(String channelName) {
-		if (!super.removeChannel(channelName)) {
-			return false;
-		}
-		
-		tableModel.deleteRow(channelName);
-		updateRowHeight();
-    
-		return true;
-	}
-   
-   /*
-   // LJM 060602 do we need this method?
-    void channelAdded(String channelName) {
-       String unit = (String)units.get(channelName);
-       tableModel.addRow(channelName, unit);
-       updateRowHeight();
-     } // channelAdded ()
-    
-    // LJM 060602 do we need this method?
-    void channelRemoved(String channelName) {
-       tableModel.deleteRow(channelName);
-       updateRowHeight();
-    } // channelRemoved ()
-    */
+    tableModel.addRow (channelName, unit, lowerThresholdTemp, upperThresholdTemp);
+    updateRowHeight();    
+  }
+
+  void channelRemoved(String channelName) {
+    tableModel.deleteRow(channelName);
+    updateRowHeight();
+  }
   
   private void updateRowHeight() {
     if (channels.size() > 0) {
