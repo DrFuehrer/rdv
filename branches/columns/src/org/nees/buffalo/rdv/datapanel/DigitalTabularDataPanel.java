@@ -396,6 +396,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     panelBox.revalidate();
     
     columnGroupCount++;
+    
+    properties.setProperty("numberOfColumns", Integer.toString(columnGroupCount));
   }
   
   private void removeColumn() {
@@ -558,12 +560,27 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
    } // drop ()
    
   public boolean addChannel(String channelName) {
-    return addChannel(channelName, 0);
+    int tableNumber = 0;
+    
+    Integer index = channelTableMap.get(channelName);
+    if (index != null) {
+      tableNumber = index;
+    }
+    
+    return addChannel(channelName, tableNumber);
   }
 
 	public boolean addChannel(String channelName, int tableNum) {
     if (channels.size() > MAX_CHANNELS) {
       return false;
+    }
+    
+    if (tableNum >= MAX_COLUMN_GROUP_COUNT) {
+      return false;
+    }
+    
+    if (tableNum >= columnGroupCount) {
+      setNumberOfColumns(tableNum+1);
     }
     
     if (channels.contains(channelName)) {
@@ -733,6 +750,13 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
         setMaxMinVisible(true);
       } else if (key.equals ("thresholdVisible") && value.equals ("true")) {
          setThresholdVisible (true);
+      } else if (key.equals("numberOfColumns")) {
+        int columns = Integer.parseInt(value);
+        setNumberOfColumns(columns);
+      } else if (key.startsWith("channelTable_")) {
+        String channelName = key.substring(13);
+        int tableIndex = Integer.parseInt(value);
+        channelTableMap.put(channelName, tableIndex);
       } // if
     } // if
   } // setProperty ()
