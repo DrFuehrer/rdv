@@ -63,6 +63,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.TransferHandler;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MouseInputAdapter;
@@ -278,7 +279,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     }        
     
     DataTableModel tableModel = new DataTableModel();
-    JTable table = new JTable(tableModel);
+    final JTable table = new JTable(tableModel);
 
     // TODO DRAGNDROP
     table.setDragEnabled(true);
@@ -298,17 +299,19 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 
     final JMenuItem copyMenuItem = new JMenuItem("Copy");
     popupMenu.addPopupMenuListener(new PopupMenuListener() {
-       public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-             copyMenuItem.setEnabled(true);
-       }
-
-       public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {
-       }
-
-       public void popupMenuCanceled(PopupMenuEvent arg0) {
-       }
+      public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+        copyMenuItem.setEnabled(table.getSelectedRowCount() > 0);
+      }
+      public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
+      public void popupMenuCanceled(PopupMenuEvent arg0) {}
     });
-
+    copyMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        TransferHandler.getCopyAction().actionPerformed(
+          new ActionEvent(table, ae.getID(),ae.getActionCommand(),
+            ae.getWhen(), ae.getModifiers()));
+      }
+    });
     popupMenu.add(copyMenuItem);
 
     popupMenu.addSeparator();
