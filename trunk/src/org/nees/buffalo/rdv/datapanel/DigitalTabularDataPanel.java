@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractButton;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -88,7 +89,7 @@ import org.apache.commons.logging.LogFactory;
  * @author  Lawrence J. Miller <ljmiller@sdsc.edu>
  * @since   1.3
  */
-public class DigitalTabularDataPanel extends AbstractDataPanel implements TableModelListener {
+public class DigitalTabularDataPanel extends AbstractDataPanel {
 
   static Log log = LogFactory.getLog(DigitalTabularDataPanel.class.getName());
   
@@ -146,15 +147,16 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   private JToggleButton engineeringButton;
 
   /**
-   * The check box menu item to control max/min column visibility
+   * The group of check box components to control the the min/max columns
+   * visibility
    */
-  private JCheckBoxMenuItem showMaxMinMenuItem;
+  private CheckBoxGroup showMinMaxCheckBoxGroup;
   
   /**
-   * The check box menu item to control threshold column visibility
-   * this functionality is currently coupled to showMaxMinMenuItem
+   * The group of check box components to control the the threshold columns
+   * visibility
    */
-  private JCheckBoxMenuItem showThresholdMenuItem;
+  private CheckBoxGroup showThresholdCheckBoxGroup;
 
   /**
    * The last time data was displayed in the UI
@@ -171,7 +173,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   /**
    * The percentage of warning value, when it is exceeded, yellow background should be shown
    */
-  private static final Double WARNING_PERCENTAGE = new Double(0.75);
+  private static final double WARNING_PERCENTAGE = 0.75;
 
   
   /**
@@ -206,6 +208,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
 
       dataCellRenderer = new DataTableCellRenderer ();
       doubleCellRenderer = new DoubleTableCellRenderer ();
+      
+      showMinMaxCheckBoxGroup = new CheckBoxGroup();
+      showThresholdCheckBoxGroup = new CheckBoxGroup();
 
       addColumn();
          
@@ -291,7 +296,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     table.setDragEnabled(true);
     table.setName(DigitalTabularDataPanel.class.getName() + " JTable #" + Integer.toString(columnGroupCount));
 
-    table.getModel().addTableModelListener(this);
     table.getColumn("Value").setCellRenderer(dataCellRenderer);
     
     tables.add(table);
@@ -333,24 +337,25 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     popupMenu.add(printMenuItem);
     popupMenu.addSeparator();
 
-    showMaxMinMenuItem = new JCheckBoxMenuItem(
-          "Show max/min and threshold columns", false);
+    final JCheckBoxMenuItem showMaxMinMenuItem = new JCheckBoxMenuItem(
+        "Show min/max columns", false);
     showMaxMinMenuItem.addActionListener(new ActionListener() {
        public void actionPerformed(ActionEvent ae) {
           setMaxMinVisible(showMaxMinMenuItem.isSelected());
        }
     });
+    showMinMaxCheckBoxGroup.addCheckBox(showMaxMinMenuItem);
     popupMenu.add(showMaxMinMenuItem);
 
-    /*
-     showThresholdMenuItem = new  JCheckBoxMenuItem ("Show threshold columns", false);
-     showThresholdMenuItem.addActionListener (new ActionListener () {
-     public void actionPerformed (ActionEvent ae) {
-     setThresholdVisible (showThresholdMenuItem.isSelected ());
-     }      
-     }); // actionListener
-     popupMenu.add (showThresholdMenuItem);
-     */
+    final JCheckBoxMenuItem showThresholdMenuItem = new  JCheckBoxMenuItem(
+        "Show threshold columns", false);
+    showThresholdMenuItem.addActionListener (new ActionListener () {
+      public void actionPerformed (ActionEvent ae) {
+        setThresholdVisible(showThresholdMenuItem.isSelected());
+      }      
+    });
+    showThresholdCheckBoxGroup.addCheckBox(showThresholdMenuItem);
+    popupMenu.add(showThresholdMenuItem);
 
     popupMenu.addSeparator();    
     
@@ -437,6 +442,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   }  
   
   private void useEngineeringRenderer(boolean useEngineeringRenderer) {
+    dataCellRenderer.setShowEngineeringFormat(useEngineeringRenderer);
     doubleCellRenderer.setShowEngineeringFormat(useEngineeringRenderer);
     
     for (JTable table : tables) {
@@ -453,54 +459,56 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
   }
 
   private void setMaxMinVisible(boolean maxMinVisible) {
-    if (tableModels.get(0).getMaxMinVisibile() != maxMinVisible) {
-      for (int i=0; i< this.columnGroupCount; i++) {
+    if (showMinMaxCheckBoxGroup.isSelected() != maxMinVisible) {
+      for (int i=0; i<this.columnGroupCount; i++) {
         DataTableModel tableModel = tableModels.get(i);
         JTable table = tables.get(i);
         
-        tableModel.setMaxMinVisible(maxMinVisible);
-        showMaxMinMenuItem.setSelected(maxMinVisible);
+        tableModel.setMaxMinVisible(maxMinVisible);  
         
-        table.getColumn ("Value").setCellRenderer (dataCellRenderer);
+        table.getColumn("Value").setCellRenderer(dataCellRenderer);
         
         if (maxMinVisible) {
           table.getColumn("Min").setCellRenderer(doubleCellRenderer);
           table.getColumn("Max").setCellRenderer(doubleCellRenderer);
         }
       }
-    }
-    
-    if (maxMinVisible) {
-      properties.setProperty("maxMinVisible", "true");      
-    } else {
-      properties.remove("maxMinVisible");
-    }
+      
+      showMinMaxCheckBoxGroup.setSelected(maxMinVisible);
+      
+      if (maxMinVisible) {
+        properties.setProperty("maxMinVisible", "true");      
+      } else {
+        properties.remove("maxMinVisible");
+      }      
+    }    
   }
 
-  private void setThresholdVisible (boolean thesholdVisible) {
+  private void setThresholdVisible(boolean thresholdVisible) {
+    if (showThresholdCheckBoxGroup.isSelected() != thresholdVisible) {
+      for (int i=0; i<columnGroupCount; i++) {
+        DataTableModel tableModel = tableModels.get(i);
+        JTable table = tables.get(i);        
+        
+        tableModel.setThresholdVisible(thresholdVisible);
+        
+        table.getColumn("Value").setCellRenderer(dataCellRenderer);
 
-    for (int i = 0; i < columnGroupCount; i++) {
-         if (((DataTableModel) tableModels.get(i)).getThresholdVisible() != thesholdVisible) {
-            ((DataTableModel) tableModels.get(i))
-                  .setThresholdVisible(thesholdVisible);
-            showMaxMinMenuItem.setSelected(thesholdVisible);
-
-            // table.getColumn ("Value").setCellRenderer (dataCellRenderer);
-            // table.getColumn ("Value").setCellRenderer (doubleCellRenderer);
-
-            if (thesholdVisible) {
-               ((JTable) tables.get(i)).getColumn("Min Thresh")
-                     .setCellRenderer(doubleCellRenderer);
-               ((JTable) tables.get(i)).getColumn("Max Thresh")
-                     .setCellRenderer(doubleCellRenderer);
-
-               properties.setProperty("thresholdVisible", "true");
-            } else {
-               properties.remove("thresholdVisible");
-            }
-         } // if
-      } // for
-   } // setThresholdVisible ()
+        if (showMinMaxCheckBoxGroup.isSelected()) {
+          table.getColumn("Min").setCellRenderer(doubleCellRenderer);
+          table.getColumn("Max").setCellRenderer(doubleCellRenderer);
+        }        
+      }
+      
+      showThresholdCheckBoxGroup.setSelected(thresholdVisible);
+      
+      if (thresholdVisible) {
+        properties.setProperty("thresholdVisible", "true");
+      } else {
+        properties.remove("thresholdVisible");        
+      }
+    }
+  }
   
   void clearData() {
       
@@ -747,10 +755,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
      } // for 
   } // postDataTabular ()
    
- public boolean isADouble (Object isit) {
-    return ( isit.getClass().isInstance (new Double (-1.0)) );
- } // isADouble ()
- 
   public List subscribedChannels() {
     List allChannels = new ArrayList();
     
@@ -794,13 +798,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     return "Tabular Data Panel";
   }
   
-   /** a method for the @see TableModelListener interface */
-   public void tableChanged (TableModelEvent e) {
-       int row = e.getFirstRow ();
-       int column = e.getColumn ();
-       TableModel model = (TableModel)e.getSource ();
-   } // tableChanged ()
- 
  /** an inner class to implement the data model in this design pattern */ 
   private class DataTableModel extends AbstractTableModel {
     private String[] columnNames = {
@@ -907,19 +904,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       return rows.size();
     }
     
-    /** a method that will @return the row index number
-      * given @param row name*/
-    public int getRowNumber (String name) {
-       DataRow dataRow = null;
-       for (int i=0; i<rows.size (); i++) {
-          dataRow = (DataRow)rows.get (i);
-          if (dataRow.name.equals (name)) {
-             return i;
-          } // if
-       } // for
-       return -1; // name not found
-    } // getRowNumber ()
-
     public int getColumnCount() {
       int retval = columnNames.length;
       retval -= (maxMinVisible)?    0 : 2;
@@ -928,7 +912,11 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     }
     
     public String getColumnName(int col) {
-      return columnNames[col];
+      if (col < 3 || maxMinVisible) {
+        return columnNames[col];
+      } else {
+        return columnNames[col+2];
+      }
     }
 
     public Object getValueAt(int row, int col) {
@@ -947,6 +935,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
       }
       
       String[] nameSplit = dataRow.getName ().split ("/");
+      
+      if (col > 2 && !maxMinVisible) {
+        col += 2;
+      }
       
       switch (col) {
         case 0:
@@ -970,8 +962,12 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     
     // Method to update table data in response to user actions
     public void setValueAt (Object value, int row, int col) {
-        // log.debug ("^^^ Setting value at " + row + "," + col + " to " + value);
         DataRow dataRow = (DataRow)rows.get (row);
+
+        if (col > 2 && !maxMinVisible) {
+          col += 2;
+        }
+        
         switch (col) {
         case 5: // "Min Thresh"
              try {
@@ -1005,7 +1001,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     public void setMaxMinVisible(boolean maxMinVisible) {
       if (this.maxMinVisible != maxMinVisible) {
         this.maxMinVisible = maxMinVisible;
-        this.thresholdVisible = maxMinVisible;
         fireTableStructureChanged();
       }
     }
@@ -1122,65 +1117,90 @@ public class DigitalTabularDataPanel extends AbstractDataPanel implements TableM
     }
   } // inner class DoubleTableCellRenderer
   
-  /** an inner calss that renders the data value cell by coloring it when it is outside
-   * of the threshold intervals
+  /**
+   * An inner class that renders the data value cell by coloring it when it is
+   * outside or approaching the threshold intervals.
    */ 
   private class DataTableCellRenderer extends DoubleTableCellRenderer {
-     public DataTableCellRenderer () {
-        super ();
-     }
+    public DataTableCellRenderer () {
+      super ();
+    }
 
-     public Component getTableCellRendererComponent(JTable aTable, 
-             Object aNumberValue, 
-             boolean aIsSelected, 
-             boolean aHasFocus, 
-             int aRow, int aColumn) {  
-    /* 
-    * Implementation Note :
-    * It is important that no "new" be present in this 
-    * implementation (excluding exceptions):
-    * if the table is large, then a large number of objects would be 
-    * created during rendering.
-    */
+    public Component getTableCellRendererComponent(JTable aTable, 
+        Object aNumberValue, 
+        boolean aIsSelected, 
+        boolean aHasFocus, 
+        int aRow, int aColumn) {  
 
-    
-        Component renderer = super.getTableCellRendererComponent(aTable,
-                aNumberValue, aIsSelected, aHasFocus, aRow, aColumn);
+      Component renderer = super.getTableCellRendererComponent(aTable,
+          aNumberValue, aIsSelected, aHasFocus, aRow, aColumn);
         
-        if (aNumberValue == null || !(aNumberValue instanceof Number)) 
-          return renderer;
-        
-
-          Number numberValue = (Number) aNumberValue;
-
-          DataRow theRowAtDataRow = ((DataTableModel) aTable.getModel())
-                .getRowAt(aRow);
-          Object minThreshData = (theRowAtDataRow.minThresh == (-1 * Double.MAX_VALUE)) ? null
-                : new Double(theRowAtDataRow.minThresh);
-          Object maxThreshData = (theRowAtDataRow.minThresh == Double.MAX_VALUE) ? null
-                : new Double(theRowAtDataRow.maxThresh);
+      if (aNumberValue == null || !(aNumberValue instanceof Number)) {
+        renderer.setBackground(Color.white);
+        return renderer;
+      }
           
-            // Unhandled Null pointer Exception thrown below, disabled, to be fixed
-//          Double warningMinThreshData = WARNING_PERCENTAGE * (Double)minThreshData;
-//          Double warningMaxThreshData = WARNING_PERCENTAGE * (Double)maxThreshData;
-
-          if (minThreshData == null || maxThreshData == null) {
-             renderer.setBackground(Color.white);
-             renderer.setForeground(Color.black);
-             return this;
-          }
-          if ((numberValue.doubleValue() < (Double)minThreshData) ) { //||
-//              (numberValue.doubleValue() > (Double)maxThreshData)) {
-            renderer.setBackground(Color.red);
-            
-          }  
-          else if ((numberValue.doubleValue() > (Double)maxThreshData) ) { //||
-//                (numberValue.doubleValue() > warningMaxThreshData)) {
-              renderer.setBackground(Color.red);
-          } else {
-             renderer.setBackground(Color.white);
-          }
-          return this;
-  } // getTableCellRendererComponent ()
-  } // inner class DataCellRenderer
+      double numberValue = ((Number)aNumberValue).doubleValue();
+    
+      DataRow dataRow = ((DataTableModel)aTable.getModel()).getRowAt(aRow);
+      double minThresh = dataRow.minThresh;
+      double maxThresh = dataRow.maxThresh;
+      
+      if (minThresh == (-1 * Double.MAX_VALUE) || maxThresh == Double.MAX_VALUE) {
+        renderer.setBackground(Color.white);
+        return renderer;
+      }
+      
+      double warningThresh = (1 - WARNING_PERCENTAGE) * (maxThresh - minThresh) / 2;
+      double warningMinThresh = minThresh + warningThresh;
+      double warningMaxThresh = maxThresh - warningThresh;          
+      
+      if ((numberValue < minThresh) || (numberValue > maxThresh)) {
+        renderer.setBackground(Color.red);
+      } else if ((numberValue < warningMinThresh) || (numberValue > warningMaxThresh)) {
+        renderer.setBackground(Color.yellow);
+      } else {
+        renderer.setBackground(Color.white);
+      }
+      
+      return renderer;
+    }
+  }
+  
+  class CheckBoxGroup {
+    boolean selected;
+    
+    List<AbstractButton> checkBoxes;
+    
+    public CheckBoxGroup() {
+      this(false);
+    }
+    
+    public CheckBoxGroup(boolean selected) {
+      this.selected = selected;
+      
+      checkBoxes = new ArrayList<AbstractButton>();
+    }
+    
+    public void addCheckBox(AbstractButton checkBox) {
+      checkBoxes.add(checkBox);
+      checkBox.setSelected(selected);
+    }
+    
+    public void removeCheckBox(AbstractButton checkBox) {
+      checkBoxes.remove(checkBox);
+    }
+    
+    public void setSelected(boolean selected) {
+      this.selected = selected;
+      
+      for (AbstractButton checkBox : checkBoxes) {
+        checkBox.setSelected(selected);
+      }
+    }
+    
+    public boolean isSelected() {
+      return selected;
+    }
+  }
 } // class
