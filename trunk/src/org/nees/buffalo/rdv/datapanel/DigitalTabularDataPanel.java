@@ -816,7 +816,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
     private boolean thresholdVisible;
     private boolean useOffsets;
     
-    private final DataRow BLANK_ROW = new DataRow(new String(), null, 0, 0);
+    private final DataRow BLANK_ROW = new DataRow(new String(), null, (-1*Double.MAX_VALUE), Double.MAX_VALUE);
     
     public DataTableModel() {
       super();
@@ -1022,6 +1022,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
     double max;
     double minThresh = -1 * Double.MAX_VALUE;
     double maxThresh = Double.MAX_VALUE;
+    boolean threshSetByUser = false;
  
     double offset;
     boolean cleared;
@@ -1126,6 +1127,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
       super ();
     }
 
+    /** a method that will color the data value cell based on it's proximity to some threshold 
+     * */
     public Component getTableCellRendererComponent(JTable aTable, 
         Object aNumberValue, 
         boolean aIsSelected, 
@@ -1146,26 +1149,35 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
       double minThresh = dataRow.minThresh;
       double maxThresh = dataRow.maxThresh;
       
-      if (minThresh == (-1 * Double.MAX_VALUE) || maxThresh == Double.MAX_VALUE) {
-        renderer.setBackground(Color.white);
-        return renderer;
-      }
-      
       double warningThresh = (1 - WARNING_PERCENTAGE) * (maxThresh - minThresh) / 2;
       double warningMinThresh = minThresh + warningThresh;
-      double warningMaxThresh = maxThresh - warningThresh;          
+      double warningMaxThresh = maxThresh - warningThresh;    
       
-      if ((numberValue < minThresh) || (numberValue > maxThresh)) {
-        renderer.setBackground(Color.red);
-      } else if ((numberValue < warningMinThresh) || (numberValue > warningMaxThresh)) {
-        renderer.setBackground(Color.yellow);
-      } else {
-        renderer.setBackground(Color.white);
-      }
+      // FIXME this renders yellow when between warning threshold values; should be white; why?
+      renderer.setBackground(Color.white);  
+      if ( minThresh!=(-1 * Double.MAX_VALUE) ) {
+        if (numberValue<=minThresh) {
+          renderer.setBackground(Color.red);
+        } else if (numberValue<=warningMinThresh) {
+          renderer.setBackground(Color.yellow);
+        } else if (warningMinThresh<numberValue) {
+          renderer.setBackground(Color.white);
+        }
+      } //  if good minimum threshold
       
+      if ( maxThresh!=(Double.MAX_VALUE) ) {
+        if (maxThresh<=numberValue) {
+          renderer.setBackground(Color.red);
+        } else if (warningMaxThresh<=numberValue) {
+          renderer.setBackground(Color.yellow);
+        } else if (numberValue<warningMaxThresh) {
+          renderer.setBackground(Color.white);
+        }
+      } //  if good maximum threshold    
+    
       return renderer;
     }
-  }
+  } // getTableCellRendererComponent ()
   
   class CheckBoxGroup {
     boolean selected;
