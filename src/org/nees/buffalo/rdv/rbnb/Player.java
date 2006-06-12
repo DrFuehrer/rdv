@@ -84,13 +84,6 @@ public interface Player {
 	public static final int STATE_DISCONNECTED = 5;
 	
 	/**
-	 * The player is viewing the newest data.
-	 * 
-	 * @since  1.1
-	 */
-	public static final int STATE_REALTIME = 6;
-
-	/**
 	 * Returns the current state of the player.
 	 * 
 	 * @return  the state

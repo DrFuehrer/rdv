@@ -180,9 +180,6 @@ public class RBNBController implements Player, MetadataListener {
 				case STATE_MONITORING:
 					updateDataMonitoring();
 					break;
-				case STATE_REALTIME:
-					updateDataRealTime();
-					break;
 				case STATE_STOPPED:
 				case STATE_DISCONNECTED:
 					try { Thread.sleep(50); } catch (Exception e) {}
@@ -341,7 +338,6 @@ public class RBNBController implements Player, MetadataListener {
 				monitorData();
 				break;		
 			case STATE_PLAYING:
-			case STATE_REALTIME:
 				if (oldState == STATE_MONITORING || oldState == STATE_STOPPED) {
 					preFetchData(location, playbackRate);
 				}
@@ -676,8 +672,6 @@ public class RBNBController implements Player, MetadataListener {
 				boolean requestStatus = false;
 				if (state == STATE_PLAYING) {
 					requestStatus = requestData(location, duration);
-				} else if (state == STATE_REALTIME) {
-					requestStatus = requestDataRealTime();
 				}
 				
 				if (requestStatus) {
@@ -820,104 +814,6 @@ public class RBNBController implements Player, MetadataListener {
         location = newLocation;
         updateTimeListeners(location);
       }
-		}
-	}
-	
-	
-	// Real Time Methods
-	
-	private boolean requestDataRealTime() {
-		if (requestedChannels.NumberOfChannels() == 0) {
-			return false;
-		}
-		
-		if (requestIsMonitor) {
-			reInitRBNB();
-			requestIsMonitor = false;
-		}
-	
-		try {
-			sink.Request(requestedChannels, PLAYBACK_REFRESH_RATE, PLAYBACK_REFRESH_RATE, "newest");
-		} catch (SAPIException e) {
- 			log.error("Failed to request channels (RT) at " + DataViewer.formatDate(location) + ".");
- 			e.printStackTrace();
-			return false;
-		}			
-		
-		return true;
-	}
-	
-	private void updateDataRealTime() {	
-		//stop monitoring if no channels selected
-		//TODO see if this should be posible or indicates an error in the program
-		if (requestedChannels.NumberOfChannels() == 0) {
-			log.debug("No channels subscribed to monitor.");
-			changeStateSafe(STATE_STOPPED);
-			return;
-		}
-		
-		ChannelMap getmap = null;
-		
-		getmap = getPreFetchChannelMap();
-		if (getmap == null) {
-			log.error("Failed to get pre-fetched data.");
-			changeStateSafe(STATE_STOPPED);
-			return;
-		} else if (getmap.GetIfFetchTimedOut()) {
-			log.error("Fetch timed out.");
-			changeStateSafe(STATE_STOPPED);
-			return;
-		}
-		
-		preFetchData(-1, -1);
-
-		String[] channelList = getmap.GetChannelList();
-		
-		//received no data
-		if (channelList.length == 0) {
-			return;			
-		}
-		
-		//save previous location
-		double time = location;
-
-		//update current location
-		location = getLastTime(getmap);
-		updateTimeListeners(location);
-
-		//post data to listeners
-		channelManager.postData(getmap);
-		
-		long sleepTime = 0;
-		
-		//find min and max times
-		double minTime = Double.MAX_VALUE;
-		double maxTime = 0;
-		for (int j=0; j<channelList.length; j++) {
-			String channelName = channelList[j];
-			int channelIndex = getmap.GetIndex(channelName);
-			double[] times = getmap.GetTimes(channelIndex);
-			for (int k=0; k<times.length; k++) {
-				minTime = Math.min(times[k], minTime);
-				maxTime = Math.max(times[k], maxTime);
-			}
-		}
-		
-		//figure out how much time to sleep
-		double offset = (time==-1 || minTime == Double.MAX_VALUE) ? 0.005 : time - minTime;
-		if (offset > 0) {
-			sleepTime += offset*1000/4;
-		} else if (offset == 0) {
-			sleepTime -= 5;
-		} else if (sleepTime > -1*offset*1000){
-			sleepTime += offset*1000;
-		} else {
-			sleepTime = 0;
-		}
-		
-		if (sleepTime >= 5) {
-			//log.debug("Sleeping " + sleepTime + " ms. Offset is " + ((long)(offset*1000)) + " (" + DataViewer.formatDate(time) + " , " + DataViewer.formatDate(minTime) +").");
-			try { Thread.sleep(sleepTime); } catch (Exception e) {}
 		}
 	}
 	
@@ -1364,9 +1260,6 @@ public class RBNBController implements Player, MetadataListener {
 				stateString = "playing";
 				break;
 			case STATE_MONITORING:
-				stateString = "real time";
-				break;
-			case STATE_REALTIME:
 				stateString = "real time";
 				break;
 			case STATE_STOPPED:
