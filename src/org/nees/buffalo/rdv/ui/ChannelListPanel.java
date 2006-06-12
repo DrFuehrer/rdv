@@ -577,10 +577,14 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   }
   
   private void handlePopup(MouseEvent e) {
+    
+    JPopupMenu popup = null;
+    
     TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
-    tree.setSelectionPath(treePath);
+    
+    // Below commented out so that multi-channels remain selected when right-clicked(popup)
+//    tree.setSelectionPath(treePath);
     if (treePath != null) {
-      JPopupMenu popup = null;
       
       Object o = treePath.getLastPathComponent();
       if (o == root) {
@@ -598,7 +602,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       if (popup != null && popup.getComponentCount() > 0) {
         popup.show(tree, e.getX(), e.getY());
       }
-    }        
+    } 
+        
+
   }
   
   private JPopupMenu getRootPopup() {
@@ -684,16 +690,35 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   private JPopupMenu getChannelPopup(ChannelTree.Node channel) {
     JPopupMenu popup = new JPopupMenu();
     JMenuItem menuItem;
-    
+
+    // Below code added so that we call viewChannels() and pass a List of selected channels
+    final List<ChannelTree.Node> selectedChannels = new ArrayList<ChannelTree.Node>();   
+    ChannelTree.Node selectedNode;
+ 
+    TreePath[] selectedNodes = tree.getSelectionPaths();
+    if (selectedNodes != null) {
+      for (int i=0; i<selectedNodes.length; i++) {
+        if (selectedNodes[i].getLastPathComponent() != root) {
+          selectedNode = (ChannelTree.Node)selectedNodes[i].getLastPathComponent();
+          NodeTypeEnum type = selectedNode.getType();
+          if (type == ChannelTree.CHANNEL) {
+            selectedChannels.add(selectedNode);
+          }
+        }
+      }
+    }
+
+        
     final String channelName = channel.getFullName();
-    
+
     ArrayList extensions = dataPanelManager.getExtensions(channelName);
     final Extension defaultExtension = dataPanelManager.getDefaultExtension(channelName);
     if (defaultExtension != null) {
       menuItem = new JMenuItem("View with " + defaultExtension.getName());
       menuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ae) {
-          viewChannel(channelName, defaultExtension);
+          viewChannels(selectedChannels, defaultExtension);
+//          viewChannel (channelName, defaultExtension);
         }                
       });            
       popup.add(menuItem);
@@ -704,10 +729,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         while (i.hasNext()) {
           final Extension extension = (Extension)i.next();
           if (extension != defaultExtension) {
-            menuItem = new JMenuItem("View with " + extension.getName());
+            menuItem = new JMenuItem("View with_" + extension.getName());
             menuItem.addActionListener(new ActionListener() {
               public void actionPerformed(ActionEvent ae) {
-                viewChannel(channelName, extension);
+              
+//                viewChannel(channelName, extension);
+                viewChannels(selectedChannels, extension);
               }                
             });
             popup.add(menuItem);
@@ -743,6 +770,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   }
   
   private void viewChannel(final String channelName) {
+    log.debug("viewChannel() - start.. channleName: " + channelName);
     new Thread() {
       public void run() {
         dataPanelManager.viewChannel(channelName);
@@ -751,6 +779,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   }
   
   private void viewChannel(final String channelName, final Extension extension) {
+    log.debug("viewChannel() - start.. channleName: " + channelName);
     new Thread() {
       public void run() {
         dataPanelManager.viewChannel(channelName, extension);
