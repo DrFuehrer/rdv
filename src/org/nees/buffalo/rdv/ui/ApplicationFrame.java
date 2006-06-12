@@ -816,7 +816,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
 
 	public void postStatus(String statusMessage) {
-		JOptionPane.showMessageDialog(this, statusMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(this, statusMessage, "Status", JOptionPane.INFORMATION_MESSAGE);
 	}
   
   public void showImportDialog() {
