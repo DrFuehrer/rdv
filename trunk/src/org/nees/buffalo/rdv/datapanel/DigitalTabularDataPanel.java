@@ -1161,7 +1161,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
         } else if (numberValue<=warningMinThresh) {
           renderer.setBackground(Color.yellow);
         } else if (warningMinThresh<numberValue) {
-          renderer.setBackground(Color.white);
+          //renderer.setBackground(Color.white);
         }
       } //  if good minimum threshold
       
@@ -1171,7 +1171,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
         } else if (warningMaxThresh<=numberValue) {
           renderer.setBackground(Color.yellow);
         } else if (numberValue<warningMaxThresh) {
-          renderer.setBackground(Color.white);
+          //renderer.setBackground(Color.white);
         }
       } //  if good maximum threshold    
     
