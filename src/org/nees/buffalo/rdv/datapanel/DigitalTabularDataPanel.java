@@ -529,34 +529,41 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
    public void drop(DropTargetDropEvent e) {
       try {
          int dropAction = e.getDropAction();
-         // calculate which table the x coordinate of the mouse corresponds to
-         double clickX = e.getLocation ().getX();   // get the mouse x coordinate 
-         int compWidth = dataComponent.getWidth();  // gets the width of this component
-         int tableNum = (int)(clickX * columnGroupCount / compWidth);
-         
          if (dropAction == DnDConstants.ACTION_LINK) {
             DataFlavor stringFlavor = DataFlavor.stringFlavor;
             Transferable tr = e.getTransferable();
             if (e.isDataFlavorSupported(stringFlavor)) {
-               String channels = (String) tr.getTransferData(stringFlavor);
-               String delim = ",";
-               String[] tokens = channels.split(delim);
-               String channelName = "";
-               for (int i = 0; i < tokens.length; i++) {
-                  channelName = tokens[i];
-                  e.acceptDrop(DnDConstants.ACTION_LINK);
-                  e.dropComplete(true);
+               e.acceptDrop(DnDConstants.ACTION_LINK);
+               e.dropComplete(true);
+               
+               // calculate which table the x coordinate of the mouse corresponds to
+               double clickX = e.getLocation ().getX();   // get the mouse x coordinate 
+               int compWidth = dataComponent.getWidth();  // gets the width of this component
+               final int tableNum = (int)(clickX * columnGroupCount / compWidth);               
 
-                  boolean status;
-                  if (supportsMultipleChannels()) {
-                     status = addChannel(channelName, tableNum);
-                  } else {
-                     status = setChannel(channelName);
+               final String channels = (String)tr.getTransferData(stringFlavor);
+               
+               new Thread() {
+                  public void run() {
+                     String delim = ",";
+                     String[] tokens = channels.split(delim);
+                     String channelName = "";
+                     for (int i = 0; i < tokens.length; i++) {
+                        channelName = tokens[i];
+      
+                        boolean status;
+                        if (supportsMultipleChannels()) {
+                           status = addChannel(channelName, tableNum);
+                        } else {
+                           status = setChannel(channelName);
+                        }
+                        
+                        if (!status) {
+                           // TODO display an error in the UI
+                        }
+                     }
                   }
-                  if (!status) {
-                     // TODO display an error in the UI
-                  }
-               }
+               }.start();
             } else {
                e.rejectDrop();
             }
