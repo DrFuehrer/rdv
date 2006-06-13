@@ -300,7 +300,7 @@ public class MetadataManager {
    * 
    * @return the metadata channel tree.
    */
-  public synchronized ChannelTree getMetadataChannelTree() {
+  public ChannelTree getMetadataChannelTree() {
     if (ctree == null) {
       try { wait(); } catch (InterruptedException e) {}
     }
@@ -315,7 +315,7 @@ public class MetadataManager {
    * @return the channel object for the channel name, or null if the channel is
    *         not found
    */
-  public synchronized Channel getChannel(String channelName) {
+  public Channel getChannel(String channelName) {
     if (ctree == null) {
       try { wait(); } catch (InterruptedException e) {}
     }
