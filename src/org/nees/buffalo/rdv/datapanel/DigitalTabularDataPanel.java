@@ -664,6 +664,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
     tableModels.get(tableNumber).deleteRow(channelName);
     channelTableMap.remove(channelName);
     properties.remove("channelTable_"+channelName);
+    properties.remove("minThreshold_"+channelName);
+    properties.remove("maxThreshold_"+channelName);
   }
   
   public void postTime(double time) {
@@ -797,6 +799,20 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
         String channelName = key.substring(13);
         int tableIndex = Integer.parseInt(value);
         channelTableMap.put(channelName, tableIndex);
+      } else if (key.startsWith("minThreshold_")) {
+        String channelName = key.substring(13);
+        try { 
+          Double.parseDouble(value);
+          lowerThresholds.put(channelName, value);
+          properties.put(key, value);
+        } catch (NumberFormatException e) {}
+      } else if (key.startsWith("maxThreshold_")) {
+        String channelName = key.substring(13);
+        try {
+          Double.parseDouble(value);
+          upperThresholds.put(channelName, value);
+          properties.put(key, value);
+        } catch (NumberFormatException e) {}
       } // if
     } // if
   } // setProperty ()
@@ -969,7 +985,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
     
     // Method to update table data in response to user actions
     public void setValueAt (Object value, int row, int col) {
-        DataRow dataRow = (DataRow)rows.get (row);
+        DataRow dataRow = (DataRow)rows.get(row);
+        if (dataRow == BLANK_ROW) {
+          return;
+        }
 
         if (col > 2 && !maxMinVisible) {
           col += 2;
@@ -978,7 +997,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
         switch (col) {
         case 5: // "Min Thresh"
              try {
-                dataRow.minThresh = Double.parseDouble ((String)value);
+                double minThreshold = Double.parseDouble((String)value); 
+                dataRow.minThresh = minThreshold;
+                properties.setProperty("minThreshold_" + dataRow.getName(), Double.toString(minThreshold));
              } catch (Throwable e) {
                 break;
              }
@@ -986,7 +1007,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
              break;
           case 6: // "Max Thresh"
              try {
-                dataRow.maxThresh = Double.parseDouble ((String)value);
+                double maxThreshold = Double.parseDouble((String)value);
+                dataRow.maxThresh = maxThreshold;
+                properties.setProperty("maxThreshold_" + dataRow.getName(), Double.toString(maxThreshold));
              } catch (Throwable e) {
                 break;
              }
