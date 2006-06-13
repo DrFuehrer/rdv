@@ -87,7 +87,6 @@ import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 
-import java.awt.event.MouseMotionListener;
 import javax.swing.TransferHandler;
 import java.awt.datatransfer.Transferable;
 
@@ -581,10 +580,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     JPopupMenu popup = null;
     
     TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
-    
-    // Below commented out so that multi-channels remain selected when right-clicked(popup)
-//    tree.setSelectionPath(treePath);
+        
     if (treePath != null) {
+      // select only the node under the mouse if it is not already selected
+      if (!tree.isPathSelected(treePath)) {
+        tree.setSelectionPath(treePath);
+      }
       
       Object o = treePath.getLastPathComponent();
       if (o == root) {
@@ -603,8 +604,6 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         popup.show(tree, e.getX(), e.getY());
       }
     } 
-        
-
   }
   
   private JPopupMenu getRootPopup() {
