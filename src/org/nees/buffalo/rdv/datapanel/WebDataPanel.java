@@ -190,22 +190,11 @@ public class WebDataPanel extends AbstractDataPanel {
     htmlRenderer.addHyperlinkListener(new HyperlinkListener() {
       public void hyperlinkUpdate(HyperlinkEvent evt) {
     	  if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {  // a hyperlink is clicked on the page
-    		  
-    		  URL url = evt.getURL(); 
-    		  if (isLinkSpecial(url.toString())) {
-   				  int i = JOptionPane.showConfirmDialog(null,
-   						  "This Link requires an external browser!\n"
-   						  + "Proceed with launching a new window?",
-   						  "Please Confirm",
-   						  JOptionPane.YES_NO_CANCEL_OPTION);
-    				  
-   				  if (i == 0) // (constant) YES_OPTION selected
-   					  loadExternalPage(url);
-    		  }
-    		  else
-    			  loadPage(url.toString());
-    	  } 
-      }
+    		  URL url = evt.getURL();
+          
+          handleExternal(url);  // handleing hyperlink clicks on JEditPane open external browser 
+    	  }
+      }  
     });
 
     // the scroll bar for the HTML renderer
@@ -424,34 +413,34 @@ public class WebDataPanel extends AbstractDataPanel {
     
      // clear description
     setDescription(null);
+    
+    // indicate to open link via external browser
+    boolean openExternal = false;
         
     try {
-      // make sure the protocol is http
+      
       if (!location.startsWith("http://")) {
-        if (location.matches("^[a-zA-Z]+://.*")) {
-           throw new MalformedURLException("We don't support this protocol");
+        if (location.matches("^[a-zA-Z]+://.*")) { // mainly: https://
+          openExternal = true;
+//           throw new MalformedURLException("We don't support this protocol");
         } else {
           // assume http if no protocol is specified
           location = "http://" + location;
         }
       }      
- 
+
+      if (!openExternal)
+        openExternal = isLinkSpecial(location);
+        
       URL url = new URL(location);
-	  if (isLinkSpecial(location)) {
-		  int i = JOptionPane.showConfirmDialog(null,
-				  "This Link requires an external browser!\n"
-				  + "Proceed with launching a new window?",
-				  "Please Confirm",
-				  JOptionPane.YES_NO_CANCEL_OPTION);
-		  
-		  if (i == 0) // (constant) YES_OPTION selected
-			  loadExternalPage(url);
-
-	  } else {
-
- 		  htmlRenderer.setPage(url);
- 	      htmlRenderer.requestFocusInWindow();
- 	  }
+      if (openExternal) {
+        handleExternal(url);
+  
+      } else {
+  
+          htmlRenderer.setPage(url);
+   	      htmlRenderer.requestFocusInWindow();
+      }
  
     } 
     catch (Exception e) {
@@ -464,6 +453,19 @@ public class WebDataPanel extends AbstractDataPanel {
       reloadMenuItem.setEnabled(false);
       autoReloadMenu.setEnabled(false);
     }
+  }
+  
+  private void handleExternal(URL url) {
+
+    int i = JOptionPane.showConfirmDialog(null,
+        "This Link requires an external browser!\n"
+        + "Proceed with launching a new window?",
+        "Please Confirm",
+        JOptionPane.YES_NO_CANCEL_OPTION);
+    
+    if (i == 0) // (constant) YES_OPTION selected
+      loadExternalPage(url);
+    
   }
   
   /**
@@ -591,7 +593,8 @@ public class WebDataPanel extends AbstractDataPanel {
 		  String eXtension = link.substring(link.length() - 3); // extension of url if any 
 		  if (("pdf").equalsIgnoreCase(eXtension)               // file extensions that need special handling  
 					|| ("doc").equalsIgnoreCase(eXtension)
-					|| ("xls").equalsIgnoreCase(eXtension))
+					|| ("xls").equalsIgnoreCase(eXtension)
+          || ("xml").equalsIgnoreCase(eXtension))
 			  return true;		  
 	  }
 
