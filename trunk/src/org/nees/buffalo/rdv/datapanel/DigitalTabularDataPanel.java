@@ -296,6 +296,17 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
     table.setDragEnabled(true);
     table.setName(DigitalTabularDataPanel.class.getName() + " JTable #" + Integer.toString(columnGroupCount));
 
+    if (showThresholdCheckBoxGroup.isSelected()) {
+      tableModel.setThresholdVisible(true);
+    }    
+    
+    if (showMinMaxCheckBoxGroup.isSelected()) {
+      tableModel.setMaxMinVisible(true);
+      
+      table.getColumn("Min").setCellRenderer(doubleCellRenderer);
+      table.getColumn("Max").setCellRenderer(doubleCellRenderer);
+    }
+
     table.getColumn("Value").setCellRenderer(dataCellRenderer);
     
     tables.add(table);
