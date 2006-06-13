@@ -755,12 +755,15 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       popup.addSeparator();
     }
     
-    menuItem = new JMenuItem("Export channel...", DataViewer.getIcon("icons/export.gif"));
+    String plural = selectedChannels.size()==1?"":"s";
+    menuItem = new JMenuItem("Export channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        ArrayList channel = new ArrayList();
-        channel.add(channelName);
-        frame.showExportDialog(channel);
+        List selectedChannelsAsString = new ArrayList();
+        for (ChannelTree.Node node : selectedChannels) {
+          selectedChannelsAsString.add(node.getFullName());
+        }
+        frame.showExportDialog(selectedChannelsAsString);
       }
     });
     popup.add(menuItem);
