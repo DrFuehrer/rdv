@@ -728,7 +728,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         while (i.hasNext()) {
           final Extension extension = (Extension)i.next();
           if (extension != defaultExtension) {
-            menuItem = new JMenuItem("View with_" + extension.getName());
+            menuItem = new JMenuItem("View with " + extension.getName());
             menuItem.addActionListener(new ActionListener() {
               public void actionPerformed(ActionEvent ae) {
               
