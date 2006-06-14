@@ -302,7 +302,11 @@ public class MetadataManager {
    */
   public ChannelTree getMetadataChannelTree() {
     if (ctree == null) {
-      try { wait(); } catch (InterruptedException e) {}
+      synchronized (this) {
+        do {
+          try { wait(250); } catch (InterruptedException e) {}
+        } while (ctree == null);
+      }
     }
     
     return ctree;
@@ -317,7 +321,11 @@ public class MetadataManager {
    */
   public Channel getChannel(String channelName) {
     if (ctree == null) {
-      try { wait(); } catch (InterruptedException e) {}
+      synchronized (this) {
+        do {
+          try { wait(250); } catch (InterruptedException e) {}
+        } while (ctree == null);
+      }
     }
     
     return (Channel)channels.get(channelName);
