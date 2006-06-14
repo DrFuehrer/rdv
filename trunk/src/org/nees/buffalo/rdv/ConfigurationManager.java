@@ -201,6 +201,17 @@ public class ConfigurationManager {
       int port = Integer.parseInt(findChildNodeText(rbnbNodes, "port"));
       if (!rbnb.getRBNBHostName().equals(host) || rbnb.getRBNBPortNumber() != port) {
         rbnb.disconnect();
+        
+        int RETRY_LIMIT = 240;
+        int tries = 0;
+        while (tries++ < RETRY_LIMIT && rbnb.getState() != RBNBController.STATE_DISCONNECTED) {
+          try { Thread.sleep(250);  } catch (InterruptedException e) {}
+        }
+        
+        if (tries >= RETRY_LIMIT) {
+          return;
+        }
+        
         rbnb.setRBNBHostName(host);
         rbnb.setRBNBPortNumber(port);
       }
