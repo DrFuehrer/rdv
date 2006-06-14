@@ -86,6 +86,7 @@ import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
+import org.nees.buffalo.rdv.ui.ScrollablePopupMenu;
 import org.nees.buffalo.rdv.ui.ToolBarButton;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
@@ -504,7 +505,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     titleBar.setOpaque(false);
     titleBar.setLayout(new BorderLayout());
 
-    JPopupMenu popupMenu = new JPopupMenu();
+    JPopupMenu popupMenu = new ScrollablePopupMenu();
 
     final String title;
     if (description != null) {
