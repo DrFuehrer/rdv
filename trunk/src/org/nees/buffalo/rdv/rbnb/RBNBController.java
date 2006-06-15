@@ -796,7 +796,7 @@ public class RBNBController implements Player, MetadataListener {
 		
 		try {
 			getmap = sink.Fetch(timeout);
-		} catch (SAPIException e) {
+		} catch (Exception e) {
  			fireErrorMessage("Failed to load data from the server. Please try again later.");
  			e.printStackTrace();
       
