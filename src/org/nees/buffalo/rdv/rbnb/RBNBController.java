@@ -506,7 +506,7 @@ public class RBNBController implements Player, MetadataListener {
 		}
 		
 		double requestTimeScale;
-		if (isVideo(metaDataChannelTree, channelName)) {
+		if (isVideo(metaDataChannelTree, channelName) || channelManager.isChannelTabularOnly(channelName)) {
 			requestTimeScale = 0;
 		} else {
 			requestTimeScale = timeScale;
@@ -539,7 +539,7 @@ public class RBNBController implements Player, MetadataListener {
 		for (int i=0; i<allSubscribedChannels.length; i++) {
 			String channelName = allSubscribedChannels[i];
 			try {
-				if (isVideo(metaDataChannelTree, channelName)) {
+				if (isVideo(metaDataChannelTree, channelName)|| channelManager.isChannelTabularOnly(channelName)) {
 					imageChannels.Add(channelName);
 				} else {
 					otherChannels.Add(channelName);
