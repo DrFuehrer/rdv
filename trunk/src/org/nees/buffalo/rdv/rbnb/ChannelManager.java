@@ -33,9 +33,11 @@ package org.nees.buffalo.rdv.rbnb;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.datapanel.DigitalTabularDataPanel;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -124,6 +126,34 @@ public class ChannelManager {
 			return false;
 		}
 	}
+  
+  /**
+   * Indicates whether the channel is only subscribed to listeners of type
+   * <code>DigitalTabularDataPanel</code>.
+   * 
+   * @param channelName  the channel to check
+   * @return             true if only tabular data panels are subscribed, false
+   *                     if any other types listeners are subscribed to this
+   *                     channel
+   */
+  public boolean isChannelTabularOnly(String channelName) {
+    Iterator i = listenerChannelSubscriptions.keySet().iterator();
+    while (i.hasNext()) {
+      DataListener listener = (DataListener)i.next();
+      if (listener instanceof DigitalTabularDataPanel) {
+        continue;
+      }      
+      
+      ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
+      if (listenerChannelSubscription == null) {
+        continue;
+      } else if (listenerChannelSubscription.contains(channelName)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 	
 	public void postData(ChannelMap channelMap) {
 		DataListener listener;
