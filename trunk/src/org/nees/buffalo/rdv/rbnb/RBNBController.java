@@ -506,8 +506,10 @@ public class RBNBController implements Player, MetadataListener {
 		}
 		
 		double requestTimeScale;
-		if (isVideo(metaDataChannelTree, channelName) || channelManager.isChannelTabularOnly(channelName)) {
+		if (isVideo(metaDataChannelTree, channelName)) {
 			requestTimeScale = 0;
+    } else if (channelManager.isChannelTabularOnly(channelName)) {
+      requestTimeScale = 1;
 		} else {
 			requestTimeScale = timeScale;
 		}
@@ -534,13 +536,16 @@ public class RBNBController implements Player, MetadataListener {
 		String[] allSubscribedChannels = requestedChannels.GetChannelList();
 		
 		ChannelMap imageChannels = new ChannelMap();
+    ChannelMap tabularChannels = new ChannelMap();
 		ChannelMap otherChannels = new ChannelMap();
 		
 		for (int i=0; i<allSubscribedChannels.length; i++) {
 			String channelName = allSubscribedChannels[i];
 			try {
-				if (isVideo(metaDataChannelTree, channelName)|| channelManager.isChannelTabularOnly(channelName)) {
+				if (isVideo(metaDataChannelTree, channelName)) {
 					imageChannels.Add(channelName);
+        } else if (channelManager.isChannelTabularOnly(channelName)) {
+          tabularChannels.Add(channelName);
 				} else {
 					otherChannels.Add(channelName);
 				}
@@ -552,8 +557,7 @@ public class RBNBController implements Player, MetadataListener {
 		
 		if (imageChannels.NumberOfChannels() > 0) {
 			requestedChannels = imageChannels;
-			double smallTimeScale = 0;
-			if (!requestData(location-smallTimeScale, smallTimeScale)) {
+			if (!requestData(location, 0)) {
         fireErrorMessage("Failed to load data from the server. Please try again later.");
 				requestedChannels = realRequestedChannels;
         changeStateSafe(STATE_STOPPED);
@@ -562,6 +566,18 @@ public class RBNBController implements Player, MetadataListener {
 			updateDataMonitoring();
 			updateTimeListeners(location);
 		}
+    
+    if (tabularChannels.NumberOfChannels() > 0) {
+      requestedChannels = tabularChannels;
+      if (!requestData(location-1, 1)) {
+        fireErrorMessage("Failed to load data from the server. Please try again later.");
+        requestedChannels = realRequestedChannels;
+        changeStateSafe(STATE_STOPPED);
+        return;
+      }
+      updateDataMonitoring();
+      updateTimeListeners(location);
+    }    
 		
 		if (otherChannels.NumberOfChannels() > 0) {
 			requestedChannels = otherChannels;
