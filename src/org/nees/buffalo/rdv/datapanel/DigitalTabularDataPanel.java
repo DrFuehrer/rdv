@@ -71,11 +71,8 @@ import javax.swing.event.MenuListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableModel;
 
 import com.rbnb.sapi.ChannelMap;
 import org.apache.commons.logging.Log;
@@ -168,7 +165,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
   /**
    * The maximum number of channels allowed in this data panel;
    */
-  private static final int MAX_CHANNELS = 75;
+  private static final int MAX_CHANNELS_PER_COLUMN_GROUP = 40;
   
   /**
    * The percentage of warning value, when it is exceeded, yellow background should be shown
@@ -602,16 +599,16 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
   }
 
   public boolean addChannel(String channelName, int tableNum) {
-    if (channels.size() > MAX_CHANNELS) {
-      return false;
-    }
-    
     if (tableNum >= MAX_COLUMN_GROUP_COUNT) {
       return false;
     }
     
     if (tableNum >= columnGroupCount) {
       setNumberOfColumns(tableNum+1);
+    }
+    
+    if (tableModels.get(tableNum).getRowCount() >= MAX_CHANNELS_PER_COLUMN_GROUP) {
+      return false;
     }
     
     // add a blank row
