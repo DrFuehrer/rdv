@@ -53,7 +53,7 @@ import org.nees.buffalo.rdv.DataViewer;
 public class ScrollablePopupMenu extends JPopupMenu
 {
     /** How fast the scrolling will happen. */
-    private int scrollSpeed = 150;
+    private int scrollSpeed = 100;
     /** Handles the scrolling upwards. */
     private Timer timerUp;
     /** Handles the scrolling downwards. */
@@ -102,7 +102,7 @@ public class ScrollablePopupMenu extends JPopupMenu
  
         Dimension screenSize = Toolkit.getDefaultToolkit(  ).getScreenSize(  );
         screenHeight = screenSize.getHeight(  ) - 30; //room for toolbar
-        if (screenHeight > 300) screenHeight = 300;
+        if (screenHeight > 600) screenHeight = 600;
  
         createButtons(  );
         hideButtons(  );
