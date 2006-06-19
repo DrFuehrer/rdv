@@ -850,8 +850,8 @@ public class RBNBController implements Player, MetadataListener {
 			double newLocation = getLastTime(getmap);
       if (newLocation > location) {
         location = newLocation;
-        updateTimeListeners(location);
       }
+      updateTimeListeners(location);
 		}
 	}
 	

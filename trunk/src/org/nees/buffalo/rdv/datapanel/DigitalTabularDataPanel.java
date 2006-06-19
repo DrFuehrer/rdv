@@ -77,6 +77,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import com.rbnb.sapi.ChannelMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.rbnb.Player;
 
 /**
  * A Data Panel extension to display numeric data in a tabular form. Maximum and
@@ -696,7 +697,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
       }
     }
         
-    lastTimeDisplayed = time;
+    if (state != Player.STATE_MONITORING) {
+      lastTimeDisplayed = time;
+    }
   }
   
   private void postDataTabular(String channelName, int channelIndex) {
