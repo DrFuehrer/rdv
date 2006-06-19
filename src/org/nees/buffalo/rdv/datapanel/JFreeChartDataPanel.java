@@ -403,15 +403,17 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
       titleBar.setOpaque(false);
       
-      Iterator i = channels.iterator();
-      titleBar.add(new ChannelTitle((String)i.next()));
-      
-      JLabel label = new JLabel("vs.");
-      label.setBorder(new EmptyBorder(0, 0, 0, 5));
-      label.setForeground(SimpleInternalFrame.getTextForeground(true));
-      titleBar.add(label);
-      
-      titleBar.add(new ChannelTitle((String)i.next()));
+      if (showChannelsInTitle) {
+        Iterator i = channels.iterator();
+        titleBar.add(new ChannelTitle((String)i.next()));
+        
+        JLabel label = new JLabel("vs.");
+        label.setBorder(new EmptyBorder(0, 0, 0, 5));
+        label.setForeground(SimpleInternalFrame.getTextForeground(true));
+        titleBar.add(label);
+        
+        titleBar.add(new ChannelTitle((String)i.next()));
+      }
       
       return titleBar;
     } else {
