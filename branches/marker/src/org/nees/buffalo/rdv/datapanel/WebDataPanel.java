@@ -41,23 +41,33 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 
 import java.lang.reflect.Method;
+
+import javax.swing.event.HyperlinkListener;
+import javax.swing.event.HyperlinkEvent;
 
 /**
  * A data panel to display a webpage. This data panel does not use the RBNB
@@ -96,11 +106,44 @@ public class WebDataPanel extends AbstractDataPanel {
    * address bar.
    */
   private JCheckBoxMenuItem showAddressBarMenuItem; 
+
+  /**
+   * The menu item to reload the page
+   */
+  JMenuItem reloadMenuItem;
+  
+  /**
+   * The menu containing items for auto reloading
+   */
+  JMenu autoReloadMenu;  
+  
+  /**
+   * The menu item to control auto reolading
+   */
+  JCheckBoxMenuItem enableAutoReloadMenuItem;
+
+  /**
+   * Indicator for auto reloading
+   */
+  private boolean autoReloadEnabled;
+  
+  /**
+   * How often (in milliseconds) to reload the page
+   */
+  private long autoReloadTime;
+  
+  /**
+   * The timer that does the reloading
+   */
+  private Timer autoReloadTimer;
   
   /**
    * Creates the web data panel with no webpage displayed.
    */
   public WebDataPanel() {
+    autoReloadEnabled = false;
+    autoReloadTime = 60*1000;
+    
     // the main panel
     panel = new JPanel();
     panel.setLayout(new BorderLayout());
@@ -136,18 +179,28 @@ public class WebDataPanel extends AbstractDataPanel {
     // the component to render the HTML
     htmlRenderer = new JEditorPane();
     htmlRenderer.setEditable(false);
-    //htmlRenderer.setContentType("text/html");
-    htmlRenderer.setContentType("application/pdf");
+    htmlRenderer.setContentType("text/html");
     htmlRenderer.addPropertyChangeListener("page", new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent pce) {
         pageLoaded();
       }
     });
+    
+    // Listener for hypertext events for our htmlRenderer
+    htmlRenderer.addHyperlinkListener(new HyperlinkListener() {
+      public void hyperlinkUpdate(HyperlinkEvent evt) {
+    	  if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {  // a hyperlink is clicked on the page
+    		  URL url = evt.getURL();
+          
+          handleExternal(url);  // handleing hyperlink clicks on JEditPane open external browser 
+    	  }
+      }  
+    });
 
     // the scroll bar for the HTML renderer
     JScrollPane scrollPane = new JScrollPane(htmlRenderer,
         JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     scrollPane.setBorder(null);
     panel.add(scrollPane, BorderLayout.CENTER);
 
@@ -161,6 +214,90 @@ public class WebDataPanel extends AbstractDataPanel {
       }      
     });
     popupMenu.add(showAddressBarMenuItem);
+    
+    popupMenu.addSeparator();
+    
+    reloadMenuItem = new JMenuItem("Reload");
+    reloadMenuItem.setEnabled(false);
+    reloadMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        loadPage();
+      }      
+    });
+    popupMenu.add(reloadMenuItem);
+    
+    autoReloadMenu = new JMenu("Reload every");
+    autoReloadMenu.setEnabled(false);
+    
+    enableAutoReloadMenuItem = new JCheckBoxMenuItem("Enable");
+    enableAutoReloadMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        if (enableAutoReloadMenuItem.isSelected()) {
+          startAutoReload();
+        } else {
+          stopAutoReload();
+        }
+      }
+    });
+    autoReloadMenu.add(enableAutoReloadMenuItem);
+    
+    autoReloadMenu.addSeparator();
+    
+    JRadioButtonMenuItem reloadTimeMenuItem;
+    ButtonGroup reloadTimeButtonGroup = new ButtonGroup();
+    
+    reloadTimeMenuItem = new JRadioButtonMenuItem("15 seconds");
+    reloadTimeMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setAutoReloadTime(15*1000);
+        startAutoReload();
+      }      
+    });
+    autoReloadMenu.add(reloadTimeMenuItem);
+    reloadTimeButtonGroup.add(reloadTimeMenuItem);
+    
+    reloadTimeMenuItem = new JRadioButtonMenuItem("30 seconds");
+    reloadTimeMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setAutoReloadTime(30*1000);
+        startAutoReload();
+      }      
+    });    
+    autoReloadMenu.add(reloadTimeMenuItem);
+    reloadTimeButtonGroup.add(reloadTimeMenuItem);
+
+    reloadTimeMenuItem = new JRadioButtonMenuItem("1 minute");
+    reloadTimeMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setAutoReloadTime(60*1000);
+        startAutoReload();
+      }      
+    });    
+    reloadTimeMenuItem.setSelected(true);
+    autoReloadMenu.add(reloadTimeMenuItem);
+    reloadTimeButtonGroup.add(reloadTimeMenuItem);
+
+    reloadTimeMenuItem = new JRadioButtonMenuItem("5 minutes");
+    reloadTimeMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setAutoReloadTime(5*60*1000);
+        startAutoReload();
+      }      
+    });    
+    autoReloadMenu.add(reloadTimeMenuItem);
+    reloadTimeButtonGroup.add(reloadTimeMenuItem);
+
+    reloadTimeMenuItem = new JRadioButtonMenuItem("15 minutes");
+    reloadTimeMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setAutoReloadTime(15*60*1000);
+        startAutoReload();
+      }      
+    });    
+    autoReloadMenu.add(reloadTimeMenuItem);
+    reloadTimeButtonGroup.add(reloadTimeMenuItem);
+    
+    popupMenu.add(autoReloadMenu);
 
     // set component popup and mouselistener to trigger it
     panel.setComponentPopupMenu(popupMenu);
@@ -185,6 +322,80 @@ public class WebDataPanel extends AbstractDataPanel {
   }
   
   /**
+   * Set the amount of time between relaoding when auto reload is on.
+   * 
+   * @param time  the tiem between reloading in milliseconds
+   */
+  private void setAutoReloadTime(long time) {
+    if (autoReloadTime != time) {
+      autoReloadTime = time;
+  
+      if (autoReloadTime == 15*1000) {
+        autoReloadMenu.getItem(2).setSelected(true);
+      } else if (autoReloadTime == 30*1000) {
+        autoReloadMenu.getItem(3).setSelected(true);
+      } else if (autoReloadTime == 60*1000) {
+        autoReloadMenu.getItem(4).setSelected(true);
+      } else if (autoReloadTime == 5*60*1000) {
+        autoReloadMenu.getItem(5).setSelected(true);
+      } else if (autoReloadTime == 15*60*1000) {
+        autoReloadMenu.getItem(6).setSelected(true);
+      }
+      
+      properties.setProperty("autoReloadTime", Long.toString(autoReloadTime));
+      
+      if (autoReloadEnabled) {
+        startAutoReload();
+      }
+    }        
+  }
+  
+  /**
+   * Start the automatic reloading of the current page.
+   */
+  private void startAutoReload() {
+    autoReloadEnabled = true;
+    
+    if (autoReloadTimer != null) {
+      autoReloadTimer.cancel();
+      autoReloadTimer = null;
+    }    
+    
+    enableAutoReloadMenuItem.setSelected(true);
+    
+    TimerTask reloadTimerTask = new TimerTask() {
+      public void run() {
+        SwingUtilities.invokeLater(new Runnable() {
+          public void run() {
+            loadPage();
+          }
+        });
+      }
+    };
+
+    autoReloadTimer = new Timer();
+    autoReloadTimer.scheduleAtFixedRate(reloadTimerTask, autoReloadTime, autoReloadTime);
+    
+    properties.setProperty("autoReload", "true");    
+  }
+
+  /**
+   * Stop the automatic reloading of the current page.
+   */  
+  private void stopAutoReload() {
+    autoReloadEnabled = false;
+
+    if (autoReloadTimer != null) {
+      autoReloadTimer.cancel();
+      autoReloadTimer = null;
+    }
+    
+    enableAutoReloadMenuItem.setSelected(false);
+    
+    properties.remove("autoReload");
+  }
+  
+  /**
    * Loads the webpage URL specified in the address text field.
    */
   private void loadPage() {
@@ -202,58 +413,59 @@ public class WebDataPanel extends AbstractDataPanel {
     
      // clear description
     setDescription(null);
+    
+    // indicate to open link via external browser
+    boolean openExternal = false;
         
     try {
-      // make sure the protocol is http
-//      if (!location.startsWith("http://")) {
-//        if (location.matches("^[a-zA-Z]+://.*")) {
-//           throw new MalformedURLException("We don't support this protocol");
-//        } else {
-//          // assume http if no protocol is specified
-//          location = "http://" + location;
-//        }
-//      }      
       
-//      URL url = new URL(location);
-//      htmlRenderer.setPage(url);
-//      htmlRenderer.requestFocusInWindow();
-    
-    	// ======== Note: Below code is added in place of above to experiment to ensure whether it addresses the client's need.
-    	// The html data panel is no longer rendering the content, but instead a call to OS invokes the browser to handle the task
-    	// as the browser also takes care of special cases of file handling and to associate with the correct program to open! 
-    	// added by Moji========
-    	
-    	String osName = System.getProperty("os.name");
-    	if (osName.startsWith("Mac OS")) {
-    		Class fileMgr = Class.forName("com.apple.eio.FileManager");
-    		Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
-    		openURL.invoke(null, new Object[] {location});
-    	} else if (osName.startsWith("Windows"))
-    		Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + location);
-    	else { //assume Unix or Linux
-    		String[] browsers = { "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
-    		String browser = null;
-    		for (int count = 0; count < browsers.length && browser == null; count++)
-    			if (Runtime.getRuntime().exec( new String[] {"which", browsers[count]}).waitFor() == 0)
-    				browser = browsers[count];
-    		if (browser == null)
-    			throw new Exception("Could not find web browser");
-    		else Runtime.getRuntime().exec(new String[] {browser, location});
-    	}
-    	
+      if (!location.startsWith("http://")) {
+        if (location.matches("^[a-zA-Z]+://.*")) { // mainly: https://
+          openExternal = true;
+//           throw new MalformedURLException("We don't support this protocol");
+        } else {
+          // assume http if no protocol is specified
+          location = "http://" + location;
+        }
+      }      
+
+      if (!openExternal)
+        openExternal = isLinkSpecial(location);
+        
+      URL url = new URL(location);
+      if (openExternal) {
+        handleExternal(url);
+  
+      } else {
+  
+          htmlRenderer.setPage(url);
+   	      htmlRenderer.requestFocusInWindow();
+      }
+ 
     } 
-    
-    catch (IOException e) {
+    catch (Exception e) {
       locationField.selectAll();
       JOptionPane.showMessageDialog(null,
           "Failed to load page: " + e.getMessage() + ".",
-          "Web Data Panel Warning", JOptionPane.WARNING_MESSAGE);
+          "Error loading page", JOptionPane.ERROR_MESSAGE);
       
-    } catch (Exception ex) {
-        JOptionPane.showMessageDialog(null,
-                "Error: " + ex.getMessage(),
-                "Web Data Panel Error", JOptionPane.ERROR_MESSAGE);
+      stopAutoReload();
+      reloadMenuItem.setEnabled(false);
+      autoReloadMenu.setEnabled(false);
     }
+  }
+  
+  private void handleExternal(URL url) {
+
+    int i = JOptionPane.showConfirmDialog(null,
+        "This Link requires an external browser!\n"
+        + "Proceed with launching a new window?",
+        "Please Confirm",
+        JOptionPane.YES_NO_CANCEL_OPTION);
+    
+    if (i == 0) // (constant) YES_OPTION selected
+      loadExternalPage(url);
+    
   }
   
   /**
@@ -265,6 +477,9 @@ public class WebDataPanel extends AbstractDataPanel {
     locationField.setText(location);
     
     setDescription(getTitle());
+    
+    reloadMenuItem.setEnabled(true);
+    autoReloadMenu.setEnabled(true);
   }
   
   public void openPanel(final DataPanelManager dataPanelManager) {
@@ -274,6 +489,18 @@ public class WebDataPanel extends AbstractDataPanel {
     component.setPreferredSize(new Dimension(800,600));
     
     locationField.requestFocusInWindow();
+  }
+  
+  /**
+   * Cleanup up the data panel.
+   */
+  public void closePanel() {
+    super.closePanel();
+    
+    if (autoReloadTimer != null) {
+      autoReloadTimer.cancel();
+      autoReloadTimer = null;
+    }    
   }
 
   /**
@@ -313,14 +540,67 @@ public class WebDataPanel extends AbstractDataPanel {
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
     
-    if (key != null) {
-      if (key.equals("location")) {
-        loadPage(value);  
-      } else if (key.equals("showAddressBar")) {
-        showAddressBar(Boolean.parseBoolean(value));
-      }
+    if (key == null) {
+      return;
+    }
+     
+    if (key.equals("location")) {
+      loadPage(value);  
+    } else if (key.equals("showAddressBar")) {
+      showAddressBar(Boolean.parseBoolean(value));
+    } else if (key.equals("autoReload")) {
+      startAutoReload();
+    } else if (key.equals("autoReloadTime")) {
+      setAutoReloadTime(Long.parseLong(value));
     }
   }
+  
+  private void loadExternalPage(URL url) {
+	  
+  	// This method invokes the client's browser passing the url as argument for the target to open
+    try { 
+    
+	  	String osName = System.getProperty("os.name");
+	  	if (osName.startsWith("Mac OS")) {
+	  		Class fileMgr = Class.forName("com.apple.eio.FileManager");
+	  		Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
+	  		openURL.invoke(null, new Object[] {url});
+	  	} else if (osName.startsWith("Windows"))
+	  		Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+	  	else { //assume Unix or Linux
+	  		String[] browsers = { "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
+	  		String browser = null;
+	  		for (int count = 0; count < browsers.length && browser == null; count++)
+	  			if (Runtime.getRuntime().exec( new String[] {"which", browsers[count]}).waitFor() == 0)
+	  				browser = browsers[count];
+	  		if (browser == null)
+	  			throw new Exception("Could not find web browser");
+	  		else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
+	  	}
+    } catch(Exception ex) {
+    	JOptionPane.showMessageDialog(null,
+                "Error: " + ex.getMessage(),
+                "Web Data Panel Error", JOptionPane.ERROR_MESSAGE);
+    }
+  }
+
+  // a simple url parser to decide whether the link is a pdf or an MS document
+  private boolean isLinkSpecial(String link) {
+
+	  if (link == null) return false;
+	  
+	  if (link.charAt(link.length() - 4) == '.') {
+		  String eXtension = link.substring(link.length() - 3); // extension of url if any 
+		  if (("pdf").equalsIgnoreCase(eXtension)               // file extensions that need special handling  
+					|| ("doc").equalsIgnoreCase(eXtension)
+					|| ("xls").equalsIgnoreCase(eXtension)
+          || ("xml").equalsIgnoreCase(eXtension))
+			  return true;		  
+	  }
+
+	  return false;
+  }
+  
   
   public String toString() {
     return "Web Data Panel";

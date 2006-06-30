@@ -87,10 +87,13 @@ import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 
+import javax.swing.TransferHandler;
+import java.awt.datatransfer.Transferable;
+
 /**
  * @author Jason P. Hanley
  */
-public class ChannelListPanel extends JPanel implements TreeModel, TreeSelectionListener, DragGestureListener, DragSourceListener, MouseListener, MetadataListener, StateListener {
+public class ChannelListPanel extends JPanel implements TreeModel, TreeSelectionListener, DragSourceListener, MouseListener, MetadataListener, StateListener, DragGestureListener {
 
 	static Log log = LogFactory.getLog(ChannelListPanel.class.getName());
 
@@ -165,8 +168,51 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     JScrollPane treeView = new JScrollPane(tree);
     treeView.setBorder(null);
     
+    
+    tree.setTransferHandler(new MultiTransferHandler());
+    
+    tree.setDragEnabled(true);
+
     return treeView;
   }
+  
+  
+  private class MultiTransferHandler extends TransferHandler {
+	  
+	  public MultiTransferHandler() { }
+	  
+	  public int getSourceActions(JComponent c) {
+		  return DnDConstants.ACTION_LINK;
+	  }
+	  
+	protected Transferable createTransferable(JComponent c) {
+
+		String selectedChannels = "";
+
+	    TreePath[] selectedPaths = tree.getSelectionPaths();
+	    if (selectedPaths != null) {
+	      for (int i=0; i<selectedPaths.length; i++) {
+	        if (selectedPaths[i].getLastPathComponent() != root) {
+	          ChannelTree.Node selectedNode = (ChannelTree.Node)selectedPaths[i].getLastPathComponent();
+	          NodeTypeEnum type = selectedNode.getType();
+	          if (type == ChannelTree.SOURCE) {
+	            selectedChannels = "";  //TODO: implement
+	          } else if (type == ChannelTree.CHANNEL) {
+	            selectedChannels += selectedNode.getFullName() + ",";
+	          }
+			}	
+
+	      }
+
+	    }
+	    if (selectedChannels.length() > 0)
+	    	selectedChannels = selectedChannels.substring(0, selectedChannels.length() -1);
+
+		return new StringSelection(selectedChannels);			     
+	}
+
+  }
+  
   
   private JToolBar createToolBar() {
     JToolBar channelToolBar = new JToolBar();
@@ -209,7 +255,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
  		ChannelTree oldChannelTree = ctree;
  		ctree = newChannelTree;
  		
- 		if (!root.equals(rbnb.getRBNBConnectionString())) {
+    if (newChannelTree == null) {
+      clearChannelList();
+      fireNoChannelsSelected();
+    } else if (!root.equals(rbnb.getRBNBConnectionString())) {
  				root = rbnb.getRBNBConnectionString();
  				fireRootChanged();
  				fireNoChannelsSelected();
@@ -464,17 +513,24 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	}
 	
 	public void dragGestureRecognized(DragGestureEvent e) {
-		Point p = e.getDragOrigin();
-		TreePath treePath = tree.getPathForLocation((int)p.getX(), (int)p.getY());
-		if (treePath != null) {
-			Object o = treePath.getLastPathComponent();
-			if (o != root) {
-				ChannelTree.Node node = (ChannelTree.Node)o;
-				if (node.getType() == ChannelTree.CHANNEL) {
-					String channelName = node.getFullName();
-					e.startDrag(DragSource.DefaultLinkDrop, new StringSelection(channelName), this);
+		
+		try {
+			Point p = e.getDragOrigin();
+			TreePath treePath = tree.getPathForLocation((int)p.getX(), (int)p.getY());
+			if (treePath != null) {
+				Object o = treePath.getLastPathComponent();
+				if (o != root) {
+					ChannelTree.Node node = (ChannelTree.Node)o;
+					if (node.getType() == ChannelTree.CHANNEL) {
+						String channelName = node.getFullName();
+						e.startDrag(DragSource.DefaultLinkDrop, new StringSelection(channelName), this);
+					}
 				}
 			}
+			
+		} catch (Exception ex) { // Ignore
+			
+			log.error(ex.getMessage());
 		}
 	}
 	
@@ -513,17 +569,23 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
         ChannelTree.Node node = (ChannelTree.Node)o;
         if (node.getType() == ChannelTree.CHANNEL) {
           String channelName = node.getFullName();
-          dataPanelManager.viewChannel(channelName);
+          viewChannel(channelName);
         }
       }
     }    
   }
   
   private void handlePopup(MouseEvent e) {
+    
+    JPopupMenu popup = null;
+    
     TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
-    tree.setSelectionPath(treePath);
+        
     if (treePath != null) {
-      JPopupMenu popup = null;
+      // select only the node under the mouse if it is not already selected
+      if (!tree.isPathSelected(treePath)) {
+        tree.setSelectionPath(treePath);
+      }
       
       Object o = treePath.getLastPathComponent();
       if (o == root) {
@@ -541,7 +603,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       if (popup != null && popup.getComponentCount() > 0) {
         popup.show(tree, e.getX(), e.getY());
       }
-    }        
+    } 
   }
   
   private JPopupMenu getRootPopup() {
@@ -583,7 +645,7 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       menuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ae) {
           List channels = RBNBUtilities.getSortedChildren(source, showHiddenChannels);
-          dataPanelManager.viewChannels(channels, extension);
+          viewChannels(channels, extension);
         }                
       });
       popup.add(menuItem);
@@ -627,16 +689,35 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
   private JPopupMenu getChannelPopup(ChannelTree.Node channel) {
     JPopupMenu popup = new JPopupMenu();
     JMenuItem menuItem;
-    
+
+    // Below code added so that we call viewChannels() and pass a List of selected channels
+    final List<ChannelTree.Node> selectedChannels = new ArrayList<ChannelTree.Node>();   
+    ChannelTree.Node selectedNode;
+ 
+    TreePath[] selectedNodes = tree.getSelectionPaths();
+    if (selectedNodes != null) {
+      for (int i=0; i<selectedNodes.length; i++) {
+        if (selectedNodes[i].getLastPathComponent() != root) {
+          selectedNode = (ChannelTree.Node)selectedNodes[i].getLastPathComponent();
+          NodeTypeEnum type = selectedNode.getType();
+          if (type == ChannelTree.CHANNEL) {
+            selectedChannels.add(selectedNode);
+          }
+        }
+      }
+    }
+
+        
     final String channelName = channel.getFullName();
-    
+
     ArrayList extensions = dataPanelManager.getExtensions(channelName);
     final Extension defaultExtension = dataPanelManager.getDefaultExtension(channelName);
     if (defaultExtension != null) {
       menuItem = new JMenuItem("View with " + defaultExtension.getName());
       menuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ae) {
-          dataPanelManager.viewChannel(channelName, defaultExtension);
+          viewChannels(selectedChannels, defaultExtension);
+//          viewChannel (channelName, defaultExtension);
         }                
       });            
       popup.add(menuItem);
@@ -650,7 +731,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
             menuItem = new JMenuItem("View with " + extension.getName());
             menuItem.addActionListener(new ActionListener() {
               public void actionPerformed(ActionEvent ae) {
-                dataPanelManager.viewChannel(channelName, extension);
+              
+//                viewChannel(channelName, extension);
+                viewChannels(selectedChannels, extension);
               }                
             });
             popup.add(menuItem);
@@ -672,12 +755,15 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
       popup.addSeparator();
     }
     
-    menuItem = new JMenuItem("Export channel...", DataViewer.getIcon("icons/export.gif"));
+    String plural = selectedChannels.size()==1?"":"s";
+    menuItem = new JMenuItem("Export channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        ArrayList channel = new ArrayList();
-        channel.add(channelName);
-        frame.showExportDialog(channel);
+        List selectedChannelsAsString = new ArrayList();
+        for (ChannelTree.Node node : selectedChannels) {
+          selectedChannelsAsString.add(node.getFullName());
+        }
+        frame.showExportDialog(selectedChannelsAsString);
       }
     });
     popup.add(menuItem);
@@ -685,8 +771,35 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     return popup;    
   }
   
+  private void viewChannel(final String channelName) {
+    log.debug("viewChannel() - start.. channleName: " + channelName);
+    new Thread() {
+      public void run() {
+        dataPanelManager.viewChannel(channelName);
+      }
+    }.start();
+  }
+  
+  private void viewChannel(final String channelName, final Extension extension) {
+    log.debug("viewChannel() - start.. channleName: " + channelName);
+    new Thread() {
+      public void run() {
+        dataPanelManager.viewChannel(channelName, extension);
+      }
+    }.start();    
+  }
+  
+  private void viewChannels(final List channels, final Extension extension) {
+    new Thread() {
+      public void run() {
+        dataPanelManager.viewChannels(channels, extension);
+      }
+    }.start();
+  }
+  
   private List getExtensionsForSource(ChannelTree.Node source) {
     List extensions = new ArrayList();
+    
     List children = RBNBUtilities.getSortedChildren(source, showHiddenChannels);
     Iterator it = children.iterator();
     while (it.hasNext()) {
@@ -748,11 +861,9 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 
 	public void postState(int newState, int oldState) {
 		if (newState == Player.STATE_DISCONNECTED || newState == Player.STATE_EXITING) {
-			clearChannelList();
-			fireNoChannelsSelected();
-      metadataUpdateButton.setEnabled(false);
+			metadataUpdateButton.setEnabled(false);
 		} else {
-      metadataUpdateButton.setEnabled(true);
-    }
+			metadataUpdateButton.setEnabled(true);
+		}
 	}
 }

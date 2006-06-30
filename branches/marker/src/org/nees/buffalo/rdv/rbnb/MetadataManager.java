@@ -182,14 +182,18 @@ public class MetadataManager {
    */
   private void updateMetadataThread(Sink metadataSink) {
     while (update) {
-      updateMetadata(metadataSink);
-
       synchronized(sleeping) {
         sleeping = true;
         try { Thread.sleep(updateRate); } catch (InterruptedException e) {}
         sleeping = false;
       }
+
+      if (update) {
+        updateMetadata(metadataSink);
+      }
     }
+    
+    fireMetadataUpdated(null);
   }
   
   /**
@@ -201,12 +205,11 @@ public class MetadataManager {
   private synchronized void updateMetadata(Sink metadataSink) {
     log.info("Updating channel listing.");    
     
-    //clear channel metadata objects
-    channels.clear();
-
     //create metadata channel tree
     try {
-      ctree = getChannelTree(metadataSink);
+      HashMap newChannels = new HashMap();
+      ctree = getChannelTree(metadataSink, newChannels);
+      channels = newChannels;
     } catch (SAPIException e) {
       log.error("Failed to update metadata: " + e.getMessage() + ".");
 
@@ -221,9 +224,6 @@ public class MetadataManager {
     	  }
       }     
       
-      channels.clear();
-      ctree = null;
-      
       return;
     }
     
@@ -235,25 +235,29 @@ public class MetadataManager {
   }
 
   /**
-   * Get the metadata channel tree for the whole server.
+   * Get the metadata channel tree for the whole server. This will populate the
+   * channel map with channel objects derived from the metadata.
    * 
    * @param sink the sink connection to the RBNB server
+   * @param channels the map to populate with channel objects
    * @return the metadata channel tree
    * @throws SAPIException if a server error occurs
    */
-  private ChannelTree getChannelTree(Sink sink) throws SAPIException {
-    return getChannelTree(sink, null);
+  private ChannelTree getChannelTree(Sink sink, HashMap channels) throws SAPIException {
+    return getChannelTree(sink, null, channels);
   }
 
   /**
-   * Get the metadata channel tree for the given <code>path</code>.
+   * Get the metadata channel tree for the given <code>path</code>. This will
+   * populate the channel map with channel objects derived from the metadata.
    * 
    * @param sink sink the sink connection to the RBNB server
    * @param path the path for the desired metadata
+   * @param channels the map to populate with channel objects
    * @return the metadata channel tree for the given path
    * @throws SAPIException if a server error occurs
    */
-  private ChannelTree getChannelTree(Sink sink, String path) throws SAPIException {
+  private ChannelTree getChannelTree(Sink sink, String path, HashMap channels) throws SAPIException {
     ChannelTree ctree = ChannelTree.EMPTY_TREE;
 
     ChannelMap cmap = new ChannelMap();
@@ -283,7 +287,7 @@ public class MetadataManager {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
       if (node.getType() == ChannelTree.SERVER &&
          (path == null || !path.startsWith(node.getFullName()))) {
-        ChannelTree childChannelTree = getChannelTree(sink, node.getFullName());
+        ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels);
         ctree = childChannelTree.merge(ctree);
       }
     }
@@ -296,9 +300,13 @@ public class MetadataManager {
    * 
    * @return the metadata channel tree.
    */
-  public synchronized ChannelTree getMetadataChannelTree() {
+  public ChannelTree getMetadataChannelTree() {
     if (ctree == null) {
-      try { wait(); } catch (InterruptedException e) {}
+      synchronized (this) {
+        do {
+          try { wait(250); } catch (InterruptedException e) {}
+        } while (ctree == null);
+      }
     }
     
     return ctree;
@@ -311,9 +319,13 @@ public class MetadataManager {
    * @return the channel object for the channel name, or null if the channel is
    *         not found
    */
-  public synchronized Channel getChannel(String channelName) {
+  public Channel getChannel(String channelName) {
     if (ctree == null) {
-      try { wait(); } catch (InterruptedException e) {}
+      synchronized (this) {
+        do {
+          try { wait(250); } catch (InterruptedException e) {}
+        } while (ctree == null);
+      }
     }
     
     return (Channel)channels.get(channelName);

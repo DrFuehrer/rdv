@@ -22,19 +22,12 @@
 		</mimeTypes>
 	</extension>	
 	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.TabularDataPanel</id>
+		<id>org.nees.buffalo.rdv.datapanel.DigitalTabularDataPanel</id>
 		<name>Tabular Data Panel</name>
 		<mimeTypes>
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>		
 	</extension>
-	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.DigitalTabularDataPanel</id>
-		<name>Digital Data Panel</name>
-		<mimeTypes>
-			<mimeType>application/octet-stream</mimeType>
-		</mimeTypes>		
-	</extension>		
 	<extension>
 		<id>org.nees.buffalo.rdv.datapanel.StringDataPanel</id>
 		<name>Text Data Panel</name>
@@ -42,13 +35,15 @@
 			<mimeType>text/plain</mimeType>
 		</mimeTypes>
 	</extension>
+<!--	
 	<extension>
 		<id>org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel</id>
 		<name>Spectrum Analyzer Data Panel</name>
 		<mimeTypes>
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>
-	</extension>	
+	</extension>
+-->	
 	<!--extension>
 		<id>org.nees.buffalo.rdv.datapanel.AudioDataPanel</id>
 		<name>Audio Data Panel</name>

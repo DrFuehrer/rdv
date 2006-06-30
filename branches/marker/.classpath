@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.13.jar"/>
 	<classpathentry kind="lib" path="lib/looks-2.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/GridAuth.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

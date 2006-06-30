@@ -216,8 +216,7 @@ public class AudioDataPanel extends AbstractDataPanel implements PlaybackRateLis
     
     int state = rbnbController.getState();
     if (!(state == RBNBController.STATE_PLAYING ||
-        state == RBNBController.STATE_MONITORING ||
-        state == RBNBController.STATE_REALTIME)) {
+        state == RBNBController.STATE_MONITORING)) {
       return;
     }
     

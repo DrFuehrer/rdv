@@ -29,6 +29,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 public class JumpDateTimeDialog extends JDialog {
 
@@ -47,6 +48,11 @@ public class JumpDateTimeDialog extends JDialog {
 	
 	JButton jumpButton;
 	JButton cancelButton;
+	
+	JLabel dateLabelExample;
+	JLabel timeLabelExample;
+	
+	JLabel errorLabel;
 	
 	/** Format to use to display the date property. */
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy");
@@ -93,43 +99,61 @@ public class JumpDateTimeDialog extends JDialog {
 		container.add(headerLabel, c);
 		
 		c.gridwidth = 1;
-		
-		dateLable = new JLabel("Date:");
-		c.fill = GridBagConstraints.NONE;
+
+		errorLabel = new JLabel();
 		c.weightx = 0;
 		c.gridx = 0;
 		c.gridy = 1;
-		c.anchor = GridBagConstraints.NORTHEAST;
+		c.gridwidth = 2;
+		container.add(errorLabel, c);
+
+		
+		dateLabelExample = new JLabel("Date Format: mm-dd-yyyy");
+		dateLabelExample.setForeground(Color.BLUE);
+		dateLabelExample.setOpaque(true);
+		c.weightx = 0;
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 2;
 		c.insets = new Insets(10,10,10,5);
+		container.add(dateLabelExample, c);
+
+		dateLable = new JLabel("Date:");
+		c.weightx = 0;
+		c.gridx = 0;
+		c.gridy = 3;
 		container.add(dateLable, c);
 		
-		dateTextField = new JTextField(DATE_FORMAT.format(new Date()), 25);
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
+		dateTextField = new JTextField(DATE_FORMAT.format(new Date()), 10);
+		c.weightx = 0;
 		c.gridx = 1;
-		c.gridy = 1;
-		c.anchor = GridBagConstraints.NORTHWEST;
-		c.insets = new Insets(10,0,10,10);
+		c.gridy = 3;
 		container.add(dateTextField, c);
 		
-		timeLabel = new JLabel("Time:");
-		c.fill = GridBagConstraints.NONE;
+		timeLabelExample = new JLabel("Time Format: hh:mm:ss PDT(EDT or GMT)");
+		timeLabelExample.setForeground(Color.BLUE);
+		timeLabelExample.setOpaque(true);
 		c.weightx = 0;
 		c.gridx = 0;
-		c.gridy = 2;
-		c.anchor = GridBagConstraints.NORTHEAST;
-		c.insets = new Insets(0,10,10,5);
+		c.gridy = 4;
+		c.gridwidth = 2;
+		container.add(timeLabelExample, c);
+		
+		timeLabel = new JLabel("Time:");
+		c.weightx = 0;
+		c.gridx = 0;
+		c.gridy = 5;
+		c.gridwidth = 1;
 		container.add(timeLabel, c);
 
-		timeTextField = new JTextField(TIME_FORMAT.format(new Date()), 25);
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
+		timeTextField = new JTextField(TIME_FORMAT.format(new Date()), 10);
+		c.weightx = 0;
 		c.gridx = 1;
-		c.gridy = 2;
-		c.anchor = GridBagConstraints.NORTHWEST;
-		c.insets = new Insets(0,0,10,10);
+		c.gridy = 5;
+		c.gridwidth = 1;
 		container.add(timeTextField, c);
 		
+
 		JPanel buttonPanel = new JPanel();
     
 	    Action jumpLocationAction = new AbstractAction() {
@@ -157,7 +181,7 @@ public class JumpDateTimeDialog extends JDialog {
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 6;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.LINE_END;
 		c.insets = new Insets(0,10,10,5);
@@ -184,27 +208,40 @@ public class JumpDateTimeDialog extends JDialog {
 		Date dateLocation;
 		
 		try {
+			SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+			df.setLenient(false);  // this is important!
 			
-			strDateLocation = dateTextField.getText();
-			strTimeLocation = timeTextField.getText();
-			dateAndTime = strDateLocation + " " + strTimeLocation;
-			DateFormat dateTimeFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss z");  //create a formatter to append time to date with space in between
-			dateLocation = dateTimeFormat.parse(dateAndTime);
+			strDateLocation = dateTextField.getText().trim();
+			dateLocation = df.parse(strDateLocation);				
 
+			df = new SimpleDateFormat("HH:mm:ss z");
+			df.setLenient(false);
+			
+			strTimeLocation = timeTextField.getText().trim();
+			dateLocation = df.parse(strTimeLocation);	
+
+			df = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss z");  //create a formatter to append time to date with space in between
+			dateAndTime = strDateLocation + " " + strTimeLocation;
+
+			dateLocation = df.parse(dateAndTime);
 			double secondsLocation = dateLocation.getTime() / 1000;  // convert to seconds
 			
-//			System.out.println("Date Time in seconds: " + secondsLocation);
 			rbnb.setLocation(secondsLocation);
 			dispose();
 			
 		} catch (Exception e) {
-			System.out.println("Exception: " + e.getMessage());
+			errorLabel.setForeground(Color.RED);
+			errorLabel.setText("Error: invalid date. Please try again!");
+
 			timeLabel.setForeground(Color.RED);
 			timeTextField.setText(TIME_FORMAT.format(new Date()));
-			timeTextField.requestFocusInWindow();
 			
-			return;
+			dateLable.setForeground(Color.RED);
+			dateTextField.setText(DATE_FORMAT.format(new Date()));
+			dateTextField.requestFocusInWindow();
 		}
+
+			
 	}
 	
 	private void cancel() {

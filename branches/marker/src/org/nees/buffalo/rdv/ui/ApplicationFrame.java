@@ -104,6 +104,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	
  	private BusyDialog busyDialog;
  	private LoadingDialog loadingDialog;
+ 	private LoginDialog loginDialog;
 	
 	private JFrame frame;
 	private GridBagConstraints c;
@@ -128,6 +129,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action fileAction;
  	private Action connectAction;
  	private Action disconnectAction;
+ 	private Action loginAction;
+ 	private Action logoutAction;
   private Action loadAction;
   private Action saveAction;
  	private Action importAction;
@@ -298,7 +301,23 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 /////////////////////////////////////////////////////////////////////////////LJM
  			}			
  		};
-    
+
+ 		loginAction = new DataViewerAction("Login NEES", "Login as a NEES user") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				if (loginDialog == null) {
+ 					loginDialog = new LoginDialog(frame, dataPanelManager);
+ 				} else {
+ 					loginDialog.setVisible(true);
+ 				}			
+ 			}			
+ 		};
+ 		
+ 		logoutAction = new DataViewerAction("Logout NEES", "Logout as a NEES user") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				dataPanelManager.setAuth(null);
+ 			}			
+ 		};
+ 		 		
     loadAction = new DataViewerAction("Load Setup", "Load data viewer setup from file") {
       public void actionPerformed(ActionEvent ae) {
         JFileChooser chooser = new JFileChooser();
@@ -360,7 +379,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		controlAction = new DataViewerAction("Control", "Control Menu", KeyEvent.VK_C);
  
- 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "icons/rt.gif") {
+ 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK), "icons/rt.gif") {
  			public void actionPerformed(ActionEvent ae) {
 //////////////////////////////////////////////////////////////////////////// LJM 				
         // DOTOO refetch markers and repaint the panel
@@ -370,38 +389,38 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  		
- 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "icons/play.gif") {
+ 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.play();
  			}			
  		};
  
- 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_U, 0), "icons/play.gif") {
+ 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.pause();
  			}			
  		};
  
- 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_B, 0), "icons/begin.gif") {
+ 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
 				controlPanel.setLocationBegin();
  			}			
  		};
  
- 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, 0), "icons/end.gif") {
+ 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK), "icons/end.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				controlPanel.setLocationEnd();
  			}			
  		};
 
- 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK), "icons/begin.gif") {
+ 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				
- 				if (jumpDateTimeDialog == null) {
+// 				if (jumpDateTimeDialog == null) {
  					jumpDateTimeDialog = new JumpDateTimeDialog(frame, rbnb, dataPanelManager);
- 				} else {
- 					jumpDateTimeDialog.setVisible(true);
- 				}	
+// 				} else {
+// 					jumpDateTimeDialog.setVisible(true);
+// 				}	
  			}			
  		};
  
@@ -542,7 +561,15 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem = new JMenuItem(disconnectAction);
  		fileMenu.add(menuItem);
  		
- 		fileMenu.addSeparator();	
+ 		fileMenu.addSeparator();
+ 		
+ 		menuItem = new JMenuItem(loginAction);
+ 		fileMenu.add(menuItem);
+ 		
+ 		menuItem = new JMenuItem(logoutAction);
+ 		fileMenu.add(menuItem);
+ 		
+ 		fileMenu.addSeparator();
     
     menuItem = new JMenuItem(loadAction);
     fileMenu.add(menuItem);
@@ -880,7 +907,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
 
 	public void postStatus(String statusMessage) {
-		JOptionPane.showMessageDialog(this, statusMessage, "Error", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(this, statusMessage, "Status", JOptionPane.INFORMATION_MESSAGE);
 	}
   
   public void showImportDialog() {

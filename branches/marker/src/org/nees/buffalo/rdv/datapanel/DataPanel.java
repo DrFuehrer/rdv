@@ -31,8 +31,8 @@
 
 package org.nees.buffalo.rdv.datapanel;
 
+import java.util.Collection;
 import java.util.Properties;
-import java.util.Set;
 
 import org.nees.buffalo.rdv.DataPanelManager;
 
@@ -163,7 +163,7 @@ public interface DataPanel {
    * @return  a set of subscribed channels
    * @since   1.3
    */
-  public Set subscribedChannels();
+  public Collection subscribedChannels();
   
   /**
    * Checks if this data panel is subscribed to the given channel.

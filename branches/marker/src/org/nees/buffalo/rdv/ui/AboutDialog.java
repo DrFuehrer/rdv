@@ -91,20 +91,21 @@ public class AboutDialog extends JDialog {
     aboutPanel.setLayout(new BoxLayout(aboutPanel, BoxLayout.Y_AXIS));
 		
     aboutPanel.add(new JLabel("RDV - Realtime Data Viewer"));
-    aboutPanel.add(new JLabel("by Jason P. Hanley <jphanley@buffalo.edu>"));
-    aboutPanel.add(new JLabel("markers contribution by Lawrence J. Miller <ljmiller@sdsc.edu>"));
+    aboutPanel.add(new JLabel(" "));
+    aboutPanel.add(new JLabel("by Wei Deng, Jason P. Hanley, Paul Hubbard,"));
+    aboutPanel.add(new JLabel("Mari Masuda, Lawrence J. Miller, Farooque Sayed,"));
+    aboutPanel.add(new JLabel("Moji Soltani, Shannon Whitmore"));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("Version " + Version.major + "." + Version.minor + "." + Version.release));
     aboutPanel.add(new JLabel("Build " + Version.build));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("Copyright \251 2005-2006 University at Buffalo"));
-    aboutPanel.add(new JLabel("Visit http://nees.buffalo.edu/"));
+    aboutPanel.add(new JLabel("Copyright \251 2005-2006 NEES Cyberinfrastructure Center"));
     aboutPanel.add(new JLabel(" "));
-    aboutPanel.add(new JLabel("This work is supported in part by the"));
-    aboutPanel.add(new JLabel("George E. Brown, Jr. Network for Earthquake"));
-    aboutPanel.add(new JLabel("Engineering Simulation (NEES) Program of the"));
-    aboutPanel.add(new JLabel("National Science Foundation under Award"));
-    aboutPanel.add(new JLabel("Numbers CMS-0086611 and CMS-0086612."));
+    aboutPanel.add(new JLabel("This work is supported by the George E. Brown, Jr."));
+    aboutPanel.add(new JLabel("Network for Earthquake Engineering Simulation (NEES)"));
+    aboutPanel.add(new JLabel("Program of the National Science Foundation under Award"));
+    aboutPanel.add(new JLabel("Numbers CMS-0086611, CMS-0086612, and CMS-0402490."));
     
     container.add(aboutPanel, BorderLayout.CENTER);
     
