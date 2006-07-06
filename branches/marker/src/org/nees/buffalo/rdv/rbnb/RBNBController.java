@@ -433,7 +433,7 @@ public class RBNBController implements Player, MetadataListener {
 		//notify channel manager
 		channelManager.subscribe(channelName, panel);
 		
-		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
+//		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
 
     if (state == STATE_PLAYING) {
       getPreFetchChannelMap();
@@ -1368,4 +1368,10 @@ public class RBNBController implements Player, MetadataListener {
 			return isSubscribe;
 		}
 	}
+    /**
+     * @return Returns the requestedChannels.
+     */
+    public ChannelMap getRequestedChannels() {
+        return requestedChannels;
+    }
 }

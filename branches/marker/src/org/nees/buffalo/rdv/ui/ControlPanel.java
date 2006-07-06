@@ -291,7 +291,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipadx = 0;
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
+		c.anchor = GridBagConstraints.NORTHWEST;
+    markerLabel.setVisible(false);
 		container.add (markerLabel, c);
     
     /** A panel that displays a time-line-like view of markers present in the turbine */
@@ -351,8 +352,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipadx = 0;
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;	
+		c.anchor = GridBagConstraints.NORTHWEST;
+    markerPanel.setVisible(false);
     container.add (markerPanel, c);
+    rbnbController.getMetadataManager().addMetadataListener(markerPanel);
     log.info ("Added Event Marker Panel to Control Panel.");
 //////////////////////////////////////////////////////////////////////////// LJM 
     

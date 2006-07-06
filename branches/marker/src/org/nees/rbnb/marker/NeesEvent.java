@@ -39,10 +39,10 @@ public class NeesEvent extends Properties implements Comparable {
     public static String[] eventTypes = { "annotation", "comment", "keep_alive",
                                           "other", "start", "stop" };
     
-    public static Color startColor = new Color (33, 108, 38);
+    public static Color startColor = Color.green; //new Color (33, 108, 38);
     public static Color stopColor = Color.red;
     public static Color noteColor = Color.white;
-    public static Color danielBlue = new Color (200, 235, 243);
+    public static Color danielBlue = Color.blue; //new Color (200, 235, 243);
     private static Log log = LogFactory.getLog (NeesEvent.class.getName ());
     
     public static String MIME_TYPE = "x-neesEvent";

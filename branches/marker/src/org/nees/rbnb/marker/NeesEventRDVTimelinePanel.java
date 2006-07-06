@@ -51,8 +51,10 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.ui.ControlPanel;
 import org.nees.rbnb.marker.NeesEvent;
+import org.nees.buffalo.rdv.rbnb.MetadataListener;
+import org.nees.buffalo.rdv.rbnb.MarkerDataListener;
 
-public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, TimeListener {
+public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, TimeListener, MetadataListener, MarkerDataListener   {
   static Log log = LogFactory.getLog (NeesEventRDVTimelinePanel.class.getName ());
   
   /** A variable to hold the RDV DataTurbine controller
@@ -191,7 +193,9 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   
   /** A method for the @see org.nees.buffalo.rdv.rbnb.DataListener interface */
   public void postData (ChannelMap cMap) {
+      log.debug("postData() - start");
     this.channelMap = cMap;
+    log.debug("postData() - map " + this.channelMap);
     // REFACTOR this seems redundant, but is critical to operation
     this.findEventsChannel ();
     this.repaint ();
@@ -237,6 +241,9 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   
   
   public void paintComponent (Graphics gra) {
+      log.debug("paintComponent() - start");
+      if (!this.rbnbctl.isConnected ()) return;
+      
     /* Following the gui guidelines in http://java.sun.com/docs/books/tutorial/uiswing/14painting/concepts2.html */
     Graphics2D markerPanelG = (Graphics2D)gra.create ();
     super.paintComponent (markerPanelG);
@@ -244,14 +251,15 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     // if we have some events to look at, display them.
     // this.clearDisplay ();
     //  FIXME
-    if (this.doScanPastMarkers) {
-       //this.scanPastMarkers ();
-    }
+//    if (this.doScanPastMarkers) {
+//       //this.scanPastMarkers ();
+//    }
     /* This call will find all events channels and call getEventData to 
      * mutate theEvents */
-    this.findEventsChannel ();
+//    this.findEventsChannel ();
     
     if (theEvents != null) {
+        log.debug("paintComponent() - number of events: " + theEvents.length);
       String markerType = null;
       // log.debug ("--- Start Draw ---");
       // loop though the events and draw them
@@ -259,10 +267,16 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         // log.debug (theEvents[i].toString ());
         markerType = theEvents[i].getProperty ("type");
         if ( markerType.compareToIgnoreCase ("start") == 0 ) {
+            log.debug("start event detected at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("dtTimestamp"))));
+            log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("timestamp"))));
           markerPanelG.setColor (NeesEvent.startColor); 
         } else if ( markerType.compareToIgnoreCase ("stop") == 0 ) {
+            log.debug("stop event detected at: " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("dtTimestamp"))));
+            log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("timestamp"))));
           markerPanelG.setColor (NeesEvent.stopColor);
         } else {
+            log.debug(markerType + " event detected, at: " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("dtTimestamp"))));
+            log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("timestamp"))));
           markerPanelG.setColor (Color.black);
         } // else
         
@@ -270,19 +284,22 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         double time2use = (theEvents[i].getProperty ("timestamp") != null)?
           Double.parseDouble (theEvents[i].getProperty ("timestamp")):
           Double.parseDouble (theEvents[i].getProperty ("dtTimestamp"));
-        
+        log.debug("TimeStamp for event: " + DataViewer.formatDate(time2use));
         // x=t*width/(t(e)-t(s))
         markerXcoordinate = (int)((time2use - eventsChannelStartTime) * this.getScaleFactor ());
-        
+        log.debug("markerXcoordinate for event: " + markerXcoordinate);
         // Fixes to keep display on-scale
         if (markerXcoordinate <= 0) {
           markerXcoordinate = FUDGE_FACTOR;
         } else if ((this.getWidth ()) <= markerXcoordinate) {
+            log.debug("this.getWidth (): " + this.getWidth () + " <= markerXcoordinate");
           markerXcoordinate = this.getWidth () - FUDGE_FACTOR;
+          log.debug("markerXcoordinate: " + markerXcoordinate + "  after fudgefactor subtracted");
         } else if ((this.getWidth ()) - FUDGE_FACTOR < markerXcoordinate && markerXcoordinate < this.getWidth ()) {
+            log.debug("ELSE");
           markerXcoordinate = markerXcoordinate - FUDGE_FACTOR;
         }
-        markerPanelG.fillRect (markerXcoordinate, 0, 1, 10);
+        markerPanelG.fillRect (markerXcoordinate - (i * 10), 0, 1, 10);
       } // for
     
       //log.debug ("***--- End Draw ---");
@@ -297,17 +314,17 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     * A method to generate synthetic marker data.
    * @return org.nees.rbnb.marker.NeesEvent
    */
-  NeesEvent[] makeFakeEvents () {
-    if (this.madeFakeEvents) {
-      return this.theEvents;
-    }
+ private NeesEvent[] makeFakeEvents () {
+//    if (this.madeFakeEvents) {
+//      return this.theEvents;
+//    }
     ArrayList eventArrayList = new ArrayList ();
     NeesEvent eventTemp = null;
     for (int i=0; i<markerTimes.length; i++) {
       eventTemp = new NeesEvent ();
       eventTemp.setProperty ("timestamp", Double.toString (markerTimes[i]/1000.0));
-      eventTemp.setProperty ("dtTimestamp", Double.toString (markerTimes[i]/1000.0));
-      eventTemp.setProperty ("label", "Synthetic Marker");
+      eventTemp.setProperty ("dtTimestamp", Double.toString (markerTimes[i]));
+      eventTemp.setProperty ("label", "Synthetic Marker" + i+1);
       if (i%3 == 0) {
         eventTemp.setProperty ("type", "start");
       } else if (i%3 == 2) {
@@ -317,6 +334,9 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       }
       eventArrayList.add (eventTemp);
     } // for
+    
+//    return eventArrayList;
+    
     Object [] retValTmp = eventArrayList.toArray ();
     NeesEvent[] retVal= new NeesEvent [retValTmp.length];
     
@@ -326,6 +346,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     log.debug ("Made fake events.");
     madeFakeEvents = true;
     return retVal;
+  
   } // makeFakeEvents ()
   
   
@@ -497,19 +518,39 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       this.repaint ();
     } // else
   } // scanPastMarkers ()
+
+  public void fetchMarkerChannels(ChannelMap cMap) {
+    if (cMap == null)
+      return;
+    
+    this.channelMap = cMap;
+    
+    String channelName;
+    for (int i = 0; i < channelMap.NumberOfChannels(); i++) {
+      
+      channelName = channelMap.GetName(i);
+      getEventData(channelName);
+    }
+  }
   
   /** A method to update theEvents with event data from a @param input rbnb data
     * channel. */
   public void getEventData (String sourceChannelName) {
+      log.debug("getEventData() - start channel " + sourceChannelName);
     int channelIndex;
-    if (channelMap == null) {
-      return;
-    }
+//    if (channelMap == null) {
+//      return;
+//    }
+
+/*
     if (usingFakeEvents) {
       theEvents = makeFakeEvents ();
-    } else { // Get the real deal
+    } else
+        
+    { */// Get the real deal
       this.updateMarkerPanelScaleFactor ();
       channelIndex = this.channelMap.GetIndex (sourceChannelName);
+      log.debug("channelIndex = " + channelIndex);
       String[] channelData = null;
       NeesEvent[] eventData = null;
       if (-1 < channelIndex) { // then we have an events channel in our channel map
@@ -522,6 +563,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
             eventData[i].setFromEventXml (channelData[i]);
             if (theEventsTimes.length == 1) {
               eventData[i].setProperty ("dtTimestamp", Double.toString (theEventsTimes[0]));
+              log.debug("got timeStamp " + eventData[i].getProperty("dtTimestamp"));
             }
           } catch (TransformerException te) { 
             log.error ("Java XML Error\n" + te);
@@ -538,10 +580,13 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
           if (eventData[i].getProperty ("timestamp") != null) {
             theEventsHistoryHash.put
             (Double.parseDouble (eventData[i].getProperty ("timestamp")), eventData[i]);
-          } else if (eventData[i].getProperty ("timestamp") != null) { // use the marker's dt receipt timestamp
+          }
+/*******duplicate >>
+          else if (eventData[i].getProperty ("timestamp") != null) { // use the marker's dt receipt timestamp
             theEventsHistoryHash.put
             (Double.parseDouble (eventData[i].getProperty ("dtTimestamp")), eventData[i]);
           }
+<< */          
         } // for
       } // if -1 < index
       
@@ -595,7 +640,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
                  );*/
           }
       } // if
-    } // else get the real deal
+/*    } // else get the real deal */
   } // getEventData ()
   
   
@@ -651,6 +696,66 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     
     return targetMarkerOutput;
   } // formatMarker4Popup ()
+  
+  
+  public void channelTreeUpdated(ChannelTree channelTree) {
+    // don't so anythng for now..
+    return;
+
+/*    
+      this.theEvents = makeFakeEvents();
+  
+      if (this.theEvents.length > 0) {
+        for (int i = 0; i < theEvents.length; i++) {
+            NeesEvent tmp = theEvents[i];
+            log.debug("Fake data timestamp: " + tmp.getProperty("timestamp"));
+            log.debug("Fake data dtTimestamp: " + tmp.getProperty("dtTimestamp"));
+            log.debug("Fake data type: " + tmp.getProperty("type"));
+            log.debug("Fake data label: " + tmp.getProperty("label"));
+        }    
+      }
+*/      
+/*      
+      log.debug("channelTreeUpdated() - start");
+      if (channelTree == null) {
+        return;
+      }
+    
+      Iterator it = channelTree.iterator ();
+      log.debug("tree has " + it.getClass());
+      ChannelTree.Node node;
+      String channelMime = null;
+      String channelName;
+      
+      
+      // Go through the entire channel tree and pick out the events channels
+      while (it.hasNext ()) {
+        node = (ChannelTree.Node)it.next ();
+        channelMime = node.getMime ();
+        channelName = node.getFullName();
+        // get the latest times
+
+        if (channelMime != null &&
+            channelMime.compareToIgnoreCase (NeesEvent.MIME_TYPE) == 0) {
+
+          if (! this.rbnbctl.isSubscribed (channelName)) {
+            log.debug("channel " + channelName + " not subscribed");
+            if (this.rbnbctl.subscribe (channelName, this)) {
+              this.getEventData (channelName);
+            } else {
+              log.error ("Couldn't subscribe to channel \"" + channelName + "\"");
+            }
+          } else { // already subscribed to an events channel
+            log.debug("channel " + channelName + " already subscribed");
+            this.getEventData (channelName);
+          }
+          
+          this.getEventData(node.getFullName()); 
+          log.debug("Marker time for " + node.getFullName() + " is " + DataViewer.formatDate(node.getStart()));
+        }
+      }
+*/      
+    }
   
 } // class
 

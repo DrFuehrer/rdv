@@ -115,9 +115,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
 /////////////////////////////////////////////////////////////////////////////LJM
-  private SendMarkerRDVPanel markerSubmitPanel = null;
+//  private SendMarkerRDVPanel markerSubmitPanel = null;
   private JCheckBoxMenuItem showMarkerMenuItem = null;
-  private SimpleInternalFrame markerFrame;
+//  private SimpleInternalFrame markerFrame;
 /////////////////////////////////////////////////////////////////////////////LJM
 	private StatusPanel statusPanel;
 	private DataPanelContainer dataPanelContainer;
@@ -185,9 +185,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		initFrame(isApplet);
 /////////////////////////////////////////////////////////////////////////////LJM
     // Initially, these should be off
-    markerFrame.setVisible (false);
-    controlPanel.markerPanel.setVisible (false);
-    controlPanel.markerLabel.setVisible (false);
+//    markerFrame.setVisible (false);
+//    controlPanel.markerPanel.setVisible (false);
+ //   controlPanel.markerLabel.setVisible (false);
 /////////////////////////////////////////////////////////////////////////////LJM
 
 	}
@@ -223,8 +223,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
 		initRightPanel();
 		initControls();
-/////////////////////////////////////////////////////////////////////////////LJM    
-    initSubmit ();
+/////////////////////////////////////////////////////////////////////////////LJM   
+		log.info("initSubmit() - preStart");
+		
+//    initSubmit ();
 /////////////////////////////////////////////////////////////////////////////LJM        
 		initDataPanelContainer();		
 		initStatus();
@@ -255,7 +257,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	
   	rbnb.addConnectionListener(this);
 /////////////////////////////////////////////////////////////////////////////LJM    
-    rbnb.addConnectionListener (markerSubmitPanel);
+//    rbnb.addConnectionListener (markerSubmitPanel);
 /////////////////////////////////////////////////////////////////////////////LJM        
 
 		if (!isApplet) { 
@@ -276,7 +278,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				}			
 /////////////////////////////////////////////////////////////////////////////LJM
         // Clear out and disable event markers for changing to a new turbine
-        controlPanel.markerPanel.clearData ();
+//        controlPanel.markerPanel.clearData ();
 /////////////////////////////////////////////////////////////////////////////LJM
  			}			
  		};
@@ -285,7 +287,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();
 /////////////////////////////////////////////////////////////////////////////LJM    
-        try {
+/*        try {
           markerSubmitPanel.sendClosingMarker ();
           markerSubmitPanel.closeTurbine ();
         } catch (IOException ioe) {
@@ -293,11 +295,12 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         } catch (TransformerException te) {
           log.error ("Sending closing marker: " + te);
         }
+*/
 /////////////////////////////////////////////////////////////////////////////LJM 
  				rbnb.disconnect();
 /////////////////////////////////////////////////////////////////////////////LJM
-        controlPanel.markerPanel.clearData ();
-        markerFrame.setVisible (false);
+//        controlPanel.markerPanel.clearData ();
+//       markerFrame.setVisible (false);
 /////////////////////////////////////////////////////////////////////////////LJM
  			}			
  		};
@@ -383,7 +386,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			public void actionPerformed(ActionEvent ae) {
 //////////////////////////////////////////////////////////////////////////// LJM 				
         // DOTOO refetch markers and repaint the panel
-        controlPanel.markerPanel.repaint ();
+//        controlPanel.markerPanel.repaint ();
 //////////////////////////////////////////////////////////////////////////// LJM        
  				rbnb.monitor();
  			}			
@@ -465,10 +468,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     showMarkerPanelAction = new DataViewerAction ("Show Event Markers", "", KeyEvent.VK_M, "icons/channels.gif") {
       public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();
-        markerFrame.setVisible (
-          menuItem.isSelected () &&
-          markerSubmitPanel.isConnected ()
-                                );
+//        markerFrame.setVisible (
+//          menuItem.isSelected () &&
+//          markerSubmitPanel.isConnected ()
+//                                );
         controlPanel.markerPanel.setVisible (menuItem.isSelected ());
         controlPanel.markerLabel.setVisible (menuItem.isSelected ());
         controlPanel.markerPanel.repaint ();
@@ -791,7 +794,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
 /////////////////////////////////////////////////////////////////////////////LJM
   // Marker submission GUI panel
-  private void initSubmit () {
+  /*private void initSubmit () {
   markerSubmitPanel = new SendMarkerRDVPanel (null, rbnb, this.controlPanel.markerPanel, this);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
@@ -813,7 +816,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
     rightPanel.add (markerFrame, c);
     log.info ("Added Marker Submission Panel.");
-  } // initSubmit ()
+  } */// initSubmit ()
 /////////////////////////////////////////////////////////////////////////////LJM  
 	private void initStatus() {
 		statusPanel = new StatusPanel();
@@ -988,7 +991,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     startThrobber();
 /////////////////////////////////////////////////////////////////////////////LJM
     /* Going to a new turbine, so flush out the data from the old one. */
-    controlPanel.markerPanel.clearData ();
+//    controlPanel.markerPanel.clearData ();
 /////////////////////////////////////////////////////////////////////////////LJM
 	}
 
@@ -998,14 +1001,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     stopThrobber();
 /////////////////////////////////////////////////////////////////////////////LJM
     /* Going to a new turbine, so flush out the data from the old one. */
-    markerFrame.setVisible (
+/*    markerFrame.setVisible (
                             showMarkerMenuItem.isSelected ()
-                            /*&& markerSubmitPanel.isConnected ()*/
+                            
                             );    
-      controlPanel.markerPanel.clearData ();
+      controlPanel.markerPanel.clearData (); */
     // TODO
     // reset the scanning of past event markers when we first connect
-    controlPanel.markerPanel.doScanPastMarkers = true;
+//    controlPanel.markerPanel.doScanPastMarkers = true;
 ////////////////////////////////////////////////////////////////////////////LJM
 	}
 
