@@ -102,9 +102,9 @@ public class MetadataManager {
   
   private ChannelMap markerChannelMap;
   
-  private static boolean firstTime = true;
+  private static double markersDuration = 0.0; // in seconds
   
-  private static double markersStart = 0.0; // in seconds 
+  private final double markersStart = 0.0;   // start from begining of time
   
   
   public MetadataManager(RBNBController rbnbController) {
@@ -121,7 +121,6 @@ public class MetadataManager {
     sleeping = new Boolean(false);
     updateThread = null;
     
-    markerChannelMap = new ChannelMap();
     markerListeners = new ArrayList();
   }   
 
@@ -236,7 +235,7 @@ public class MetadataManager {
   }
   
   private ChannelMap getMarkerChannels(Sink sink) {
-  
+
     ChannelMap markerChannels = new ChannelMap();
     
     try {
@@ -276,6 +275,9 @@ public class MetadataManager {
     
     //create metadata channel tree
     try {
+
+      markerChannelMap = new ChannelMap();
+    
       HashMap newChannels = new HashMap();
       ctree = getChannelTree(metadataSink, newChannels);
  
@@ -376,26 +378,12 @@ public class MetadataManager {
       }
     }
     
-   
-    double now = (((double)(System.currentTimeMillis ())) / 1000.0);  // in seconds
     if (markerChannelMap != null) {
-        if (firstTime) {
-          sink.Request(markerChannelMap, markersStart, now, "absolute");
-          firstTime = false;  
-        }
-        else
-          sink.Request(markerChannelMap, markersStart, now, "after");
-        
-        markersStart = now;
-        markerChannelMap = sink.Fetch(-1, markerChannelMap);
-        for(int i=0; i<markerChannelMap.NumberOfChannels(); i++) {
-          channelData = markerChannelMap.GetDataAsString(i);
-          if (channelData != null) {
-            for (int j=0; j<channelData.length; j++) {
-              log.info(markerChannelMap.GetName(i) + " has data at " + j + " = " + channelData[j]); 
-            }
-          }
-        }
+
+      markersDuration = (((double)(System.currentTimeMillis ())) / 1000.0);  // current date/time now in seconds
+
+      sink.Request(markerChannelMap, markersStart, markersDuration, "absolute");  // request from start of marker channels to now
+      markerChannelMap = sink.Fetch(-1, markerChannelMap);
       
     }
     
