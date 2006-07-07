@@ -377,11 +377,15 @@ public class MetadataManager {
     }
     
    
-    double now = (((double)(System.currentTimeMillis ())) / 1000.0);
+    double now = (((double)(System.currentTimeMillis ())) / 1000.0);  // in seconds
     if (markerChannelMap != null) {
-
-        sink.Request(markerChannelMap, markersStart, now, "Absolute");
-
+        if (firstTime) {
+          sink.Request(markerChannelMap, markersStart, now, "absolute");
+          firstTime = false;  
+        }
+        else
+          sink.Request(markerChannelMap, markersStart, now, "after");
+        
         markersStart = now;
         markerChannelMap = sink.Fetch(-1, markerChannelMap);
         for(int i=0; i<markerChannelMap.NumberOfChannels(); i++) {
