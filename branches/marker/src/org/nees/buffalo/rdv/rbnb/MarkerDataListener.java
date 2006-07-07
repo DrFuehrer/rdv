@@ -5,6 +5,6 @@ import com.rbnb.sapi.ChannelMap;
 
 public interface MarkerDataListener {
   
-  public void fetchMarkerChannels(ChannelMap markerChannelMap);
+  public void updateMarkerChannels(ChannelMap markerChannelMap);
 
 }

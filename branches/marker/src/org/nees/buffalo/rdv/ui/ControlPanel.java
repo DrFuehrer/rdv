@@ -355,7 +355,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.anchor = GridBagConstraints.NORTHWEST;
     markerPanel.setVisible(false);
     container.add (markerPanel, c);
-    rbnbController.getMetadataManager().addMetadataListener(markerPanel);
+    rbnbController.getMetadataManager().addMarkerListener(markerPanel);
     log.info ("Added Event Marker Panel to Control Panel.");
 //////////////////////////////////////////////////////////////////////////// LJM 
     

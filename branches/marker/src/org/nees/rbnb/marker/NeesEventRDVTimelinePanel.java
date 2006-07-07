@@ -275,8 +275,8 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
             log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("timestamp"))));
           markerPanelG.setColor (NeesEvent.stopColor);
         } else {
-            log.debug(markerType + " event detected, at: " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("dtTimestamp"))));
-            log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("timestamp"))));
+//            log.debug(markerType + " event detected, at: " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("dtTimestamp"))));
+//            log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("timestamp"))));
           markerPanelG.setColor (Color.black);
         } // else
         
@@ -284,10 +284,10 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         double time2use = (theEvents[i].getProperty ("timestamp") != null)?
           Double.parseDouble (theEvents[i].getProperty ("timestamp")):
           Double.parseDouble (theEvents[i].getProperty ("dtTimestamp"));
-        log.debug("TimeStamp for event: " + DataViewer.formatDate(time2use));
+        log.debug("TimeStamp for event" + i + " = " + DataViewer.formatDate(time2use));
         // x=t*width/(t(e)-t(s))
         markerXcoordinate = (int)((time2use - eventsChannelStartTime) * this.getScaleFactor ());
-        log.debug("markerXcoordinate for event: " + markerXcoordinate);
+//        log.debug("markerXcoordinate for event: " + markerXcoordinate);
         // Fixes to keep display on-scale
         if (markerXcoordinate <= 0) {
           markerXcoordinate = FUDGE_FACTOR;
@@ -460,12 +460,12 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         // If this is a newly incident channel, then subscribe to it to get updates
         if (! this.rbnbctl.isSubscribed (sourceChannelName)) {
           if (this.rbnbctl.subscribe (sourceChannelName, this)) {
-            this.getEventData (sourceChannelName);
+//            this.getEventData (sourceChannelName);
           } else {
             log.error ("Couldn't subscribe to channel \"" + sourceChannelName + "\"");
           }
         } else { // already subscribed to an events channel
-          this.getEventData (sourceChannelName);
+//          this.getEventData (sourceChannelName);
         }
       } // if
     } // while
@@ -519,128 +519,112 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     } // else
   } // scanPastMarkers ()
 
-  public void fetchMarkerChannels(ChannelMap cMap) {
+  public void updateMarkerChannels(ChannelMap cMap) {
     if (cMap == null)
       return;
     
     this.channelMap = cMap;
     
     String channelName;
+    int index;
     for (int i = 0; i < channelMap.NumberOfChannels(); i++) {
       
-      channelName = channelMap.GetName(i);
-      getEventData(channelName);
+      channelName = this.channelMap.GetName(i);
+      index = channelMap.GetIndex(channelName);
+      getEventData(index);
     }
   }
   
   /** A method to update theEvents with event data from a @param input rbnb data
     * channel. */
-  public void getEventData (String sourceChannelName) {
-      log.debug("getEventData() - start channel " + sourceChannelName);
-    int channelIndex;
-//    if (channelMap == null) {
-//      return;
-//    }
+  public void getEventData (int channelIndex) {
 
-/*
-    if (usingFakeEvents) {
-      theEvents = makeFakeEvents ();
-    } else
-        
-    { */// Get the real deal
-      this.updateMarkerPanelScaleFactor ();
-      channelIndex = this.channelMap.GetIndex (sourceChannelName);
-      log.debug("channelIndex = " + channelIndex);
-      String[] channelData = null;
-      NeesEvent[] eventData = null;
-      if (-1 < channelIndex) { // then we have an events channel in our channel map
-        theEventsTimes = channelMap.GetTimes (channelIndex);
-        channelData = this.channelMap.GetDataAsString (channelIndex);
-        eventData = new NeesEvent[channelData.length];
-        for (int i=0; i<channelData.length; i++) {
-          eventData[i] = new NeesEvent ();
-          try {
-            eventData[i].setFromEventXml (channelData[i]);
-            if (theEventsTimes.length == 1) {
-              eventData[i].setProperty ("dtTimestamp", Double.toString (theEventsTimes[0]));
-              log.debug("got timeStamp " + eventData[i].getProperty("dtTimestamp"));
-            }
-          } catch (TransformerException te) { 
-            log.error ("Java XML Error\n" + te);
-            te.printStackTrace ();
-          } catch (InvalidPropertiesFormatException ipfe) {
-            log.error ("Java XML Error\n" + ipfe);
-            ipfe.printStackTrace ();
-          } catch (IOException ioe) {
-            log.error ("Java IO Error\n" + ioe);
-            ioe.printStackTrace ();
-          }
-          
-          // Make sure not to do duplicate entries keyed by timestamp
-          if (eventData[i].getProperty ("timestamp") != null) {
-            theEventsHistoryHash.put
-            (Double.parseDouble (eventData[i].getProperty ("timestamp")), eventData[i]);
-          }
-/*******duplicate >>
-          else if (eventData[i].getProperty ("timestamp") != null) { // use the marker's dt receipt timestamp
-            theEventsHistoryHash.put
-            (Double.parseDouble (eventData[i].getProperty ("dtTimestamp")), eventData[i]);
-          }
-<< */          
-        } // for
-      } // if -1 < index
-      
-      // Rercast the generic Objects from the toArray call into NEESevents
-      Object[] theEventsHistoryTemp = theEventsHistoryHash.values ().toArray ();
-      NeesEvent[] theEventsHistory = new NeesEvent[theEventsHistoryTemp.length];
-      for (int i=0; i<theEventsHistory.length; i++) {
-        theEventsHistory[i] = (NeesEvent)theEventsHistoryTemp[i];
+    log.debug("getEventData() - channel index " + channelIndex);
+
+    String[] channelData = null;
+    NeesEvent[] eventData = null;
+ 
+    theEventsTimes = channelMap.GetTimes (channelIndex);
+    channelData = this.channelMap.GetDataAsString (channelIndex);
+    eventData = new NeesEvent[channelData.length];
+    for (int i=0; i<channelData.length; i++) {
+      eventData[i] = new NeesEvent ();
+      try {
+        eventData[i].setFromEventXml (channelData[i]);
+        if (theEventsTimes.length == 1) {
+          eventData[i].setProperty ("dtTimestamp", Double.toString (theEventsTimes[0]));
+          log.debug("got timeStamp " + eventData[i].getProperty("dtTimestamp"));
+        }
+      } catch (TransformerException te) { 
+        log.error ("Java XML Error\n" + te);
+        te.printStackTrace ();
+      } catch (InvalidPropertiesFormatException ipfe) {
+        log.error ("Java XML Error\n" + ipfe);
+        ipfe.printStackTrace ();
+      } catch (IOException ioe) {
+        log.error ("Java IO Error\n" + ioe);
+        ioe.printStackTrace ();
       }
-      // @see org.nees.rbnb.marker.NeesEvent
-      Arrays.sort (theEventsHistory);
-      
-      // setting the global events store equal to the local one
-      if (theEventsHistory != null) {
-        this.theEvents = theEventsHistory;
-      }
-      
-      // this protects divide by zeros in the scale factor - if length =1, then start=end
-      if (theEvents != null && 1 <= theEvents.length) {
-        // These get start and end because this array is now sorted
-        String startStringTemp = theEvents[0].getProperty ("timestamp");
-        String endStringTemp = theEvents[theEvents.length-1].getProperty ("timestamp");
-        
-        /* if there are no generation timestamps, then fall back to embedded
-          * dataturbine receipt timestamps */
-        if (startStringTemp == null && theEvents != null) {
-          startStringTemp = theEvents[0].getProperty ("timestamp");
-        }
-        if (endStringTemp == null && theEvents != null) {
-          endStringTemp = theEvents[theEvents.length-1].getProperty ("timestamp");
-        }
-        
-        /* if this case doesn't get hit, then there are no timestamps at all
-          * if start is less if end is more */
-        double startTemp =  -1.0;
-        double endTemp = -1.0;
-        if (startStringTemp != null) {
-          startTemp = Double.parseDouble (startStringTemp);
-          setEventsChannelStartTime (startTemp);
-        }
-        if (endStringTemp != null) {
-          endTemp = Double.parseDouble (endStringTemp);
-          setEventsChannelEndTime (endTemp);
-        }
     
-        if (this.getEventsChannelStartTime () != startTemp ||
-          this.getEventsChannelEndTime () != endTemp) {
-          /*log.debug ("*** events channel times set - S: " +
-                 DataViewer.formatDate (getEventsChannelStartTime ()) +
-                 " E: " + DataViewer.formatDate (getEventsChannelEndTime ())
-                 );*/
-          }
-      } // if
-/*    } // else get the real deal */
+      // Make sure not to do duplicate entries keyed by timestamp
+      if (eventData[i].getProperty ("timestamp") != null) {
+        theEventsHistoryHash.put
+        (Double.parseDouble (eventData[i].getProperty ("timestamp")), eventData[i]);
+      }
+    } // for
+
+      
+    // Rercast the generic Objects from the toArray call into NEESevents
+    Object[] theEventsHistoryTemp = theEventsHistoryHash.values ().toArray ();
+    NeesEvent[] theEventsHistory = new NeesEvent[theEventsHistoryTemp.length];
+    for (int i=0; i<theEventsHistory.length; i++) {
+      theEventsHistory[i] = (NeesEvent)theEventsHistoryTemp[i];
+    }
+    // @see org.nees.rbnb.marker.NeesEvent
+    Arrays.sort (theEventsHistory);
+    
+    // setting the global events store equal to the local one
+    if (theEventsHistory != null) {
+      this.theEvents = theEventsHistory;
+    }
+    
+    // this protects divide by zeros in the scale factor - if length =1, then start=end
+    if (theEvents != null && 1 <= theEvents.length) {
+      // These get start and end because this array is now sorted
+      String startStringTemp = theEvents[0].getProperty ("timestamp");
+      String endStringTemp = theEvents[theEvents.length-1].getProperty ("timestamp");
+      
+      /* if there are no generation timestamps, then fall back to embedded
+        * dataturbine receipt timestamps */
+      if (startStringTemp == null && theEvents != null) {
+        startStringTemp = theEvents[0].getProperty ("timestamp");
+      }
+      if (endStringTemp == null && theEvents != null) {
+        endStringTemp = theEvents[theEvents.length-1].getProperty ("timestamp");
+      }
+      
+      /* if this case doesn't get hit, then there are no timestamps at all
+        * if start is less if end is more */
+      double startTemp =  -1.0;
+      double endTemp = -1.0;
+      if (startStringTemp != null) {
+        startTemp = Double.parseDouble (startStringTemp);
+        setEventsChannelStartTime (startTemp);
+      }
+      if (endStringTemp != null) {
+        endTemp = Double.parseDouble (endStringTemp);
+        setEventsChannelEndTime (endTemp);
+      }
+  
+      if (this.getEventsChannelStartTime () != startTemp ||
+        this.getEventsChannelEndTime () != endTemp) {
+        /*log.debug ("*** events channel times set - S: " +
+               DataViewer.formatDate (getEventsChannelStartTime ()) +
+               " E: " + DataViewer.formatDate (getEventsChannelEndTime ())
+               );*/
+      }
+    } // if
+
   } // getEventData ()
   
   

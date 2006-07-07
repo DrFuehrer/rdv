@@ -102,6 +102,11 @@ public class MetadataManager {
   
   private ChannelMap markerChannelMap;
   
+  private static boolean firstTime = true;
+  
+  private static double markersStart = 0.0; // in seconds 
+  
+  
   public MetadataManager(RBNBController rbnbController) {
     this.rbnbController = rbnbController;
 
@@ -117,6 +122,7 @@ public class MetadataManager {
     updateThread = null;
     
     markerChannelMap = new ChannelMap();
+    markerListeners = new ArrayList();
   }   
 
   /**
@@ -337,15 +343,7 @@ public class MetadataManager {
     cmap = sink.Fetch(-1, cmap);
 
     String[] channelData = null;
-    for (int i = 15; i < 21; i++) {
-      channelData = cmap.GetDataAsString(i);
-      for (int j=0; j<channelData.length;j++) {
-        log.info(cmap.GetName(i) + "'s data=" + channelData[j]);        
-      }
 
-      
-    }
-    log.info("getChannelTree - cmap size " + cmap.NumberOfChannels());
     ctree = ChannelTree.createFromChannelMap(cmap);
     
     //store user metadata in channel objects
@@ -367,49 +365,37 @@ public class MetadataManager {
       mimeType = node.getMime();
       if (mimeType != null && mimeType.compareToIgnoreCase(NeesEvent.MIME_TYPE) == 0) {
           index = markerChannelMap.Add(node.getFullName());
-//          try {
-//            channelData = markerChannelMap.GetDataAsString(index);            
-//          } catch (ClassCastException cce) {
-//            log.error("castException: " + cce.getMessage());
-//          } catch (Exception e) {
-//            log.error("general exception for " + node.getFullName() + " - " + e.getMessage());
-//          }
-
-//         if (channelData != null) {
-//           for (int i=0; i<channelData.length; i++) {
-//             log.info(node.getFullName() + " has data at : " + i + channelData[i]);           
-//           }
-           
-//         }
-
       }
-      
       
       // look for child servers and get their channels      
       if (node.getType() == ChannelTree.SERVER &&
-         (path == null || !path.startsWith(node.getFullName()))) {
+        (path == null || !path.startsWith(node.getFullName()))) {
 
         ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels);
         ctree = childChannelTree.merge(ctree);
       }
     }
-/*    
+    
+   
+    double now = (((double)(System.currentTimeMillis ())) / 1000.0);
     if (markerChannelMap != null) {
-      
-      sink.RequestRegistration(markerChannelMap);
-      markerChannelMap = sink.Fetch(-1, markerChannelMap);
-      for(int i=0; i<markerChannelMap.NumberOfChannels(); i++) {
-        log.info("MarkerChannel names: " + markerChannelMap.GetName(i) + " has mime " + markerChannelMap.GetMime(i));
-        channelData = markerChannelMap.GetDataAsString(i);
-        if (channelData != null) {
-          for (int j=0; j<channelData.length; j++) {
-            log.info(markerChannelMap.GetName(i) + " has data at " + j + " = " + channelData[j]); 
+
+        sink.Request(markerChannelMap, markersStart, now, "Absolute");
+
+        markersStart = now;
+        markerChannelMap = sink.Fetch(-1, markerChannelMap);
+        for(int i=0; i<markerChannelMap.NumberOfChannels(); i++) {
+          channelData = markerChannelMap.GetDataAsString(i);
+          if (channelData != null) {
+            for (int j=0; j<channelData.length; j++) {
+              log.info(markerChannelMap.GetName(i) + " has data at " + j + " = " + channelData[j]); 
+            }
           }
         }
-      }
       
     }
-*/    
+    
+    
     return ctree;
   }
   
@@ -494,7 +480,7 @@ public class MetadataManager {
     for (int i=0; i<markerListeners.size(); i++) {
       
       markerListener = (MarkerDataListener)markerListeners.get(i);
-      markerListener.fetchMarkerChannels(this.markerChannelMap);
+      markerListener.updateMarkerChannels(this.markerChannelMap);
       
     }
     
