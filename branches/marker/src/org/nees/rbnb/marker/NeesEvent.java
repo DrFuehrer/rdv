@@ -45,7 +45,7 @@ public class NeesEvent extends Properties implements Comparable {
     public static Color danielBlue = Color.blue; //new Color (200, 235, 243);
     private static Log log = LogFactory.getLog (NeesEvent.class.getName ());
     
-    public static String MIME_TYPE = "x-neesEvent";
+    public static final String MIME_TYPE = "x-neesEvent";
     
     public String rbnbChannel;
 
@@ -138,7 +138,7 @@ public class NeesEvent extends Properties implements Comparable {
             {
                 app.setProperty(markerFieldNames[i],markerFieldNames[i]);
             }
-            app.setProperty("timestamp","" + (((double)System.currentTimeMillis ()) / 1000.0));
+            app.setProperty("timestamp","" + ((System.currentTimeMillis ()) / 1000));
             
             // get the XML and print it
             String xml = app.toEventXmlString ();

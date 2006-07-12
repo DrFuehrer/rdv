@@ -276,7 +276,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
           markerPanelG.setColor (NeesEvent.stopColor);
         } else {
 //            log.debug(markerType + " event detected, at: " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("dtTimestamp"))));
-//            log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("timestamp"))));
+            log.debug("Annotation marker at at : " + DataViewer.formatDate(Double.parseDouble(theEvents[i].getProperty ("timestamp"))));
           markerPanelG.setColor (Color.black);
         } // else
         
@@ -284,10 +284,11 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         double time2use = (theEvents[i].getProperty ("timestamp") != null)?
           Double.parseDouble (theEvents[i].getProperty ("timestamp")):
           Double.parseDouble (theEvents[i].getProperty ("dtTimestamp"));
-        log.debug("TimeStamp for event" + i + " = " + DataViewer.formatDate(time2use));
-        // x=t*width/(t(e)-t(s))
+//        log.debug("TimeStamp for event" + i + " = " + DataViewer.formatDate(time2use));
+        
         markerXcoordinate = (int)((time2use - eventsChannelStartTime) * this.getScaleFactor ());
-//        log.debug("markerXcoordinate for event: " + markerXcoordinate);
+        log.debug("markerXcoordinate(" + i + ")= (" + time2use + " - " + eventsChannelStartTime + ") * " + this.getScaleFactor ());
+
         // Fixes to keep display on-scale
         if (markerXcoordinate <= 0) {
           markerXcoordinate = FUDGE_FACTOR;
@@ -299,6 +300,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
             log.debug("ELSE");
           markerXcoordinate = markerXcoordinate - FUDGE_FACTOR;
         }
+        log.debug("will paint at mx = " + markerXcoordinate + " - " + (i*10) + " = " + (markerXcoordinate - (i * 10)));
         markerPanelG.fillRect (markerXcoordinate - (i * 10), 0, 1, 10);
       } // for
     
@@ -520,9 +522,10 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
   } // scanPastMarkers ()
 
   public void updateMarkerChannels(ChannelMap cMap) {
-    if (cMap == null)
-      return;
     
+ //   if (cMap == null)
+      return;
+/*    
     this.channelMap = cMap;
     
     String channelName;
@@ -533,13 +536,14 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
       index = channelMap.GetIndex(channelName);
       getEventData(index);
     }
+  */
   }
   
   /** A method to update theEvents with event data from a @param input rbnb data
     * channel. */
   public void getEventData (int channelIndex) {
 
-    log.debug("getEventData() - channel index " + channelIndex);
+//    log.debug("getEventData() - channel index " + channelIndex);
 
     String[] channelData = null;
     NeesEvent[] eventData = null;
@@ -553,7 +557,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
         eventData[i].setFromEventXml (channelData[i]);
         if (theEventsTimes.length == 1) {
           eventData[i].setProperty ("dtTimestamp", Double.toString (theEventsTimes[0]));
-          log.debug("got timeStamp " + eventData[i].getProperty("dtTimestamp"));
+//          log.debug("got timeStamp " + eventData[i].getProperty("dtTimestamp"));
         }
       } catch (TransformerException te) { 
         log.error ("Java XML Error\n" + te);

@@ -267,7 +267,7 @@ public class DataTurbine
           * @see org.nees.rbnb.marker */
         this.cmap.PutMime (this.channelId, NeesEvent.MIME_TYPE);
       } catch (Exception e) {
-        log.error ("Error adding turbine channel: " + e);
+        log.error ("Error adding turbine channel: " + e.getMessage());
       }
       this.cmap.PutDataAsString (this.channelId, theMarker.toEventXmlString ());
       this.source.Flush (this.cmap);

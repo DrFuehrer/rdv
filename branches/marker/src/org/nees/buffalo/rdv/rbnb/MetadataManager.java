@@ -276,6 +276,9 @@ public class MetadataManager {
     //create metadata channel tree
     try {
 
+      if (markerChannelMap != null)
+        markerChannelMap.Clear();
+      
       markerChannelMap = new ChannelMap();
     
       HashMap newChannels = new HashMap();
@@ -350,6 +353,8 @@ public class MetadataManager {
     
     //store user metadata in channel objects
     String[] channelList = cmap.GetChannelList();
+    String mimeType;
+    log.info("Number of channels: " + channelList.length);
     for (int i=0; i<channelList.length; i++) {
       int channelIndex = cmap.GetIndex(channelList[i]);
       if (channelIndex != -1) {
@@ -357,17 +362,25 @@ public class MetadataManager {
         String userMetadata = cmap.GetUserInfo(channelIndex);
         Channel channel = new Channel(node, userMetadata);
         channels.put(channelList[i], channel);
+        /* do the marker stuff */
+        mimeType = node.getMime();
+        log.info("MIMETYPE: " + mimeType);
+        if (mimeType != null && mimeType.compareToIgnoreCase(NeesEvent.MIME_TYPE) == 0) {
+          markerChannelMap.Add(node.getFullName());
+          log.info("Channel " + node.getFullName() + " added to Marker's channels");          
+        }
+        
       }            
     }
-    String mimeType;
+
     Iterator it = ctree.iterator();
     int index;
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
-      mimeType = node.getMime();
-      if (mimeType != null && mimeType.compareToIgnoreCase(NeesEvent.MIME_TYPE) == 0) {
-          index = markerChannelMap.Add(node.getFullName());
-      }
+//      mimeType = node.getMime();
+//      if (mimeType != null && mimeType.compareToIgnoreCase(NeesEvent.MIME_TYPE) == 0) {
+//          index = markerChannelMap.Add(node.getFullName());
+//      }
       
       // look for child servers and get their channels      
       if (node.getType() == ChannelTree.SERVER &&
@@ -378,13 +391,11 @@ public class MetadataManager {
       }
     }
     
-    if (markerChannelMap != null) {
-
-      markersDuration = (((double)(System.currentTimeMillis ())) / 1000.0);  // current date/time now in seconds
+    if (markerChannelMap != null && markerChannelMap.GetChannelList().length > 0) {
+      markersDuration = (((double)(System.currentTimeMillis ())) / 1000.0);  // current date/time in seconds
 
       sink.Request(markerChannelMap, markersStart, markersDuration, "absolute");  // request from start of marker channels to now
       markerChannelMap = sink.Fetch(-1, markerChannelMap);
-      
     }
     
     

@@ -67,7 +67,7 @@ import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.rbnb.marker.NeesEvent;
-import org.nees.rbnb.marker.NeesEventRDVTimelinePanel;
+import org.nees.rbnb.marker.MarkerEventsPanel;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelTree;
@@ -95,7 +95,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
  	public double timeScales[] = {0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
 //////////////////////////////////////////////////////////////////////////// LJM
-  protected NeesEventRDVTimelinePanel markerPanel = null;
+  protected MarkerEventsPanel markerPanel = null;
   public JLabel markerLabel = null;
   protected JToolTip markerPanelToolTip = null;
   /* Marker panel interval limits */
@@ -296,10 +296,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		container.add (markerLabel, c);
     
     /** A panel that displays a time-line-like view of markers present in the turbine */
-    markerPanel = new NeesEventRDVTimelinePanel (this);
+    markerPanel = new MarkerEventsPanel(this);
     
     markerPanel.setBorder (BorderFactory.createEtchedBorder ());
     markerPanel.setToolTipText ("tipsy");
+/*    
     markerPanel.addMouseListener (new MouseAdapter () {
       public void mouseClicked (MouseEvent e) {
         // DOTOO disable the submission panel
@@ -310,8 +311,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
         // Iff its a left-click, else we lose real-time state
         if (e.getButton () ==  1) {
           // scale factor is pixels/time
-          double guiTime = ((e.getX () / markerPanel.getScaleFactor ()) +
-                          markerPanel.getEventsChannelStartTime ());
+          double guiTime = ((e.getX () / markerPanel.getMarkerScaleFactor ()) +
+                          markerPanel.eventsChannelStartTime);
         
           // Go to the end if the mouse click is close
           if ((markerPanel.getWidth () - markerPanel.FUDGE_FACTOR) < e.getX ()) {
@@ -341,7 +342,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       } // mouseReleased ()
     } // MouseAdaptor definition
                                   ); // addMouseListener
- 
+*/ 
     c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 1;
@@ -448,10 +449,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		this.ctree = ctree;
 		
 		updateTimeBoundaries();
-
-/////////////////////////////////////////////////////////////////////////////LJM
-    markerPanel.updateCtree (ctree);
-/////////////////////////////////////////////////////////////////////////////LJM   
 
 		log.info("Received updated channel metatdata.");
 	}

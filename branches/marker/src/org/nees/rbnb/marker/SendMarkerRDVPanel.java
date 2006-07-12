@@ -76,11 +76,11 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
   private JFrame rdvFrame;
   /** An event marker timeline 
     * @see org.nees.rbnb.marker.NeesEventRDVTimelinePanel */
-  NeesEventRDVTimelinePanel timeLine;
+  MarkerEventsPanel timeLine;
   
   /***************************************************************************/       
   /** Object constructor; noisy with the GUI construction, which is verbose. */
-  public SendMarkerRDVPanel (NeesEvent anEvent, RBNBController rbnb, NeesEventRDVTimelinePanel tl, JFrame frame) {
+  public SendMarkerRDVPanel (NeesEvent anEvent, RBNBController rbnb, MarkerEventsPanel tl, JFrame frame) {
     this.rdvRbnb = rbnb;
     this.timeLine = tl;
     this.rbnbServerName = rdvRbnb.getRBNBHostName ();
@@ -99,8 +99,9 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
 
     
     try {
+      log.debug("Opening dataturbine RBNB connection for server: " + this.rbnbServerName);
       setRbnbServer (this.rbnbServerName);
-      log.info ("Opened RBNB connection.");
+
     } catch (SAPIException sapie) {
       log.error ("Problem opening the turbine: " + this.rbnbServerName + sapie);
     }
@@ -114,13 +115,8 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
     Runtime.getRuntime ().addShutdownHook (new Thread () {
       public void run () {
         try {
-          sendClosingMarker ();
           closeTurbine ();
           log.debug ("Shutdown hook.");
-        } catch (IOException ioe) {
-          log.error ("I/O problem sending closing marker." + ioe);
-        } catch (TransformerException te) {
-          log.error ("XML problem sending closing marker." + te);
         } catch (Exception e) {
           log.error ("Unexpected error closing DataTurbine.");
         }
@@ -188,7 +184,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
     
     this.add (layoutFieldBox);
     layoutFieldBox.add (sendButtonBox);
-    
+/*    
     try {
       sendOpeningMarker ();
     } catch (IOException ioe) {
@@ -196,6 +192,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
     } catch (TransformerException te) {
       log.error ("XML problem sending opening marker." + te);
     }
+*/    
   } // constructor ()
     ////////////////////////////////////////////////////////////////////////////////
   
@@ -229,6 +226,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
    * @param the new DataTurbine server.
    */
   public void setRbnbServer (String serverName) throws SAPIException, Exception {
+    log.debug("setRbnbServer() - start");
     if (this.myTurban.isConnected ()) {
       this.closeTurbine ();
     }
@@ -255,32 +253,6 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
   } // sendOpeningMarker ()
   
   
-  /** A method to mark the end of the sumbission session.
-    * stubbed until a use case indicates that this is a desireable feature.
-  */
-  public void sendClosingMarker () throws IOException, TransformerException {
-    /* Stuff a special a marker and send it. */
-    /* NeesEvent closingMarker = new NeesEvent (this.rbnbChannel);
-    closingMarker.setProperty ("source", RDVsourceLabel);
-    closingMarker.setProperty ("label", "Disconnection Flag");
-    closingMarker.setProperty ("type", "annotation");
-    closingMarker.setProperty ("content", "Marker Submission Client Disconnected.");
-    closingMarker.setProperty ("timestamp",""+(((double)(System.currentTimeMillis ())) / 1000.0));
-    
-    try {
-      this.myTurban.putMarker (
-                               closingMarker.toEventXmlString (), closingMarker.rbnbChannel
-                               );
-      log.info ("Submitted closing marker.");
-    } catch (IOException ioe) {
-      log.error ("IO error displaying to the GUI\n" + ioe);
-      throw ioe;
-    } catch (TransformerException te) {
-      log.error ("XML Error forming the XML doc\n" + te);
-      throw te;
-    }*/
-  } // sendClosingMarker ()
-  
   
   /** A method to change the connection of this instance to @param an new
     * DataTurbine server. */
@@ -303,6 +275,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
                 newTurbine);
       
       this.rbnbServerName = newTurbine;
+/*      
       try {
         this.sendOpeningMarker ();
       } catch (IOException ioe) {
@@ -310,6 +283,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
       } catch (TransformerException te) {
         log.error ("Trouble talking to the new DataTurbine.");
       }
+*/      
     } else {
       log.debug ("DataTurbine server changed from " +
                  this.rbnbServerName + " to " + 
@@ -348,22 +322,7 @@ public class SendMarkerRDVPanel extends JPanel implements ActionListener, Connec
   } // main()
   
   
-  /** An object destructor method. */
-  protected void finalize () {
-    try {
-      sendClosingMarker ();
-    } catch (IOException ioe) {
-      log.error ("I/O problem sending closing marker." + ioe);
-    } catch (TransformerException te) {
-      log.error ("XML problem sending closing marker." + te);
-    }
-    try {
-      this.closeTurbine ();
-    } catch (Exception e) {
-      log.error ("Error closing turbine: " + e);
-    }
-  } // finalize ()
-  
+ 
   
   /**
     * A method to handle mouse-generated events (send marker button)

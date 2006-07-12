@@ -47,6 +47,7 @@ public class MarkerFieldDialog extends JDialog {
   private double markerTimeStamp;
 	private JButton submitButton;
 	private JButton cancelButton;
+  private JLabel warningLabel;
 	
 	/** constructor */
   public MarkerFieldDialog (JFrame owner, double markerTime, SendMarkerRDVPanel markerSender) {
@@ -156,7 +157,17 @@ public class MarkerFieldDialog extends JDialog {
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.CENTER;
 		getContentPane ().add (buttonPanel, c);
-		
+
+		// label below serves as data validation if we decide to force users to enter label and content text fields
+/*    
+    warningLabel = new JLabel("");
+    c.fill = GridBagConstraints.NONE;
+    c.weightx = 0;
+    c.gridx   = 0;
+    c.gridy   = 3;
+    c.anchor  = GridBagConstraints.NORTHEAST;
+    getContentPane().add(warningLabel, c);
+*/    
 		pack ();
     setLocationByPlatform(true);
 		setVisible (true);
@@ -172,36 +183,44 @@ public class MarkerFieldDialog extends JDialog {
   
 	
 	private void submitMarker () {
-		String markerLabel   = null;
-    String markerContent = null;
+		String markerLabel   = "";
+    String markerContent = "";
     
     markerLabel   = markerLabelTextField.getText ();
     markerContent = markerContentTextField.getText ();
     
-    this.myCaller.myEvent.setProperty ("label", markerLabel);
-    this.myCaller.myEvent.setProperty ("content", markerContent);
-    this.myCaller.myEvent.setProperty ("timestamp", Double.toString (this.markerTimeStamp));
+//    if (markerLabel.trim().equals("") || markerContent.trim().equals("")) {
     
-    /* This check has been supplanted by the connect () method in
-      @see org.nees.rbnb.marker.SendMarkerRDVPanel - left here for future reference.
-    if (this.myCaller.rbnbServerName.compareTo (this.myCaller.rdvRbnb.getRBNBHostName ()) != 0) {
-      // then the DataTurbine server has changed; we need to change to keep with it
+//      warningLabel.setForeground(Color.RED);
+//      warningLabel.setText("Please specify a label and content for your marker!");
+
+//    } else {
+      this.myCaller.myEvent.setProperty ("label", markerLabel);
+      this.myCaller.myEvent.setProperty ("content", markerContent);
+      this.myCaller.myEvent.setProperty ("timestamp", Double.toString (this.markerTimeStamp));
+      
+      /* This check has been supplanted by the connect () method in
+        @see org.nees.rbnb.marker.SendMarkerRDVPanel - left here for future reference.
+      if (this.myCaller.rbnbServerName.compareTo (this.myCaller.rdvRbnb.getRBNBHostName ()) != 0) {
+        // then the DataTurbine server has changed; we need to change to keep with it
+        try {
+          this.myCaller.changeTurbine (this.myCaller.rdvRbnb.getRBNBHostName ());
+        } catch (SAPIException sae) {
+          log.error ("Couldn't change RBNB servers: " + sae);
+        }
+      } // if
+      */
+      
       try {
-        this.myCaller.changeTurbine (this.myCaller.rdvRbnb.getRBNBHostName ());
-      } catch (SAPIException sae) {
-        log.error ("Couldn't change RBNB servers: " + sae);
+    
+        this.myCaller.myTurban.putMarker (this.myCaller.myEvent, this.myCaller.myEvent.rbnbChannel);
+      } catch (Exception ex) {
+        log.error ("Error putting the XML into the Turbine: " + ex);
+        ex.printStackTrace ();
       }
-    } // if
-    */
-    
-    try {
-      this.myCaller.myTurban.putMarker (this.myCaller.myEvent, this.myCaller.myEvent.rbnbChannel);
-    } catch (Exception ex) {
-      log.error ("Error putting the XML into the Turbine: " + ex);
-      ex.printStackTrace ();
-    }
-    
-    dispose ();
+      
+      dispose ();
+//    }
 	} // submitMarker ()
 	
   
