@@ -209,31 +209,6 @@ public class MetadataManager {
     fireMetadataUpdated(null);
   }
   
-  public void getMarkerEventsTimes(ChannelTree ceeTree) {
-      
-      log.info("getMarkerEventsTimes()");
-      if (ceeTree == null) {
-        return;
-      }
-    
-      Iterator it = ceeTree.iterator ();
-      log.debug("tree has " + it.getClass());
-      ChannelTree.Node node;
-      String channelMime = null;
-      // Go through the entire channel tree and pick out the events channels
-      while (it.hasNext ()) {
-        node = (ChannelTree.Node)it.next ();
-        channelMime = node.getMime ();
-        // get the latest times
-
-        if (channelMime != null &&
-            channelMime.compareToIgnoreCase (NeesEvent.MIME_TYPE) == 0) {
-
-          log.info("Marker time for " + node.getFullName() + " is " + DataViewer.formatDate(node.getStart()));
-        }
-      }
-  }
-  
   private ChannelMap getMarkerChannels(Sink sink) {
 
     ChannelMap markerChannels = new ChannelMap();
