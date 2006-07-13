@@ -208,36 +208,7 @@ public class MetadataManager {
     
     fireMetadataUpdated(null);
   }
-  
-  private ChannelMap getMarkerChannels(Sink sink) {
 
-    ChannelMap markerChannels = new ChannelMap();
-    
-    try {
-      ChannelMap cMap = new ChannelMap();
-      sink.RequestRegistration(cMap);
-
-      cMap = sink.Fetch(-1, cMap);
-      String mimeType;
-      for (int i=0; i<cMap.NumberOfChannels(); i++) {
-        mimeType = cMap.GetMime(i);
-        log.info("mime=" + mimeType + " name=" + cMap.GetName(i) + " type=" + cMap.GetType(i) + " userInfo=" + cMap.GetUserInfo(i) );
-        if ( mimeType == NeesEvent.MIME_TYPE) {
-          
-          markerChannels.Add(cMap.GetName(i));
-          log.info(cMap.GetName(i) + " was added to markerchannels");
-        }
-        
-      }
-      
-    } catch (SAPIException e) {
-      log.error("Failed to retrieve Marker channels: " + e.getMessage() + ".");
-
-    }  
-    
-    return markerChannels;
-  }
-  
   
   /**
    * Updates the metadata and posts it to listeners. It also notifies all
