@@ -60,11 +60,6 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
   /** Variables to store and manage events that are found in the DataTurbine.*/
   protected NeesEvent[] theEvents = null;
 
-  /** A variable to accumulate incident events. */
-  protected HashMap theEventsHistoryHash = null;
-  protected Set theEventsHistoryHashKeys = null;
-  /** A variable to indicate whether or not an events channel has been found */
-
   /** variables to track the time interval of the events channel only, as
     * opposed to that of the entire ring buffer.
     * furthermore, this range is to be determined by (possibly delayed) marker
@@ -97,8 +92,6 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
     this.rdvControlPanel = cpanel;
     this.rbnbctl = this.rdvControlPanel.rbnbController;
     this.controlPanelLabel = this.rdvControlPanel.markerLabel;
-    theEventsHistoryHash = new HashMap ();
-    theEventsHistoryHashKeys = theEventsHistoryHash.keySet ();
   }
   
   
@@ -146,7 +139,6 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
     int markerXcoordinate;
     
     double markerScaleFactor = this.getMarkerScaleFactor();
-    log.debug("scaleFactor: " + markerScaleFactor);
     
     toolTipMap = new HashMap<Double, String>();
    
@@ -154,13 +146,10 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
 
       markerType = marker.getProperty("type");
       if (markerType.compareToIgnoreCase ("start") == 0 ) {
-//        log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(marker.getProperty ("timestamp"))));
         markerPanelG.setColor(NeesEvent.startColor); 
       } else if ( markerType.compareToIgnoreCase ("stop") == 0 ) {
-//        log.debug("TimeStamp at : " + DataViewer.formatDate(Double.parseDouble(marker.getProperty ("timestamp"))));
         markerPanelG.setColor(NeesEvent.stopColor);
       } else {
-//        log.debug("Annotation marker at at : " + DataViewer.formatDate(Double.parseDouble(marker.getProperty ("timestamp"))));
         markerPanelG.setColor(Color.black);
       }
 
@@ -172,11 +161,8 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
       if (markerXcoordinate <= 0) {
         markerXcoordinate = FUDGE_FACTOR;
       } else if ((this.getWidth ()) <= markerXcoordinate) {
-//          log.debug("this.getWidth (): " + this.getWidth () + " <= markerXcoordinate");
         markerXcoordinate = this.getWidth () - FUDGE_FACTOR;
-//        log.debug("markerXcoordinate: " + markerXcoordinate + "  after fudgefactor subtracted");
       } else if ((this.getWidth ()) - FUDGE_FACTOR < markerXcoordinate && markerXcoordinate < this.getWidth ()) {
-//          log.debug("ELSE");
         markerXcoordinate = markerXcoordinate - FUDGE_FACTOR;
       }
       
@@ -185,7 +171,6 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
      
       markerTime = (double)markerXcoordinate / (double)this.getWidth();
       toolTipMap.put(markerTime, marker.getProperty("label"));
-     
     }
 
     markerPanelG.dispose ();
@@ -231,41 +216,6 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
     return tipLabel;
   }
   
-  
-  /** A method that will search 
-    * @param an input @see java.util.HashMap 
-    * by simply iterating
-    * @return the nearest valid key within the tolerance interval
-    * algorithm is to find the element with which
-    * @param an imput target
-    * has a minmum difference
-    * DOTOO This can be optimized to at least O(n/2), rather than O(n)
-    */
-  public double getClosestTime (HashMap searchSpace, double target) {
-    
-    Object[] keySetObj = searchSpace.keySet ().toArray ();
-    double targetDiff = Double.MAX_VALUE;
-    double currTargetDiff = targetDiff;
-    
-    double closestTime = -1.0;
-    int closestTimeDex = -1;
-    
-    for (int i=0; i<keySetObj.length; i++) {
-      currTargetDiff = Math.abs (target - ( (Double)(keySetObj[i]) ).doubleValue () );
-      if (currTargetDiff < targetDiff) { // then found a new minmum
-        targetDiff = currTargetDiff;
-        closestTimeDex = i;
-      } // if
-    } // for
-    
-    if (closestTimeDex == -1) {
-      return closestTimeDex;
-    }
-    return ( ( (Double)(keySetObj[closestTimeDex]) ).doubleValue () );
-  } // getClosestTime ()
-  
-  
- 
   public void updateMarkerChannels(ChannelMap cMap) {
     
     log.debug("updateMarkerChannels() - start");
@@ -278,7 +228,6 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
     int chanIndex;
 
     log.debug("updateMarkerChannels() - num channels: " + channelMap.NumberOfChannels());
-    
     
     this.markerEvents = new ArrayList<NeesEvent>();
 
@@ -325,60 +274,5 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
     return neesMarkers;
     
   }
-  
- 
-  
-  /** A method to display a popup when triggered from ContolPanel */
-  public void doPopup (final MouseEvent e) {
-    if (! e.isPopupTrigger ()) {
-      return;
-    }
-    final double guiTime = ((e.getX () / this.getMarkerScaleFactor ()) +
-                      this.eventsChannelStartTime);
-    JPopupMenu popup = new JPopupMenu (Double.toString (guiTime));
-    
-    JMenuItem popupItem = new JMenuItem ("View Event");
-    popupItem.addActionListener (new ActionListener () {
-      public void actionPerformed (ActionEvent notUsed) {
-        JOptionPane.showMessageDialog (rdvControlPanel,
-                                       formatMarker4Popup (guiTime, e),
-                                       "Event Marker Display",
-                                       JOptionPane.PLAIN_MESSAGE,
-                                       null);
-      } // actionPerformed ()
-    } // new ActionListener
-                                 ); // addActionListener
-    popup.add (popupItem);
-    popup.show (this, e.getX (), e.getY ());
-    
-  } // doPopup
-  
-  
-  /** A method to format event marker content as a verbose string */
-  public String formatMarker4Popup (double popupTime, MouseEvent e) {
-    String targetMarkerOutput = null;
-    double closestTime = getClosestTime (theEventsHistoryHash, popupTime);
-    NeesEvent targetEvent = (NeesEvent)( theEventsHistoryHash.get (closestTime) );
-    /* this case is for the boundary case when the mouse is right at the edge
-      * of this panel's display */
-    if ( e.getX () < this.getWidth () &&
-         (this.getWidth () - FUDGE_FACTOR) < e.getX () ) {
-      // get the maximum key
-      targetEvent = theEvents[theEvents.length-1];
-    } // if
-    
-    String tagretMarkerLabel   = (String)(targetEvent.get ("label"));
-    String tagretMarkerContent = (String)(targetEvent.get ("content"));
-    String tagretMarkerTime    =
-        DataViewer.formatDate (
-                Double.parseDouble ( (String)(targetEvent.get ("timestamp")) )
-                               );
-    
-    targetMarkerOutput = "Label: " + tagretMarkerLabel + "\n" +
-                         "Content: " + tagretMarkerContent + "\n" +
-                         "Time: " + tagretMarkerTime;
-    
-    return targetMarkerOutput;
-  } // formatMarker4Popup ()
   
 }  
