@@ -57,7 +57,7 @@ public class DataTurbine
     * create - create an archive.
     * append - load an archive, but allow writing new data to it.
     */
-  public static String RBNB_ARCHIVE_MODE = "create";
+  public static String RBNB_ARCHIVE_MODE = "append";
   //~ Constructors -----------------------------------------------------------
   
   public DataTurbine (String name) {
@@ -259,8 +259,7 @@ public class DataTurbine
       try {
         this.channelId = this.cmap.Add (targetChannel);
         
-        double markerTime = Double.parseDouble (theMarker.getProperty ("timestamp"));
-        this.cmap.PutTime (markerTime, 0.0);
+        this.cmap.PutTimeAuto ("timeofday");
         
         /** This mime type is an arbitrary extension and is needed for
           * application useage of markers (such as RDV).
