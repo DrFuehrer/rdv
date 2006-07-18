@@ -1008,9 +1008,13 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
         switch (col) {
         case 5: // "Min Thresh"
              try {
-                double minThreshold = Double.parseDouble((String)value); 
-                dataRow.minThresh = minThreshold;
-                properties.setProperty("minThreshold_" + dataRow.getName(), Double.toString(minThreshold));
+               double minThreshold = (-1 * Double.MAX_VALUE);
+               
+               if (value.toString() != null && value.toString().trim().compareTo("") != 0)
+                 minThreshold = Double.parseDouble((String)value);
+
+               dataRow.minThresh = minThreshold;
+               properties.setProperty("minThreshold_" + dataRow.getName(), Double.toString(minThreshold));
              } catch (Throwable e) {
                 break;
              }
@@ -1018,14 +1022,19 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
              break;
           case 6: // "Max Thresh"
              try {
-                double maxThreshold = Double.parseDouble((String)value);
-                dataRow.maxThresh = maxThreshold;
-                properties.setProperty("maxThreshold_" + dataRow.getName(), Double.toString(maxThreshold));
+               double maxThreshold = Double.MAX_VALUE;
+               
+               if (value.toString() != null && value.toString().trim().compareTo("") != 0)
+                 maxThreshold = Double.parseDouble((String)value);
+               
+               dataRow.maxThresh = maxThreshold;
+               properties.setProperty("maxThreshold_" + dataRow.getName(), Double.toString(maxThreshold));
              } catch (Throwable e) {
                 break;
              }
              fireTableCellUpdated (row, col);
              break;
+             
           default:
             return; // do nothing
         } // switch
