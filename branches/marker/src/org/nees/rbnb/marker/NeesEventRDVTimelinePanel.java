@@ -360,7 +360,7 @@ public class NeesEventRDVTimelinePanel extends JPanel implements DataListener, T
     markerPanelScaleFactor =
     ( this.getWidth () / ((this.getEventsChannelEndTime () -
                            this.getEventsChannelStartTime ()) *
-                           this.rdvControlPanel.getTimeScale ()) );
+                           this.rbnbctl.getTimeScale()) );
   }
   
   

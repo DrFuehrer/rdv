@@ -39,23 +39,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
-import javax.swing.JToolTip;
-import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,6 +64,8 @@ import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelTree;
 
 /**
+ * The UI to act as the control panel for data playback.
+ * 
  * @author Jason P. Hanley
  * @author Lawrence J. Miller
  */
@@ -94,14 +87,9 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 
  	public double timeScales[] = {0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
-//////////////////////////////////////////////////////////////////////////// LJM
+
   protected MarkerEventsPanel markerPanel = null;
   public JLabel markerLabel = null;
-  protected JToolTip markerPanelToolTip = null;
-  /* Marker panel interval limits */
-  /** An array of event markers generated from an appropriate channel in
-    * in the DataTurbine to which this RDV is connected. */
-//////////////////////////////////////////////////////////////////////////// LJM
  	
 	public double startTime;
 	private double endTime;
@@ -278,8 +266,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;		
 		container.add(locationScrollBar, c);
-
-    // marker display panel    
+   
     markerLabel = new JLabel ("Event Marker");
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
@@ -295,54 +282,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     markerLabel.setVisible(false);
 		container.add (markerLabel, c);
     
-    /** A panel that displays a time-line-like view of markers present in the turbine */
-    markerPanel = new MarkerEventsPanel(this);
-    
+    markerPanel = new MarkerEventsPanel(this);    
     markerPanel.setBorder (BorderFactory.createEtchedBorder ());
     markerPanel.setToolTipText ("tipsy");
-/*    
-    markerPanel.addMouseListener (new MouseAdapter () {
-      public void mouseClicked (MouseEvent e) {
-        // DOTOO disable the submission panel
-        if (! rbnbController.isConnected ()) {
-          return;
-        }
-      
-        // Iff its a left-click, else we lose real-time state
-        if (e.getButton () ==  1) {
-          // scale factor is pixels/time
-          double guiTime = ((e.getX () / markerPanel.getMarkerScaleFactor ()) +
-                          markerPanel.eventsChannelStartTime);
-        
-          // Go to the end if the mouse click is close
-          if ((markerPanel.getWidth () - markerPanel.FUDGE_FACTOR) < e.getX ()) {
-            location = endTime;
-            setSliderLocation (endTime);
-          } else {
-            location = guiTime;
-            setSliderLocation (guiTime);
-          }
-          locationChange ();
-          // This updates the whole display
-          rbnbController.setLocation (location);
-          markerPanel.repaint ();
-        } // if click is button 1 ONLY
-      
-      } // mouseClicked ()
-      
-      public void mouseDragged   (MouseEvent e) {}
-      public void mouseEntered   (MouseEvent e) {}
-      public void mouseExited    (MouseEvent e) {}
-      public void mousePressed   (MouseEvent e) {
-        markerPanel.doPopup (e);
-      } // mousePressed ()
-      
-      public void mouseReleased  (MouseEvent e) {
-        markerPanel.doPopup (e);
-      } // mouseReleased ()
-    } // MouseAdaptor definition
-                                  ); // addMouseListener
-*/ 
+
     c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 1;
@@ -355,9 +298,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.insets = new java.awt.Insets(5,5,5,5);
 		c.anchor = GridBagConstraints.NORTHWEST;
     container.add (markerPanel, c);
-    rbnbController.getMetadataManager().addMarkerListener(markerPanel);
-    log.info ("Added Event Marker Panel to Control Panel.");
-//////////////////////////////////////////////////////////////////////////// LJM 
+    rbnbController.getMetadataManager().addMarkerListener(markerPanel); 
     
 		JLabel timeScaleLabel = new JLabel("Time Scale");
 		c.fill = GridBagConstraints.NONE;
@@ -664,12 +605,6 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		return index;
 	}
 
-  // LJM
-  public double getTimeScale () {
-    return this.timeScale;
-  }
-  
-	
 	private void timeScaleChange() {
 		double oldTimeScale = timeScale;
 	
@@ -717,10 +652,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		pauseButton.setEnabled(false);
 		beginButton.setEnabled(false);
 		endButton.setEnabled(false);
-/////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.setEnabled (false);
     markerPanel.clearDisplay ();
-/////////////////////////////////////////////////////////////////////////////LJM
 		locationScrollBar.setEnabled(false);
 		playbackRateScrollBar.setEnabled(false);
 		timeScaleScrollBar.setEnabled(false);
@@ -734,10 +667,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		pauseButton.setEnabled(true);
 		beginButton.setEnabled(true);
 		endButton.setEnabled(true);
-/////////////////////////////////////////////////////////////////////////////LJM
     markerPanel.setEnabled (true);
     markerPanel.repaint ();
-/////////////////////////////////////////////////////////////////////////////LJM
 		locationScrollBar.setEnabled(true);
 		playbackRateScrollBar.setEnabled(true);
 		timeScaleScrollBar.setEnabled(true);

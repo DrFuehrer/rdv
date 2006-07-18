@@ -188,7 +188,7 @@ public class MarkerEventsPanel extends JPanel implements MarkerDataListener   {
 
       scaleFactor =  this.getWidth() / ((this.eventsChannelEndTime -
           this.eventsChannelStartTime) *
-          this.rdvControlPanel.getTimeScale());
+          this.rbnbctl.getTimeScale());
           
       
     } catch (Exception e) {
