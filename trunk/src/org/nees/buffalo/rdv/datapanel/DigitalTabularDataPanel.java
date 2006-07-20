@@ -173,6 +173,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
    */
   private static final double WARNING_PERCENTAGE = 0.75;
 
+  private JCheckBox useOffsetsCheckBox;
   
   /**
    * Initialize the data panel.
@@ -219,15 +220,12 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 
       JPanel offsetsPanel = new JPanel();
 
-      final JCheckBox useOffsetsCheckBox = new JCheckBox("Use Offsets");
+      useOffsetsCheckBox = new JCheckBox("Use Offsets");
       useOffsetsCheckBox.addActionListener(new ActionListener() {
          public void actionPerformed(ActionEvent ae) {
             boolean checked = ((JCheckBox) ae.getSource()).isSelected();
 
-            for (int i = 0; i < columnGroupCount; i++) {
-               ((DataTableModel) tableModels.get(i)).useOffsets(checked);
-               ((JTable) tables.get(i)).repaint();
-            } // for 
+            useOffsetRenderer(checked);
          }
       });
       offsetsPanel.add(useOffsetsCheckBox);
@@ -449,6 +447,21 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
       }
     }
   }  
+
+  private void useOffsetRenderer(boolean useOffset) {
+ 
+    useOffsetsCheckBox.setSelected(useOffset);
+    for (int i = 0; i < columnGroupCount; i++) {
+       ((DataTableModel) tableModels.get(i)).useOffsets(useOffset);
+       ((JTable) tables.get(i)).repaint();
+    } 
+
+    if (useOffset) {
+      properties.setProperty("useoffset", "true");
+    } else
+      properties.setProperty("useoffset", "false");
+  }
+  
   
   private void useEngineeringRenderer(boolean useEngineeringRenderer) {
     dataCellRenderer.setShowEngineeringFormat(useEngineeringRenderer);
@@ -824,7 +837,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
           upperThresholds.put(channelName, value);
           properties.put(key, value);
         } catch (NumberFormatException e) {}
-      } // if
+      } else if (key.startsWith("useoffset") && value.equals("true")) {
+        useOffsetRenderer(true);
+      }
     } // if
   } // setProperty ()
   
