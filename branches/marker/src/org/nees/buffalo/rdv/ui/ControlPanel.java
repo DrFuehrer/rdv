@@ -33,6 +33,9 @@ package org.nees.buffalo.rdv.ui;
 
 import java.awt.Adjustable;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -43,7 +46,9 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
@@ -52,6 +57,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
+import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
@@ -69,21 +75,26 @@ import com.rbnb.sapi.ChannelTree;
  * @author Jason P. Hanley
  * @author Lawrence J. Miller
  */
-public class ControlPanel extends JPanel implements AdjustmentListener, TimeListener, StateListener, SubscriptionListener, MetadataListener {
+public class ControlPanel extends JPanel implements AdjustmentListener, TimeListener, StateListener, SubscriptionListener, MetadataListener, PlaybackRateListener {
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
 	public RBNBController rbnbController;
 
 	private JButton monitorButton;
-	private JButton startButton;
-	private JButton pauseButton;
+	private JButton playButton;
+
 	private JButton beginButton;
+  private JButton fasterButton;
+  private JLabel playbackRateLabel;
+  private JButton slowerButton;
 	private JButton endButton;
+  
+  private JComboBox timeScaleComboBox;
+  
+  private JLabel locationLabel;
 
 	private JScrollBar locationScrollBar;
-	private JScrollBar playbackRateScrollBar;
-	private JScrollBar timeScaleScrollBar;
 
  	public double timeScales[] = {0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
@@ -128,259 +139,164 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     setBorder(null);
     setLayout(new BorderLayout());
     
-    JPanel p = new JPanel();
-    p.setBorder(null);
-    p.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		
     
-      beginButton = new JButton("Begin", DataViewer.getIcon("icons/begin.gif"));
-      beginButton.setToolTipText("Begin");
-      beginButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent e) {
-           setLocationBegin();
-        }
-      });    
+    JPanel container = new JPanel();
+    container.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.lightGray));
+    container.setLayout(new GridBagLayout());
     
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0.5;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
- 		p.add(beginButton, c);		
-		
-    pauseButton = new JButton("Pause", DataViewer.getIcon("icons/pause.gif"));
-    pauseButton.setToolTipText("Pause");
-    pauseButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        rbnbController.pause();
-      }
-    });    
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0.5;
-		c.weighty = 0;
-		c.gridx = 1;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
- 		p.add(pauseButton, c);		
-		
-    monitorButton = new JButton("Real Time", DataViewer.getIcon("icons/rt.gif"));
-    monitorButton.setToolTipText("Real Time");
+    JPanel firstRowPanel = new JPanel();
+    firstRowPanel.setBorder(null);
+    firstRowPanel.setLayout(new BorderLayout());
+    
+    JPanel controlsPanel = new JPanel();
+    controlsPanel.setBorder(null);
+    controlsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 0));
+    
+    monitorButton = new JButton(DataViewer.getIcon("icons/rt.gif"));
+    monitorButton.setSelectedIcon(DataViewer.getIcon("icons/pause.gif"));
+    monitorButton.setToolTipText("View live data");
+    monitorButton.setBorder(null);
     monitorButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        rbnbController.monitor();
+        if (monitorButton.isSelected()) {
+          rbnbController.pause();
+        } else {
+          rbnbController.monitor();
+        }
       }
     });
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0.5;
-		c.weighty = 0;
-		c.gridx = 2;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
-		p.add(monitorButton, c);
-		
-		startButton = new JButton("Play", DataViewer.getIcon("icons/play.gif"));
- 		startButton.setToolTipText("Play");
-		startButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				rbnbController.play();
-			}
-		});
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0.5;
-		c.weighty = 0;
-		c.gridx = 3;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
-		p.add(startButton, c);
-		
-		endButton = new JButton("End", DataViewer.getIcon("icons/end.gif"));
- 		endButton.setToolTipText("Go to end");
+    controlsPanel.add(monitorButton);
+    
+    playButton = new JButton(DataViewer.getIcon("icons/play.gif"));
+    playButton.setSelectedIcon(DataViewer.getIcon("icons/pause.gif"));
+    playButton.setToolTipText("Play");
+    playButton.setBorder(null);
+    playButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        if (playButton.isSelected()) {
+          rbnbController.pause();
+        } else {
+          rbnbController.play();
+        }
+      }
+    });
+    controlsPanel.add(playButton);
+    
+    controlsPanel.add(Box.createHorizontalStrut(8));
+    
+    beginButton = new JButton(DataViewer.getIcon("icons/begin.gif"));
+    beginButton.setToolTipText("Go to beginning of data");
+    beginButton.setBorder(null);
+    beginButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        setLocationBegin();
+      }
+    });
+ 		controlsPanel.add(beginButton);
+    
+    slowerButton = new JButton(DataViewer.getIcon("icons/rew.gif"));
+    slowerButton.setToolTipText("Playback data slower");
+    slowerButton.setBorder(null);
+    slowerButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        decreasePlaybackRate();
+      }
+    });
+    controlsPanel.add(slowerButton);
+    
+    playbackRateLabel = new JLabel();
+    playbackRateLabel.setToolTipText("The current playback rate");
+    playbackRateLabel.setHorizontalAlignment(JLabel.CENTER);
+    playbackRateLabel.setPreferredSize(new Dimension(24,16));
+    controlsPanel.add(playbackRateLabel);    
+    
+    fasterButton = new JButton(DataViewer.getIcon("icons/ff.gif"));
+    fasterButton.setToolTipText("Playback data faster");
+    fasterButton.setBorder(null);
+    fasterButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        increasePlaybackRate();
+      }
+    });    
+    controlsPanel.add(fasterButton);    
+
+		endButton = new JButton(DataViewer.getIcon("icons/end.gif"));
+ 		endButton.setToolTipText("Go to end of data");
+    endButton.setBorder(null);
 		endButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setLocationEnd();
 			}
 		});
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0.5;
-		c.weighty = 0;
-		c.gridx = 4;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
-		p.add(endButton, c);
-
-		JPanel container = new JPanel();
-		container.setLayout(new GridBagLayout());		
-		
-		JLabel locationLabel = new JLabel("Time");
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 1;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;				
-		container.add(locationLabel, c);
+		controlsPanel.add(endButton);
+    
+    controlsPanel.add(Box.createHorizontalStrut(8));
+    
+    timeScaleComboBox = new JComboBox();
+    timeScaleComboBox.setToolTipText("The amount of data to display");
+    timeScaleComboBox.setPreferredSize(new Dimension(64,16));
+    for (int i=0; i<timeScales.length; i++) {
+      timeScaleComboBox.addItem(DataViewer.formatSeconds(timeScales[i]));
+    }
+    timeScaleComboBox.setSelectedIndex(getTimeScaleIndex(timeScale));
+    timeScaleComboBox.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        timeScaleChange();
+      }
+    });
+    controlsPanel.add(timeScaleComboBox);
+    
+    firstRowPanel.add(controlsPanel, BorderLayout.CENTER);
+    
+    locationLabel = new JLabel();
+    firstRowPanel.add(locationLabel, BorderLayout.EAST);
+    
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1;
+    c.weighty = 0;
+    c.gridx = 0;
+    c.gridy = 0;
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.gridheight = 1;
+    c.ipadx = 0;
+    c.ipady = 0;
+    c.insets = new java.awt.Insets(8,8,8,8);
+    c.anchor = GridBagConstraints.NORTHWEST;    
+    container.add(firstRowPanel, c);    
 		
 		locationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 1);
 		locationScrollBar.addAdjustmentListener(this);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 0;
-		c.gridx = 1;
+		c.gridx = 0;
 		c.gridy = 1;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
+		c.insets = new java.awt.Insets(0,8,0,8);
 		c.anchor = GridBagConstraints.NORTHWEST;		
 		container.add(locationScrollBar, c);
    
-    markerLabel = new JLabel ("Event Marker");
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 2;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;
-    markerLabel.setVisible(false);
-		container.add (markerLabel, c);
-    
     markerPanel = new MarkerEventsPanel(this);    
-    markerPanel.setBorder (BorderFactory.createEtchedBorder ());
-    markerPanel.setToolTipText ("tipsy");
-
+    markerPanel.setBorder(BorderFactory.createEtchedBorder());
     c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 1;
-		c.gridx = 1;
+		c.gridx = 0;
 		c.gridy = 2;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
+		c.insets = new java.awt.Insets(8,8,8,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
     container.add (markerPanel, c);
     rbnbController.getMetadataManager().addMarkerListener(markerPanel); 
     
-		JLabel timeScaleLabel = new JLabel("Time Scale");
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 3;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;
-		container.add(timeScaleLabel, c);			
-
-		int timeScaleIndex = getTimeScaleIndex(timeScale);
-		timeScaleScrollBar = new JScrollBar(Adjustable.HORIZONTAL, timeScaleIndex, 1, 0, timeScales.length);
- 		timeScaleScrollBar.addAdjustmentListener(this);
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
-		c.weighty = 0;
-		c.gridx = 1;
-		c.gridy = 3;
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;		
-		container.add(timeScaleScrollBar, c);
-		
-		JLabel playbackRateLabel = new JLabel("Playback Rate");
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 4;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;
-		container.add(playbackRateLabel, c);		
-		
-		int playbackRateIndex = getPlaybackRateIndex(playbackRate);
- 		playbackRateScrollBar = new JScrollBar(Adjustable.HORIZONTAL, playbackRateIndex, 1, 0, playbackRates.length);
-		playbackRateScrollBar.addAdjustmentListener(this);
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
-		c.weighty = 0;
-		c.gridx = 1;
-		c.gridy = 4;
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(5,5,5,5);
-		c.anchor = GridBagConstraints.NORTHWEST;		
-		container.add(playbackRateScrollBar, c);
-		
-		// Add into the main overall GUI
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 1;
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(0,0,0,0);
-		c.anchor = GridBagConstraints.NORTHWEST;
-		p.add(container, c);
-        
-    SimpleInternalFrame sif = new SimpleInternalFrame(
-        DataViewer.getIcon("icons/control.gif"),
-        "Control Panel",
-        null,
-        p);
-
-    add(sif, BorderLayout.CENTER);        
+    add(container, BorderLayout.CENTER);        
 		
 		log.info("Initialized control panel.");
 	}
@@ -495,26 +411,15 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	}
 			
 	public void adjustmentValueChanged(AdjustmentEvent e) {
-		if (e.getSource() == playbackRateScrollBar) {
-			playbackRateChange();
-		} else if (e.getSource() == locationScrollBar) {
+    if (e.getSource() == locationScrollBar) {
 			locationChange();
-		} else if (e.getSource() == timeScaleScrollBar) {
-			timeScaleChange();
 		}
 	}
-  
-  public void setPlaybackRate(double playbackRate) {
-    int index = Arrays.binarySearch(playbackRates, playbackRate);
-    if (index >= 0) {
-      playbackRateScrollBar.setValue(index);
-    }
-  }
   
   public void setTimeScale(double timeScale) {
     int index = Arrays.binarySearch(timeScales, timeScale);
     if (index >= 0) {
-      timeScaleScrollBar.setValue(index);
+      timeScaleComboBox.setSelectedIndex(index);
     }    
   }
 
@@ -531,52 +436,36 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 	}
 	
-	private int getPlaybackRateIndex(double playbackRate) {
-    int index = -1;
-    if (playbackRate < playbackRates[0]) {
-        this.playbackRate = playbackRates[0];
-        index = 0;
-    } else if (playbackRate > playbackRates[playbackRates.length-1]) {
-        this.playbackRate = playbackRates[playbackRates.length-1];
-        index = playbackRates.length-1;
-    } else {    
-        for (int i=0; i<playbackRates.length-1; i++) {
-            if (playbackRate >= playbackRates[i] && playbackRate <= playbackRates[i+1]) {
-                double down = playbackRate - playbackRates[i];
-                double up = playbackRates[i+1] - playbackRate;
-                if (up <= down) {
-                    this.playbackRate = playbackRates[i+1];
-                    index = i+1;
-                } else {
-                    this.playbackRate = playbackRates[i];
-                    index = i;
-                }
-            }
-        }
+  public void playbackRateChanged(double playbackRate) {
+    String playbackRateText;
+    if (playbackRate < 1) {
+      playbackRateText = Double.toString(playbackRate);
+    } else {
+      playbackRateText = Long.toString(Math.round(playbackRate));
     }
-
-    return index;
-	}
-	
-	private void playbackRateChange() {
-		double oldPlaybackRate = playbackRate;
-		
-		int value = playbackRateScrollBar.getValue();
-			
-		playbackRate = playbackRates[value];
-        
-		if (playbackRate != oldPlaybackRate) {
-			rbnbController.setPlaybackRate(playbackRate);
-			
-			log.debug("Playback rate slider changed to " + playbackRate + ".");
-			
-			locationScrollBar.removeAdjustmentListener(this);
-			locationScrollBar.setVisibleAmount((int)(playbackRate*1000));
-			locationScrollBar.setUnitIncrement((int)(playbackRate*1000));			
-			locationScrollBar.setBlockIncrement((int)(playbackRate*10000));
-			locationScrollBar.addAdjustmentListener(this);
-		}
-	}
+    
+    /* while (playbackRateText.length() < 6) {
+      playbackRateText = " " + playbackRateText;
+    } */
+    
+    playbackRateLabel.setText(playbackRateText);
+  }    
+  
+  private void decreasePlaybackRate() {
+    double playbackRate = rbnbController.getPlaybackRate();
+    int index = Arrays.binarySearch(playbackRates, playbackRate);
+    if (index > 0) {
+      rbnbController.setPlaybackRate(playbackRates[index-1]);
+    }
+  }
+  
+  private void increasePlaybackRate() {
+    double playbackRate = rbnbController.getPlaybackRate();
+    int index = Arrays.binarySearch(playbackRates, playbackRate);
+    if (index < playbackRates.length-1) {
+      rbnbController.setPlaybackRate(playbackRates[index+1]);
+    }    
+  }  
 
 	private int getTimeScaleIndex(double timeScale) {
 		int index = -1;
@@ -605,28 +494,27 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		return index;
 	}
 
-	private void timeScaleChange() {
-		double oldTimeScale = timeScale;
-	
-		int value = timeScaleScrollBar.getValue();
-		
-		timeScale = timeScales[value];
-		
-		if (timeScale != oldTimeScale) {
-			rbnbController.setTimeScale(timeScale);
-			
-			log.debug("Time scale slider changed to " + timeScale + ".");
-		}
+  private void timeScaleChange() {
+    double oldTimeScale = timeScale;
+  
+    int value = timeScaleComboBox.getSelectedIndex();
     
-    // LJM
-    this.markerPanel.repaint ();
-	}
+    timeScale = timeScales[value];
+    
+    if (timeScale != oldTimeScale) {
+      rbnbController.setTimeScale(timeScale);
+      
+      log.debug("Time scale slider changed to " + timeScale + ".");
+    }
+  }
 	
 	
 	// Player Time Methods
 	
 	public void postTime(double time) {
 		setSliderLocation(time);
+    
+    locationLabel.setText(DataViewer.formatDate(time));
 	}
 
 	
@@ -635,48 +523,36 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 	public void postState(int newState, int oldState) {
 		playerState = newState;
 		
-		if (newState == Player.STATE_DISCONNECTED) {
-			disableUI();
-		} else if (oldState == Player.STATE_DISCONNECTED && newState != Player.STATE_EXITING) {
-			enableUI();
-		} else if (newState == Player.STATE_MONITORING) {
-			playbackRateScrollBar.setEnabled(false);
+    monitorButton.setSelected(newState == Player.STATE_MONITORING);    
+    playButton.setSelected(newState == Player.STATE_PLAYING);
+    
+    if (newState == Player.STATE_MONITORING) {
+      slowerButton.setEnabled(false);
+			fasterButton.setEnabled(false);
 		} else if (oldState == Player.STATE_MONITORING) {
-			playbackRateScrollBar.setEnabled(true);
+      slowerButton.setEnabled(true);
+      fasterButton.setEnabled(true);
 		}
 	}
-	
-	private void disableUI() {
-		monitorButton.setEnabled(false);
-		startButton.setEnabled(false);
-		pauseButton.setEnabled(false);
-		beginButton.setEnabled(false);
-		endButton.setEnabled(false);
-    markerPanel.setEnabled (false);
-    markerPanel.clearDisplay ();
-		locationScrollBar.setEnabled(false);
-		playbackRateScrollBar.setEnabled(false);
-		timeScaleScrollBar.setEnabled(false);
-		
-		log.info("Control Panel UI disabled.");
-	}
-	
-	private void enableUI() {
-		monitorButton.setEnabled(true);
-		startButton.setEnabled(true);
-		pauseButton.setEnabled(true);
-		beginButton.setEnabled(true);
-		endButton.setEnabled(true);
-    markerPanel.setEnabled (true);
-    markerPanel.repaint ();
-		locationScrollBar.setEnabled(true);
-		playbackRateScrollBar.setEnabled(true);
-		timeScaleScrollBar.setEnabled(true);
-		
-		log.info("Control Panel UI enabled.");
-	}
+  
+  public void setEnabled(boolean enabled) {
+    monitorButton.setEnabled(enabled);
+    playButton.setEnabled(enabled);
+    beginButton.setEnabled(enabled);
+    slowerButton.setEnabled(enabled);
+    playbackRateLabel.setEnabled(enabled);
+    fasterButton.setEnabled(enabled);    
+    endButton.setEnabled(enabled);
+    timeScaleComboBox.setEnabled(enabled);
+    locationLabel.setEnabled(enabled);
+    locationScrollBar.setEnabled(enabled);
+    markerPanel.setEnabled(enabled);
+    if (!enabled) {
+      markerPanel.clearDisplay();
+    }
+  }
 
-	
+
 	// Player Subscription Methods
 	
 	public void channelSubscribed(String channelName) {
