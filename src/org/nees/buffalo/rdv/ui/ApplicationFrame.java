@@ -109,12 +109,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JSplitPane leftPanel;
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
-	private StatusPanel statusPanel;
+  private MarkerSubmitPanel markerSubmitPanel;
 	private DataPanelContainer dataPanelContainer;
  	private JSplitPane splitPane;
  	
 	private AboutDialog aboutDialog;
 	private RBNBConnectionDialog rbnbConnectionDialog;
+  private JumpDateTimeDialog jumpDateTimeDialog;
 
  	private Action fileAction;
  	private Action connectAction;
@@ -133,6 +134,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action pauseAction;
  	private Action beginningAction;
  	private Action endAction;
+  private Action gotoTimeAction;
  	private Action updateChannelListAction;
  	private Action dropDataAction;
  	
@@ -140,7 +142,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action showChannelListAction;
   private Action showMetadataPanelAction;
  	private Action showControlPanelAction;
- 	private Action showStatusPanelAction;
+  private Action showMarkerPanelAction;
  	private Action dataPanelAction;
  	private Action dataPanelHorizontalLayoutAction;
  	private Action dataPanelVerticalLayoutAction;
@@ -155,9 +157,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JLabel throbber;
   private Icon throbberStop;
   private Icon throbberAnim;
-  
-  private Action gotoTimeAction;
-  private JumpDateTimeDialog jumpDateTimeDialog;
  		
 	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager, boolean isApplet) {
 		super();
@@ -202,9 +201,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		initLeftPanel();
     
 		initRightPanel();
-		initControls();    
-		initDataPanelContainer();		
-		initStatus();
+		initControls();         
+		initDataPanelContainer();
+    initMarkerSubmitPanel();    
     
 		initSplitPane();
     
@@ -213,10 +212,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		rbnb.addSubscriptionListener(controlPanel);
 		
 		rbnb.addTimeListener(controlPanel);
-		rbnb.addTimeListener(statusPanel);
 		
 		rbnb.addStateListener(channelListPanel);
-		rbnb.addStateListener(statusPanel);
 		rbnb.addStateListener(controlPanel);
     rbnb.addStateListener(this);
 
@@ -224,13 +221,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     rbnb.getMetadataManager().addMetadataListener(metadataPanel);
 		rbnb.getMetadataManager().addMetadataListener(controlPanel);
 		
-		rbnb.addPlaybackRateListener(statusPanel);
+		rbnb.addPlaybackRateListener(controlPanel);
 		
-  	rbnb.addTimeScaleListener(statusPanel);
-  	
   	rbnb.addMessageListener(this);
   	
-  	rbnb.addConnectionListener(this);        
+  	rbnb.addConnectionListener(this);
 
 		if (!isApplet) { 
       frame.setLocationByPlatform(true);
@@ -336,7 +331,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		controlAction = new DataViewerAction("Control", "Control Menu", KeyEvent.VK_C);
  
  		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK), "icons/rt.gif") {
- 			public void actionPerformed(ActionEvent ae) {       
+ 			public void actionPerformed(ActionEvent ae) {
  				rbnb.monitor();
  			}			
  		};
@@ -367,12 +362,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
  		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
- 				
-// 				if (jumpDateTimeDialog == null) {
- 					jumpDateTimeDialog = new JumpDateTimeDialog(frame, rbnb, dataPanelManager);
-// 				} else {
-// 					jumpDateTimeDialog.setVisible(true);
-// 				}	
+ 			  jumpDateTimeDialog = new JumpDateTimeDialog(frame, rbnb, dataPanelManager);
  			}			
  		};
  
@@ -414,19 +404,15 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  
- 		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S, "icons/info.gif") {
- 			public void actionPerformed(ActionEvent ae) {
- 				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
- 				statusPanel.setVisible(menuItem.isSelected());
- 			}			
- 		};
+    showMarkerPanelAction = new DataViewerAction ("Show Marker Panel", "", KeyEvent.VK_M, "icons/info.gif") {
+      public void actionPerformed (ActionEvent ae) {
+        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
+        markerSubmitPanel.setVisible(menuItem.isSelected ());
+      }
+    };
 
-    // changed the name of this to "arrange" - more for case 4719
  		dataPanelAction = new DataViewerAction("Arrange", "Arrange Data Panel Orientation", KeyEvent.VK_D);
  		
-     /* Display the data panels horizontally.
-      * LJM exchanged HORIZONTAL and VERTICAL to invert semantics to apply to the
-      * windows theselves, rather than their arrangement for case 4719 */
 		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Data Panel Orientation", "", -1, "icons/vertical.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.VERTICAL_LAYOUT);
@@ -580,9 +566,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
  		
- 		menuItem = new JCheckBoxMenuItem(showStatusPanelAction);
- 		menuItem.setSelected(true);
- 		viewMenu.add(menuItem);
+    menuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
+    menuItem.setSelected(true);
+    viewMenu.add(menuItem);
+ 		
  		viewMenu.addSeparator();
     
     menuItem = new JCheckBoxMenuItem(showHiddenChannelsAction);
@@ -689,18 +676,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 	private void initControls() {
 		controlPanel = new ControlPanel(rbnb);
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
-		c.weighty = 0;
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(8,0,0,8);
-		c.anchor = GridBagConstraints.NORTHWEST;
-		rightPanel.add(controlPanel, c);
+    frame.getContentPane().add(controlPanel, BorderLayout.NORTH);
 		
 		log.info("Added control panel.");
 	}
@@ -717,31 +693,31 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(8,0,8,8);
+		c.insets = new java.awt.Insets(8,0,8,6);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(dataPanelContainer, c);
 		
 		log.info("Added data panel container.");
 	}
-   
-	private void initStatus() {
-		statusPanel = new StatusPanel();
+
+  private void initMarkerSubmitPanel() {
+	  markerSubmitPanel = new MarkerSubmitPanel(rbnb);
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
+		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 3;
-		c.gridwidth = 1;
+		c.gridy = 2;
+		c.gridwidth = 2;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(0,0,8,8);
-		c.anchor = GridBagConstraints.NORTHWEST;
-		rightPanel.add(statusPanel, c);
-		
-		log.info("Added status panel.");		
-	}
-	
+		c.insets = new java.awt.Insets (0, 0, 8, 6);
+		c.anchor = GridBagConstraints.SOUTHWEST;				
+    rightPanel.add (markerSubmitPanel, c);
+    
+    log.info ("Added Marker Submission Panel.");
+  } 
+  
 	private void initSplitPane() {
     splitPane = Factory.createStrippedSplitPane(
                   JSplitPane.HORIZONTAL_SPLIT,
@@ -915,11 +891,17 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       disconnectAction.setEnabled(false);
       importAction.setEnabled(false);
       exportAction.setEnabled(false);
+      
+      controlPanel.setEnabled(false);
+      markerSubmitPanel.setEnabled(false);
     } else if (newState != Player.STATE_EXITING) {
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
       importAction.setEnabled(true);
       exportAction.setEnabled(true);
+      
+      controlPanel.setEnabled(true);
+      markerSubmitPanel.setEnabled(true);
     }
     
     if (newState == Player.STATE_LOADING || newState == Player.STATE_PLAYING || newState == Player.STATE_MONITORING) {

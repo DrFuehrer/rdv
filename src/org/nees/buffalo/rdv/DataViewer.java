@@ -139,13 +139,13 @@ public class DataViewer {
  		} else if (seconds < 1 && seconds != 0) {
 			secondsString = Double.toString(round(seconds*1000)) + " ms";
  		} else if (seconds < 60) {
- 		 	secondsString = Double.toString(round(seconds)) + " seconds";
+ 		 	secondsString = Double.toString(round(seconds)) + " s";
  		} else if (seconds < 60*60) {
-			secondsString = Double.toString(round(seconds/60)) + " minutes";
+			secondsString = Double.toString(round(seconds/60)) + " m";
  		} else if (seconds < 60*60*24){
- 			secondsString = Double.toString(round(seconds/(60*60))) + " hours";
+ 			secondsString = Double.toString(round(seconds/(60*60))) + " h";
  		} else {
- 			secondsString = Double.toString(round(seconds/(60*60*24))) + " days";
+ 			secondsString = Double.toString(round(seconds/(60*60*24))) + " d";
  		}
  		return secondsString;
  	}
@@ -334,7 +334,6 @@ public class DataViewer {
     }
     
 		if (playbackRate != -1) {
-      controlPanel.setPlaybackRate(playbackRate);
 			rbnbController.setPlaybackRate(playbackRate);
 		}
 		
