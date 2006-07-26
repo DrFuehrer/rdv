@@ -361,6 +361,29 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   }
   
   /**
+   * Get the event marker that is closest to the given time.
+   * 
+   * @param time  the time to search around
+   * @return      the event marker closest to the time, or null if there are
+   *              none
+   */
+  public EventMarker getMarkerClosestToTime(double time) {
+    EventMarker eventMarker = null;
+    double distance = Double.MAX_VALUE;
+
+    for (EventMarker marker : markers) {
+      double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
+      double thisDistance = Math.abs(time-markerTime);
+      if (eventMarker == null || thisDistance < distance) {
+        eventMarker = marker;
+        distance = thisDistance;
+      }
+    }
+
+    return eventMarker;
+  }
+  
+  /**
    * Get markers around the specified time. This will look before and after
    * the time according to the offset.
    * 
@@ -657,7 +680,16 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     }
 
     double time = getTimeFromX(me.getX());
-    setValue(time);
+    
+    if (me.getButton() == MouseEvent.BUTTON1) {
+      setValue(time);
+    } else if (me.getButton() == MouseEvent.BUTTON3) {
+      EventMarker eventMarker = getMarkerClosestToTime(time);
+      if (eventMarker != null) {
+        double markerTime = Double.parseDouble(eventMarker.getProperty("timestamp"));
+        setValue(markerTime);
+      }
+    }
   }
 
   public void mouseEntered(MouseEvent me) {}
