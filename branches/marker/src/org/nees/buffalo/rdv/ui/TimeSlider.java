@@ -536,12 +536,17 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     double offset = 2*getPixelTime();
     
     List<EventMarker> markersOver = getMarkersAroundTime(time, offset);
-    if (markersOver.size() == 0) {
+    int numberOfMarkers = markersOver.size();
+    if (numberOfMarkers == 0) {
       return null;
     }
 
     String text = new String("<html><font size=\"5\">");
-    text += "Events around " + DataViewer.formatDateSmart(time) + " (&plusmn;" + DataViewer.formatSeconds(offset) + ")<br><br>";
+    
+    if (numberOfMarkers > 1) {
+      text += numberOfMarkers + " events around " + DataViewer.formatDateSmart(time) + " (&plusmn;" + DataViewer.formatSeconds(offset) + ")<br><br>";
+    }
+    
     for (EventMarker marker: markersOver) {
       String date = DataViewer.formatDate(Double.parseDouble(marker.getProperty("timestamp")));
       String source = marker.getProperty("source");
