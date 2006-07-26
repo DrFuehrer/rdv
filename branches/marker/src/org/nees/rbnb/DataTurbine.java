@@ -22,7 +22,7 @@ import java.io.FileInputStream;
 import org.apache.commons.cli.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 
 public class DataTurbine
 {
@@ -237,7 +237,7 @@ public class DataTurbine
         /** This mime type is an arbitrary extension and is needed for
           * application useage of markers (such as RDV).
           * @see org.nees.rbnb.marker */
-        this.cmap.PutMime (this.channelId, NeesEvent.MIME_TYPE);
+        this.cmap.PutMime (this.channelId, EventMarker.MIME_TYPE);
       } catch (Exception e) {
         log.error ("Error adding turbine channel: " + e);
       }
@@ -254,7 +254,7 @@ public class DataTurbine
     * @param specified channel and
     * @return the index in the @see ChannelMap
     * and ensure that the marker is archived by the DataTurbine. */
-  public int putMarker (NeesEvent theMarker, String targetChannel) {
+  public int putMarker (EventMarker theMarker, String targetChannel) {
     try {
       try {
         this.channelId = this.cmap.Add (targetChannel);
@@ -264,7 +264,7 @@ public class DataTurbine
         /** This mime type is an arbitrary extension and is needed for
           * application useage of markers (such as RDV).
           * @see org.nees.rbnb.marker */
-        this.cmap.PutMime (this.channelId, NeesEvent.MIME_TYPE);
+        this.cmap.PutMime (this.channelId, EventMarker.MIME_TYPE);
       } catch (Exception e) {
         log.error ("Error adding turbine channel: " + e.getMessage());
       }

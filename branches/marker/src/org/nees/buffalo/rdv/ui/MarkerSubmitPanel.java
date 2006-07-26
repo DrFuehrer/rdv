@@ -45,7 +45,7 @@ import javax.swing.event.DocumentListener;
 
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 
@@ -159,7 +159,7 @@ public class MarkerSubmitPanel extends JPanel {
       return;
     }
     
-    NeesEvent marker = new NeesEvent();
+    EventMarker marker = new EventMarker();
     
     marker.setProperty ("type", "annotation");
     

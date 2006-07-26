@@ -61,7 +61,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 
 import com.rbnb.sapi.ChannelTree;
 
@@ -359,8 +359,8 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     }
     
     // get the time bounds for all markers
-    List<NeesEvent> markers = rbnbController.getMarkerManager().getMarkers();
-    for (NeesEvent marker : markers) {
+    List<EventMarker> markers = rbnbController.getMarkerManager().getMarkers();
+    for (EventMarker marker : markers) {
       double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
       if (startTime == -1 || markerTime < startTime) {
         startTime = markerTime;
@@ -649,7 +649,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    * 
    * @param marker  the new event marker
    */
-  public void eventMarkerAdded(NeesEvent marker) {
+  public void eventMarkerAdded(EventMarker marker) {
     zoomTimeSlider.addMarker(marker);
     globalTimeSlider.addMarker(marker);
     

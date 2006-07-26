@@ -34,7 +34,7 @@ package org.nees.buffalo.rdv.rbnb;
 
 import java.util.EventListener;
 
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 
 /**
  * A listener for receiving event markers.
@@ -48,7 +48,7 @@ public interface EventMarkerListener extends EventListener{
    * 
    * @param marker  the new event marker
    */
-  public void eventMarkerAdded(NeesEvent marker);
+  public void eventMarkerAdded(EventMarker marker);
   
   /**
    * Called when the all the event markers are removed.

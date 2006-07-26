@@ -48,7 +48,7 @@ import javax.swing.JComponent;
 import javax.swing.JToolTip;
 
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 
 /**
  * A component that lets the user select a specific time or time range between a
@@ -68,7 +68,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   
   boolean isAdjusting;
   
-  List<NeesEvent> markers;  
+  List<EventMarker> markers;  
   
   List<TimeAdjustmentListener> adjustmentListeners;
 
@@ -94,7 +94,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     
     isAdjusting = false;
     
-    markers = new ArrayList<NeesEvent>();
+    markers = new ArrayList<EventMarker>();
     
     adjustmentListeners = new ArrayList<TimeAdjustmentListener>();
 
@@ -355,7 +355,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * 
    * @param marker  the marker
    */
-  public void addMarker(NeesEvent marker) {
+  public void addMarker(EventMarker marker) {
     markers.add(marker);
     repaint();
   }
@@ -368,13 +368,13 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @param offset  the offset from the time to look
    * @return        a list of markers within this time range
    */
-  private List<NeesEvent> getMarkersAroundTime(double time, double offset) {
+  private List<EventMarker> getMarkersAroundTime(double time, double offset) {
     double lowerBound = time-offset;
     double upperBound = time+offset;
     
-    List<NeesEvent> markersAround = new ArrayList<NeesEvent>();
+    List<EventMarker> markersAround = new ArrayList<EventMarker>();
     
-    for (NeesEvent marker : markers) {
+    for (EventMarker marker : markers) {
       double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
       if (markerTime >= lowerBound && markerTime <= upperBound) {
         markersAround.add(marker);
@@ -481,7 +481,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     int endX = this.getXFromTime(end);
     g.fillRect(insets.left+startX, insets.top+4, insets.left+(endX-startX), 3);
     
-    for (NeesEvent marker : markers) {
+    for (EventMarker marker : markers) {
       double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
       if (markerTime >= minimum && markerTime <= maximum) {
         int x = getXFromTime(markerTime);
@@ -535,14 +535,14 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     double time = getTimeFromX(me.getX());
     double offset = 2*getPixelTime();
     
-    List<NeesEvent> markersOver = getMarkersAroundTime(time, offset);
+    List<EventMarker> markersOver = getMarkersAroundTime(time, offset);
     if (markersOver.size() == 0) {
       return null;
     }
 
     String text = new String("<html><font size=\"5\">");
     text += "Events around " + DataViewer.formatDateSmart(time) + " (&plusmn;" + DataViewer.formatSeconds(offset) + ")<br><br>";
-    for (NeesEvent marker: markersOver) {
+    for (EventMarker marker: markersOver) {
       String date = DataViewer.formatDate(Double.parseDouble(marker.getProperty("timestamp")));
       String source = marker.getProperty("source");
       String label = marker.getProperty("label");

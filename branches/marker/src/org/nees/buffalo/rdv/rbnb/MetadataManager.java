@@ -38,7 +38,7 @@ import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
@@ -299,7 +299,7 @@ public class MetadataManager {
         
         //look for marker channels
         mimeType = node.getMime();
-        if (mimeType != null && mimeType.compareToIgnoreCase(NeesEvent.MIME_TYPE) == 0) {
+        if (mimeType != null && mimeType.compareToIgnoreCase(EventMarker.MIME_TYPE) == 0) {
           markerChannelMap.Add(node.getFullName());         
         }
       }            

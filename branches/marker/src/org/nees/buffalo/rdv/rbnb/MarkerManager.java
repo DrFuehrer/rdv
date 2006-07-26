@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.nees.rbnb.DataTurbine;
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -53,7 +53,7 @@ public class MarkerManager implements DataListener {
   
   private RBNBController rbnbController;
   
-  private List<NeesEvent> markers;
+  private List<EventMarker> markers;
   
   private List<EventMarkerListener> markerListeners;
 
@@ -74,7 +74,7 @@ public class MarkerManager implements DataListener {
     
     this.rbnbController = rbnbController;
     
-    markers = new ArrayList<NeesEvent>();
+    markers = new ArrayList<EventMarker>();
     
     markerListeners = new ArrayList<EventMarkerListener>();
     
@@ -102,7 +102,7 @@ public class MarkerManager implements DataListener {
       int channelIndex = channelMap.GetIndex(channelName);
       String[] markerData = channelMap.GetDataAsString(channelIndex);
       for (String markerString : markerData) {
-        NeesEvent marker = new NeesEvent();
+        EventMarker marker = new EventMarker();
         try {
           marker.setFromEventXml(markerString);
         } catch (Exception e) {
@@ -122,7 +122,7 @@ public class MarkerManager implements DataListener {
    * 
    * @return  a list of event markers
    */
-  public List<NeesEvent> getMarkers() {
+  public List<EventMarker> getMarkers() {
     return markers;
   }
   
@@ -132,7 +132,7 @@ public class MarkerManager implements DataListener {
    * @param eventMarker  the event marker to put
    * @throws Exception   if the marker could not be sent to the server
    */
-  public void putMarker(NeesEvent eventMarker) throws Exception {    
+  public void putMarker(EventMarker eventMarker) throws Exception {    
     DataTurbine markerSource = new DataTurbine (rbnbSourceName);
     markerSource.setServerName(rbnbController.getRBNBHostName());
     markerSource.open();
@@ -165,7 +165,7 @@ public class MarkerManager implements DataListener {
    * 
    * @param marker  the new event marker to send
    */
-  protected void fireNewMarker(NeesEvent marker) {
+  protected void fireNewMarker(EventMarker marker) {
     for (EventMarkerListener listener : markerListeners) {
       listener.eventMarkerAdded(marker);
     }

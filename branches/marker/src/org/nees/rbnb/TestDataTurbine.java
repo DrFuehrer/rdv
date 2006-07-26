@@ -11,7 +11,7 @@ import com.rbnb.sapi.SAPIException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.rbnb.DataTurbine;
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 
 import junit.framework.TestCase;
 import junit.framework.TestResult;
@@ -49,7 +49,7 @@ public class TestDataTurbine extends TestCase {
   /** method that willdo the actual work by creating an XML marker, putting it
     * into the DataTurbine, and then getting it and examining it as the test. */
   public void testDT () {
-    NeesEvent testEvent = new NeesEvent ();
+    EventMarker testEvent = new EventMarker ();
     testEvent.setProperty ("annotation", testString);
     try {
       this.turban.putMarker (testEvent, this.testString);

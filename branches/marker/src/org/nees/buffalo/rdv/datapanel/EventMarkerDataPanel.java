@@ -10,7 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
 // LJM
-import org.nees.rbnb.marker.NeesEvent;
+import org.nees.rbnb.marker.EventMarker;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
@@ -42,6 +42,10 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
   private StringBuffer messageBuffer;
   // LJM
   private static Log log = LogFactory.getLog (EventMarkerDataPanel.class.getName ());
+  
+  protected static final Color startColor = Color.green;
+  protected static final Color stopColor = Color.red;
+  protected static final Color noteColor = Color.white;
   
 	/**
     * Initialize the object and UI
@@ -99,7 +103,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
 			//if there is data for channel, post it
 			if (channelIndex != -1) {
         String[] data = channelMap.GetDataAsString (channelIndex);
-        NeesEvent[] eventData = new NeesEvent[data.length];
+        EventMarker[] eventData = new EventMarker[data.length];
         double[] times = channelMap.GetTimes (channelIndex);
         
         int startIndex = -1;
@@ -127,12 +131,9 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
           // LJM actually display the marker
         StringBuffer messageBuffer = new StringBuffer ();
         for (int i=startIndex; i<=endIndex; i++) {
-          eventData[i] = new NeesEvent ();
+          eventData[i] = new EventMarker ();
           try {
             eventData[i].setFromEventXml (data[i]);
-          } catch (TransformerException te) { 
-            log.error ("Java XML Error\n" + te);
-            te.printStackTrace ();
           } catch (InvalidPropertiesFormatException ipfe) {
             log.error ("Java XML Error\n" + ipfe);
             ipfe.printStackTrace ();
@@ -145,7 +146,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                  ((String)(eventData[i].getProperty ("type"))).compareToIgnoreCase ("start") == 0 ) {
               messageBuffer.append ("start\n\n");
               messageBuffer.append ( (String)(eventData[i].getProperty ("content")) );
-              messages.setBackground (NeesEvent.startColor);
+              messages.setBackground (startColor);
               log.info ("Got a START marker.");
               messages.setFont (new Font ("Dialog", Font.BOLD, 24));
               
@@ -153,7 +154,7 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
                         ((String)(eventData[i].getProperty ("type"))).compareToIgnoreCase ("stop") == 0 ) {
               messageBuffer.append ("Stop\n\n");
               messageBuffer.append ( (String)(eventData[i].getProperty ("content")) );
-              messages.setBackground (NeesEvent.stopColor);
+              messages.setBackground (stopColor);
               log.info ("Got a STOP marker.");
               messages.setFont (new Font ("Dialog", Font.BOLD, 24));
             } else { 
@@ -162,12 +163,12 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
               
               messageBuffer.append ("Label: ");
               messageBuffer.append ( (String)(eventData[i].getProperty ("label")) + "\n" );
-              messages.setBackground (NeesEvent.noteColor);
+              messages.setBackground (noteColor);
               messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
             
               messageBuffer.append ("Content: ");
               messageBuffer.append ( (String)(eventData[i].getProperty ("content")) + "\n" );
-              messages.setBackground (NeesEvent.noteColor);
+              messages.setBackground (noteColor);
               messages.setFont (new Font ("Dialog", Font.PLAIN, 12));
             
             }
@@ -181,8 +182,6 @@ public class EventMarkerDataPanel extends AbstractDataPanel {
           
           } catch (IOException ioe) {
             messageBuffer.append ("Java IO Error\n" + ioe);
-          } catch (TransformerException te) {
-            messageBuffer.append ("Java XML Display Error\n" + te);
           }
         } // for
         messages.setText (messageBuffer.toString ());
