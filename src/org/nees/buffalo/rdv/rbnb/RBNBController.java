@@ -231,6 +231,8 @@ public class RBNBController implements Player, MetadataListener {
 
       if (requestedChannels.NumberOfChannels() > 0) {
         changeStateSafe(STATE_LOADING);
+      } else {
+        updateTimeListeners(location);
       }
     }
 	}
