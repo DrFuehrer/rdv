@@ -187,6 +187,8 @@ public class MarkerSubmitPanel extends JPanel {
    *                 component
    */
   public void setEnabled(boolean enabled) {
+    super.setEnabled(enabled);
+    
     markerContentField.setEnabled(enabled);
     markerSubmitButton.setEnabled(enabled);
   }

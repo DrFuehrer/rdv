@@ -31,7 +31,6 @@
 
 package org.nees.buffalo.rdv.ui;
 
-import java.awt.Adjustable;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -40,10 +39,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -51,11 +49,11 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.rbnb.EventMarkerListener;
 import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 import org.nees.buffalo.rdv.rbnb.Player;
@@ -64,9 +62,7 @@ import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.rbnb.marker.NeesEvent;
-import org.nees.rbnb.marker.MarkerEventsPanel;
 
-import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelTree;
 
 /**
@@ -75,7 +71,7 @@ import com.rbnb.sapi.ChannelTree;
  * @author Jason P. Hanley
  * @author Lawrence J. Miller
  */
-public class ControlPanel extends JPanel implements AdjustmentListener, TimeListener, StateListener, SubscriptionListener, MetadataListener, PlaybackRateListener {
+public class ControlPanel extends JPanel implements TimeListener, StateListener, SubscriptionListener, MetadataListener, PlaybackRateListener, TimeAdjustmentListener, EventMarkerListener {
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
@@ -93,48 +89,41 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
   private JComboBox timeScaleComboBox;
   
   private JLabel locationLabel;
-
-	private JScrollBar locationScrollBar;
+  
+  private TimeSlider zoomTimeSlider;
+  
+  private JLabel zoomMinimumLabel;
+  private JLabel zoomRangeLabel;
+  private JLabel zoomMaximumLabel;
+  
+  private TimeSlider globalTimeSlider;
 
  	public double timeScales[] = {0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
  	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
 
-  protected MarkerEventsPanel markerPanel = null;
-  public JLabel markerLabel = null;
- 	
-	public double startTime;
-	private double endTime;
-	private double location;
-	private double playbackRate;
-	private double timeScale;
-	
-	int sliderLocation;
-	
-	int playerState;
-	
 	public ChannelTree ctree;
 
+  /**
+   * Construct a control panel to control data playback.
+   * 
+   * @param rbnbController  the controller for data playback
+   */
 	public ControlPanel(RBNBController rbnbController) {
 		super();
 
 		this.rbnbController = rbnbController;
 		
-		startTime = -1;
-		endTime = -1;
-		location = -1;
-		playbackRate = rbnbController.getPlaybackRate();
-		
-		timeScale = rbnbController.getTimeScale();
-		
 		initPanel();
-		
-		locationScrollBar.removeAdjustmentListener(this);
-		locationScrollBar.setVisibleAmount((int)(playbackRate*1000));
-		locationScrollBar.setUnitIncrement((int)(playbackRate*1000));			
-		locationScrollBar.setBlockIncrement((int)(playbackRate*1000));
-		locationScrollBar.addAdjustmentListener(this);
+    
+    double location = rbnbController.getLocation();
+    globalTimeSlider.setValues(location, location, location, location, location);
+    
+    rbnbController.getMarkerManager().addMarkerListener(this);
 	}
 	
+  /**
+   * Setup the UI.
+   */
 	private void initPanel() {
     setBorder(null);
     setLayout(new BorderLayout());
@@ -239,7 +228,7 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     for (int i=0; i<timeScales.length; i++) {
       timeScaleComboBox.addItem(DataViewer.formatSeconds(timeScales[i]));
     }
-    timeScaleComboBox.setSelectedIndex(getTimeScaleIndex(timeScale));
+    timeScaleComboBox.setSelectedIndex(getTimeScaleIndex(rbnbController.getTimeScale()));
     timeScaleComboBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         timeScaleChange();
@@ -265,9 +254,10 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     c.anchor = GridBagConstraints.NORTHWEST;    
     container.add(firstRowPanel, c);    
 		
-		locationScrollBar = new JScrollBar(Adjustable.HORIZONTAL, 0, 1, 0, 1);
-		locationScrollBar.addAdjustmentListener(this);
-		c.fill = GridBagConstraints.HORIZONTAL;
+    zoomTimeSlider = new TimeSlider();
+    zoomTimeSlider.setRangeEnabled(false);
+    zoomTimeSlider.addTimeAdjustmentListener(this);
+    c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 0;
@@ -277,145 +267,142 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		c.ipadx = 0;
 		c.ipady = 0;
 		c.insets = new java.awt.Insets(0,8,0,8);
-		c.anchor = GridBagConstraints.NORTHWEST;		
-		container.add(locationScrollBar, c);
-   
-    markerPanel = new MarkerEventsPanel(this);    
-    markerPanel.setBorder(BorderFactory.createEtchedBorder());
-    c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
-		c.weighty = 1;
-		c.gridx = 0;
-		c.gridy = 2;
-		c.gridwidth = GridBagConstraints.REMAINDER;
-		c.gridheight = 1;
-		c.ipadx = 0;
-		c.ipady = 0;
-		c.insets = new java.awt.Insets(8,8,8,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
-    container.add (markerPanel, c);
-    rbnbController.getMetadataManager().addMarkerListener(markerPanel); 
+    container.add(zoomTimeSlider, c);
+    
+    JPanel zoomTimePanel = new JPanel();
+    zoomTimePanel.setLayout(new BorderLayout());
+    
+    zoomMinimumLabel = new JLabel();
+    zoomTimePanel.add(zoomMinimumLabel, BorderLayout.WEST);
+    
+    zoomRangeLabel = new JLabel();
+    zoomRangeLabel.setHorizontalAlignment(JLabel.CENTER);
+    zoomTimePanel.add(zoomRangeLabel, BorderLayout.CENTER);
+    
+    zoomMaximumLabel = new JLabel();
+    zoomTimePanel.add(zoomMaximumLabel, BorderLayout.EAST);
+
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1;
+    c.weighty = 0;
+    c.gridx = 0;
+    c.gridy = 2;
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.gridheight = 1;
+    c.ipadx = 0;
+    c.ipady = 0;
+    c.insets = new java.awt.Insets(8,8,0,8);
+    c.anchor = GridBagConstraints.NORTHWEST;
+    container.add(zoomTimePanel, c);    
+    
+    globalTimeSlider = new TimeSlider();
+    globalTimeSlider.setValueChangeable(false);
+    globalTimeSlider.addTimeAdjustmentListener(this);
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1;
+    c.weighty = 1;
+    c.gridx = 0;
+    c.gridy = 3;
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.gridheight = 1;
+    c.ipadx = 0;
+    c.ipady = 0;
+    c.insets = new java.awt.Insets(8,8,8,8);
+    c.anchor = GridBagConstraints.NORTHWEST;
+    container.add(globalTimeSlider, c);
     
     add(container, BorderLayout.CENTER);        
 		
 		log.info("Initialized control panel.");
 	}
 	
+  /**
+   * Called when the channel metadata is updated.
+   */
 	public void channelTreeUpdated(ChannelTree ctree) {
 		this.ctree = ctree;
 		
 		updateTimeBoundaries();
-
-		log.info("Received updated channel metatdata.");
 	}
 	
+  /**
+   * Update the boundaries of the time sliders based on the subscribed channel
+   * bounds and the event marker bounds.
+   */
 	private void updateTimeBoundaries() {
     // We haven't got the metadata channel tree yet
     if (ctree == null) {
       return;
     }
 
-		double startTime = -1;
-		double endTime = -1;
-		
-		Iterator it = ctree.iterator();
-		while (it.hasNext()) {
-            ChannelTree.Node node = (ChannelTree.Node)it.next();
-			String channelName = node.getFullName();
-      
-            // don't let event marker channels influence the time bounds
-            if (NeesEvent.MIME_TYPE.equals(node.getMime())) {
-              continue;
-            }
-      
-            if (rbnbController.isSubscribed(channelName)) {
-				double channelStart = node.getStart();
-				double channelDuration = node.getDuration();
-				double channelEnd = channelStart+channelDuration;
-				if (startTime == -1 || channelStart < startTime) {
-					startTime = channelStart;
-				}
-				if (endTime == -1 || channelEnd > endTime) {
-					endTime = channelEnd;
-				}
-			}
-		}
-		
-		if (startTime == -1) {
-			return;
-		}
-		
-		setSliderBounds(startTime, endTime);
-	}	
-		
-	private void setSliderBounds(double startTime, double endTime) {
-		this.startTime = startTime;
-		this.endTime = endTime;
+    double startTime = -1;
+    double endTime = -1;
 
-		log.info("Setting time to start at " + DataViewer.formatDate(startTime) + " and end at " + DataViewer.formatDate(endTime) + " seconds.");
-		
-		if (playerState != Player.STATE_MONITORING && playerState != Player.STATE_PLAYING) {
-			refreshSliderBounds();
-			
-			double location = rbnbController.getLocation();
-			if (location < startTime) {
-				log.warn("Current time (" + DataViewer.formatDate(location) + ") is before known start time (" + DataViewer.formatDate(endTime) + ").");
-				setLocationBegin();
-			} else if (location > endTime) {
-				log.warn("Current time (" + DataViewer.formatDate(location) + ") is past known end time (" + DataViewer.formatDate(endTime) + ").");
-				setLocationEnd();
-			}
-		}
-	}
-	
-	private void refreshSliderBounds() {
-		int intDurationTime = (int)((endTime-startTime)*1000);
-		
-		locationScrollBar.removeAdjustmentListener(this);
-		locationScrollBar.setMinimum(0);
-		locationScrollBar.setMaximum(intDurationTime);
-		locationScrollBar.addAdjustmentListener(this);
-	}
-		
-	public void setSliderLocation(double location) {
-		if (rbnbController.getRequestedLocation() == -1 && !locationScrollBar.getValueIsAdjusting()) {
-			int sliderLocation = (int)((location-startTime)*1000);
-			if (this.sliderLocation != sliderLocation) {
-				this.location = location;
-				if (location < startTime) {
-					startTime = location;
-					refreshSliderBounds();
-				} else if (location > endTime) {
-					endTime = location;
-					refreshSliderBounds();
-				}
-						
-				this.sliderLocation = sliderLocation;
-        while (locationScrollBar.getAdjustmentListeners().length != 0) {
-        	locationScrollBar.removeAdjustmentListener(this);
+    // get the time bounds for all channels
+    Iterator it = ctree.iterator();
+    while (it.hasNext()) {
+      ChannelTree.Node node = (ChannelTree.Node)it.next();
+      String channelName = node.getFullName();
+
+      if (rbnbController.isSubscribed(channelName)) {
+        double channelStart = node.getStart();
+        double channelDuration = node.getDuration();
+        double channelEnd = channelStart+channelDuration;
+        if (startTime == -1 || channelStart < startTime) {
+          startTime = channelStart;
         }
-				locationScrollBar.setValue(sliderLocation);
-				locationScrollBar.addAdjustmentListener(this);
-			}
-		}
-	}
-	
+        if (endTime == -1 || channelEnd > endTime) {
+          endTime = channelEnd;
+        }
+      }
+    }
+    
+    // get the time bounds for all markers
+    List<NeesEvent> markers = rbnbController.getMarkerManager().getMarkers();
+    for (NeesEvent marker : markers) {
+      double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
+      if (startTime == -1 || markerTime < startTime) {
+        startTime = markerTime;
+      }
+      if (endTime == -1 || markerTime > endTime) {
+        endTime = markerTime;
+      }
+    }
+
+    if (startTime == -1) {
+      return;
+    }
+    
+    double location = rbnbController.getLocation();
+    if (location < startTime) {
+      startTime = location;
+    } else if (location > endTime) {
+      endTime = location;
+    }
+
+    globalTimeSlider.setValues(startTime, endTime);
+  }
+		
+  /**
+   * Set the time to the minimum of the zoom time slider.
+   */
 	public void setLocationBegin() {
-		log.info("Setting location to begining.");
-		rbnbController.setLocation(startTime);
+		rbnbController.setLocation(zoomTimeSlider.getMinimum());
 	}
 	
+  /**
+   * Set the time to the maximum of the zoom time sldier.
+   */
 	public void setLocationEnd() {
-		log.info("Setting location to end");
-		rbnbController.setLocation(endTime);
-	}
-			
-	public void adjustmentValueChanged(AdjustmentEvent e) {
-    if (e.getSource() == locationScrollBar) {
-			locationChange();
-		}
+		rbnbController.setLocation(zoomTimeSlider.getMaximum());
 	}
   
+  /**
+   * Set the displayed time scale in the UI.
+   * 
+   * @param timeScale  the time scale
+   */
   public void setTimeScale(double timeScale) {
     int index = Arrays.binarySearch(timeScales, timeScale);
     if (index >= 0) {
@@ -423,19 +410,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     }    
   }
 
-	public void locationChange() {	
-		int sliderLocation = locationScrollBar.getValue();
-		
-		if (this.sliderLocation != sliderLocation) {
-			this.sliderLocation = sliderLocation;
-			double location = (((double)sliderLocation)/1000)+startTime;
-			if (this.location != location) {
-				this.location = location;
-				rbnbController.setLocation(location);
-			}
-		}
-	}
-	
+  /**
+   * Called when the playback rate changes. Update the UI display. 
+   * 
+   * @param playbackRate  the current playback rate
+   */
   public void playbackRateChanged(double playbackRate) {
     String playbackRateText;
     if (playbackRate < 1) {
@@ -444,13 +423,13 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       playbackRateText = Long.toString(Math.round(playbackRate));
     }
     
-    /* while (playbackRateText.length() < 6) {
-      playbackRateText = " " + playbackRateText;
-    } */
-    
     playbackRateLabel.setText(playbackRateText);
   }    
   
+  /**
+   * Called when the playback rate is decreased by the UI. This tells the rbnb
+   * controller to decrease the playback rate.
+   */
   private void decreasePlaybackRate() {
     double playbackRate = rbnbController.getPlaybackRate();
     int index = Arrays.binarySearch(playbackRates, playbackRate);
@@ -458,7 +437,11 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
       rbnbController.setPlaybackRate(playbackRates[index-1]);
     }
   }
-  
+
+  /**
+   * Called when the playback rate is increased by the UI. This tells the rbnb
+   * controller to increase the playback rate.
+   */
   private void increasePlaybackRate() {
     double playbackRate = rbnbController.getPlaybackRate();
     int index = Arrays.binarySearch(playbackRates, playbackRate);
@@ -467,13 +450,18 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     }    
   }  
 
+  /**
+   * Returns the index for the given time scale from the array of predefined
+   * time scales.
+   * 
+   * @param timeScale  the time scale to find
+   * @return           the index of the time scale in the time scale array
+   */
 	private int getTimeScaleIndex(double timeScale) {
 		int index = -1;
 		if (timeScale < timeScales[0]) {
-			this.timeScale = timeScales[0];
 			index = 0;
 		} else if (timeScale > timeScales[timeScales.length-1]) {
-			this.timeScale = timeScales[timeScales.length-1];
 			index = timeScales.length-1;
 		} else {	
 			for (int i=0; i<timeScales.length-1; i++) {
@@ -481,10 +469,8 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 					double down = timeScale - timeScales[i];
 					double up = timeScales[i+1] - timeScale;
 					if (up <= down) {
-						this.timeScale = timeScales[i+1];
 						index = i+1;
 					} else {
-						this.timeScale = timeScales[i];
 						index = i;
 					}
 				}
@@ -494,35 +480,108 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		return index;
 	}
 
+  /**
+   * Called when the time scale changes in the UI. This sets the time scale in
+   * the rbnb controller.
+   */
   private void timeScaleChange() {
-    double oldTimeScale = timeScale;
+    int value = timeScaleComboBox.getSelectedIndex();   
+    double timeScale = timeScales[value];
+    rbnbController.setTimeScale(timeScale);
+  }
   
-    int value = timeScaleComboBox.getSelectedIndex();
-    
-    timeScale = timeScales[value];
-    
-    if (timeScale != oldTimeScale) {
-      rbnbController.setTimeScale(timeScale);
-      
-      log.debug("Time scale slider changed to " + timeScale + ".");
+  /**
+   * Called when the time changes in the UI. This sets the time in the rbnb
+   * controller.
+   * 
+   * @param event  the time event
+   */
+  public void timeChanged(TimeEvent event) {
+    if (event.getSource() == zoomTimeSlider) {
+      rbnbController.setLocation(zoomTimeSlider.getValue());
     }
   }
-	
+
+  /**
+   * Called whent the time range changes in the UI. This sets up the bounds for
+   * the zoom time slider and updates UI displays. If the current time is
+   * outside the new range, the time will be changes via the rbnb controller to
+   * be within this range.
+   * 
+   * @param event  the time event
+   */
+  public void rangeChanged(TimeEvent event) {
+    if (event.getSource() == globalTimeSlider) {
+      double start = globalTimeSlider.getStart();
+      double end = globalTimeSlider.getEnd();
+      
+      zoomTimeSlider.setValues(start, end);
+      
+      zoomMinimumLabel.setText(DataViewer.formatDate(start));
+      zoomRangeLabel.setText(DataViewer.formatSeconds(end-start));
+      zoomMaximumLabel.setText(DataViewer.formatDate(end));
+      
+      double location = rbnbController.getLocation();
+      if (location < start) {
+        rbnbController.setLocation(start);
+      } else if (location > end) {
+        rbnbController.setLocation(end);
+      }
+
+    }
+  }  
+
+  /**
+   * Called when the bounds change in the UI.
+   * 
+   * @param event  the time event
+   */
+  public void boundsChanged(TimeEvent event) {}
+
 	
 	// Player Time Methods
 	
+  /**
+   * Called when the time changes. This updates the slider and display
+   * components in the UI. It will also adjust the bounds and range if needed.
+   * 
+   * @param time  the new time
+   */
 	public void postTime(double time) {
-		setSliderLocation(time);
+    if (time < globalTimeSlider.getMinimum()) {
+      globalTimeSlider.setMinimum(time);
+    } else if (time > globalTimeSlider.getMaximum()) {
+      globalTimeSlider.setMaximum(time);
+    }
+
+    if (time < globalTimeSlider.getStart()) {
+      globalTimeSlider.setStart(time);
+    } else if (time > globalTimeSlider.getEnd()) {
+      globalTimeSlider.setEnd(time);
+    }
     
-    locationLabel.setText(DataViewer.formatDate(time));
+    if (!zoomTimeSlider.isValueAdjusting()) {
+      zoomTimeSlider.removeTimeAdjustmentListener(this);
+      zoomTimeSlider.setValue(time);
+      zoomTimeSlider.addTimeAdjustmentListener(this);
+    }
+    
+    globalTimeSlider.setValue(time);
+
+    locationLabel.setText(DataViewer.formatDate(time));    
 	}
 
 	
 	// Player State Methods
 
+  /**
+   * Called when the state of the rbnb controller changes. This updates various
+   * UI elements depending on the state.
+   * 
+   * @param newState  the new controller state
+   * @param oldState  the old controller state
+   */
 	public void postState(int newState, int oldState) {
-		playerState = newState;
-		
     monitorButton.setSelected(newState == Player.STATE_MONITORING);    
     playButton.setSelected(newState == Player.STATE_PLAYING);
     
@@ -535,7 +594,15 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
 		}
 	}
   
+  /**
+   * Set whether or not this component is enabled. If it is disabled, the UI
+   * will not respond to user input. 
+   * 
+   * @param enabled  true if the component should be enabled, false otherwise
+   */
   public void setEnabled(boolean enabled) {
+    super.setEnabled(enabled);
+    
     monitorButton.setEnabled(enabled);
     playButton.setEnabled(enabled);
     beginButton.setEnabled(enabled);
@@ -545,21 +612,57 @@ public class ControlPanel extends JPanel implements AdjustmentListener, TimeList
     endButton.setEnabled(enabled);
     timeScaleComboBox.setEnabled(enabled);
     locationLabel.setEnabled(enabled);
-    locationScrollBar.setEnabled(enabled);
-    markerPanel.setEnabled(enabled);
-    if (!enabled) {
-      markerPanel.clearDisplay();
-    }
+    zoomTimeSlider.setEnabled(enabled);
+    zoomMinimumLabel.setEnabled(enabled);
+    zoomRangeLabel.setEnabled(enabled);
+    zoomMaximumLabel.setEnabled(enabled);
+    globalTimeSlider.setEnabled(enabled);
   }
 
 
 	// Player Subscription Methods
 	
+  /**
+   * Called when a channel is subscribed to. This updates the time bounds.
+   * 
+   * @param channelName  the channel being subscribed to
+   */
 	public void channelSubscribed(String channelName) {
 		updateTimeBoundaries();
 	}
 
+  /**
+   * Called when a channel is unsubscribed to.
+   * 
+   * @param channelName  the channel being unsubscribed from
+   */
 	public void channelUnsubscribed(String channelName) {
 		updateTimeBoundaries();
 	}
+
+  
+  // Marker methods
+  
+  /**
+   * Called when there is a new event marker. This adds the event marker to the
+   * UI and updates the time bounds.
+   * 
+   * @param marker  the new event marker
+   */
+  public void eventMarkerAdded(NeesEvent marker) {
+    zoomTimeSlider.addMarker(marker);
+    globalTimeSlider.addMarker(marker);
+    
+    updateTimeBoundaries();
+  }
+  
+  /**
+   * Called when all the event markers are removed 
+   */
+  public void eventMarkersCleared() {
+    zoomTimeSlider.cleareMarkers();
+    globalTimeSlider.cleareMarkers();
+    
+    updateTimeBoundaries();
+  }
 }

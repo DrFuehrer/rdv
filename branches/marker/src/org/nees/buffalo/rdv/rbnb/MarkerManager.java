@@ -34,6 +34,7 @@ package org.nees.buffalo.rdv.rbnb;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.nees.rbnb.DataTurbine;
@@ -46,11 +47,15 @@ import com.rbnb.sapi.ChannelMap;
  * 
  * @author Jason P. Hanley
  */
-public class MarkerManager implements MarkerDataListener {
+public class MarkerManager implements DataListener {
   private String rbnbSourceName = "_Events";
   private String rbnbChannel = "EventsChannel";
   
   private RBNBController rbnbController;
+  
+  private List<NeesEvent> markers;
+  
+  private List<EventMarkerListener> markerListeners;
 
   /**
    * Create the marker manager and starts listening for new markers from the
@@ -69,15 +74,48 @@ public class MarkerManager implements MarkerDataListener {
     
     this.rbnbController = rbnbController;
     
+    markers = new ArrayList<NeesEvent>();
+    
+    markerListeners = new ArrayList<EventMarkerListener>();
+    
     rbnbController.getMetadataManager().addMarkerListener(this);
   }
 
   /**
    * Called when new markers are available.
    * 
-   * @param markerChannelMap  the channel map containing the marker data.
+   * @param channelMap  the channel map containing the marker data.
    */
-  public void updateMarkerChannels(ChannelMap markerChannelMap) {}
+  public void postData(ChannelMap channelMap) {
+    if (channelMap == null) {
+      markers.clear();
+      fireMarkersCleared();
+      return;
+    }
+    
+    if (channelMap.NumberOfChannels() == 0) {
+      return;
+    }
+    
+    for (int i = 0; i < channelMap.NumberOfChannels(); i++) {
+      String channelName = channelMap.GetName(i);
+      int channelIndex = channelMap.GetIndex(channelName);
+      String[] markerData = channelMap.GetDataAsString(channelIndex);
+      for (String markerString : markerData) {
+        NeesEvent marker = new NeesEvent();
+        try {
+          marker.setFromEventXml(markerString);
+        } catch (Exception e) {
+          continue;
+        }
+        
+        if (!markers.contains(marker)) {
+          markers.add(marker);
+          fireNewMarker(marker);
+        }
+      }
+    }    
+  }
   
   /**
    * Retruns a list of all event markers.
@@ -85,7 +123,7 @@ public class MarkerManager implements MarkerDataListener {
    * @return  a list of event markers
    */
   public List<NeesEvent> getMarkers() {
-    return null;
+    return markers;
   }
   
   /**
@@ -103,5 +141,42 @@ public class MarkerManager implements MarkerDataListener {
     
     rbnbController.updateMetadata();
   }
-
+  
+  /**
+   * Add a listener for new event markers.
+   * 
+   * @param listener  the event marker listener to add
+   */
+  public void addMarkerListener(EventMarkerListener listener) {
+    markerListeners.add(listener);
+  }
+  
+  /**
+   * Remove a listener for new event markers.
+   * 
+   * @param listener  the event marker listener to remove
+   */
+  public void removeMarkerListener(EventMarkerListener listener) {
+    markerListeners.remove(listener);
+  }
+  
+  /**
+   * Send the new event marker to the registered listeners.
+   * 
+   * @param marker  the new event marker to send
+   */
+  protected void fireNewMarker(NeesEvent marker) {
+    for (EventMarkerListener listener : markerListeners) {
+      listener.eventMarkerAdded(marker);
+    }
+  }
+  
+  /**
+   * Send the markers cleared signal to the registered listeners.
+   */
+  protected void fireMarkersCleared() {
+    for (EventMarkerListener listener : markerListeners) {
+      listener.eventMarkersCleared();
+    }
+  }
 }

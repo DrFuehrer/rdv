@@ -29,12 +29,22 @@
  * $Date$
  * $Author$
  */
+package org.nees.buffalo.rdv.ui;
 
-package org.nees.buffalo.rdv.rbnb;
+import java.awt.AWTEvent;
 
-import com.rbnb.sapi.ChannelMap;
-
-public interface MarkerDataListener {
-  
-  public void updateMarkerChannels(ChannelMap markerChannelMap);
+/**
+ * An event emitted by objects that are time adjustable.
+ * 
+ * @author Jason P. Hanley
+ */
+public class TimeEvent extends AWTEvent {
+  /**
+   * Constructs a TimeEvent object.
+   * 
+   * @param source  the source of the time event
+   */
+  public TimeEvent(Object source) {
+    super(source, 0);
+  }
 }

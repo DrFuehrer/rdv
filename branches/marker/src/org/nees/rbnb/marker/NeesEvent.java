@@ -43,7 +43,6 @@ public class NeesEvent extends Properties implements Comparable {
     public static Color stopColor = Color.red;
     public static Color noteColor = Color.white;
     public static Color danielBlue = Color.blue; //new Color (200, 235, 243);
-    private static Log log = LogFactory.getLog (NeesEvent.class.getName ());
     
     public static final String MIME_TYPE = "x-neesEvent";
     
@@ -195,6 +194,22 @@ public class NeesEvent extends Properties implements Comparable {
         is from a HashMap */
         return 0;
       }
+    }
+    
+    public boolean equals(Object o) {
+      if (o == null) {
+        return false;
+      }
+      
+      if (!(o instanceof NeesEvent)) {
+        return false;
+      }
+      
+      NeesEvent e = (NeesEvent)o;
+      
+      return getProperty("timestamp").equals(e.getProperty("timestamp")) &&
+             getProperty("type").equals(e.getProperty("type")) &&
+             getProperty("content").equals(e.getProperty("content"));
     }
     
 } // class
