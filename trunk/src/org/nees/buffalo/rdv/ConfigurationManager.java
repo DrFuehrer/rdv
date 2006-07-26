@@ -221,7 +221,6 @@ public class ConfigurationManager {
       rbnb.setTimeScale(timeScale);
       
       double playbackRate = Double.parseDouble(findChildNodeText(rbnbNodes, "playbackRate"));
-      controlPanel.setPlaybackRate(playbackRate);
       rbnb.setPlaybackRate(playbackRate);
       
       int state = RBNBController.getState(findChildNodeText(rbnbNodes, "state"));

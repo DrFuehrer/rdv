@@ -74,6 +74,7 @@ public class RBNBController implements Player, MetadataListener {
 
 	private ChannelManager channelManager;
   private MetadataManager metadataManager;
+  private MarkerManager markerManager;
 	
 	private Vector timeListeners;
 	private Vector stateListeners;
@@ -138,6 +139,7 @@ public class RBNBController implements Player, MetadataListener {
 
 		channelManager = new ChannelManager();
     metadataManager = new MetadataManager(this);
+    markerManager = new MarkerManager(this);
 
 		timeListeners = new Vector();
 		stateListeners = new Vector();
@@ -433,7 +435,7 @@ public class RBNBController implements Player, MetadataListener {
 		//notify channel manager
 		channelManager.subscribe(channelName, panel);
 		
-		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
+//		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
 
     if (state == STATE_PLAYING) {
       getPreFetchChannelMap();
@@ -1283,7 +1285,15 @@ public class RBNBController implements Player, MetadataListener {
   
   public void channelTreeUpdated(ChannelTree ctree) {
     metaDataChannelTree = ctree;
-  }  
+  }
+  
+  
+  //Public Marker Methods
+  
+  public MarkerManager getMarkerManager() {
+    return markerManager;
+  }
+  
 	
 	//Public Static Methods
 
@@ -1368,4 +1378,10 @@ public class RBNBController implements Player, MetadataListener {
 			return isSubscribe;
 		}
 	}
+    /**
+     * @return Returns the requestedChannels.
+     */
+    public ChannelMap getRequestedChannels() {
+        return requestedChannels;
+    }
 }
