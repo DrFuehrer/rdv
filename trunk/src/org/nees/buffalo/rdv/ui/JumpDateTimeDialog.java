@@ -36,7 +36,6 @@ public class JumpDateTimeDialog extends JDialog {
  	static Log log = LogFactory.getLog(JumpDateTimeDialog.class.getName());
 	
 	RBNBController rbnb;
-	DataPanelManager dataPanelManager;
   
   Date defaultDate;
 	
@@ -60,11 +59,14 @@ public class JumpDateTimeDialog extends JDialog {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy");
     private static final DateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss z");
 	
-	public JumpDateTimeDialog(JFrame owner, RBNBController rbnbController, DataPanelManager dataPanelManager) {
+  public JumpDateTimeDialog(RBNBController rbnbController) {
+    this(null, rbnbController);
+  }
+
+  public JumpDateTimeDialog(JFrame owner, RBNBController rbnbController) {
 		super(owner, true);
 		
 		this.rbnb = rbnbController;
-		this.dataPanelManager = dataPanelManager;
     
     defaultDate = new Date(((long)(rbnb.getLocation()*1000)));
 		
