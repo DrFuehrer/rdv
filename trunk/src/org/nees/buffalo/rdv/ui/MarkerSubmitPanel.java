@@ -156,6 +156,11 @@ public class MarkerSubmitPanel extends JPanel {
     
     // only submit marker in contents is not empty
     if (content == null || content.length() == 0) {
+      JOptionPane.showMessageDialog(this,
+          "The event marker was not submitted since there was no content.\n" +
+          "Please describe the event using the text area in the marker panel.",
+          "Marker Not Submitted",
+          JOptionPane.WARNING_MESSAGE);
       return;
     }
     
