@@ -496,13 +496,12 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     g.setColor(Color.lightGray);
     g.fillRect(insets.left+6, insets.top+4, getWidth()-insets.left-12-insets.right, 3);
     
-    if (isEnabled()) {
+    if (isEnabled() && useRange) {
       g.setColor(Color.gray);
+      int startX = this.getXFromTime(start);
+      int endX = this.getXFromTime(end);
+      g.fillRect(insets.left+startX, insets.top+4, insets.left+(endX-startX), 3);      
     }
-    
-    int startX = this.getXFromTime(start);
-    int endX = this.getXFromTime(end);
-    g.fillRect(insets.left+startX, insets.top+4, insets.left+(endX-startX), 3);
     
     for (EventMarker marker : markers) {
       double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
