@@ -626,6 +626,12 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
         } else if (time > end) {
           time = end;
         }
+      } else {
+        if (time < minimum) {
+          time = minimum;
+        } else if (time > maximum) {
+          time = maximum;
+        }
       }
       
       setValue(time);
