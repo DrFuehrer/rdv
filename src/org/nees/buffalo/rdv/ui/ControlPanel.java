@@ -89,7 +89,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
   
   private JComboBox timeScaleComboBox;
   
-  private JLabel locationLabel;
+  private JButton locationButton;
   
   private TimeSlider zoomTimeSlider;
   
@@ -245,8 +245,14 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     
     firstRowPanel.add(controlsPanel, BorderLayout.CENTER);
     
-    locationLabel = new JLabel();
-    firstRowPanel.add(locationLabel, BorderLayout.EAST);
+    locationButton = new JButton();
+    locationButton.setBorder(null);
+    locationButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        new JumpDateTimeDialog(rbnbController);
+      }
+    });
+    firstRowPanel.add(locationButton, BorderLayout.EAST);
     
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1;
@@ -607,7 +613,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     
     globalTimeSlider.setValue(time);
 
-    locationLabel.setText(DataViewer.formatDate(time));    
+    locationButton.setText(DataViewer.formatDate(time));    
 	}
 
 	
@@ -654,7 +660,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 
     endButton.setEnabled(enabled);
     timeScaleComboBox.setEnabled(enabled);
-    locationLabel.setEnabled(enabled);
+    locationButton.setEnabled(enabled);
     zoomTimeSlider.setEnabled(enabled);
     zoomMinimumLabel.setEnabled(enabled);
     zoomRangeLabel.setEnabled(enabled);
