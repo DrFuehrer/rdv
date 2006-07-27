@@ -68,6 +68,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   boolean useRange;
   
   boolean isAdjusting;
+  int clickStart;
   
   List<EventMarker> markers;  
   
@@ -124,12 +125,14 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     startButton = new JButton(DataViewer.getIcon("icons/left_bound.gif"));
     startButton.setOpaque(false);
     startButton.setBorder(null);
+    startButton.addMouseListener(this);
     startButton.addMouseMotionListener(this);    
     add(startButton);
 
     endButton = new JButton(DataViewer.getIcon("icons/right_bound.gif"));
     endButton.setOpaque(false);
     endButton.setBorder(null);
+    endButton.addMouseListener(this);
     endButton.addMouseMotionListener(this);
     add(endButton);
     
@@ -623,6 +626,13 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     
     JButton button = (JButton)me.getSource();
     int x = me.getX();
+    if (button == startButton) {
+      x += endButton.getWidth() - clickStart;
+    } else if (button == valueButton) {
+      x += Math.round(valueButton.getWidth()/2d) - clickStart;
+    } else if (button == endButton) {
+      x -= clickStart;
+    }
     double time = getTimeFromX(button.getX() + x);
     
     if (button == startButton) {
@@ -667,6 +677,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @param me  the mouse event that triggered this
    */
   public void mousePressed(MouseEvent me) {
+    clickStart = me.getX();
+    
     if (me.getSource() == valueButton) {
       isAdjusting = true;
     }
