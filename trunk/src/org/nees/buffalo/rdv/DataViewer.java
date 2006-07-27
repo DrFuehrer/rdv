@@ -144,11 +144,59 @@ public class DataViewer {
 			secondsString = Double.toString(round(seconds/60)) + " m";
  		} else if (seconds < 60*60*24){
  			secondsString = Double.toString(round(seconds/(60*60))) + " h";
- 		} else {
+ 		} else if (seconds < 60*60*24*7){
  			secondsString = Double.toString(round(seconds/(60*60*24))) + " d";
+    } else {
+      secondsString = Double.toString(round(seconds/(60*60*24*7))) + " w";
  		}
+    
  		return secondsString;
  	}
+
+  /**
+   * Returns a double representing the amount of seconds represented by the
+   * specified string.
+   * 
+   * The string can be a number, optionally followed by a unit
+   * of time. Valid units are 'ns' (nanosecond), 'us' (microsecond), 'ms'
+   * (millisecond), 's' (second), 'm' (minute), 'h' (hour), 'd' (day), and 'w'
+   * (week). If no unit is specified, it is assume to be seconds. There may be
+   * whitespace around the number and the unit. 
+   * 
+   * @param t                          the time formatted string
+   * @return                           the time in seconds represented by the
+   *                                   string
+   * @throws IllegalArgumentException  if the string is formatted incorrectly
+   */
+  public static double parseTime(String t) throws IllegalArgumentException {
+    double time;
+    
+    t = t.trim().toLowerCase();
+
+    if (t.length() == 0) {
+      throw new IllegalArgumentException("Empty input string.");
+    } else if (t.endsWith("ns")) {
+      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000;
+    } else if (t.endsWith("us")) {
+      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000000;
+    } else if (t.endsWith("ms")) {
+      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000000000;      
+    } else if (t.endsWith("s")) {
+      time = Double.parseDouble(t.substring(0, t.length()-1).trim());
+    } else if (t.endsWith("m")) {
+      time = Double.parseDouble(t.substring(0, t.length()-1).trim()) * 60;
+    } else if (t.endsWith("h")) {
+      time = Double.parseDouble(t.substring(0, t.length()-1).trim()) * 60 * 60;
+    } else if (t.endsWith("d")) {
+      time = Double.parseDouble(t.substring(0, t.length()-1).trim()) * 60 * 60 * 24;
+    } else if (t.endsWith("w")) {
+      time = Double.parseDouble(t.substring(0, t.length()-1).trim()) * 60 * 60 * 24 * 7;
+    } else {
+      time = Double.parseDouble(t);
+    }
+    
+    return time;
+  }
  	
  	public static String formatBytes(int bytes) {
  		String bytesString;

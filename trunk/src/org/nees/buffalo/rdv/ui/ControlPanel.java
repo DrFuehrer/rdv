@@ -48,6 +48,7 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
@@ -98,8 +99,13 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
   
   private TimeSlider globalTimeSlider;
 
- 	public double timeScales[] = {0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0, 600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0, 172800.0, 432000.0};
- 	private double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
+ 	private static final double timeScales[] = {0.001, 0.002, 0.005, 0.01, 0.02,
+    0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0,
+    600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0,
+    172800.0, 432000.0, 604800.0};
+  
+ 	private static final double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2,
+    5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
 
 	public ChannelTree ctree;
 
@@ -223,6 +229,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     controlsPanel.add(Box.createHorizontalStrut(8));
     
     timeScaleComboBox = new JComboBox();
+    timeScaleComboBox.setEditable(true);
     timeScaleComboBox.setToolTipText("The amount of data to display");
     timeScaleComboBox.setPreferredSize(new Dimension(64,16));
     for (int i=0; i<timeScales.length; i++) {
@@ -485,8 +492,40 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    * the rbnb controller.
    */
   private void timeScaleChange() {
-    int value = timeScaleComboBox.getSelectedIndex();   
-    double timeScale = timeScales[value];
+    double timeScale;
+    
+    int value = timeScaleComboBox.getSelectedIndex();
+    if (value == -1) {
+      String timeScaleString = (String)timeScaleComboBox.getSelectedItem();
+      
+      try {
+        timeScale = DataViewer.parseTime(timeScaleString);
+      } catch (IllegalArgumentException e) {
+        JOptionPane.showMessageDialog(this,
+            "The time scale is not formatted correctly.",
+            "Invalid time scale",
+            JOptionPane.ERROR_MESSAGE);
+        timeScale = rbnbController.getTimeScale();
+      }
+      
+      if (timeScale <= 0) {
+        JOptionPane.showMessageDialog(this,
+            "The time scale must be greater than 0.",
+            "Invalid time scale",
+            JOptionPane.ERROR_MESSAGE);
+        timeScale = rbnbController.getTimeScale();        
+      }
+      
+      int timeScaleIndex = Arrays.binarySearch(timeScales, timeScale);      
+      if (timeScaleIndex >= 0) {
+        timeScaleComboBox.setSelectedIndex(timeScaleIndex);
+      } else {
+        timeScaleComboBox.setSelectedItem(DataViewer.formatSeconds(timeScale));
+      }
+    } else {
+      timeScale = timeScales[value];
+    }
+
     rbnbController.setTimeScale(timeScale);
   }
   
