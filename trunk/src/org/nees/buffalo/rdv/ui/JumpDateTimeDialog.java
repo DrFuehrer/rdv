@@ -37,6 +37,8 @@ public class JumpDateTimeDialog extends JDialog {
 	
 	RBNBController rbnb;
 	DataPanelManager dataPanelManager;
+  
+  Date defaultDate;
 	
 	JLabel headerLabel;
 	
@@ -63,6 +65,8 @@ public class JumpDateTimeDialog extends JDialog {
 		
 		this.rbnb = rbnbController;
 		this.dataPanelManager = dataPanelManager;
+    
+    defaultDate = new Date(((long)(rbnb.getLocation()*1000)));
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
@@ -124,7 +128,7 @@ public class JumpDateTimeDialog extends JDialog {
 		c.gridy = 3;
 		container.add(dateLable, c);
 		
-		dateTextField = new JTextField(DATE_FORMAT.format(new Date()), 10);
+		dateTextField = new JTextField(DATE_FORMAT.format(defaultDate), 10);
 		c.weightx = 0;
 		c.gridx = 1;
 		c.gridy = 3;
@@ -146,7 +150,7 @@ public class JumpDateTimeDialog extends JDialog {
 		c.gridwidth = 1;
 		container.add(timeLabel, c);
 
-		timeTextField = new JTextField(TIME_FORMAT.format(new Date()), 10);
+		timeTextField = new JTextField(TIME_FORMAT.format(defaultDate), 10);
 		c.weightx = 0;
 		c.gridx = 1;
 		c.gridy = 5;
@@ -234,10 +238,10 @@ public class JumpDateTimeDialog extends JDialog {
 			errorLabel.setText("Error: invalid date. Please try again!");
 
 			timeLabel.setForeground(Color.RED);
-			timeTextField.setText(TIME_FORMAT.format(new Date()));
+			timeTextField.setText(TIME_FORMAT.format(defaultDate));
 			
 			dateLable.setForeground(Color.RED);
-			dateTextField.setText(DATE_FORMAT.format(new Date()));
+			dateTextField.setText(DATE_FORMAT.format(defaultDate));
 			dateTextField.requestFocusInWindow();
 		}
 
