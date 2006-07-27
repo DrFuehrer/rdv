@@ -32,7 +32,6 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -600,10 +599,24 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
         text += "<u>" + label + "</u> ";
       }      
       if (content != null && content.length() > 0) {
-        if (content.length() > 50) {
-          text += content.substring(0,50) + "...";
-        } else {
-          text += content;
+        int maxLineLength = 75;
+        int maxLines = 10;
+        
+        String[] words = content.split(" ");
+        int lineLength = 0;
+        int lines = 0;
+        for  (String word : words) {          
+          if (lineLength + word.length() < (lines==0?(maxLineLength-32):maxLineLength)) {
+            text += " " + word;
+            lineLength += word.length() + 1;
+          } else {
+            if (++lines == maxLines) {
+              text += "...";
+              break;
+            }            
+            text += "<br>" + word;
+            lineLength = word.length();
+          }
         }
       }
       text += "<br>";
