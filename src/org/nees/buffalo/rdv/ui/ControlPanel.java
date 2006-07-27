@@ -116,7 +116,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 		initPanel();
     
     double location = rbnbController.getLocation();
-    globalTimeSlider.setValues(location, location, location, location, location);
+    globalTimeSlider.setValues(location, 0, location, 0, location);
     
     rbnbController.getMarkerManager().addMarkerListener(this);
 	}
