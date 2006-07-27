@@ -32,6 +32,7 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -105,7 +106,15 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     
     addMouseListener(this);
 
-    valueButton = new JButton(DataViewer.getIcon("icons/time.gif"));
+    valueButton = new JButton(DataViewer.getIcon("icons/time.gif")) {
+      public JToolTip createToolTip() {
+        return TimeSlider.this.createToolTip();
+      }
+      public String getToolTipText(MouseEvent me) {
+        return TimeSlider.this.getToolTipText(me);
+      }
+    };
+    valueButton.setToolTipText("");
     valueButton.setOpaque(false);
     valueButton.setBorder(null);
     valueButton.addMouseMotionListener(this);
@@ -554,7 +563,12 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @return    text describing the markers around the mouse pointer
    */
   public String getToolTipText(MouseEvent me) {
-    double time = getTimeFromX(me.getX());
+    int x = me.getX();
+    if (me.getSource() == valueButton) {
+      x += valueButton.getX();
+    }
+
+    double time = getTimeFromX(x);
     double offset = 2*getPixelTime();
     
     List<EventMarker> markersOver = getMarkersAroundTime(time, offset);
@@ -680,12 +694,15 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @param me  the mouse event that triggered this
    */
   public void mouseClicked(MouseEvent me) {
-    if (me.getSource() != this) {
+    double time;
+    if (me.getSource() == this) {
+      time = getTimeFromX(me.getX());      
+    } else if (me.getSource() == valueButton) {
+      time = getTimeFromX(valueButton.getX() + me.getX());
+    } else {
       return;
     }
 
-    double time = getTimeFromX(me.getX());
-    
     if (me.getButton() == MouseEvent.BUTTON1) {
       setValue(time);
     } else if (me.getButton() == MouseEvent.BUTTON3) {
