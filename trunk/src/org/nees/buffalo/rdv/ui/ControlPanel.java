@@ -585,13 +585,9 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     monitorButton.setSelected(newState == Player.STATE_MONITORING);    
     playButton.setSelected(newState == Player.STATE_PLAYING);
     
-    if (newState == Player.STATE_MONITORING) {
-      slowerButton.setEnabled(false);
-			fasterButton.setEnabled(false);
-		} else if (oldState == Player.STATE_MONITORING) {
-      slowerButton.setEnabled(true);
-      fasterButton.setEnabled(true);
-		}
+    slowerButton.setEnabled(newState != Player.STATE_MONITORING);
+    playbackRateLabel.setEnabled(newState != Player.STATE_MONITORING);
+    fasterButton.setEnabled(newState != Player.STATE_MONITORING);
 	}
   
   /**
@@ -606,9 +602,17 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     monitorButton.setEnabled(enabled);
     playButton.setEnabled(enabled);
     beginButton.setEnabled(enabled);
-    slowerButton.setEnabled(enabled);
-    playbackRateLabel.setEnabled(enabled);
-    fasterButton.setEnabled(enabled);    
+
+    if (enabled && rbnbController.getState() != Player.STATE_MONITORING) {
+      slowerButton.setEnabled(true);
+      playbackRateLabel.setEnabled(true);
+      fasterButton.setEnabled(true);
+    } else {
+      slowerButton.setEnabled(false);
+      playbackRateLabel.setEnabled(false);
+      fasterButton.setEnabled(false);
+    }
+
     endButton.setEnabled(enabled);
     timeScaleComboBox.setEnabled(enabled);
     locationLabel.setEnabled(enabled);
