@@ -142,13 +142,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 */
 	List channels;
 	
-	/**
-	 * A list of units for channels.
-	 * 
-	 * @since  1.1
-	 */
-	Hashtable units;
-   
    /** A list of lower threshold values for channels.
     *  @since 1.3
     */
@@ -271,7 +264,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
      */
 		channels = new CopyOnWriteArrayList();
     
-		units = new Hashtable();
       lowerThresholds = new Hashtable ();
       upperThresholds = new Hashtable ();
 		
@@ -358,12 +350,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		channels.add(channelName);
         
-		String unit = channel.getMetadata("units");
-		if (unit != null) {
-			units.put(channelName, unit);
-		}
-		
-      
       /** these parameters are defined in the NEESit DAQ protocol.
        * @see org.nees.rbnb.DaqToRbnb
        * see line 495 of https://svn.nees.org/svn/telepresence/fake_daq/fake_daq.c
@@ -414,7 +400,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     rbnbController.unsubscribe(channelName, this);
     
   	channels.remove(channelName);
-  	units.remove(channelName);
     lowerThresholds.remove(channelName);
     upperThresholds.remove(channelName);
     updateTitle();
@@ -990,11 +975,15 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
   
   class ChannelTitle extends JPanel {
     public ChannelTitle(final String channelName) {
+      this(channelName, channelName);
+    }
+    
+    public ChannelTitle(String seriesName, final String channelName) {
       setLayout(new BorderLayout());
       setBorder(new EmptyBorder(0, 0, 0, 5));
       setOpaque(false);
       
-      JLabel text = new JLabel(channelName);
+      JLabel text = new JLabel(seriesName);
       text.setForeground(SimpleInternalFrame.getTextForeground(true));
       add(text, BorderLayout.CENTER);
       
