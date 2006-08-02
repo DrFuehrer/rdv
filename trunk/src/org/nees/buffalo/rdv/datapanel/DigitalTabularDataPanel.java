@@ -77,6 +77,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import com.rbnb.sapi.ChannelMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 
 /**
@@ -648,9 +649,13 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
   void channelAdded(String channelName) {
     String labelText = channelName;
     
-    String unit = (String)units.get(channelName);
-    if (unit != null) {
-      labelText += "(" + unit + ")";
+    Channel channel = rbnbController.getChannel(channelName);
+    String unit = null;
+    if (channel != null) {
+      unit = channel.getMetadata("units");
+      if (unit != null) {
+        labelText += "(" + unit + ")";
+      }
     }
     
     String lowerThresholdString = (String)( lowerThresholds.get (channelName) );
