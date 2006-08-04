@@ -58,25 +58,49 @@ import org.nees.rbnb.marker.EventMarker;
  * @author Jason P. Hanley
  */
 public class TimeSlider extends JComponent implements MouseListener, MouseMotionListener {
+  /** The minimum time. */
   double minimum;
+  
+  /** The start of the selected time range. */
   double start;
+  
+  /** The selected time. */
   double value;
+  
+  /** The end of the selected time range. */
   double end;
+  
+  /** The maximum time. */
   double maximum;
   
+  /** Indicates if a time range may be selected. */ 
   boolean useRange;
   
+  /** Indicates if the time value is adjusting. */
   boolean isAdjusting;
+  
+  /** The starting offset of a click (for buttons). */
   int clickStart;
   
+  /** List of event marker.s */
   List<EventMarker> markers;  
   
+  /** List of time discontinuities. */
+  List<Discontinuity> discontinuities;
+  
+  /** List of time adjustment listeners. */
   List<TimeAdjustmentListener> adjustmentListeners;
 
+  /** The button used to indicate the start time. */
   JButton startButton;
+  
+  /** The button used to indicate the time. */
   JButton valueButton;
+  
+  /** The button used to indicate the end time. */
   JButton endButton;
   
+  /** The image used to show a marker. */
   Image markerImage;
 
   /**
@@ -96,6 +120,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     isAdjusting = false;
     
     markers = new ArrayList<EventMarker>();
+    
+    discontinuities = new ArrayList<Discontinuity>();
     
     adjustmentListeners = new ArrayList<TimeAdjustmentListener>();
 
@@ -378,7 +404,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @return      the event marker closest to the time, or null if there are
    *              none
    */
-  public EventMarker getMarkerClosestToTime(double time) {
+  private EventMarker getMarkerClosestToTime(double time) {
     EventMarker eventMarker = null;
     double distance = Double.MAX_VALUE;
 
@@ -424,6 +450,51 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   public void cleareMarkers() {
     markers.clear();
     repaint();
+  }
+  
+  /**
+   * Add a time discontinuity.
+   * 
+   * @param start  the start of the discontinuity
+   * @param end    the end of the discontinuity
+   */
+  public void addDiscontinuity(double start, double end) {
+    Discontinuity discontinuity = new Discontinuity(start, end);
+
+    for (Discontinuity d : discontinuities) {
+      if (d.overlaps(discontinuity)) {
+        d.join(discontinuity);
+        checkDiscontinuity(d);
+        return;
+      }
+    }
+    
+    discontinuities.add(discontinuity);
+  }
+  
+  /**
+   * Checks the discontinuity to make sure it doesn't overlap the one following
+   * it. If they do overlap, the two are joined, and the the following
+   * discontinuity is removed.
+   * 
+   * @param discontinuity  the discontinuity to check
+   */
+  private void checkDiscontinuity(Discontinuity discontinuity) {
+    int index = discontinuities.indexOf(discontinuity);
+    if (index >= 0 && index+1 < discontinuities.size()) {
+      Discontinuity d = discontinuities.get(index+1);
+      if (discontinuity.end >= d.start) {
+        discontinuity.end = d.end;
+        discontinuities.remove(d);
+      }
+    }
+  }
+  
+  /**
+   * Remove all time discontinuities. 
+   */
+  public void clearDiscontinuities() {
+    discontinuities.clear();
   }
   
   /**
@@ -806,5 +877,80 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     endButton.setEnabled(enabled);
     
     repaint();
+  }
+  
+  /**
+   * A time discontinuity. This is a range in time specified by a start and end.
+   */
+  private class Discontinuity implements Comparable<Discontinuity> {
+    /** The start of the discontinuity */
+    public double start;
+    
+    /** the end of the discontinuity */
+    public double end;
+    
+    /**
+     * Create a time discontinuity.
+     * 
+     * @param start  the start of the discontinuity
+     * @param end    the end of the discontinuity
+     */
+    public Discontinuity(double start, double end) {
+      this.start = start;
+      this.end = end;
+    }
+    
+    /**
+     * See if the discontinuitie overlaps with this one.
+     * 
+     * @param d  the discontinuity to check
+     * @return   true if they overlap, false if they do not
+     */
+    public boolean overlaps(Discontinuity d) {
+      if (start < d.start && end >= d.start) {
+        return true;
+      } else if (start > d.start && start <= d.end) {
+        return true;
+      }
+      
+      return false;
+    }
+    
+    /**
+     * If the discontinuitie overlaps with this one, union with it.
+     * 
+     * @param d  the discontinutity to join with
+     */
+    public void join(Discontinuity d) {
+      if (start < d.start && end >= d.start) {
+        end = d.end;
+      } else if (start > d.start && start <= d.end) {
+        start = d.start;
+      }      
+    }
+
+    /**
+     * Compare discontinuities. This is based first on their start, and then on
+     * their end (if needed).
+     * 
+     * @param d  the discontinuity to compare with
+     * @return   0 if they are the same, -1 if this is less than the other, and
+     *           1 if this is greater than the other.
+     */
+    public int compareTo(Discontinuity d) {
+      if (start == d.start) {
+        if (end == d.end) {
+          return 0;
+        } else if (end < d.end) {
+          return -1;
+        } else {
+          return 1;
+        }
+      } else if (start < d.start) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }
   }
 }
