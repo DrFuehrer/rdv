@@ -560,8 +560,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
       titleBar.add(getDescriptionComponent(), BorderLayout.WEST);
     }
     
-    if (channels.size() > 0) {
-      titleBar.add(getChannelComponent(), BorderLayout.CENTER);
+    JComponent titleComponent = getChannelComponent();
+    if (titleComponent != null) {
+      titleBar.add(titleComponent, BorderLayout.CENTER);
     }
     
     return titleBar;
@@ -576,6 +577,10 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
   }
   
   JComponent getChannelComponent() {
+    if (channels.size() == 0) {
+      return null;
+    }
+    
     JPanel channelBar = new JPanel();
     channelBar.setOpaque(false);
     channelBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -974,11 +979,11 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	public void dragExit(DropTargetEvent e) {}
   
   class ChannelTitle extends JPanel {
-    public ChannelTitle(final String channelName) {
+    public ChannelTitle(String channelName) {
       this(channelName, channelName);
     }
     
-    public ChannelTitle(String seriesName, final String channelName) {
+    public ChannelTitle(String seriesName, String channelName) {
       setLayout(new BorderLayout());
       setBorder(new EmptyBorder(0, 0, 0, 5));
       setOpaque(false);
@@ -991,12 +996,16 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
       closeButton.setToolTipText("Remove channel");
       closeButton.setBorder(null);
       closeButton.setOpaque(false);
-      closeButton.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent arg0) {
+      closeButton.addActionListener(getActionListener(seriesName, channelName));
+      add(closeButton, BorderLayout.EAST);
+    }
+    
+    protected ActionListener getActionListener(final String seriesName, final String channelName) {
+      return new ActionListener() {
+        public void actionPerformed(ActionEvent ae) {
           removeChannel(channelName);
         }
-      });
-      add(closeButton, BorderLayout.EAST);
+      };
     }
   }
   
