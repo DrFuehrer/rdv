@@ -47,6 +47,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -56,6 +58,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
@@ -95,6 +99,9 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.util.ShapeUtilities;
 import org.jfree.util.UnitType;
+import org.nees.buffalo.rdv.data.DataFileChannel;
+import org.nees.buffalo.rdv.data.DataFileListener;
+import org.nees.buffalo.rdv.data.DataFileReader;
 import org.nees.buffalo.rdv.rbnb.Channel;
 
 import com.rbnb.sapi.ChannelMap;
@@ -162,6 +169,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
   double lastTimeDisplayed;
   
   /**
+   * The number of local data series.
+   */
+  int localSeries;
+  
+  /**
    * A channel map used to cache the values of an xy data set when only one
    * channel has been added.
    */
@@ -181,6 +193,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
                     Color.decode("#0099FF"), Color.decode("#990000"),
                     Color.decode("#000099"), Color.black};
 
+  /**
+   * The file chooser UI used to select a local data file.
+   */
+  JFileChooser chooser;
+  
   /**
    * Constructs a chart data panel in time series mode.
    */
@@ -275,6 +292,19 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     popupMenu.insert(copyChartMenuItem, 2);
 
     popupMenu.insert(new JPopupMenu.Separator(), 3);
+    
+    if (xyMode) {
+      popupMenu.add(new JPopupMenu.Separator());
+      
+      JMenuItem addLocalSeriesMenuItem = new JMenuItem("Add local series...");
+      addLocalSeriesMenuItem.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent ae) {
+          addLocalSeries();
+        }        
+      });
+      
+      popupMenu.add(addLocalSeriesMenuItem);
+    }
 
 		chartPanelPanel = new JPanel();
 		chartPanelPanel.setLayout(new BorderLayout());
@@ -295,6 +325,142 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     // wrap image in the transferable and put on the clipboard
     ImageSelection contents = new ImageSelection(image);
     clipboard.setContents(contents, null);
+  }
+  
+  /**
+   * Add data from a local file as a series to this chart. This will ask the
+   * user for the file name, and which channels to use.
+   */
+  private void addLocalSeries() {
+    if (chooser == null) {
+      chooser = new JFileChooser();
+    }
+    
+    int returnVal = chooser.showOpenDialog(dataComponent);
+    if(returnVal != JFileChooser.APPROVE_OPTION) {
+      return;
+    }
+    
+    File file = chooser.getSelectedFile();
+    if (file == null || !file.isFile() || !file.exists()) {
+      return;
+    }
+    
+    DataFileReader reader;
+    try {
+      reader = new DataFileReader(file);
+    } catch (IOException e) {
+      JOptionPane.showMessageDialog(dataComponent,
+          e.getMessage(),
+          "Problem reading data file",
+          JOptionPane.ERROR_MESSAGE);
+      return;
+    }
+    
+    List<DataFileChannel> channels = reader.getChannels();
+    if (channels.size() < 2) {
+      JOptionPane.showMessageDialog(dataComponent,
+          "There must be at least 2 channels in the data file",
+          "Problem with data file",
+          JOptionPane.ERROR_MESSAGE);      
+      return;
+    }
+    
+    DataFileChannel xChannel = (DataFileChannel)JOptionPane.showInputDialog(
+        dataComponent,
+        "Select the x channel:",
+        "Add local channel",
+        JOptionPane.PLAIN_MESSAGE,
+        null,
+        channels.toArray(),
+        null);
+    
+    if (xChannel == null) {
+      return;
+    }
+    
+    DataFileChannel yChannel = (DataFileChannel)JOptionPane.showInputDialog(
+        dataComponent,
+        "Select the y channel:",
+        "Add local channel",
+        JOptionPane.PLAIN_MESSAGE,
+        null,
+        channels.toArray(),
+        null);
+    
+    if (yChannel == null) {
+      return;
+    }
+    
+    String xChannelName = xChannel.getChannelName();
+    if (xChannel.getUnit() != null) {
+      xChannelName += " (" + xChannel.getUnit() + ")";
+    }
+    final int xChannelIndex = channels.indexOf(xChannel);
+    
+    String yChannelName = yChannel.getChannelName();
+    if (yChannel.getUnit() != null) {
+      yChannelName += " (" + yChannel.getUnit() + ")";
+    }
+    final int yChannelIndex = channels.indexOf(yChannel);
+    
+    String seriesName = xChannelName + " vs. " + yChannelName;
+    
+    final XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
+    
+    DataFileListener listener = new DataFileListener() {
+      public void postDataSamples(double timestamp, double[] values) {
+        FixedMillisecond time = new FixedMillisecond((long)(timestamp*1000));
+        XYTimeSeriesDataItem dataItem = new XYTimeSeriesDataItem(time);
+        if (values[xChannelIndex] != Double.NaN && values[yChannelIndex] != Double.NaN) {
+          dataItem.setX(values[xChannelIndex]);
+          dataItem.setY(values[yChannelIndex]);
+        }
+        data.add(dataItem, false);
+      }        
+    };
+    
+    try {
+      reader.readData(listener);
+    } catch (IOException e) {
+      e.printStackTrace();
+      return;
+    }
+    
+    Color color = getLeastUsedColor();
+    colors.put(seriesName, color);      
+    
+    ((XYTimeSeriesCollection)dataCollection).addSeries(data);
+    localSeries++;
+    
+    setSeriesColors();
+    
+    updateTitle();
+    
+    updateLegend();
+  }
+  
+  /**
+   * Remove the local series from the chart.
+   * 
+   * @param seriesName  the name of the local series.
+   */
+  private void removeLocalSeries(String seriesName) {
+    XYTimeSeries series = ((XYTimeSeriesCollection)dataCollection).getSeries(seriesName);
+    
+    if (series == null) {
+      return;
+    }
+    
+    localSeries--;
+    ((XYTimeSeriesCollection)dataCollection).removeSeries(series);
+    
+    colors.remove(seriesName);
+    setSeriesColors();
+    
+    updateTitle();
+    
+    updateLegend();
   }
   
   /**
@@ -339,6 +505,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
   void channelAdded(String channelName) {
     String channelDisplay = getChannelDisplay(channelName);
     String seriesName = null;
+    Color color = null;
     
     if (xyMode) {
       if (channels.size() % 2 == 0) {
@@ -346,49 +513,33 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         String firstChannelDisplay = getChannelDisplay(firstChannelName);
         seriesName = firstChannelDisplay + " vs. " + channelDisplay;
         
+        color = getLeastUsedColor();
+        
         XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
         data.setMaximumItemAge((int)(timeScale*1000));
-        ((XYTimeSeriesCollection)dataCollection).addSeries(data);
+        
+        int position = dataCollection.getSeriesCount() - localSeries;
+        ((XYTimeSeriesCollection)dataCollection).addSeries(position, data);
       }
     } else {
       seriesName = channelDisplay;
+      
+      color = getLeastUsedColor();
       
 			TimeSeries data = new FastTimeSeries(seriesName, FixedMillisecond.class);
 			data.setMaximumItemAge((int)(timeScale*1000));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
 		}
     
-    if (xyMode && channels.size() == 1) {
-      domainAxis.setLabel(channelDisplay);
-    } else if (dataCollection.getSeriesCount() == 1 && (!xyMode || channels.size() == 2)) {
-      rangeAxis.setLabel(channelDisplay);
-    } else if (dataCollection.getSeriesCount() > 1) {
-      if (chart.getLegend() == null) {
-        chart.addLegend(seriesLegend);
-      }
-      
-      if (xyMode) {
-        domainAxis.setLabel(null);
-      }
-      rangeAxis.setLabel(null);      
-    }
-    
     if (seriesName != null) {
-      // find the least used color
-      int usage = -1;
-      Color color = null;
-      for (int i=0; i<seriesColors.length; i++) {
-        int seriesUsingColor = getSeriesUsingColor(seriesColors[i], seriesName);
-        if (usage == -1 || seriesUsingColor < usage) {
-          usage = seriesUsingColor;
-          color = seriesColors[i]; 
-        }
-      }
-      
-      // set the series color
+      // find the least used color and set it
       colors.put(seriesName, color);
       setSeriesColors();      
     }
+    
+    updateTitle();    
+    
+    updateLegend();    
   }
   
   /**
@@ -436,8 +587,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         colors.remove(seriesName);
       }
       
-      updateTitle();
-      
       channelRemoved(channelName);
       
       return true;
@@ -464,36 +613,38 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     setSeriesColors();
     
-    int series = dataCollection.getSeriesCount(); 
-    if (series == 1) {
-      if (chart.getLegend() != null) {
-        seriesLegend = chart.getLegend();
+    updateTitle();
+    
+    updateLegend();
+  }
+  
+  /**
+   * Return a color that is least used.
+   * 
+   * @return            the color
+   */
+  private Color getLeastUsedColor() {
+    int usage = -1;
+    Color color = null;
+    for (int i=0; i<seriesColors.length; i++) {
+      int seriesUsingColor = getSeriesUsingColor(seriesColors[i]);
+      if (usage == -1 || seriesUsingColor < usage) {
+        usage = seriesUsingColor;
+        color = seriesColors[i]; 
       }
-      chart.removeLegend();
-      
-      if (xyMode) {
-        domainAxis.setLabel(getChannelDisplay((String)channels.get(0)));
-        rangeAxis.setLabel(getChannelDisplay((String)channels.get(1)));
-      } else {
-        rangeAxis.setLabel(getChannelDisplay((String)channels.get(0)));
-      }
-    } else if (series == 0) {
-      if (xyMode) {
-        domainAxis.setLabel(null);
-      }      
-      rangeAxis.setLabel(null);
     }
-	}
+
+    return color;
+  }
   
   /**
    * Count the number of series using the specified color for their series
-   * plot. The count will exclude the specified series from the count.
+   * plot.
    * 
    * @param color          the color to find
-   * @param excludeSeries  the series to skip
    * @return               the number of series using this color
    */
-  private int getSeriesUsingColor(Color color, String excludeSeries) {
+  private int getSeriesUsingColor(Color color) {
     if (color == null) {
       return 0;
     }
@@ -501,9 +652,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     int count = 0;
     
     for (int i=0; i<dataCollection.getSeriesCount(); i++) {
-      String series = (String)dataCollection.getSeriesKey(i);
-      Paint p = (Color)xyPlot.getRenderer().getSeriesPaint(i);
-      if (p.equals(color) && !series.equals(excludeSeries)) {
+      Paint p = xyPlot.getRenderer().getSeriesPaint(i);
+      if (p.equals(color)) {
         count++;
       }
     }
@@ -520,6 +670,52 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       xyPlot.getRenderer().setSeriesPaint(i, colors.get(series));
     }
   }
+  
+  /**
+   * Update the legend and axis labels based on the series being viewed.
+   */
+  private void updateLegend() {
+    int series = dataCollection.getSeriesCount();
+    int chans = channels.size();
+    
+    if (xyMode) {
+      if (series == 0 && chans == 1) {
+        domainAxis.setLabel((String)channels.get(0));
+        rangeAxis.setLabel(null);
+      } else if (series == 1 && chans == 0) {
+        XYTimeSeries xySeries = ((XYTimeSeriesCollection)dataCollection).getSeries(0); 
+        String seriesName = (String)xySeries.getKey();
+        String[] channelNames = seriesName.split(" vs. ");
+        if (channelNames.length == 2) {
+          domainAxis.setLabel(channelNames[0]);
+          rangeAxis.setLabel(channelNames[1]);
+        }
+      } else if (series == 1 && chans == 2) {
+        domainAxis.setLabel((String)channels.get(0));
+        rangeAxis.setLabel((String)channels.get(1));
+      } else {
+        domainAxis.setLabel(null);
+        rangeAxis.setLabel(null);        
+      }      
+    } else {
+      if (series == 1) {
+        rangeAxis.setLabel((String)channels.get(0));
+      } else {
+        rangeAxis.setLabel(null);
+      }
+    }
+    
+    if (series >= 2) {
+      if (chart.getLegend() == null) {
+        chart.addLegend(seriesLegend);
+      }
+    } else {
+      if (chart.getLegend() != null) {
+        seriesLegend = chart.getLegend();
+      }
+      chart.removeLegend();      
+    }    
+  }
 	
   /**
    * Get the title of this data panel. This overides the super class
@@ -529,6 +725,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    */
 	String getTitle() {
 		if (xyMode) {
+      int remoteSeries = dataCollection.getSeriesCount()-localSeries;
+      
       String title = new String();
 			Iterator i = channels.iterator();
       while (i.hasNext()) {
@@ -537,11 +735,20 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         if (i.hasNext()) {
           String secondChannel = (String)i.next();
           title += " vs. " + secondChannel;
-          if (i.hasNext()) {
+          if (i.hasNext() || localSeries > 0) {
             title += ", ";
           }          
         }
       }
+      
+      for (int j=remoteSeries; j<remoteSeries+localSeries; j++) {
+        String seriesName = (String)dataCollection.getSeriesKey(j);
+        title += seriesName;
+        if (j<remoteSeries+localSeries-1) {
+          title += ", ";
+        }
+      }      
+
       return title;
 		} else {
 			return super.getTitle();
@@ -556,6 +763,12 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    */
   JComponent getChannelComponent() {
     if (xyMode) {
+      int remoteSeries = dataCollection.getSeriesCount()-localSeries;
+
+      if (channels.size() == 0 && localSeries == 0) {
+        return null;
+      }
+      
       JPanel titleBar = new JPanel();
       titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
       titleBar.setOpaque(false);
@@ -570,13 +783,43 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
           }
           titleBar.add(new ChannelTitle(series, firstChannel));
         }
+        
+        for (int j=remoteSeries; j<remoteSeries+localSeries; j++) {
+          String seriesName = (String)dataCollection.getSeriesKey(j);
+          titleBar.add(new LocalChannelTitle(seriesName));
+        }
       }
       
       return titleBar;
     } else {
       return super.getChannelComponent();
     }
-  }  
+  }
+  
+  /**
+   * A channel title component for local channels.
+   */
+  class LocalChannelTitle extends ChannelTitle {
+    /**
+     * Create a local channel title.
+     * 
+     * @param seriesName  the name of the series
+     */
+    public LocalChannelTitle(String seriesName) {
+      super(seriesName, seriesName);
+    }
+
+    /**
+     * Return an actionlistener to remove this series.
+     */
+    protected ActionListener getActionListener(final String seriesName, final String channelName) {
+      return new ActionListener() {
+        public void actionPerformed(ActionEvent ae) {
+          removeLocalSeries(seriesName);
+        }
+      };
+    }    
+  }
 	
   /**
    * Get the string for this channel to display in the UI. This will show the
@@ -607,8 +850,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		super.timeScaleChanged(newTimeScale);
 
     SwingUtilities.invokeLater(new Runnable() {
-      public void run() {    
-    		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
+      public void run() {
+        int series = dataCollection.getSeriesCount();
+        if (xyMode) {
+          series -= localSeries;
+        }
+        
+    		for (int i=0; i<series; i++) {
     			if (xyMode) {
     				XYTimeSeriesCollection xyTimeSeriesCollection = (XYTimeSeriesCollection)dataCollection;
     				XYTimeSeries data = xyTimeSeriesCollection.getSeries(i);
@@ -626,7 +874,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       }
     });		
 	}
-	
+  
   /**
    * Posts new data to the data panel.
    * 
@@ -780,7 +1028,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    */
   private void postDataXY(ChannelMap channelMap, ChannelMap cachedChannelMap) {
     //loop over all channels and see if there is data for them
-    int seriesCount = channels.size() / 2;
+    int seriesCount = dataCollection.getSeriesCount()-localSeries;
     for (int i=0; i<seriesCount; i++) {
       postDataXY(channelMap, cachedChannelMap, i);
     }
@@ -972,7 +1220,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 
     if (xyMode) {
       XYTimeSeriesCollection xyTimeSeriesCollection = (XYTimeSeriesCollection)dataCollection;
-      for (XYTimeSeries data : xyTimeSeriesCollection.getSeries()) {
+      int series = dataCollection.getSeriesCount()-localSeries;
+      for (int i=0; i<series; i++) {
+        XYTimeSeries data = xyTimeSeriesCollection.getSeries(i);
         data.removeAgedItems((long)(time*1000));
       }
     } else {
@@ -991,7 +1241,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		SwingUtilities.invokeLater(new Runnable() {
 			  public void run() {
           lastTimeDisplayed = -1;
-				  for (int i=0; i<dataCollection.getSeriesCount(); i++) {
+          
+          int series = dataCollection.getSeriesCount();
+          if (xyMode) {
+            series -= localSeries;
+          }          
+
+				  for (int i=0; i<series; i++) {
 					  if (xyMode) {
 						  XYTimeSeriesCollection xyTimeSeriesDataCollection = (XYTimeSeriesCollection)dataCollection;
 						  XYTimeSeries data = xyTimeSeriesDataCollection.getSeries(i);
@@ -1835,12 +2091,22 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
      * @param series  the series to add
      */
     public void addSeries(XYTimeSeries series) {
+      addSeries(getSeriesCount(), series);
+    }
+    
+    /**
+     * Add the series to the collection at the specified index.
+     * 
+     * @param index   the index at which to add the series
+     * @param series  the series to add
+     */
+    public void addSeries(int index, XYTimeSeries series) {
       if (series == null) {
         throw new IllegalArgumentException("Null 'series' argument.");
       }
-      data.add(series);
+      data.add(index, series);
       series.addChangeListener(this);
-      fireDatasetChanged();
+      fireDatasetChanged();      
     }
     
     /**
