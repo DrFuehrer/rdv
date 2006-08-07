@@ -48,7 +48,10 @@ import java.util.Map;
  * 
  * @author Jason P. Hanley
  */
-public class DataFileReader extends BufferedReader {
+public class DataFileReader {
+  /** The reader for the data file */
+  BufferedReader reader;
+  
   /** The properties for the data file */
   private Map<String,String> properties;
   
@@ -57,7 +60,7 @@ public class DataFileReader extends BufferedReader {
   
   private String propertyDelimiter = ":";
   
-  /** The delimiters to try for the data items */
+  /** The delimiters to try for the data items. Tab, comma, and semi-colon */
   private String delimiters = "[\t,;]";
   
   /** The last line read in the file. */
@@ -77,6 +80,9 @@ public class DataFileReader extends BufferedReader {
   
   /** The keys that can denote a list of units */
   private static final String[] unitPropertyKeys = {"unit", "units", "channel unit", "channel units"};
+  
+  /** The number of lines to parse before giving up on understanding the file */
+  private static final int MAX_HEADER_LINES = 100;
 
   /**
    * Create a new data file reader and tries to read it's header.
@@ -85,14 +91,21 @@ public class DataFileReader extends BufferedReader {
    * @throws IOException  if there is an error opening or reading the data file
    */
   public DataFileReader(File file) throws IOException {
-    super(new FileReader(file));
+    reader = new BufferedReader((new FileReader(file)));
     
     properties = new Hashtable<String,String>();
     channels = new ArrayList<DataFileChannel>();
     
     hasTimeColumn = true;
     
-    readHeader();
+    try {
+      readHeader();
+    } catch (IOException e) {
+      // try parsing with a space delimiter
+      reader = new BufferedReader((new FileReader(file)));
+      delimiters = " +";
+      readHeader();
+    }
     
     parseUnitProperty();
   }
@@ -125,11 +138,18 @@ public class DataFileReader extends BufferedReader {
   public void readData(DataFileListener listener) throws IOException {
     int currentLine = 0;
     
+    int firstDataIndex;
+    if (hasTimeColumn) {
+      firstDataIndex = 1;
+    } else {
+      firstDataIndex = 0;
+    }
+    
     do {
       line = line.trim();
       String[] tokens = line.split(delimiters);
       
-      if (tokens.length != channels.size()+1) {
+      if (tokens.length != channels.size()+firstDataIndex) {
         continue;
       }
 
@@ -152,7 +172,7 @@ public class DataFileReader extends BufferedReader {
         }
       }
         
-      for (int i=1; i<tokens.length; i++) {
+      for (int i=firstDataIndex; i<tokens.length; i++) {
         double value;
         try {
           value = Double.parseDouble(tokens[i].trim());
@@ -160,13 +180,13 @@ public class DataFileReader extends BufferedReader {
           value = Double.NaN;
         }
 
-        values[i-1] = value;
+        values[i-firstDataIndex] = value;
       }
       
       listener.postDataSamples(timestamp, values);
       
       currentLine++;
-    } while ((line = readLine()) != null);
+    } while ((line = reader.readLine()) != null);
   }
   
   /**
@@ -176,30 +196,33 @@ public class DataFileReader extends BufferedReader {
    * @throws IOException  if there is an error reading the data file
    */
   private void readHeader() throws IOException {
-    while ((line = readLine()) != null) {
+    int lines = 0;
+    
+    while ((line = reader.readLine()) != null && lines++ < MAX_HEADER_LINES) {
       // time whitespace around line
       line = line.trim();
       
+      // skip blank lines
+      if (line.length() == 0) {
+        continue;
+      }
+      
+      // look for properties
       String[] property = line.split(propertyDelimiter);
       if (property.length == 2) {
-        properties.put(property[0].trim().toLowerCase(), property[1].trim());
+        properties.put(stripString(property[0]).toLowerCase(), stripString(property[1]));
         continue;
       }
       
       // try to split line
       String[] tokens = line.split(delimiters);
+      String firstToken = stripString(tokens[0]);
       
       // look for the line with the channel names
-      if (channels.size() == 0 && (line.matches("^\"?(?i:time).*") || startsWithKey(line, channelPropertyKeys))) {
-        // if the line didn't split, try spaces as a delimiter
-        if (tokens.length == 1) {
-          delimiters = " +";
-          tokens = line.split(delimiters);
-        }        
-        
+      if (channels.size() == 0 && (firstToken.compareToIgnoreCase("time") == 0 || isKey(firstToken, channelPropertyKeys))) {        
         // go over every channel name
         for (int i=1; i<tokens.length; i++) {
-          DataFileChannel channel = new DataFileChannel(tokens[i].trim());
+          DataFileChannel channel = new DataFileChannel(stripString(tokens[i]));
           channels.add(channel);
         }
         
@@ -211,22 +234,22 @@ public class DataFileReader extends BufferedReader {
       // look for the start of data or the unit information
       } else if (channels.size() == 0 || tokens.length == channels.size()+1) {
         // see if this line contains data
-        String value = tokens[0].trim();
-        if (isNumber(value)) {
+        if (isNumber(firstToken)) {
           if (channels.size() == 0) {
-            generateFakeChannels(tokens.length-1);
+            hasTimeColumn = false;
+            generateFakeChannels(tokens.length);
           }
           return;
-        } else if (isTimestamp(value)) {
+        } else if (isTimestamp(firstToken)) {
           timeIsISO8601 = true;
           if (channels.size() == 0) {
             generateFakeChannels(tokens.length-1);
           }          
           return;
-        } else if (channels.size() > 0 && (value.toLowerCase().startsWith("sec") || isKey(value, unitPropertyKeys))) {
+        } else if (channels.size() > 0 && (firstToken.toLowerCase().startsWith("sec") || isKey(firstToken, unitPropertyKeys))) {
           for (int i=1; i<tokens.length; i++) {
             DataFileChannel channel = channels.get(i-1);
-            channel.setUnit(tokens[i].trim());
+            channel.setUnit(stripString(tokens[i]));
           }            
         }
       }
@@ -298,31 +321,13 @@ public class DataFileReader extends BufferedReader {
   }
   
   /**
-   * See if any of the keys start the search line.
-   * 
-   * @param searchLine  the line to search in
-   * @param keys        the keys to look for
-   * @return            true if the line starts with any of the keys, false
-   *                    otherwise
-   */
-  private boolean startsWithKey(String searchLine, String[] keys) {
-    for (String key : keys) {
-      if (searchLine.toLowerCase().startsWith(key)) {
-        return true;
-      }
-    }
-    
-    return false;    
-  }
-  
-  /**
    * Populate the list of channels. The channels will be named by their index.
    * 
    * @param numberOfChannels  the number of channels to create.
    */
   private void generateFakeChannels(int numberOfChannels) {
     for (int i=0; i<numberOfChannels; i++) {
-      DataFileChannel channel = new DataFileChannel(Integer.toString(i));
+      DataFileChannel channel = new DataFileChannel(Integer.toString(i+1));
       channels.add(channel);
     }
   }
@@ -358,4 +363,24 @@ public class DataFileReader extends BufferedReader {
     
     return true;
   }
+  
+  /**
+   * Removes leading and trailing white space from a string. If the string is
+   * quoted, the quotes are also stripped.
+   * 
+   * @param cell  the string to strip
+   * @return      the stripped string
+   */
+  private static String stripString(String cell) {
+    cell = cell.trim();
+    if (cell.startsWith("\"") && cell.endsWith("\"")) {
+      if (cell.length() > 2) {
+        cell = cell.substring(1, cell.length()-1).trim();
+      } else {
+        cell = "";
+      }
+    }
+    return cell;
+  }
+  
 }
