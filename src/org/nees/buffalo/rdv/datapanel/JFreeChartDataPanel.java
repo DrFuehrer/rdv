@@ -366,32 +366,40 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       return;
     }
     
-    DataFileChannel xChannel = (DataFileChannel)JOptionPane.showInputDialog(
-        dataComponent,
-        "Select the x channel:",
-        "Add local channel",
-        JOptionPane.PLAIN_MESSAGE,
-        null,
-        channels.toArray(),
-        null);
+    DataFileChannel xChannel;
+    DataFileChannel yChannel;
     
-    if (xChannel == null) {
-      return;
+    if (channels.size() == 2) {
+      xChannel = channels.get(0);
+      yChannel = channels.get(1);
+    } else {    
+      xChannel = (DataFileChannel)JOptionPane.showInputDialog(
+          dataComponent,
+          "Select the x channel:",
+          "Add local channel",
+          JOptionPane.PLAIN_MESSAGE,
+          null,
+          channels.toArray(),
+          null);
+      
+      if (xChannel == null) {
+        return;
+      }
+      
+      yChannel = (DataFileChannel)JOptionPane.showInputDialog(
+          dataComponent,
+          "Select the y channel:",
+          "Add local channel",
+          JOptionPane.PLAIN_MESSAGE,
+          null,
+          channels.toArray(),
+          null);
+      
+      if (yChannel == null) {
+        return;
+      }
     }
-    
-    DataFileChannel yChannel = (DataFileChannel)JOptionPane.showInputDialog(
-        dataComponent,
-        "Select the y channel:",
-        "Add local channel",
-        JOptionPane.PLAIN_MESSAGE,
-        null,
-        channels.toArray(),
-        null);
-    
-    if (yChannel == null) {
-      return;
-    }
-    
+
     String xChannelName = xChannel.getChannelName();
     if (xChannel.getUnit() != null) {
       xChannelName += " (" + xChannel.getUnit() + ")";
