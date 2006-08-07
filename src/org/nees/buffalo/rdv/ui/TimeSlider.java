@@ -109,8 +109,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   public TimeSlider() {
     super();
 
-    minimum = Double.MIN_VALUE;
-    start = Double.MIN_VALUE;
+    minimum = 0;
+    start = 0;
     value = 0;
     end = Double.MAX_VALUE;
     maximum = Double.MAX_VALUE;
@@ -177,6 +177,19 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
       removeMouseListener(this);
       valueButton.removeMouseMotionListener(this);
     }
+  }
+  
+  /**
+   * Set if the value is visible in the slider UI.
+   * 
+   * @param visible  if true the value is shown, if false the value is not shown
+   */
+  public void setValueVisible(boolean visible) {
+    if (valueButton.isVisible() == visible) {
+      return;
+    }
+    
+    valueButton.setVisible(visible);
   }
   
   /**
@@ -549,11 +562,9 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     
     if (maximum == minimum) {
       startButton.setVisible(false);
-      valueButton.setVisible(false);
       endButton.setVisible(false);
     } else {
       startButton.setVisible(true);
-      valueButton.setVisible(true);
       endButton.setVisible(true);      
     }
     
