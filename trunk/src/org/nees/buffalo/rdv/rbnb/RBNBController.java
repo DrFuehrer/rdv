@@ -35,11 +35,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.rbnb.marker.EventMarker;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
@@ -109,6 +111,8 @@ public class RBNBController implements Player, MetadataListener {
 	private final double PLAYBACK_REFRESH_RATE = 0.05;
   
   private final long LOADING_TIMEOUT = 30000;
+  
+  private List<EventMarker> markers;
 	
 	public RBNBController() {
 		
@@ -527,7 +531,7 @@ public class RBNBController implements Player, MetadataListener {
 		updateDataMonitoring();
 		updateTimeListeners(location);
 		
-		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data for channel " + channelName + " at " + DataViewer.formatDate(location) + ".");
+//		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data for channel " + channelName + " at " + DataViewer.formatDate(location) + ".");
 		
 		requestedChannels = realRequestedChannels;
 		
@@ -559,6 +563,7 @@ public class RBNBController implements Player, MetadataListener {
 			}			
 		}
 		
+    
 		if (imageChannels.NumberOfChannels() > 0) {
 			requestedChannels = imageChannels;
 			if (!requestData(location, 0)) {
@@ -601,18 +606,61 @@ public class RBNBController implements Player, MetadataListener {
 		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data for all channels at " + DataViewer.formatDate(location) + ".");
 	}
 	
-	
+	/**
+   *  Adjust location to next start if indeed pointing to an stopped (no data) region
+   * @param location: time for data request 
+   * @param duration: duration for data request
+   * @return newLocation points to new start if (location + duration) falls in the stop region
+	 */
+  private double checkAdjustLocation(double location, double duration) {
+    
+    double newLocation = location;
+    double markerLocation = 0.0;
+    String markerType = "";
+    
+    markers = markerManager.getMarkers();
+    
+    if (markers.size() == 0)
+      return newLocation;
+
+    for (EventMarker marker : markers) {
+    
+      markerType = marker.getProperty("type");
+      markerLocation = Double.parseDouble(marker.getProperty("timestamp"));
+      
+      if (markerType.compareToIgnoreCase("stop") == 0) {
+
+        if (newLocation < markerLocation)
+          if ((newLocation + duration) < markerLocation)
+            break;
+        
+      } else if (markerType.compareToIgnoreCase("start") == 0) {
+        if ((newLocation + duration) < markerLocation) {
+          newLocation = markerLocation;
+          break;
+        }
+      }
+    }
+    
+    return newLocation;
+  }
+  
 	// Playback Methods
 	
 	private boolean requestData(double location, double duration) {
+	  //check request location against the Markers and adjust if it falls inside an stopped region
+    double adjustedLocation = checkAdjustLocation(location, duration);
+
     return requestData(location, duration, true);
   }
   
   private boolean requestData(double location, double duration, boolean retry) {
+    log.debug("requestData() - start");
 		if (requestedChannels.NumberOfChannels() == 0) {
 			return false;
 		}
 		
+    log.debug("requestData() - num of channels: " + requestedChannels.NumberOfChannels());
 		if (requestIsMonitor) {
 			try {
         reInitRBNB();
@@ -624,7 +672,6 @@ public class RBNBController implements Player, MetadataListener {
 			requestIsMonitor = false;
 		}
 
-		log.debug("Requesting data at location " + DataViewer.formatDate(location) + " for " + duration + " seconds.");
 		
 		try {
 			sink.Request(requestedChannels, location, duration, "absolute");
@@ -1029,6 +1076,7 @@ public class RBNBController implements Player, MetadataListener {
 	}
 		
 	public void setLocation(final double location) {
+    log.debug("RBNBController() - location receieved: " + DataViewer.formatDate(location));    
     synchronized (updateLocationLock) {
     	updateLocation = location;
     }
