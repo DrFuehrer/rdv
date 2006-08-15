@@ -100,8 +100,14 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   /** The button used to indicate the end time. */
   JButton endButton;
   
-  /** The image used to show a marker. */
-  Image markerImage;
+  /** The default image used to show a marker. */
+  Image defaultMarkerImage;
+  
+  /** The image used to show a start marker. */
+  Image startMarkerImage;
+  
+  /** The image used to show a stop marker. */
+  Image stopMarkerImage;
 
   /**
    * Creates a time slider with the maximum available range.
@@ -161,7 +167,9 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     endButton.addMouseMotionListener(this);
     add(endButton);
     
-    markerImage = DataViewer.getImage("icons/marker.gif");
+    defaultMarkerImage = DataViewer.getImage("icons/marker.gif");
+    startMarkerImage = DataViewer.getImage("icons/marker-start.gif");
+    stopMarkerImage = DataViewer.getImage("icons/marker-stop.gif");
   }
   
   /**
@@ -600,6 +608,17 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
       double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
       if (markerTime >= minimum && markerTime <= maximum) {
         int x = getXFromTime(markerTime);
+        Image markerImage;
+        
+        String markerType = marker.getProperty("type");
+        if (markerType.compareToIgnoreCase("start") == 0) {
+          markerImage = startMarkerImage;
+        } else if (markerType.compareToIgnoreCase("stop") == 0) {
+          markerImage = stopMarkerImage;
+        } else {
+          markerImage = defaultMarkerImage;
+        } 
+        
         g.drawImage(markerImage, x-1, insets.top, null);
       }
     }
