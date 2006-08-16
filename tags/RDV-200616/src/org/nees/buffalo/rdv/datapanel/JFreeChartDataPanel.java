@@ -1565,7 +1565,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
   /**
    * Represents one timestamped (x,y) data item.
    */
-  public class XYTimeSeriesDataItem implements Cloneable, Comparable, Serializable {
+  public class XYTimeSeriesDataItem implements Cloneable, Comparable<XYTimeSeriesDataItem>, Serializable {
     private static final long serialVersionUID = 941152355835111553L;
 
     /** The time period */
@@ -1618,13 +1618,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
      * @return   an integer indicating the order of this data item relative to
      *           the other
      */
-    public int compareTo(Object o) {
-      if (o instanceof XYTimeSeriesDataItem) {
-        XYTimeSeriesDataItem d = (XYTimeSeriesDataItem)o;
-        return period.compareTo(d.getPeriod());
-      } else {
-        return 1;
-      }
+    public int compareTo(XYTimeSeriesDataItem d) {
+      return period.compareTo(d.getPeriod());
     }
     
     /**
