@@ -371,6 +371,10 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
       }
     }
     
+    zoomTimeSlider.clearTimeRanges();
+    globalTimeSlider.clearTimeRanges();
+    double markerStartTime = -1;
+
     // get the time bounds for all markers
     List<EventMarker> markers = rbnbController.getMarkerManager().getMarkers();
     for (EventMarker marker : markers) {
@@ -381,6 +385,21 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
       if (endTime == -1 || markerTime > endTime) {
         endTime = markerTime;
       }
+      
+      String type = marker.getProperty("type");
+      if (type.compareToIgnoreCase("start") == 0 && markerStartTime == -1) {
+        markerStartTime = markerTime;
+      } else if (type.compareToIgnoreCase("stop") == 0 && markerStartTime != -1) {
+        zoomTimeSlider.addTimeRange(markerStartTime, markerTime);
+        globalTimeSlider.addTimeRange(markerStartTime, markerTime);
+        markerStartTime = -1;
+      }
+    }
+    
+    // add time range for ongoing event
+    if (markerStartTime != -1) {
+      zoomTimeSlider.addTimeRange(markerStartTime, Double.MAX_VALUE);
+      globalTimeSlider.addTimeRange(markerStartTime, Double.MAX_VALUE);
     }
 
     if (startTime == -1) {

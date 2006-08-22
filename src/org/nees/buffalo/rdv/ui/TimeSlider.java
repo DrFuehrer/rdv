@@ -47,6 +47,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JToolTip;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.rbnb.marker.EventMarker;
 
@@ -58,6 +60,9 @@ import org.nees.rbnb.marker.EventMarker;
  * @author Jason P. Hanley
  */
 public class TimeSlider extends JComponent implements MouseListener, MouseMotionListener {
+  
+  static Log log = LogFactory.getLog(TimeSlider.class.getName());
+  
   /** The minimum time. */
   double minimum;
   
@@ -85,8 +90,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   /** List of event marker.s */
   List<EventMarker> markers;  
   
-  /** List of time discontinuities. */
-  List<Discontinuity> discontinuities;
+  /** List of valid time ranges. */
+  List<TimeRange> timeRanges;
   
   /** List of time adjustment listeners. */
   List<TimeAdjustmentListener> adjustmentListeners;
@@ -127,7 +132,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     
     markers = new ArrayList<EventMarker>();
     
-    discontinuities = new ArrayList<Discontinuity>();
+    timeRanges = new ArrayList<TimeRange>();
     
     adjustmentListeners = new ArrayList<TimeAdjustmentListener>();
 
@@ -474,48 +479,52 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   }
   
   /**
-   * Add a time discontinuity.
+   * Add a time range.
    * 
-   * @param start  the start of the discontinuity
-   * @param end    the end of the discontinuity
+   * @param start  the start of the time range
+   * @param end    the end of the time range
    */
-  public void addDiscontinuity(double start, double end) {
-    Discontinuity discontinuity = new Discontinuity(start, end);
+  public void addTimeRange(double start, double end) {
+    TimeRange timeRange = new TimeRange(start, end);
 
-    for (Discontinuity d : discontinuities) {
-      if (d.overlaps(discontinuity)) {
-        d.join(discontinuity);
-        checkDiscontinuity(d);
+    for (TimeRange t : timeRanges) {
+      if (t.overlaps(timeRange)) {
+        t.join(timeRange);
+        checkTimeRange(timeRange);
         return;
       }
     }
     
-    discontinuities.add(discontinuity);
+    timeRanges.add(timeRange);
+    
+    doLayout();
   }
   
   /**
-   * Checks the discontinuity to make sure it doesn't overlap the one following
+   * Checks the time range to make sure it doesn't overlap the one following
    * it. If they do overlap, the two are joined, and the the following
-   * discontinuity is removed.
+   * time range is removed.
    * 
-   * @param discontinuity  the discontinuity to check
+   * @param timeRange  the time range to check
    */
-  private void checkDiscontinuity(Discontinuity discontinuity) {
-    int index = discontinuities.indexOf(discontinuity);
-    if (index >= 0 && index+1 < discontinuities.size()) {
-      Discontinuity d = discontinuities.get(index+1);
-      if (discontinuity.end >= d.start) {
-        discontinuity.end = d.end;
-        discontinuities.remove(d);
+  private void checkTimeRange(TimeRange timeRange) {
+    int index = timeRanges.indexOf(timeRange);
+    if (index >= 0 && index+1 < timeRanges.size()) {
+      TimeRange t = timeRanges.get(index+1);
+      if (timeRange.end >= t.start) {
+        timeRange.end = t.end;
+        timeRanges.remove(t);
       }
     }
   }
   
   /**
-   * Remove all time discontinuities. 
+   * Remove all time ranges.
    */
-  public void clearDiscontinuities() {
-    discontinuities.clear();
+  public void clearTimeRanges() {
+    timeRanges.clear();
+
+    doLayout();
   }
   
   /**
@@ -528,14 +537,139 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   }
   
   /**
+   * Returns the list of time ranges represented by the time slider. This
+   * enforces the maximum and minimum values on the list of time ranges.
+   *  
+   * @return  a list of time ranges represented by the time slider
+   */
+  private List<TimeRange> getActualTimeRanges() {
+    List<TimeRange> actualTimeRanges = new ArrayList<TimeRange>();
+    
+    if (timeRanges.size() == 0) {
+      actualTimeRanges.add(new TimeRange(minimum, maximum));
+    } else {
+      for (TimeRange t : timeRanges) {
+        if (t.start > maximum) {
+          break;
+        }
+        
+        if (t.end < minimum) {
+          continue;
+        }
+  
+        double rangeStart;
+        if (t.start >= minimum) {
+          rangeStart = t.start;
+        } else {
+          rangeStart = minimum;
+        }
+        
+        double rangeEnd;
+        if (t.end <= maximum) {
+          rangeEnd = t.end;
+        } else {
+          rangeEnd = maximum;
+        }
+
+        actualTimeRanges.add(new TimeRange(rangeStart, rangeEnd));
+      }
+    }
+    
+    return actualTimeRanges;    
+  }
+  
+  /**
+   * Get the minimum value allowed on the time slider. This takes into account
+   * the time ranges.
+   * 
+   * @return  the minimum value allowed on the time slider
+   */
+  private double getActualMinimum() {
+    List<TimeRange> actualTimeRanges = getActualTimeRanges();
+    if (actualTimeRanges.size() == 0) {
+      return minimum;
+    } else {
+      return actualTimeRanges.get(0).start;
+    }
+  }
+  
+  /**
+   * Get the maximum value allowed on the time slider. This takes into account
+   * the time ranges.
+   * 
+   * @return  the maximum value allowed on the time slider
+   */
+  private double getActualMaximum() {
+    List<TimeRange> actualTimeRanges = getActualTimeRanges();
+    if (actualTimeRanges.size() == 0) {
+      return maximum;
+    } else {
+      return actualTimeRanges.get(actualTimeRanges.size()-1).end;
+    }
+  }  
+  
+  /**
+   * Get the total length of time represented by the time slider. This removes
+   * time contained in the gaps from time ranges.
+   * 
+   * @return  the total length of time represented by the time slider
+   */
+  private double getTimeLength() {
+    double length = 0;
+    
+    for (TimeRange t : getActualTimeRanges()) {
+      length += t.length();
+    }
+    
+    return length;
+  }
+  
+  /**
+   * Get the width (in pixels) of the time portion of the slider.
+   * 
+   * @return  the width of the time portion of the slider
+   */
+  private int getTimeWidth() {
+    Insets insets = getInsets();
+    return getWidth() -  13 - insets.left - insets.right;    
+  }
+  
+  /**
    * Return the time corresponding to the x coordinate of the time slider.
    * 
    * @param x  the horizontal point on the slider component
    * @return   the time
    */
   private double getTimeFromX(int x) {
-    Insets insets = getInsets();
-    return ((double)(x-6-insets.left))/(getWidth()-13-insets.left-insets.right)*(maximum-minimum)+minimum;
+    // remove left inset and button width
+    x = x-6-getInsets().left;
+    
+    int width = getTimeWidth();
+    
+    if (x < 0) {
+      return getActualMinimum();
+    } else if (x > width) {
+      return getActualMaximum();
+    }    
+    
+    double factor = ((double)(x)) / width;
+    double length = getTimeLength();    
+    double value = factor*length;
+    
+    double position = 0;
+    for (TimeRange t : getActualTimeRanges()) {
+      double startPosition = position;
+      position += t.length();
+      
+      if (value <= position) {
+        double startFactor = startPosition / length;
+        double endFactor = position / length;
+        factor = (factor - startFactor) / (endFactor - startFactor);
+        return (t.length()) * factor+ t.start;
+      }
+    }
+    
+    return 0;
   }
   
   /**
@@ -545,10 +679,20 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @param time  the time to get the point from
    * @return      the horizontal (x) point of the time
    */
-  private int getXFromTime(double time) {
-    Insets insets = getInsets();
-    int width = getWidth() -  13 - insets.left - insets.right;
-    return (int)Math.round((time-minimum)/(maximum-minimum)*width) + 6;
+  private int getXFromTime(double time) {    
+    double position = 0;
+    for (TimeRange t : getActualTimeRanges()) {
+      if (t.contains(time)) {
+        position += (time - t.start);
+        break;
+      }
+      position += t.length();
+    }
+
+    double factor = position / getTimeLength();
+    int width = getTimeWidth();
+
+    return (int)Math.round(factor*width) + getInsets().left + 6;
   }
   
   /**
@@ -557,9 +701,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @return  the amount of time represented by one pixel, in seconds
    */
   private double getPixelTime() {
-    Insets insets = getInsets();
-    int width = getWidth() -  13 - insets.left - insets.right;    
-    return (maximum-minimum)/width;
+    return getTimeLength() / getTimeWidth();
   }
   
   /**
@@ -577,11 +719,11 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     }
     
     if (useRange) {
-      startButton.setBounds(insets.left + getXFromTime(start)-6, insets.top, 6, 11);
-      endButton.setBounds(insets.left + getXFromTime(end)+1, insets.top, 6, 11);
+      startButton.setBounds(getXFromTime(start) - 6, insets.top, 6, 11);
+      endButton.setBounds(getXFromTime(end) + 1, insets.top, 6, 11);
     }
     
-    valueButton.setBounds(insets.left + getXFromTime(value)-3, insets.top+2, 7, 7);
+    valueButton.setBounds(getXFromTime(value) - 3, insets.top + 2, 7, 7);
     
     repaint();
   }
@@ -599,15 +741,14 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     
     if (isEnabled() && useRange) {
       g.setColor(Color.gray);
-      int startX = this.getXFromTime(start);
-      int endX = this.getXFromTime(end);
-      g.fillRect(insets.left+startX, insets.top+4, insets.left+(endX-startX), 3);      
+      int startX = getXFromTime(start);
+      int endX = getXFromTime(end);
+      g.fillRect(startX, insets.top+4, endX-startX, 3);      
     }
     
     for (EventMarker marker : markers) {
       double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
       if (markerTime >= minimum && markerTime <= maximum) {
-        int x = getXFromTime(markerTime);
         Image markerImage;
         
         String markerType = marker.getProperty("type");
@@ -618,7 +759,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
         } else {
           markerImage = defaultMarkerImage;
         } 
-        
+
+        int x = getXFromTime(markerTime);
         g.drawImage(markerImage, x-1, insets.top, null);
       }
     }
@@ -910,36 +1052,55 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   }
   
   /**
-   * A time discontinuity. This is a range in time specified by a start and end.
+   * A time range. This is a range in time specified by a start and end time.
    */
-  private class Discontinuity implements Comparable<Discontinuity> {
-    /** The start of the discontinuity */
+  private class TimeRange implements Comparable<TimeRange> {
+    /** The start of the time range */
     public double start;
     
-    /** the end of the discontinuity */
+    /** The end of the time range */
     public double end;
     
     /**
-     * Create a time discontinuity.
+     * Create a time range.
      * 
-     * @param start  the start of the discontinuity
-     * @param end    the end of the discontinuity
+     * @param start  the start of the time range
+     * @param end    the end of the time range
      */
-    public Discontinuity(double start, double end) {
+    public TimeRange(double start, double end) {
       this.start = start;
       this.end = end;
     }
     
     /**
-     * See if the discontinuitie overlaps with this one.
+     * The length of the time range. Simply end-start.
      * 
-     * @param d  the discontinuity to check
+     * @return  the length of the time range
+     */
+    public double length() {
+      return end-start;
+    }
+    
+    /**
+     * See if the time is within the time range.
+     * 
+     * @param time  the time to check
+     * @return      true if the time is within the time range, false otherwise
+     */
+    public boolean contains(double time) {
+      return ((time >= start) && (time <= end));
+    }
+    
+    /**
+     * See if the time range overlaps with this one.
+     * 
+     * @param t  the time range to check
      * @return   true if they overlap, false if they do not
      */
-    public boolean overlaps(Discontinuity d) {
-      if (start < d.start && end >= d.start) {
+    public boolean overlaps(TimeRange t) {
+      if (start < t.start && end >= t.start) {
         return true;
-      } else if (start > d.start && start <= d.end) {
+      } else if (start > t.start && start <= t.end) {
         return true;
       }
       
@@ -947,36 +1108,36 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     }
     
     /**
-     * If the discontinuitie overlaps with this one, union with it.
+     * If the time range overlaps with this one, union with it.
      * 
-     * @param d  the discontinutity to join with
+     * @param t  the time range to join with
      */
-    public void join(Discontinuity d) {
-      if (start < d.start && end >= d.start) {
-        end = d.end;
-      } else if (start > d.start && start <= d.end) {
-        start = d.start;
+    public void join(TimeRange t) {
+      if (start < t.start && end >= t.start) {
+        end = t.end;
+      } else if (start > t.start && start <= t.end) {
+        start = t.start;
       }      
     }
 
     /**
-     * Compare discontinuities. This is based first on their start, and then on
+     * Compare time ranges. This is based first on their start, and then on
      * their end (if needed).
      * 
-     * @param d  the discontinuity to compare with
+     * @param d  the time range to compare with
      * @return   0 if they are the same, -1 if this is less than the other, and
      *           1 if this is greater than the other.
      */
-    public int compareTo(Discontinuity d) {
-      if (start == d.start) {
-        if (end == d.end) {
+    public int compareTo(TimeRange t) {
+      if (start == t.start) {
+        if (end == t.end) {
           return 0;
-        } else if (end < d.end) {
+        } else if (end < t.end) {
           return -1;
         } else {
           return 1;
         }
-      } else if (start < d.start) {
+      } else if (start < t.start) {
         return -1;
       } else {
         return 1;
