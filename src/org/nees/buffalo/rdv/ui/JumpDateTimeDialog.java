@@ -1,3 +1,34 @@
+/*
+ * RDV
+ * Real-time Data Viewer
+ * http://it.nees.org/software/rdv/
+ * 
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
+ */
 
 package org.nees.buffalo.rdv.ui;
 
@@ -23,13 +54,11 @@ import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.text.ParseException;
 
 public class JumpDateTimeDialog extends JDialog {
 
@@ -56,8 +85,8 @@ public class JumpDateTimeDialog extends JDialog {
 	JLabel errorLabel;
 	
 	/** Format to use to display the date property. */
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy");
-    private static final DateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss z");
+  private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy");
+  private static final DateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss z");
 	
   public JumpDateTimeDialog(RBNBController rbnbController) {
     this(null, rbnbController);
@@ -72,7 +101,7 @@ public class JumpDateTimeDialog extends JDialog {
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
-		setTitle("Go to Date Time location");
+		setTitle("Go to time");
     
 		JPanel container = new JPanel();
 		setContentPane(container);
@@ -82,21 +111,21 @@ public class JumpDateTimeDialog extends JDialog {
 			
 		container.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		c.weighty = 1;
-		c.gridwidth = 1;
+    c.weighty = 0;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
 		
-		headerLabel = new JLabel("Please enter the date and time for location data.");
-		
+		headerLabel = new JLabel("<html>Please enter the date and time to go to. " +
+        "Enter the date using the <br>mm-dd-yyyy format and the time using " +
+        "the hh:mm:ss z format.</html>");
 		headerLabel.setBackground(Color.white);
 		headerLabel.setOpaque(true);
 		headerLabel.setBorder(BorderFactory.createCompoundBorder(
         BorderFactory.createMatteBorder(0,0,1,0,Color.gray),
         BorderFactory.createEmptyBorder(10,10,10,10)));
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0;
+    c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 0;    
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 2;
@@ -104,106 +133,101 @@ public class JumpDateTimeDialog extends JDialog {
 		c.insets = new Insets(0,0,0,0);
 		container.add(headerLabel, c);
 		
-		c.gridwidth = 1;
-
 		errorLabel = new JLabel();
+    c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
 		c.gridx = 0;
 		c.gridy = 1;
 		c.gridwidth = 2;
+    c.insets = new Insets(10,10,0,10);
 		container.add(errorLabel, c);
-
-		
-		dateLabelExample = new JLabel("Date Format: mm-dd-yyyy");
-		dateLabelExample.setForeground(Color.BLUE);
-		dateLabelExample.setOpaque(true);
+    
+    c.gridwidth = 1;
+    
+		dateLable = new JLabel("Date:");
+    c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.gridx = 0;
 		c.gridy = 2;
-		c.gridwidth = 2;
-		c.insets = new Insets(10,10,10,5);
-		container.add(dateLabelExample, c);
-
-		dateLable = new JLabel("Date:");
-		c.weightx = 0;
-		c.gridx = 0;
-		c.gridy = 3;
+    c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new Insets(10,10,10,5);
 		container.add(dateLable, c);
 		
 		dateTextField = new JTextField(DATE_FORMAT.format(defaultDate), 10);
-		c.weightx = 0;
+    c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		c.gridx = 1;
-		c.gridy = 3;
+		c.gridy = 2;
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new Insets(10,0,10,10);    
 		container.add(dateTextField, c);
 		
-		timeLabelExample = new JLabel("Time Format: hh:mm:ss PDT(EDT or GMT)");
-		timeLabelExample.setForeground(Color.BLUE);
-		timeLabelExample.setOpaque(true);
-		c.weightx = 0;
-		c.gridx = 0;
-		c.gridy = 4;
-		c.gridwidth = 2;
-		container.add(timeLabelExample, c);
-		
 		timeLabel = new JLabel("Time:");
+    c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.gridx = 0;
-		c.gridy = 5;
-		c.gridwidth = 1;
+		c.gridy = 3;
+    c.anchor = GridBagConstraints.NORTHEAST;
+    c.insets = new Insets(0,10,10,5);    
 		container.add(timeLabel, c);
 
 		timeTextField = new JTextField(TIME_FORMAT.format(defaultDate), 10);
-		c.weightx = 0;
+    c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
 		c.gridx = 1;
-		c.gridy = 5;
-		c.gridwidth = 1;
+		c.gridy = 3;
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new Insets(0,0,10,10);        
 		container.add(timeTextField, c);
-		
 
 		JPanel buttonPanel = new JPanel();
     
-	    Action jumpLocationAction = new AbstractAction() {
-	      public void actionPerformed(ActionEvent e) {
-	        jumpLocation();
-	      }      
-	    };
-	    jumpLocationAction.putValue(Action.NAME, "Jump Location");
-	    inputMap.put(KeyStroke.getKeyStroke("ENTER"), "jumpLocation");
-	    actionMap.put("jumpLocation", jumpLocationAction);
-			jumpButton = new JButton(jumpLocationAction);
-			buttonPanel.add(jumpButton);
-			
-	    Action cancelAction = new AbstractAction() {
-	      public void actionPerformed(ActionEvent e) {
-	        cancel();
-	      }      
-	    };
-	    cancelAction.putValue(Action.NAME, "Cancel");
-	    inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
-	    actionMap.put("cancel", cancelAction);    
-	    cancelButton = new JButton(cancelAction);
-    	buttonPanel.add(cancelButton);
+    Action jumpLocationAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent e) {
+        jumpLocation();
+      }      
+    };    
+    jumpLocationAction.putValue(Action.NAME, "Go to location");
+    
+    inputMap.put(KeyStroke.getKeyStroke("ENTER"), "jumpLocation");
+    actionMap.put("jumpLocation", jumpLocationAction);
+    
+		jumpButton = new JButton(jumpLocationAction);
+		buttonPanel.add(jumpButton);
+		
+    Action cancelAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent e) {
+        cancel();
+      }      
+    };
+    cancelAction.putValue(Action.NAME, "Cancel");
+    
+    inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "cancel");
+    actionMap.put("cancel", cancelAction);
+    
+    cancelButton = new JButton(cancelAction);
+  	buttonPanel.add(cancelButton);
 		
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
+    c.weighty = 1;
 		c.gridx = 0;
-		c.gridy = 6;
+		c.gridy = 4;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.LINE_END;
 		c.insets = new Insets(0,10,10,5);
 		container.add(buttonPanel, c);
 		
-    	pack();
-    	setLocationByPlatform(true);
+    pack();
+    setLocationByPlatform(true);
 		setVisible(true);
 	}
 	
 	public void setVisible(boolean visible) {
 		if (visible) {
 			dateTextField.requestFocusInWindow();
-//	 		dateTextField.setSelectionStart(0);
-//	 		dateTextField.setSelectionEnd(dateTextField.getText().length());			
 		}
+
 		super.setVisible(visible);
 	}
 	
@@ -233,8 +257,7 @@ public class JumpDateTimeDialog extends JDialog {
 			double secondsLocation = dateLocation.getTime() / 1000;  // convert to seconds
 			
 			rbnb.setLocation(secondsLocation);
-			dispose();
-			
+			dispose();			
 		} catch (Exception e) {
 			errorLabel.setForeground(Color.RED);
 			errorLabel.setText("Error: invalid date. Please try again!");
@@ -245,13 +268,12 @@ public class JumpDateTimeDialog extends JDialog {
 			dateLable.setForeground(Color.RED);
 			dateTextField.setText(DATE_FORMAT.format(defaultDate));
 			dateTextField.requestFocusInWindow();
+      
+      pack();
 		}
-
-			
 	}
 	
 	private void cancel() {
 		dispose();		
 	}
-	
 }
