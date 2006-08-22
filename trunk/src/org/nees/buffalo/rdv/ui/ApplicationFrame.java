@@ -64,6 +64,8 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
@@ -252,7 +254,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
 
- 		loginAction = new DataViewerAction("Login NEES", "Login as a NEES user") {
+ 		loginAction = new DataViewerAction("Login", "Login as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
  				if (loginDialog == null) {
  					loginDialog = new LoginDialog(frame, dataPanelManager);
@@ -262,7 +264,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  		
- 		logoutAction = new DataViewerAction("Logout NEES", "Logout as a NEES user") {
+ 		logoutAction = new DataViewerAction("Logout", "Logout as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.setAuth(null);
  			}			
@@ -491,6 +493,20 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		menuItem = new JMenuItem(logoutAction);
  		fileMenu.add(menuItem);
+    
+    fileMenu.addMenuListener(new MenuListener() {
+      public void menuCanceled(MenuEvent arg0) {}
+      public void menuDeselected(MenuEvent arg0) {}
+      public void menuSelected(MenuEvent arg0) {
+        if (dataPanelManager.getAuth() == null) {
+          loginAction.setEnabled(true);
+          logoutAction.setEnabled(false);
+        } else {
+          loginAction.setEnabled(false);
+          logoutAction.setEnabled(true);
+        }
+      }      
+    });
  		
  		fileMenu.addSeparator();
     

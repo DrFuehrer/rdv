@@ -57,6 +57,7 @@ import edu.ucsd.auth.GridAuth;
  * A class to manage all the data panels.
  * 
  * @author  Jason P. Hanley
+ * @author  Wei Deng
  * @since   1.2
  */
 public class DataPanelManager {
@@ -70,19 +71,8 @@ public class DataPanelManager {
 
 	/**
 	 * The authentication token for the data panels.
-	 * 
-	 * @author Wei Deng
-	 * @since 1.3
 	 */
 	private GridAuth auth;
-	
-	public void setAuth(GridAuth auth) {
-		this.auth = auth;
-	}
-	
-	public GridAuth getAuth() {
-		return this.auth;
-	}
 	
 	/**
 	 * A reference to the RNBN controller for the data panels to use.
@@ -614,4 +604,22 @@ public class DataPanelManager {
   public List getDataPanels() {
     return dataPanels;
   }
+  
+  /**
+   * Set the authentication object.
+   * 
+   * @param auth  the auth object
+   */
+  public void setAuth(GridAuth auth) {
+    this.auth = auth;
+  }
+  
+  /**
+   * Get the authentication object.
+   * 
+   * @return  the auth object, or null if there is none
+   */
+  public GridAuth getAuth() {
+    return this.auth;
+  }  
 }
