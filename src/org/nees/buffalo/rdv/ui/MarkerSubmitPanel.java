@@ -36,6 +36,7 @@ import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -63,6 +64,11 @@ public class MarkerSubmitPanel extends JPanel {
   private RBNBController rbnbController;
   
   /**
+   * The combo box to select the marker type
+   */
+  private JComboBox markerTypeComboBox;
+  
+  /**
    * The text field to collect the content of the marker
    */
   private JTextField markerContentField;
@@ -71,6 +77,12 @@ public class MarkerSubmitPanel extends JPanel {
    * The button to submit the marker with
    */
   private JButton markerSubmitButton;
+  
+  /**
+   * A list of pre-defined marker types
+   */
+  private static final String[] markerTypes = {"annotation", "min", "max",
+                                               "start", "stop"};
   
   /**
    * The time at which the user started to describe the event
@@ -103,6 +115,16 @@ public class MarkerSubmitPanel extends JPanel {
     p.setBorder(new EmptyBorder(5,5,5,5));
     p.setLayout(new BorderLayout(5, 5));
     
+    markerTypeComboBox = new JComboBox(markerTypes);
+    markerTypeComboBox.setEditable(true);
+    markerTypeComboBox.setToolTipText("The type of event");
+    markerTypeComboBox.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        markerContentField.requestFocus();
+      }      
+    });    
+    p.add(markerTypeComboBox, BorderLayout.WEST);
+
     markerContentField = new JTextField();
     markerContentField.setToolTipText("Describe the event");
     markerContentField.addActionListener(new ActionListener() {
@@ -140,7 +162,7 @@ public class MarkerSubmitPanel extends JPanel {
 
     SimpleInternalFrame sif = new SimpleInternalFrame(
         DataViewer.getIcon("icons/info.gif"),
-        "Marker Panel",
+        "Event Marker Panel",
         null,
         p);
 
@@ -152,22 +174,33 @@ public class MarkerSubmitPanel extends JPanel {
    * an error occurs, a dialog will be shown describing the error.
    */
   private void submitMarker() {
-    String content = markerContentField.getText();
+    // make sure type is valid
+    String type = markerTypeComboBox.getSelectedItem().toString();
+    if (type == null || !type.matches("\\w{1,16}")) {
+      JOptionPane.showMessageDialog(this,
+          "The event marker was not submitted since the type is invalid.\n" +
+          "The type must be at most 16 characters long and only contain alpha numeric characters.",
+          "Marker Not Submitted",
+          JOptionPane.WARNING_MESSAGE);
+      markerTypeComboBox.requestFocus();
+      return;
+    }
     
     // only submit marker in contents is not empty
-    if (content == null || content.length() == 0) {
+    String content = markerContentField.getText();
+    if (type.equals("annotation") && (content == null || content.length() == 0)) {
       JOptionPane.showMessageDialog(this,
           "The event marker was not submitted since there was no content.\n" +
           "Please describe the event using the text area in the marker panel.",
           "Marker Not Submitted",
           JOptionPane.WARNING_MESSAGE);
+      markerContentField.requestFocus();
       return;
     }
     
     EventMarker marker = new EventMarker();
     
-    marker.setProperty ("type", "annotation");
-    
+    marker.setProperty("type", type);
     marker.setProperty("content", content);
     
     if (startTime == -1) {
@@ -194,6 +227,7 @@ public class MarkerSubmitPanel extends JPanel {
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
     
+    markerTypeComboBox.setEditable(enabled);
     markerContentField.setEnabled(enabled);
     markerSubmitButton.setEnabled(enabled);
   }
