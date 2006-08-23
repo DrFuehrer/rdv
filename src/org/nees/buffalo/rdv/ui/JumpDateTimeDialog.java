@@ -57,7 +57,9 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 import java.util.Date;
+import java.util.TimeZone;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 public class JumpDateTimeDialog extends JDialog {
@@ -117,8 +119,9 @@ public class JumpDateTimeDialog extends JDialog {
 		c.ipady = 0;
 		
 		headerLabel = new JLabel("<html>Please enter the date and time to go to. " +
-        "Enter the date using the <br>mm-dd-yyyy format and the time using " +
-        "the hh:mm:ss z format.</html>");
+        "Enter the date using the<br>mm-dd-yyyy format and the time using " +
+        "the hh:mm:ss format. You<br>may optionally specify a time" +
+        "zone, otherwise your local time zone<br>is used.</html>");
 		headerLabel.setBackground(Color.white);
 		headerLabel.setOpaque(true);
 		headerLabel.setBorder(BorderFactory.createCompoundBorder(
@@ -187,7 +190,7 @@ public class JumpDateTimeDialog extends JDialog {
         jumpLocation();
       }      
     };    
-    jumpLocationAction.putValue(Action.NAME, "Go to location");
+    jumpLocationAction.putValue(Action.NAME, "Go to time");
     
     inputMap.put(KeyStroke.getKeyStroke("ENTER"), "jumpLocation");
     actionMap.put("jumpLocation", jumpLocationAction);
@@ -248,7 +251,14 @@ public class JumpDateTimeDialog extends JDialog {
 			df.setLenient(false);
 			
 			strTimeLocation = timeTextField.getText().trim();
-			dateLocation = df.parse(strTimeLocation);	
+      try {
+        dateLocation = df.parse(strTimeLocation);
+      } catch (ParseException e) {
+        TimeZone tz = TimeZone.getDefault();
+        String tzString = tz.getDisplayName(tz.inDaylightTime(new Date()), TimeZone.SHORT);
+        strTimeLocation += " " + tzString;
+        dateLocation = df.parse(strTimeLocation);
+      }
 
 			df = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss z");  //create a formatter to append time to date with space in between
 			dateAndTime = strDateLocation + " " + strTimeLocation;
