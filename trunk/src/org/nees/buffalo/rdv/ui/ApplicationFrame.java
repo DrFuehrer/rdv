@@ -152,6 +152,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action dataPanelHorizontalLayoutAction;
  	private Action dataPanelVerticalLayoutAction;
  	private Action showHiddenChannelsAction;
+  private Action hideEmptyTimeAction;
  	private Action fullScreenAction;
  	
  	private Action windowAction;
@@ -443,6 +444,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				channelListPanel.showHiddenChannels(selected);
  			}			
  		};
+    
+    hideEmptyTimeAction = new DataViewerAction("Hide time with no data", "", KeyEvent.VK_D, "icons/hidden.gif") {
+      public void actionPerformed(ActionEvent ae) {
+        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
+        boolean selected = menuItem.isSelected();
+        controlPanel.hideEmptyTime(selected);
+      }     
+    };    
 
  		fullScreenAction = new DataViewerAction("Full Screen", "", KeyEvent.VK_F, KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)) {
  			public void actionPerformed(ActionEvent ae) {
@@ -611,6 +620,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     menuItem = new JCheckBoxMenuItem(showHiddenChannelsAction);
  		menuItem.setSelected(false);
  		viewMenu.add(menuItem);
+    
+    menuItem = new JCheckBoxMenuItem(hideEmptyTimeAction);
+    menuItem.setSelected(false);
+    viewMenu.add(menuItem);    
 
  		viewMenu.addSeparator();
  		

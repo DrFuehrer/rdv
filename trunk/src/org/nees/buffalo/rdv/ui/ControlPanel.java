@@ -77,6 +77,11 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
 	public RBNBController rbnbController;
+  
+  /**
+   * Indicate if we are hiding empty time regions
+   */
+  private boolean hideEmptyTime;
 
 	private JButton monitorButton;
 	private JButton playButton;
@@ -118,6 +123,8 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 		super();
 
 		this.rbnbController = rbnbController;
+    
+    hideEmptyTime = false;
 		
 		initPanel();
     
@@ -373,43 +380,45 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     
     zoomTimeSlider.clearTimeRanges();
     globalTimeSlider.clearTimeRanges();
-    double markerStartTime = -1;
-
-    // get the time bounds for all markers
-    List<EventMarker> markers = rbnbController.getMarkerManager().getMarkers();
-    for (EventMarker marker : markers) {
-      double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
-      if (startTime == -1 || markerTime < startTime) {
-        startTime = markerTime;
-      }
-      if (endTime == -1 || markerTime > endTime) {
-        endTime = markerTime;
+    
+    if (hideEmptyTime) {
+      double markerStartTime = -1;
+  
+      // get the time bounds for all markers
+      List<EventMarker> markers = rbnbController.getMarkerManager().getMarkers();
+      for (EventMarker marker : markers) {
+        double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
+        if (startTime == -1 || markerTime < startTime) {
+          startTime = markerTime;
+        }
+        if (endTime == -1 || markerTime > endTime) {
+          endTime = markerTime;
+        }
+        
+        String type = marker.getProperty("type");
+        if (type.compareToIgnoreCase("start") == 0 && markerStartTime == -1) {
+          markerStartTime = markerTime;
+        } else if (type.compareToIgnoreCase("stop") == 0 && markerStartTime != -1) {
+          zoomTimeSlider.addTimeRange(markerStartTime, markerTime);
+          globalTimeSlider.addTimeRange(markerStartTime, markerTime);
+          markerStartTime = -1;
+        }
       }
       
-      String type = marker.getProperty("type");
-      if (type.compareToIgnoreCase("start") == 0 && markerStartTime == -1) {
-        markerStartTime = markerTime;
-      } else if (type.compareToIgnoreCase("stop") == 0 && markerStartTime != -1) {
-        zoomTimeSlider.addTimeRange(markerStartTime, markerTime);
-        globalTimeSlider.addTimeRange(markerStartTime, markerTime);
-        markerStartTime = -1;
+      // add time range for ongoing event
+      if (markerStartTime != -1) {
+        zoomTimeSlider.addTimeRange(markerStartTime, Double.MAX_VALUE);
+        globalTimeSlider.addTimeRange(markerStartTime, Double.MAX_VALUE);
       }
-    }
-    
-    // add time range for ongoing event
-    if (markerStartTime != -1) {
-      zoomTimeSlider.addTimeRange(markerStartTime, Double.MAX_VALUE);
-      globalTimeSlider.addTimeRange(markerStartTime, Double.MAX_VALUE);
     }
 
     if (startTime == -1) {
       return;
     }
     
+    double state = rbnbController.getState();
     double location = rbnbController.getLocation();
-    if (location < startTime) {
-      startTime = location;
-    } else if (location > endTime) {
+    if (state == Player.STATE_MONITORING && location > endTime) {
       endTime = location;
     }
 
@@ -732,5 +741,19 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     globalTimeSlider.cleareMarkers();
     
     updateTimeBoundaries();
+  }
+
+  /**
+   * Toggle the hiding or showing of time regions with no data. This is
+   * determined by start and stop event markers.
+   * 
+   * @param hideEmptyTime  if true, only show time with data, otherwise show all
+   *                       time within the bounds of the current channels
+   */
+  public void hideEmptyTime(boolean hideEmptyTime) {
+    if (this.hideEmptyTime != hideEmptyTime) {
+      this.hideEmptyTime = hideEmptyTime;
+      updateTimeBoundaries();
+    }
   }
 }
