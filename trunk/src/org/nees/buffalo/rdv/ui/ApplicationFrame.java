@@ -43,6 +43,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -278,7 +280,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         chooser.setApproveButtonToolTipText("Load selected file");
         int returnVal = chooser.showOpenDialog(frame);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
-          dataViewer.getConfigurationManager().loadConfiguration(chooser.getSelectedFile());
+          File configFile = chooser.getSelectedFile();
+          try {            
+            URL configURL = configFile.toURL();
+            dataViewer.getConfigurationManager().loadConfiguration(configURL);
+          } catch (MalformedURLException e) {
+            dataViewer.alertError("\"" + configFile + "\" is not a valid configuration file URL.");
+          }            
         }
       }     
     };
