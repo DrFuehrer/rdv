@@ -31,6 +31,8 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -57,6 +59,11 @@ public class MetadataManager {
   static Log log = LogFactory.getLog(MetadataManager.class.getName());
     
   private RBNBController rbnbController;
+
+  /**
+   * The name of the RBNB sink used to get metadata
+   */
+  private String rbnbSinkName = "RDVMetadata";
 
   /**
    * Listeners for metadata updates.
@@ -106,6 +113,12 @@ public class MetadataManager {
   public MetadataManager(RBNBController rbnbController) {
     this.rbnbController = rbnbController;
 
+    try {
+      InetAddress addr = InetAddress.getLocalHost();
+      String hostname = addr.getHostName();
+      rbnbSinkName += "@" + hostname;
+    } catch (UnknownHostException e) {}
+
     metadataListeners =  new ArrayList<MetadataListener>();
     addMetadataListener(rbnbController);
         
@@ -144,7 +157,7 @@ public class MetadataManager {
     
     final Sink metadataSink = new Sink();
     try {
-      metadataSink.OpenRBNBConnection(rbnbController.getRBNBConnectionString(), "RDVMetadata");
+      metadataSink.OpenRBNBConnection(rbnbController.getRBNBConnectionString(), rbnbSinkName);
     } catch (SAPIException e) {
       log.error("Failed to connect to RBNB server: " + e.getMessage());
       e.printStackTrace();
