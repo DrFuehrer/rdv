@@ -46,7 +46,7 @@ import java.util.InvalidPropertiesFormatException;
  * @author Moji Soltani
  * @author Jason P. Hanley
  */
-public class EventMarker extends Properties {
+public class EventMarker extends Properties implements Comparable<EventMarker> {
 
   /**
    * The mime type to use for event markers
@@ -114,5 +114,23 @@ public class EventMarker extends Properties {
       {
           return itsStringReader.read  ();
       }
+  }
+
+  /**
+   * Compare two event markers. This will only compare their respective
+   * timestamps.
+   * 
+   * @param marker  the marker to compare to
+   */
+  public int compareTo(EventMarker marker) {
+    double time = Double.parseDouble(getProperty("timestamp"));
+    double otherTime = Double.parseDouble(marker.getProperty("timestamp"));
+    if (time < otherTime) {
+      return -1;
+    } else if (time > otherTime) {
+      return 1;
+    } else {
+      return 0;
+    }
   }
 }

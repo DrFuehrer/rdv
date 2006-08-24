@@ -35,6 +35,7 @@ package org.nees.buffalo.rdv.rbnb;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.nees.rbnb.DataTurbine;
@@ -111,6 +112,8 @@ public class MarkerManager implements DataListener {
         
         if (!markers.contains(marker)) {
           markers.add(marker);
+          Collections.sort(markers);
+          
           fireNewMarker(marker);
         }
       }
@@ -123,7 +126,7 @@ public class MarkerManager implements DataListener {
    * @return  a list of event markers
    */
   public List<EventMarker> getMarkers() {
-    return markers;
+    return Collections.unmodifiableList(markers);
   }
   
   /**
