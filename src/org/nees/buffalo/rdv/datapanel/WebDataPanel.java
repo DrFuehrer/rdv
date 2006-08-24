@@ -461,7 +461,7 @@ public class WebDataPanel extends AbstractDataPanel {
         "This Link requires an external browser!\n"
         + "Proceed with launching a new window?",
         "Please Confirm",
-        JOptionPane.YES_NO_CANCEL_OPTION);
+        JOptionPane.YES_NO_OPTION);
     
     if (i == 0) // (constant) YES_OPTION selected
       loadExternalPage(url);
