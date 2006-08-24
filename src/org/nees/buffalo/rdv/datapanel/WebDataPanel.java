@@ -68,6 +68,9 @@ import java.lang.reflect.Method;
 
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.HyperlinkEvent;
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 /**
  * A data panel to display a webpage. This data panel does not use the RBNB
@@ -80,7 +83,7 @@ import javax.swing.event.HyperlinkEvent;
  *
  */
 public class WebDataPanel extends AbstractDataPanel {
-  
+
   /**
    * The main panel.
    */
@@ -399,7 +402,7 @@ public class WebDataPanel extends AbstractDataPanel {
    * Loads the webpage URL specified in the address text field.
    */
   private void loadPage() {
-    loadPage(locationField.getText());
+      loadPage(locationField.getText());
   }
   
   /**
@@ -408,6 +411,7 @@ public class WebDataPanel extends AbstractDataPanel {
    * @param location  the webpage URL to load
    */
   private void loadPage(String location) {
+    
     // clear out old document
     htmlRenderer.setDocument(htmlRenderer.getEditorKit().createDefaultDocument());
     
@@ -416,9 +420,11 @@ public class WebDataPanel extends AbstractDataPanel {
     
     // indicate to open link via external browser
     boolean openExternal = false;
-        
+    
     try {
-      
+
+      location = URLDecoder.decode(location, "UTF-8");
+
       if (!location.startsWith("http://")) {
         if (location.matches("^[a-zA-Z]+://.*")) { // mainly: https://
           openExternal = true;
@@ -473,7 +479,10 @@ public class WebDataPanel extends AbstractDataPanel {
    */
   private void pageLoaded() {
     String location = htmlRenderer.getPage().toString();
-    properties.setProperty("location", location);
+    try {
+      properties.setProperty("location", URLEncoder.encode(location, "UTF-8"));
+    } catch (UnsupportedEncodingException ignore) { }
+    
     locationField.setText(location);
     
     setDescription(getTitle());
