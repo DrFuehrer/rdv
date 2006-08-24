@@ -42,6 +42,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -132,9 +134,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action exitAction;
  	
  	private Action controlAction;
- 	private Action realTimeAction;
- 	private Action playAction;
- 	private Action pauseAction;
+ 	private DataViewerAction realTimeAction;
+ 	private DataViewerAction playAction;
+ 	private DataViewerAction pauseAction;
  	private Action beginningAction;
  	private Action endAction;
   private Action gotoTimeAction;
@@ -542,14 +544,25 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   		
  		JMenu controlMenu = new JMenu(controlAction);
  
- 		menuItem = new JMenuItem(realTimeAction);
+ 		menuItem = new SelectedCheckBoxMenuItem(realTimeAction);
  		controlMenu.add(menuItem);
  		
- 		menuItem = new JMenuItem(playAction);
+ 		menuItem = new SelectedCheckBoxMenuItem(playAction);
  		controlMenu.add(menuItem);
  		
- 		menuItem = new JMenuItem(pauseAction);
+ 		menuItem = new SelectedCheckBoxMenuItem(pauseAction);
  		controlMenu.add(menuItem);
+    
+    controlMenu.addMenuListener(new MenuListener() {
+      public void menuCanceled(MenuEvent arg0) {}
+      public void menuDeselected(MenuEvent arg0) {}
+      public void menuSelected(MenuEvent arg0) {
+        int state = rbnb.getState();
+        realTimeAction.setSelected(state == Player.STATE_MONITORING);
+        playAction.setSelected(state == Player.STATE_PLAYING);
+        pauseAction.setSelected(state == Player.STATE_STOPPED);
+      }      
+    });    
  		
  		controlMenu.addSeparator();
  
@@ -880,10 +893,67 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			return selected;
  		}
  		
- 		public void setSelected(boolean selected) {
- 			this.selected = selected;
+ 		public void setSelected(boolean selected) {     
+      this.selected = selected;
+      firePropertyChange("selected", null, Boolean.valueOf(selected));
  		}
  	}
+  
+  /**
+   * A check box menu item that uses the "selected" property from it's action.
+   */
+  class SelectedCheckBoxMenuItem extends JCheckBoxMenuItem {
+    /**
+     * Create a check box menu item from the action.
+     * 
+     * @param a  the action for this menu item
+     */
+    public SelectedCheckBoxMenuItem(Action a) {
+      super(a);
+    }
+    
+    /**
+     * Configure from the action properties. This looks for the selected
+     * property.
+     * 
+     * @param a  the action
+     */
+    protected void configurePropertiesFromAction(Action a) {
+      super.configurePropertiesFromAction(a);
+      
+      Boolean selected = (Boolean)a.getValue("selected");
+      if (selected != null && selected != isSelected()) {
+        setSelected(selected);
+      }      
+    }
+    
+    /**
+     * Create an action  property change listener. This listens for the 
+     * "selected" property.
+     * 
+     * @param a  the action to create the listener for
+     */
+    protected PropertyChangeListener createActionPropertyChangeListener(Action a) {
+      final PropertyChangeListener listener = super.createActionPropertyChangeListener(a);
+      
+      PropertyChangeListener myListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent evt) {
+          listener.propertyChange(evt);
+          
+          if (evt.getPropertyName().equals("selected")) {
+            Boolean selected = (Boolean)evt.getNewValue();
+            if (selected == null) {
+              setSelected(false);
+            } else if (selected != isSelected()) {
+              setSelected(selected);
+            }
+          }
+        }
+      };
+      
+      return myListener;
+    }
+  }
 
  	public void connecting() {
  		busyDialog = new BusyDialog(this);
