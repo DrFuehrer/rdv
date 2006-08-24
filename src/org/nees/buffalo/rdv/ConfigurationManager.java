@@ -33,9 +33,11 @@ package org.nees.buffalo.rdv;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -141,29 +143,28 @@ public class ConfigurationManager {
   }
   
   /**
-   * Load the configuration from the specified file and configure the
-   * application.
+   * Load the configuration file from the specified URL and configure the
+   * application. This spawns a new thread to do this in the background.
    * 
-   * @param configFile  the file to load the configuration from
-   * @since             1.3
+   * @param configURL  the URL of the file to load the configuration from
    */
-  public void loadConfiguration(final File configFile) {
+  public void loadConfiguration(final URL configURL) {
     new Thread() {
       public void run() {
-        loadConfigurationWorker(configFile);
+        loadConfigurationWorker(configURL);
       }
     }.start();
   }
-  
-  private void loadConfigurationWorker(File configFile) {
-    if (configFile == null) {
+
+  /**
+   * Load the configuration file from the specified URL and configure the
+   * application.
+   * 
+   * @param configURL  the URL of the file to load the configuration from
+   */
+  private void loadConfigurationWorker(URL configURL) {
+    if (configURL == null) {
       dataViewer.alertError("The configuration file does not exist.");
-      return;
-    } else if (!configFile.exists()) {
-      dataViewer.alertError("The configuration file \"" + configFile.getName() + "\" does not exist.");
-      return;
-    } else if (!configFile.isFile()) {
-      dataViewer.alertError("\"" + configFile.getName() + "\" is not a file.");
       return;
     }
     
@@ -179,15 +180,17 @@ public class ConfigurationManager {
     Document document;
     try {
       DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      document = documentBuilder.parse(configFile);
+      document = documentBuilder.parse(configURL.openStream());
+    } catch (FileNotFoundException e) {
+      dataViewer.alertError("The configuration file does not exist." +
+          System.getProperty("line.separator") +
+          configURL);
+      return;
     } catch (IOException e) {
-      e.printStackTrace();
+      dataViewer.alertError("Error loading configuration file.");
       return;
-    } catch (ParserConfigurationException e) {
-      e.printStackTrace();
-      return;
-    } catch (SAXException e) {
-      e.printStackTrace();
+    } catch (Exception e) {
+      dataViewer.alertError("The configuration file is corrupt.");
       return;
     }
 

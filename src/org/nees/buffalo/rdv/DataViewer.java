@@ -35,6 +35,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -310,7 +311,7 @@ public class DataViewer {
 		options.addOption(realTimeOption);			
 		options.addOption(helpOption);
 
-		File configurationFile = null;
+		String configFile = null;
 		String hostName = null;
 		int portNumber = -1;
 		String[] channels = null;
@@ -332,7 +333,7 @@ public class DataViewer {
 
 		String[] leftOverOptions = line.getArgs();
 		if (leftOverOptions != null && leftOverOptions.length > 0) {
-			configurationFile = new File(leftOverOptions[0]);
+			configFile = leftOverOptions[0];
 		}
 
 	    	if (line.hasOption('h')) {
@@ -376,9 +377,20 @@ public class DataViewer {
     RBNBController rbnbController = dataViewer.getRBNBController();
     ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
 
-    if (configurationFile != null) {
-      dataViewer.getConfigurationManager().loadConfiguration(configurationFile);
-      return;
+    if (configFile != null) {
+      URL configURL;      
+      try {
+        if (configFile.matches("^[a-zA-Z]+://.*")) {
+          configURL = new URL(configFile);
+        } else {
+          configURL = new File(configFile).toURL();
+        }
+        
+        dataViewer.getConfigurationManager().loadConfiguration(configURL);
+        return;
+      } catch (MalformedURLException e) {
+        dataViewer.alertError("\"" + configFile + "\" is not a valid configuration file URL.");
+      }
     }
     
 		if (playbackRate != -1) {
