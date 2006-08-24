@@ -1247,14 +1247,30 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
         renderer.setForeground(Color.black);
         return renderer;
       }
-          
+      
+
+      
       double numberValue = ((Number)aNumberValue).doubleValue();
     
       DataRow dataRow = ((DataTableModel)aTable.getModel()).getRowAt(aRow);
       double minThresh = dataRow.minThresh;
       double maxThresh = dataRow.maxThresh;
+
+      // if either max or min threshold not set to a value (default infinity), show only critical thresholds (do not show warnings!)
+      boolean criticalOnly = (minThresh == Double.NEGATIVE_INFINITY) || (maxThresh == Double.POSITIVE_INFINITY);
       
-      double warningThresh = WARNING_PERCENTAGE * (maxThresh - minThresh);      
+      if (criticalOnly) {
+        if (numberValue < minThresh || numberValue > maxThresh) {
+          renderer.setBackground(Color.red);
+          renderer.setForeground(Color.white);
+        } else {  
+          renderer.setBackground(Color.white);
+          renderer.setForeground(Color.black);
+        }
+        return renderer;
+      }
+      
+      double warningThresh = WARNING_PERCENTAGE * (maxThresh - minThresh);
       double criticalThresh = CRITICAL_PERCENTAGE * (maxThresh - minThresh);
       
       double warningMinThresh = minThresh + warningThresh;
