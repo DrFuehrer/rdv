@@ -502,6 +502,11 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
           table.getColumn("Min").setCellRenderer(doubleCellRenderer);
           table.getColumn("Max").setCellRenderer(doubleCellRenderer);
         }
+        
+        if (showThresholdCheckBoxGroup.isSelected()) {
+            table.getColumn("Min Thresh").setCellRenderer(doubleCellRenderer);
+            table.getColumn("Max Thresh").setCellRenderer(doubleCellRenderer);
+        }        
       }
       
       showMinMaxCheckBoxGroup.setSelected(maxMinVisible);
