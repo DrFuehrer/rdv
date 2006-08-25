@@ -32,6 +32,7 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -157,6 +158,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
       }
     };
     valueButton.setToolTipText("");
+    valueButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     valueButton.setOpaque(false);
     valueButton.setBorder(null);
     valueButton.addMouseMotionListener(this);
@@ -164,6 +166,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     add(valueButton);    
 
     startButton = new JButton(DataViewer.getIcon("icons/left_bound.gif"));
+    startButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     startButton.setOpaque(false);
     startButton.setBorder(null);
     startButton.addMouseListener(this);
@@ -171,6 +174,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     add(startButton);
 
     endButton = new JButton(DataViewer.getIcon("icons/right_bound.gif"));
+    endButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     endButton.setOpaque(false);
     endButton.setBorder(null);
     endButton.addMouseListener(this);
