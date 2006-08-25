@@ -66,10 +66,6 @@ public class TemplateDataPanel extends AbstractDataPanel {
 		setDataComponent(dataComponent);
 	}
 
-	void clearData() {
-		// TODO clear your data display
-	}
-
 	public boolean supportsMultipleChannels() {
 		// TODO change if this data panel supports multiple channels
 		return false;

@@ -115,6 +115,10 @@ public class StringDataPanel extends AbstractDataPanel {
 	}
 	
 	public void postTime(double time) {
+    if (time < this.time) {
+      clearData();
+    }
+    
 		super.postTime(time);
 		
 		if (channelMap == null) {

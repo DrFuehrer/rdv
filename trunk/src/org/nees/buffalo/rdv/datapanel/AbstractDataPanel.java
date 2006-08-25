@@ -79,7 +79,6 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
-import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.DataListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
@@ -443,15 +442,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	}
 	
 	/*
-	 * Clear the data displayed on the data panel. This is called when the
-	 * RBNBController is loading data from a new time period or when starting to
-	 * view data in realtime.
-	 * 
-	 * @since  1.1
-	 */
-	abstract void clearData();
-	
-	/*
 	 * Get the title of the data panel. Override this method if you want something
 	 * different than a comma separated list of subscribed channel names. This is
 	 * used in the UI for the title of the data panel.
@@ -644,10 +634,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	
 	public void postState(int newState, int oldState) {
     state = newState;
-    
-    if (newState == Player.STATE_LOADING) {
-      clearData();  
-    }
 	}
 	
 	/**
