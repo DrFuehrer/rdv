@@ -713,7 +713,32 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
   }
   
   public void postTime(double time) {
+    if (time < this.time) {
+      lastTimeDisplayed = -1;
+    }
+    
     super.postTime(time);
+    
+    for (int j=0; j<columnGroupCount; j++) {
+      boolean rowCleared = false;
+
+      DataTableModel tableModel = (DataTableModel)tableModels.get(j);
+      for (int k=0; k<tableModel.getRowCount(); k++) {
+        DataRow row = tableModel.getRowAt(k);
+        if (row.isCleared()) {
+          continue;
+        }
+        double timestamp = row.getTime();
+        if (timestamp <= time-timeScale || timestamp > time) {
+          row.clearData();
+          rowCleared = true;
+        }
+      }
+      
+      if (rowCleared) {
+        tableModel.fireTableDataChanged();
+      }
+    }    
     
     if (channelMap == null) {
       // no data to display yet
@@ -804,7 +829,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 
       for (int ii = 0; ii < columnGroupCount; ii++) {
           ((DataTableModel) tableModels.get(ii))
-                .updateData(channelName, data);
+                .updateData(channelName, times[i], data);
        } // for 
 
      } // for 
@@ -930,12 +955,12 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
       }
     }
     
-    public void updateData(String name, double data) {
+    public void updateData(String name, double time, double data) {
       cleared = false;
       for (int i=0; i<rows.size(); i++) {
         DataRow dataRow = (DataRow)rows.get(i);
         if (dataRow.name.equals(name)) {
-          dataRow.setData(data);
+          dataRow.setData(time, data);
           fireTableDataChanged();
           break;
         }
@@ -1119,12 +1144,13 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
   private class DataRow {
     String name;
     String unit;
-    double value;
     double min;
     double max;
-    double minThresh = Double.NEGATIVE_INFINITY;
-    double maxThresh = Double.POSITIVE_INFINITY;
-    boolean threshSetByUser = false;
+    double minThresh;
+    double maxThresh;
+    
+    double time;
+    double value;
  
     double offset;
     boolean cleared;
@@ -1149,11 +1175,16 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
       return value;
     }    
     
-    public void setData(double data) {
+    public void setData(double timestamp, double data) {
+      time = timestamp;
       value = data;
       min = cleared? data:Math.min(min, data);
       max = cleared? data:Math.max(max, data);
       cleared = false;
+    }
+    
+    public double getTime() {
+      return time;
     }
     
     public double getMinimum() {

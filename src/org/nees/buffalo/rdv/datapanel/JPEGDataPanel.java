@@ -983,8 +983,6 @@ public class JPEGDataPanel extends AbstractDataPanel {
 		displayedImageTime = -1;
 	}
 
-	void clearData() {}
-  
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
     

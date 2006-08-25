@@ -524,7 +524,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         color = getLeastUsedColor();
         
         XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
-        data.setMaximumItemAge((int)(timeScale*1000));
+        data.setMaximumItemAge((long)(timeScale*1000), (long)(time*1000));
         
         int position = dataCollection.getSeriesCount() - localSeries;
         ((XYTimeSeriesCollection)dataCollection).addSeries(position, data);
@@ -534,8 +534,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       
       color = getLeastUsedColor();
       
-			TimeSeries data = new FastTimeSeries(seriesName, FixedMillisecond.class);
-			data.setMaximumItemAge((int)(timeScale*1000));
+			FastTimeSeries data = new FastTimeSeries(seriesName, FixedMillisecond.class);
+			data.setMaximumItemAge((long)(timeScale*1000), (long)(time*1000));
 			((TimeSeriesCollection)dataCollection).addSeries(data);
 		}
     
@@ -868,16 +868,16 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     			if (xyMode) {
     				XYTimeSeriesCollection xyTimeSeriesCollection = (XYTimeSeriesCollection)dataCollection;
     				XYTimeSeries data = xyTimeSeriesCollection.getSeries(i);
-            data.setMaximumItemAge((int)(timeScale*1000));
+            data.setMaximumItemAge((long)(timeScale*1000), (long)(time*1000));
     			} else {
     				TimeSeriesCollection timeSeriesCollection = (TimeSeriesCollection)dataCollection;
-    				TimeSeries data = timeSeriesCollection.getSeries(i);
-    				data.setMaximumItemAge((int)(timeScale*1000));
+    				FastTimeSeries data = (FastTimeSeries)timeSeriesCollection.getSeries(i);
+    				data.setMaximumItemAge((long)(timeScale*1000), (long)(time*1000));
     			}
     		}
         
         if (!xyMode) {
-          setTimeAxis();
+          domainAxis.setRange((time-timeScale)*1000, time*1000);
         }        
       }
     });		
@@ -892,14 +892,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     cachedChannelMap = this.channelMap;
     
 		super.postData(channelMap);
-		
-		if (!xyMode) {
-			SwingUtilities.invokeLater(new Runnable() {
-			  public void run() {
-			    postDataTimeSeries(channelMap);
-			  }
-			});
-		}
 	}
 
   /**
@@ -998,7 +990,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 					break;
 			}
 			
-      timeSeriesData.stopAdd();
+      timeSeriesData.fireSeriesChanged();
       
 			chart.setNotify(true);
 			chart.fireChartChanged();
@@ -1015,12 +1007,19 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * @param time  the new time
    */
 	public void postTime(double time) {
+    if (time < this.time) {
+      clearData();
+    }
+    
 		super.postTime(time);
 		
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
         if (xyMode) {
           postDataXY(channelMap, cachedChannelMap);
+        } else if (channelMap != null) {
+          postDataTimeSeries(channelMap);
+          channelMap = null;
         }
         
         setTimeAxis();
@@ -1202,7 +1201,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 					break;
 			}
       
-      xySeriesData.stopAdd();
+      xySeriesData.fireSeriesChanged();
 			
 			chart.setNotify(true);
 			chart.fireChartChanged();
@@ -1225,16 +1224,26 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			log.warn("Chart object is null. This shouldn't happen.");
 			return;
 		}
-
+    
+    int series = dataCollection.getSeriesCount();
     if (xyMode) {
-      XYTimeSeriesCollection xyTimeSeriesCollection = (XYTimeSeriesCollection)dataCollection;
-      int series = dataCollection.getSeriesCount()-localSeries;
-      for (int i=0; i<series; i++) {
-        XYTimeSeries data = xyTimeSeriesCollection.getSeries(i);
-        data.removeAgedItems((long)(time*1000));
+      series -= localSeries;
+    }
+
+    for (int i=0; i<series; i++) {
+      if (xyMode) {
+        XYTimeSeriesCollection xyTimeSeriesDataCollection = (XYTimeSeriesCollection)dataCollection;
+        XYTimeSeries data = xyTimeSeriesDataCollection.getSeries(i);
+        data.removeAgedItems((long)(time*1000));        
+      } else {
+        TimeSeriesCollection timeSeriesDataCollection = (TimeSeriesCollection)dataCollection;
+        TimeSeries data = timeSeriesDataCollection.getSeries(i);
+        data.removeAgedItems((long)(time*1000), true);
       }
-    } else {
-      domainAxis.setRange((time-timeScale)*1000, time*1000);      
+    }
+    
+    if (!xyMode) {
+      domainAxis.setRange((time-timeScale)*1000, time*1000);
     }
 	}	
 	
@@ -1517,6 +1526,25 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     public FastTimeSeries(String name, Class timePeriodClass) {
       super(name, timePeriodClass);
     }
+    
+    /**
+     * Set the maximum item age. Age items according to the latest time.
+     * 
+     * @param periods  the maximum item age
+     * @param latest   the latest time to age by
+     */
+    public void setMaximumItemAge(long periods, long latest) {
+      setMaximumItemAge(periods);
+      removeAgedItems(latest, true);
+    }
+    
+    /**
+     * Does nothing. This class only supports aging items with an explicit
+     * latest time.
+     * 
+     * @param  notify listeners
+     */
+    public void removeAgedItems(boolean notify) {}    
 
     /**
      * Signal that a number of items will be added to the series.
@@ -1546,19 +1574,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         RegularTimePeriod last = getTimePeriod(count-1);
         if (period.compareTo(last) > 0) {
           data.add(item);
+        } else {
+          int index = Collections.binarySearch(data, item);
+          if (index < 0) {
+            data.add(-index - 1, item);
+          }
         }
       }      
-    }
-    
-    /**
-     * Signal that the adding of items has ended.
-     * 
-     * This fires a series changed event.
-     */
-    public void stopAdd() {
-      removeAgedItems(false);
-
-      fireSeriesChanged();
     }
   }
   
@@ -1763,17 +1785,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     }
     
     /**
-     * Signal that the adding of items has ended.
-     * 
-     * This fires a series changed event.
-     */
-    public void stopAdd() {
-      removeAgedItems(false);
-
-      fireSeriesChanged();
-    }    
-    
-    /**
      * Add a data item and notify series change listeners.
      * 
      * @param period  the period of the data item
@@ -1826,17 +1837,21 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         data.add(item);
         added = true;
       } else {
-        RegularTimePeriod last = this.getDataItem(count-1).getPeriod();
+        RegularTimePeriod last = getDataItem(count-1).getPeriod();
         if (item.getPeriod().compareTo(last) > 0) {
           data.add(item);
           added = true;
+        } else {
+          int index = Collections.binarySearch(data, item);
+          if (index < 0) {
+            data.add(-index - 1, item);
+            added = true;
+          }          
         }
       }
       
-      if (added) {
-        if (notify) {
-          fireSeriesChanged();
-        }
+      if (added && notify) {
+        fireSeriesChanged();
       }
     }
     
@@ -1958,6 +1973,21 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       maximumItemAge = periods;
       removeAgedItems();       
     }
+    
+    /**
+     * Set the maximum age of a data item. Age items according to the latest
+     * time
+     * 
+     * @param periods  the maximum age
+     * @param latest   the latest time to age by
+     */
+    public void setMaximumItemAge(long periods, long latest) {
+      if (periods < 0) {
+        throw new IllegalArgumentException("Negative 'periods' argument.");
+      }
+      maximumItemAge = periods;
+      removeAgedItems(latest);       
+    }    
     
     /**
      * Remove data items that exceed the maximum age and notify series change
