@@ -235,7 +235,15 @@ public class RBNBController implements Player, MetadataListener {
 
       if (requestedChannels.NumberOfChannels() > 0) {
         changeStateSafe(STATE_LOADING);
-        loadData();
+        
+        double duration;
+        if (oldLocation < location && oldLocation > location-timeScale) {
+          duration = location - oldLocation;
+        } else {
+          duration = timeScale;
+        }
+        loadData(location, duration);
+        
         changeStateSafe(STATE_STOPPED);
       } else {
         updateTimeListeners(location);
@@ -493,8 +501,18 @@ public class RBNBController implements Player, MetadataListener {
    * Load data for all channels.
    */
   private void loadData() {
+    loadData(location, timeScale);
+  }
+
+  /**
+   * Load data for all channels.
+   * 
+   * @param location  the end time
+   * @param duration  the duration
+   */
+  private void loadData(double location, double duration) {
     String[] subscribedChannels = requestedChannels.GetChannelList();
-    loadData(Arrays.asList(subscribedChannels));
+    loadData(Arrays.asList(subscribedChannels), location, duration);
   }
   
   /**
@@ -503,15 +521,17 @@ public class RBNBController implements Player, MetadataListener {
    * @param channelName  the name of the channel
    */
   private void loadData(String channelName) {
-    loadData(Collections.singletonList(channelName));
+    loadData(Collections.singletonList(channelName), location, timeScale);
   }
 	
   /**
    * Load data for the specified channels.
    * 
    * @param channelNames  a list of channel names
+   * @param location      the end time
+   * @param duration      the amount of data to load
    */
-	private void loadData(List<String> channelNames) {
+	private void loadData(List<String> channelNames, double location, double duration) {
 		ChannelMap realRequestedChannels = requestedChannels;
 		
 		ChannelMap imageChannels = new ChannelMap();
@@ -559,7 +579,7 @@ public class RBNBController implements Player, MetadataListener {
 		
 		if (otherChannels.NumberOfChannels() > 0) {
 			requestedChannels = otherChannels;
-			if (!requestData(location-timeScale, timeScale)) {
+			if (!requestData(location-duration, duration)) {
         fireErrorMessage("Failed to load data from the server. Please try again later.");
 				requestedChannels = realRequestedChannels;
         changeStateSafe(STATE_STOPPED);
