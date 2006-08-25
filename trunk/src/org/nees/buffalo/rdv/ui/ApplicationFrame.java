@@ -32,6 +32,7 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -163,6 +164,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JLabel throbber;
   private Icon throbberStop;
   private Icon throbberAnim;
+  
+  private final Object loadingMonitor = new Object();
  		
 	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager, boolean isApplet) {
 		super();
@@ -969,25 +972,43 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   }
 
  	public void connecting() {
- 		busyDialog = new BusyDialog(this);
-    busyDialog.setCancelActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        rbnb.cancelConnect();
-      }
-    });
- 		busyDialog.start();
-    startThrobber();
+   setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+   
+   if (busyDialog != null) {
+    busyDialog.close();
+    busyDialog = null;
+   }   
+    
+ 	 busyDialog = new BusyDialog(this);
+   busyDialog.setCancelActionListener(new ActionListener() {
+     public void actionPerformed(ActionEvent arg0) {
+       rbnb.cancelConnect();
+     }
+   });
+   busyDialog.start();
+
+   startThrobber();
 	}
 
 	public void connected() {
-		busyDialog.close();
-		busyDialog = null;
+    setCursor(null);
+    
+    if (busyDialog != null) {
+      busyDialog.close();
+      busyDialog = null;
+    }
+
     stopThrobber();
 	}
 
 	public void connectionFailed() {
-		busyDialog.close();
-		busyDialog = null;
+    setCursor(null);
+
+    if (busyDialog != null) {
+      busyDialog.close();
+      busyDialog = null;
+    }
+
     stopThrobber();
 	}
     
@@ -997,33 +1018,57 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       disconnectAction.setEnabled(false);
       importAction.setEnabled(false);
       exportAction.setEnabled(false);
-      
+
       controlPanel.setEnabled(false);
       markerSubmitPanel.setEnabled(false);
-    } else if (newState != Player.STATE_EXITING) {
+    } else if (oldState == Player.STATE_DISCONNECTED) {
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
       importAction.setEnabled(true);
       exportAction.setEnabled(true);
-      
+
       controlPanel.setEnabled(true);
       markerSubmitPanel.setEnabled(true);
     }
-    
+
     if (newState == Player.STATE_LOADING || newState == Player.STATE_PLAYING || newState == Player.STATE_MONITORING) {
       startThrobber(); 
-    } else {
+    } else if (oldState == Player.STATE_LOADING || oldState == Player.STATE_PLAYING || oldState == Player.STATE_MONITORING){
       stopThrobber();
     }
-    
+
     if (newState == Player.STATE_LOADING) {
- 		loadingDialog = new LoadingDialog(this);
- 		loadingDialog.start();
-    } else {
-    	if (loadingDialog != null) {
-    	  loadingDialog.close();
-    	  loadingDialog = null;
-    	}
+      setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+      loadingDialog = new LoadingDialog(this);
+      
+      new Thread() {
+        public void run() {
+          synchronized (loadingMonitor) {
+            if (loadingDialog == null) {
+              return;
+            }
+            
+            try { loadingMonitor.wait(1000); } catch (InterruptedException e) {}
+
+            if (loadingDialog != null) {
+              loadingDialog.setVisible(true);
+              loadingDialog.start();
+            }
+          }
+        }
+      }.start();
+    } else if (oldState == Player.STATE_LOADING) {
+      setCursor(null);
+
+      synchronized (loadingMonitor) {
+        loadingMonitor.notify();
+
+        if (loadingDialog != null) {
+          loadingDialog.close();
+          loadingDialog = null;
+        }
+      }
     }
   }
   
