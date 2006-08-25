@@ -46,6 +46,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JToolTip;
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,8 +79,11 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   /** The maximum time. */
   double maximum;
   
-  /** Indicates if a time range may be selected. */ 
-  boolean useRange;
+  /** Indicate if the time value may be changed from the UI. */
+  boolean valueChangeable;
+  
+  /** Indicates if a time range may be changed from the UI. */ 
+  boolean rangeChangeable;
   
   /** Indicates if the time value is adjusting. */
   boolean isAdjusting;
@@ -87,7 +91,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   /** The starting offset of a click (for buttons). */
   int clickStart;
   
-  /** List of event marker.s */
+  /** List of event markers. */
   List<EventMarker> markers;  
   
   /** List of valid time ranges. */
@@ -126,7 +130,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     end = Double.MAX_VALUE;
     maximum = Double.MAX_VALUE;
     
-    useRange = true;
+    valueChangeable = true;
+    rangeChangeable = true;
     
     isAdjusting = false;
     
@@ -183,11 +188,21 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @param changeable  if true, the value can be changed, false otherwise.
    */
   public void setValueChangeable(boolean changeable) {
-    if (changeable) {
+    if (valueChangeable == changeable) {
+      return;
+    }
+    
+    valueChangeable = changeable;
+    
+    valueButton.setEnabled(valueChangeable);
+    
+    if (valueChangeable) {
       addMouseListener(this);
+      valueButton.addMouseListener(this);
       valueButton.addMouseMotionListener(this);
     } else {
       removeMouseListener(this);
+      valueButton.removeMouseListener(this);
       valueButton.removeMouseMotionListener(this);
     }
   }
@@ -206,26 +221,27 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   }
   
   /**
-   * Set if a time range can be specified via the UI elements
+   * Set if a time range can be changed via the UI elements
    * 
-   * @param enabled  if true, the time range can be changed, false otherwsie
+   * @param changeable  if true, the time range can be changed, false otherwsie
    */
-  public void setRangeEnabled(boolean enabled) {
-    if (useRange == enabled) {
+  public void setRangeChangeable(boolean changeable) {
+    if (rangeChangeable == changeable) {
       return;
     }
     
-    useRange = enabled;
+    rangeChangeable = changeable;
     
-    if (useRange) {
-      add(startButton);
-      add(endButton);
+    startButton.setEnabled(rangeChangeable);
+    endButton.setEnabled(rangeChangeable);
+    
+    if (rangeChangeable) {
+      startButton.addMouseMotionListener(this);
+      endButton.addMouseMotionListener(this);      
     } else {
-      remove(startButton);
-      remove(endButton);
+      startButton.removeMouseMotionListener(this);
+      endButton.removeMouseMotionListener(this);
     }
-    
-    doLayout();
   }
   
   /**
@@ -369,14 +385,20 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   public void setMinimum(double minimum) {
     if (this.minimum != minimum) {
       this.minimum = minimum;
-      if (minimum > start) {
+      
+      if (rangeChangeable) {
+        if (minimum > start) {
+          start = minimum;
+          fireRangeChanged();
+        }
+        if (minimum > end) {
+          end = minimum;
+          fireRangeChanged();
+        }
+      } else {
         start = minimum;
-        fireRangeChanged();
       }
-      if (minimum > end) {
-        end = minimum;
-        fireRangeChanged();
-      }
+      
       fireBoundsChanged();
       doLayout();
     }
@@ -400,14 +422,20 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   public void setMaximum(double maximum) {
     if (this.maximum != maximum) {
       this.maximum = maximum;
-      if (maximum < end) {
+      
+      if (rangeChangeable) {
+        if (maximum < end) {
+          end = maximum;
+          fireRangeChanged();
+        }
+        if(maximum < start) {
+          start = maximum;
+          fireRangeChanged();
+        }
+      } else {
         end = maximum;
-        fireRangeChanged();
       }
-      if(maximum < start) {
-        start = maximum;
-        fireRangeChanged();
-      }
+      
       fireBoundsChanged();
       doLayout();
     }
@@ -418,9 +446,13 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * 
    * @param marker  the marker
    */
-  public void addMarker(EventMarker marker) {
-    markers.add(marker);
-    repaint();
+  public void addMarker(final EventMarker marker) {
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        markers.add(marker);
+        repaint();
+      }
+    });
   }
   
   /**
@@ -474,8 +506,12 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * Remove all marker.
    */
   public void cleareMarkers() {
-    markers.clear();
-    repaint();
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        markers.clear();
+        repaint();
+      }
+    });    
   }
   
   /**
@@ -718,10 +754,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
       endButton.setVisible(true);      
     }
     
-    if (useRange) {
-      startButton.setBounds(getXFromTime(start) - 6, insets.top, 6, 11);
-      endButton.setBounds(getXFromTime(end) + 1, insets.top, 6, 11);
-    }
+    startButton.setBounds(getXFromTime(start) - 6, insets.top, 6, 11);
+    endButton.setBounds(getXFromTime(end) + 1, insets.top, 6, 11);
     
     valueButton.setBounds(getXFromTime(value) - 3, insets.top + 2, 7, 7);
     
@@ -739,11 +773,11 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     g.setColor(Color.lightGray);
     g.fillRect(insets.left+6, insets.top+4, getWidth()-insets.left-12-insets.right, 3);
     
-    if (isEnabled() && useRange) {
+    if (isEnabled()) {
       g.setColor(Color.gray);
       int startX = getXFromTime(start);
       int endX = getXFromTime(end);
-      g.fillRect(startX, insets.top+4, endX-startX, 3);      
+      g.fillRect(startX, insets.top+4, endX-startX, 3);
     }
     
     for (EventMarker marker : markers) {
@@ -902,7 +936,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
       
       setStart(time);
     } else if (button == valueButton) {
-      if (useRange) {
+      if (rangeChangeable) {
         if (time < start) {
           time = start;
         } else if (time > end) {
@@ -1042,11 +1076,16 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * @param enabled true if this component should be enabled, false otherwise
    */
   public void setEnabled(boolean enabled) {
-    super.setEnabled(enabled);
+    if (isEnabled() == enabled) {
+      return;
+    }
     
-    startButton.setEnabled(enabled);
-    valueButton.setEnabled(enabled);
-    endButton.setEnabled(enabled);
+    super.setEnabled(enabled);
+
+    valueButton.setEnabled(enabled && valueChangeable);
+    
+    startButton.setEnabled(enabled && rangeChangeable);
+    endButton.setEnabled(enabled && rangeChangeable);
     
     repaint();
   }
