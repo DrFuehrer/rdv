@@ -50,6 +50,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerListModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,20 +82,18 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 
 	public RBNBController rbnbController;
   
-  /**
-   * Indicate if we are hiding empty time regions
-   */
+  /** Indicate if we are hiding empty time regions */
   private boolean hideEmptyTime;
 
+  private JButton beginButton;
 	private JButton monitorButton;
 	private JButton playButton;
-
-	private JButton beginButton;
-  private JButton fasterButton;
+  private JButton endButton;
+	
   private JLabel playbackRateLabel;
-  private JButton slowerButton;
-	private JButton endButton;
+  private JSpinner playbackRateSpinner;	
   
+  private JLabel timeScaleLabel;
   private JComboBox timeScaleComboBox;
   
   private JButton locationButton;
@@ -104,13 +106,16 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
   
   private TimeSlider globalTimeSlider;
 
+  /** Predefined time scales */
  	private static final double timeScales[] = {0.001, 0.002, 0.005, 0.01, 0.02,
     0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0,
     600.0, 1200.0, 1800.0, 3600.0, 7200.0, 14400.0, 28800.0, 57600.0, 86400.0,
     172800.0, 432000.0, 604800.0};
   
- 	private static final double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2,
-    5e-2, 1e-1, 2e-1, 5e-1, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000}; 
+  /** Predefined playback rates */
+ 	private static final Double playbackRates[] = {1e-3, 2e-3, 5e-3, 1e-2, 2e-2,
+    5e-2, 1e-1, 2e-1, 5e-1, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0,
+    500.0, 1000.0}; 
 
 	public ChannelTree ctree;
 
@@ -154,8 +159,18 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     JPanel controlsPanel = new JPanel();
     controlsPanel.setBorder(null);
     controlsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 0));
+
+    beginButton = new JButton("Beginning ", DataViewer.getIcon("icons/begin.gif"));
+    beginButton.setToolTipText("Go to beginning of data");
+    beginButton.setBorder(null);
+    beginButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        setLocationBegin();
+      }
+    });
+    controlsPanel.add(beginButton);    
     
-    monitorButton = new JButton(DataViewer.getIcon("icons/rt.gif"));
+    monitorButton = new JButton("Real time ", DataViewer.getIcon("icons/rt.gif"));
     monitorButton.setSelectedIcon(DataViewer.getIcon("icons/pause.gif"));
     monitorButton.setToolTipText("View live data");
     monitorButton.setBorder(null);
@@ -170,7 +185,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     });
     controlsPanel.add(monitorButton);
     
-    playButton = new JButton(DataViewer.getIcon("icons/play.gif"));
+    playButton = new JButton("Play ", DataViewer.getIcon("icons/play.gif"));
     playButton.setSelectedIcon(DataViewer.getIcon("icons/pause.gif"));
     playButton.setToolTipText("Play");
     playButton.setBorder(null);
@@ -185,55 +200,39 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     });
     controlsPanel.add(playButton);
     
-    controlsPanel.add(Box.createHorizontalStrut(8));
-    
-    beginButton = new JButton(DataViewer.getIcon("icons/begin.gif"));
-    beginButton.setToolTipText("Go to beginning of data");
-    beginButton.setBorder(null);
-    beginButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        setLocationBegin();
-      }
-    });
- 		controlsPanel.add(beginButton);
-    
-    slowerButton = new JButton(DataViewer.getIcon("icons/rew.gif"));
-    slowerButton.setToolTipText("Playback data slower");
-    slowerButton.setBorder(null);
-    slowerButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        decreasePlaybackRate();
-      }
-    });
-    controlsPanel.add(slowerButton);
-    
-    playbackRateLabel = new JLabel();
-    playbackRateLabel.setToolTipText("The current playback rate");
-    playbackRateLabel.setHorizontalAlignment(JLabel.CENTER);
-    playbackRateLabel.setPreferredSize(new Dimension(24,16));
-    controlsPanel.add(playbackRateLabel);    
-    
-    fasterButton = new JButton(DataViewer.getIcon("icons/ff.gif"));
-    fasterButton.setToolTipText("Playback data faster");
-    fasterButton.setBorder(null);
-    fasterButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent e) {
-        increasePlaybackRate();
-      }
-    });    
-    controlsPanel.add(fasterButton);    
-
-		endButton = new JButton(DataViewer.getIcon("icons/end.gif"));
- 		endButton.setToolTipText("Go to end of data");
+    endButton = new JButton("End ", DataViewer.getIcon("icons/end.gif"));
+    endButton.setToolTipText("Go to end of data");
     endButton.setBorder(null);
-		endButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setLocationEnd();
-			}
-		});
-		controlsPanel.add(endButton);
+    endButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        setLocationEnd();
+      }
+    });
+    controlsPanel.add(endButton);    
     
     controlsPanel.add(Box.createHorizontalStrut(8));
+    
+    playbackRateLabel = new JLabel("Playback rate: ");
+    controlsPanel.add(playbackRateLabel);
+
+    SpinnerListModel playbackRateModel = new SpinnerListModel(playbackRates);
+    playbackRateSpinner = new JSpinner(playbackRateModel);
+    JSpinner.ListEditor playbackRateEditor = new JSpinner.ListEditor(playbackRateSpinner);
+    playbackRateEditor.getTextField().setEditable(false);
+    playbackRateSpinner.setEditor(playbackRateEditor);
+    playbackRateSpinner.setToolTipText("The rate at which to playback data");
+    playbackRateSpinner.setPreferredSize(new Dimension(64,16));
+    playbackRateSpinner.addChangeListener(new ChangeListener() {
+      public void stateChanged(ChangeEvent e) {
+        playbackRateChanged();
+      }      
+    });
+    controlsPanel.add(playbackRateSpinner);
+
+    controlsPanel.add(Box.createHorizontalStrut(8));
+    
+    timeScaleLabel = new JLabel("Time scale: ");
+    controlsPanel.add(timeScaleLabel);
     
     timeScaleComboBox = new JComboBox();
     timeScaleComboBox.setEditable(true);
@@ -253,6 +252,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     firstRowPanel.add(controlsPanel, BorderLayout.CENTER);
     
     locationButton = new JButton();
+    locationButton.setToolTipText("The current time location");
     locationButton.setBorder(null);
     locationButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
@@ -275,7 +275,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     container.add(firstRowPanel, c);    
 		
     zoomTimeSlider = new TimeSlider();
-    zoomTimeSlider.setRangeEnabled(false);
+    zoomTimeSlider.setRangeChangeable(false);
     zoomTimeSlider.addTimeAdjustmentListener(this);
     c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
@@ -294,13 +294,16 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     zoomTimePanel.setLayout(new BorderLayout());
     
     zoomMinimumLabel = new JLabel();
+    zoomMinimumLabel.setToolTipText("The minimum time for the zoom time slider (above)");
     zoomTimePanel.add(zoomMinimumLabel, BorderLayout.WEST);
     
     zoomRangeLabel = new JLabel();
+    zoomRangeLabel.setToolTipText("The length in time of the zoom time slider (above)");
     zoomRangeLabel.setHorizontalAlignment(JLabel.CENTER);
     zoomTimePanel.add(zoomRangeLabel, BorderLayout.CENTER);
     
     zoomMaximumLabel = new JLabel();
+    zoomMaximumLabel.setToolTipText("The maximum time for the zoom time slider (above)");
     zoomTimePanel.add(zoomMaximumLabel, BorderLayout.EAST);
 
     c.fill = GridBagConstraints.HORIZONTAL;
@@ -457,40 +460,17 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    * @param playbackRate  the current playback rate
    */
   public void playbackRateChanged(double playbackRate) {
-    String playbackRateText;
-    if (playbackRate < 1) {
-      playbackRateText = Double.toString(playbackRate);
-    } else {
-      playbackRateText = Long.toString(Math.round(playbackRate));
-    }
-    
-    playbackRateLabel.setText(playbackRateText);
+    playbackRateSpinner.setValue(playbackRate);
   }    
   
   /**
-   * Called when the playback rate is decreased by the UI. This tells the rbnb
-   * controller to decrease the playback rate.
+   * Called when the playback rate is changed in the UI.
    */
-  private void decreasePlaybackRate() {
-    double playbackRate = rbnbController.getPlaybackRate();
-    int index = Arrays.binarySearch(playbackRates, playbackRate);
-    if (index > 0) {
-      rbnbController.setPlaybackRate(playbackRates[index-1]);
-    }
+  private void playbackRateChanged() {
+    double playbackRate = (Double)playbackRateSpinner.getValue();
+    rbnbController.setPlaybackRate(playbackRate);
   }
-
-  /**
-   * Called when the playback rate is increased by the UI. This tells the rbnb
-   * controller to increase the playback rate.
-   */
-  private void increasePlaybackRate() {
-    double playbackRate = rbnbController.getPlaybackRate();
-    int index = Arrays.binarySearch(playbackRates, playbackRate);
-    if (index < playbackRates.length-1) {
-      rbnbController.setPlaybackRate(playbackRates[index+1]);
-    }    
-  }  
-
+  
   /**
    * Returns the index for the given time scale from the array of predefined
    * time scales.
@@ -655,12 +635,25 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    * @param oldState  the old controller state
    */
 	public void postState(int newState, int oldState) {
-    monitorButton.setSelected(newState == Player.STATE_MONITORING);    
-    playButton.setSelected(newState == Player.STATE_PLAYING);
+    if (newState == Player.STATE_MONITORING) {
+      monitorButton.setText("Pause");
+      monitorButton.setSelected(true);
+      
+      playbackRateSpinner.setEnabled(false);
+    } else if (oldState == Player.STATE_MONITORING) {
+      monitorButton.setText("Real time");
+      monitorButton.setSelected(false);
+      
+      playbackRateSpinner.setEnabled(true);
+    }
     
-    slowerButton.setEnabled(newState != Player.STATE_MONITORING);
-    playbackRateLabel.setEnabled(newState != Player.STATE_MONITORING);
-    fasterButton.setEnabled(newState != Player.STATE_MONITORING);
+    if (newState == Player.STATE_PLAYING) {
+      playButton.setText("Pause");
+      playButton.setSelected(true);
+    } else if (oldState == Player.STATE_PLAYING) {
+      playButton.setText("Play");
+      playButton.setSelected(false);
+    }    
 	}
   
   /**
@@ -670,29 +663,34 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    * @param enabled  true if the component should be enabled, false otherwise
    */
   public void setEnabled(boolean enabled) {
+    if (isEnabled() == enabled) {
+      return;
+    }
+    
     super.setEnabled(enabled);
     
+    beginButton.setEnabled(enabled);
     monitorButton.setEnabled(enabled);
     playButton.setEnabled(enabled);
-    beginButton.setEnabled(enabled);
-
+    endButton.setEnabled(enabled);
+    
+    playbackRateLabel.setEnabled(enabled);
     if (enabled && rbnbController.getState() != Player.STATE_MONITORING) {
-      slowerButton.setEnabled(true);
-      playbackRateLabel.setEnabled(true);
-      fasterButton.setEnabled(true);
+      playbackRateSpinner.setEnabled(true);
     } else {
-      slowerButton.setEnabled(false);
-      playbackRateLabel.setEnabled(false);
-      fasterButton.setEnabled(false);
+      playbackRateSpinner.setEnabled(false);
     }
 
-    endButton.setEnabled(enabled);
+    timeScaleLabel.setEnabled(enabled);
     timeScaleComboBox.setEnabled(enabled);
+    
     locationButton.setEnabled(enabled);
+    
     zoomTimeSlider.setEnabled(enabled);
     zoomMinimumLabel.setEnabled(enabled);
     zoomRangeLabel.setEnabled(enabled);
     zoomMaximumLabel.setEnabled(enabled);
+    
     globalTimeSlider.setEnabled(enabled);
   }
 
