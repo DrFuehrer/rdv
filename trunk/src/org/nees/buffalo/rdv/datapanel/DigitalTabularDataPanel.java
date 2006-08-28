@@ -323,13 +323,6 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
     JPopupMenu popupMenu = new JPopupMenu();
 
     final JMenuItem copyMenuItem = new JMenuItem("Copy");
-    popupMenu.addPopupMenuListener(new PopupMenuListener() {
-      public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-        copyMenuItem.setEnabled(table.getSelectedRowCount() > 0);
-      }
-      public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
-      public void popupMenuCanceled(PopupMenuEvent arg0) {}
-    });
     copyMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
         TransferHandler.getCopyAction().actionPerformed(
@@ -382,6 +375,14 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
     });
     popupMenu.add(blankRowMenuItem);
     
+    final JMenuItem removeSelectedRowsMenuItem = new JMenuItem("Remove selected rows");
+    removeSelectedRowsMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        removeSelectedRows();
+      }
+    });
+    popupMenu.add(removeSelectedRowsMenuItem);
+    
     popupMenu.addSeparator();
     
     JMenu numberOfColumnsMenu = new JMenu("Number of columns");
@@ -408,7 +409,16 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
       });
       numberOfColumnsMenu.add(item);
     }
-    popupMenu.add(numberOfColumnsMenu);    
+    popupMenu.add(numberOfColumnsMenu);
+    
+    popupMenu.addPopupMenuListener(new PopupMenuListener() {
+      public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
+        copyMenuItem.setEnabled(table.getSelectedRowCount() > 0);
+        removeSelectedRowsMenuItem.setEnabled(areAnyRowsSelected());
+      }
+      public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
+      public void popupMenuCanceled(PopupMenuEvent arg0) {}
+    });    
 
     // set component popup and mouselistener to trigger it
     table.setComponentPopupMenu(popupMenu);
@@ -454,7 +464,52 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
         removeColumn();
       }
     }
-  }  
+  }
+  
+  /**
+   * See if any row in any table is selected.
+   * 
+   * @return  true if at least one channel is selected
+   */
+  private boolean areAnyRowsSelected() {
+    for (int i=0; i<columnGroupCount; i++) {
+      JTable table = tables.get(i);
+      if (table.getSelectedRowCount() > 0) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Remove all the rows in all the tables that are selected. If the row is
+   * not blank, the channel in that row will be removed.
+   */
+  private void removeSelectedRows() {
+    List<String> selectedChannels = new ArrayList<String>();
+    
+    for (int i=0; i<columnGroupCount; i++) {
+      JTable table = tables.get(i);
+      int[] selectedRows = table.getSelectedRows();
+      table.clearSelection();
+      
+      DataTableModel tableModel = tableModels.get(i);
+      for (int j=selectedRows.length-1; j>=0; j--) {
+        int row = selectedRows[j];
+        if (tableModel.isBlankRow(row)) {
+          tableModel.deleteBlankRow(row);
+        } else {
+          DataRow dataRow = tableModel.getRowAt(row);
+          selectedChannels.add(dataRow.getName());
+        }
+      }
+    }
+    
+    for (String channelName : selectedChannels) {
+      removeChannel(channelName);
+    }
+  }
 
   private void useOffsetRenderer(boolean useOffset) {
  
@@ -936,6 +991,17 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
     
     public void addBlankRow() {
       addRow(BLANK_ROW);
+    }
+    
+    public boolean isBlankRow(int row) {
+      return rows.get(row) == BLANK_ROW;
+    }
+    
+    public void deleteBlankRow(int row) {
+      if (isBlankRow(row)) {
+        rows.remove(row);
+        fireTableRowsDeleted(row, row);
+      }
     }
     
     public void addRow(DataRow dataRow) {
