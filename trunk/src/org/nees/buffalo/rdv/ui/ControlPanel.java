@@ -154,6 +154,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     
     JPanel firstRowPanel = new JPanel();
     firstRowPanel.setBorder(null);
+    firstRowPanel.setMinimumSize(new Dimension(0, 16));
     firstRowPanel.setLayout(new BorderLayout());
     
     JPanel controlsPanel = new JPanel();
