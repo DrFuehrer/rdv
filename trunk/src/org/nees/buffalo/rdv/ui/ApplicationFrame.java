@@ -193,7 +193,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
 			frame.getContentPane().setLayout(new BorderLayout());
 
-			frame.setBounds(0, 0, 800, 600);
+			frame.setBounds(0, 0, 900, 675);
 
 			frame.setIconImage(DataViewer.getImage("icons/RDV.gif"));
 
