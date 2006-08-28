@@ -54,6 +54,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
 import org.nees.buffalo.rdv.ui.ControlPanel;
@@ -68,10 +69,11 @@ public class DataViewer {
 	
 	static Log log = LogFactory.getLog(DataViewer.class.getName());
 	
-	private RBNBController rbnb;
-	private DataPanelManager dataPanelManager;
-	private ApplicationFrame applicationFrame;
-  private ConfigurationManager configurationManager;
+	private final RBNBController rbnb;
+  private final AuthenticationManager authenticationManager;
+	private final DataPanelManager dataPanelManager;
+	private final ApplicationFrame applicationFrame;
+  private final ConfigurationManager configurationManager;
 
 	private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
   private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm.ss.SSS a");
@@ -80,7 +82,8 @@ public class DataViewer {
 	
 	public DataViewer(boolean isApplet) {
 		rbnb = new RBNBController();
-		dataPanelManager = new DataPanelManager(rbnb);
+    authenticationManager = new AuthenticationManager();
+		dataPanelManager = new DataPanelManager(rbnb, authenticationManager);
     configurationManager = new ConfigurationManager(this);
 		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);
 	}
@@ -98,6 +101,10 @@ public class DataViewer {
  	public RBNBController getRBNBController() {
  		return rbnb;
  	}
+
+  public AuthenticationManager getAuthenticationManager() {
+    return authenticationManager;
+  }
  	
  	public DataPanelManager getDataPanelManager() {
  		return dataPanelManager;
