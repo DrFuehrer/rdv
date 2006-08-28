@@ -737,9 +737,7 @@ public class RBNBController implements Player, MetadataListener {
  				log.debug("Done waiting for pre-fetch channel map.");
 			}
 		}
-		
-		preFetchDone = false;
-		
+    
 		ChannelMap fetchedMap = preFetchChannelMap;
 		preFetchChannelMap = null;
 		
