@@ -1317,7 +1317,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     /**
      * A counter to prevent unnecessary Graphics2D.draw() events in drawItem()
      */
-    private int previousDrawnItem = 0;
+    private int previousDrawnItem = 1;
 
     public FastXYItemRenderer() {
       super();
@@ -1376,7 +1376,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
             s.seriesPath.reset();
             s.setLastPointGood(false);
           }
-          previousDrawnItem = 0;
+          previousDrawnItem = 1;
         }
 
         if (getDrawSeriesLineAsPath()) {
@@ -1440,8 +1440,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               // Only draw line if it is more than a pixel away from the
               // previous one
               if ((transX1 - transX0 > 2 || transX1 - transX0 < -2
-                  || transY1 - transY0 > 2 || transY1 - transY0 < -2)
-                  || 0 == previousDrawnItem) {
+                  || transY1 - transY0 > 2 || transY1 - transY0 < -2)) {
                 previousDrawnItem = 1;
 
                 if (orientation == PlotOrientation.HORIZONTAL) {
