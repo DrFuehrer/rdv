@@ -186,7 +186,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     });
     controlsPanel.add(monitorButton);
     
-    playButton = new JButton("Play ", DataViewer.getIcon("icons/play.gif"));
+    playButton = new JButton("Play    ", DataViewer.getIcon("icons/play.gif"));
     playButton.setSelectedIcon(DataViewer.getIcon("icons/pause.gif"));
     playButton.setToolTipText("Play");
     playButton.setBorder(null);
@@ -654,22 +654,22 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    */
 	public void postState(int newState, int oldState) {
     if (newState == Player.STATE_MONITORING) {
-      monitorButton.setText("Pause");
+      monitorButton.setText("Pause      ");
       monitorButton.setSelected(true);
       
       playbackRateSpinner.setEnabled(false);
     } else if (oldState == Player.STATE_MONITORING) {
-      monitorButton.setText("Real time");
+      monitorButton.setText("Real time ");
       monitorButton.setSelected(false);
       
       playbackRateSpinner.setEnabled(true);
     }
     
     if (newState == Player.STATE_PLAYING) {
-      playButton.setText("Pause");
+      playButton.setText("Pause ");
       playButton.setSelected(true);
     } else if (oldState == Player.STATE_PLAYING) {
-      playButton.setText("Play");
+      playButton.setText("Play    ");
       playButton.setSelected(false);
     }    
 
