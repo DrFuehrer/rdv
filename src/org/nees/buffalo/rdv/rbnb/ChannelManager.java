@@ -117,6 +117,15 @@ public class ChannelManager {
 		Integer count = (Integer)channelSubscriptionCounts.get(channelName);
 		return count != null;
 	}
+
+  /**
+   * Returns true if there is at least one listener subscribed to a channel.
+   * 
+   * @return  true if there are channel listener, false if there are none
+   */  
+  public boolean hasSubscribedChannels() {
+    return !playerChannelListeners.isEmpty();
+  }
 	
 	public boolean isListenerSubscribedToChannel(String channelName, DataListener listener) {
 		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
