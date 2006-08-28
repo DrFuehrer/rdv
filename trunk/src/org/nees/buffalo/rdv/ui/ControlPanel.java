@@ -361,14 +361,20 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 
     double startTime = -1;
     double endTime = -1;
+    
+    boolean hasSubscribedChannels = rbnbController.hasSubscribedChannels();
 
     // get the time bounds for all channels
     Iterator it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
+      ChannelTree.NodeTypeEnum type = node.getType();
+      if (type != ChannelTree.CHANNEL) {
+        continue;
+      }
+      
       String channelName = node.getFullName();
-
-      if (rbnbController.isSubscribed(channelName)) {
+      if (rbnbController.isSubscribed(channelName) || !hasSubscribedChannels) {
         double channelStart = node.getStart();
         double channelDuration = node.getDuration();
         double channelEnd = channelStart+channelDuration;
@@ -426,6 +432,17 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     }
 
     globalTimeSlider.setValues(startTime, endTime);
+    
+    // reset the selected time range if it gets stuck together
+    double start = globalTimeSlider.getStart();
+    double end = globalTimeSlider.getEnd();
+    if (start == end) {
+      if (start == globalTimeSlider.getMinimum()) {
+        globalTimeSlider.setEnd(globalTimeSlider.getMaximum());
+      } else if (start == globalTimeSlider.getMaximum()) {
+        globalTimeSlider.setStart(globalTimeSlider.getMinimum());
+      }
+    }
   }
 		
   /**
@@ -654,7 +671,11 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
       playButton.setText("Play");
       playButton.setSelected(false);
     }    
-	}
+
+    if (oldState == Player.STATE_DISCONNECTED) {
+      updateTimeBoundaries();
+    }
+  }
   
   /**
    * Set whether or not this component is enabled. If it is disabled, the UI

@@ -1081,6 +1081,15 @@ public class RBNBController implements Player, MetadataListener {
 	public boolean isSubscribed(String channelName) {
 		return channelManager.isChannelSubscribed(channelName);
 	}
+  
+  /**
+   * Returns true if there is at least one listener subscribed to a channel.
+   * 
+   * @return  true if there are channel listener, false if there are none
+   */
+  public boolean hasSubscribedChannels() {
+    return channelManager.hasSubscribedChannels();
+  }
 
 	public void addStateListener(StateListener stateListener) {
 		stateListener.postState(state, state);
