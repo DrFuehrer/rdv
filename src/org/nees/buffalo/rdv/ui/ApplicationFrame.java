@@ -448,7 +448,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
     
-    hideEmptyTimeAction = new DataViewerAction("Hide time with no data", "", KeyEvent.VK_D, "icons/hidden.gif") {
+    hideEmptyTimeAction = new DataViewerAction("Hide time with no data", "", KeyEvent.VK_D) {
       public void actionPerformed(ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
         boolean selected = menuItem.isSelected();
