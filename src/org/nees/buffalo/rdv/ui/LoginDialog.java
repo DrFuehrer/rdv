@@ -55,7 +55,8 @@ import javax.swing.KeyStroke;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
-import edu.ucsd.auth.GridAuth;
+import org.nees.buffalo.rdv.auth.AuthenticationManager;
+import org.nees.buffalo.rdv.auth.GridAuthentication;
 
 /**
  * @author Wei Deng
@@ -64,7 +65,7 @@ public class LoginDialog extends JDialog {
 
  	static Log log = LogFactory.getLog(LoginDialog.class.getName());
 	
-  DataPanelManager dataPanelManager;
+  AuthenticationManager authenticationManager;
 	
 	JLabel headerLabel;
   
@@ -79,10 +80,10 @@ public class LoginDialog extends JDialog {
 	JButton loginButton;
 	JButton cancelButton;
 	
-	public LoginDialog(JFrame owner, DataPanelManager dataPanelManager) {
+	public LoginDialog(JFrame owner, AuthenticationManager authenticationManager) {
 		super(owner, true);
 		
-    this.dataPanelManager = dataPanelManager;
+    this.authenticationManager = authenticationManager;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
@@ -222,9 +223,9 @@ public class LoginDialog extends JDialog {
 		String username = userNameTextField.getText();
 		String password = new String(userPasswordField.getPassword());
     
-		GridAuth auth = new GridAuth();
-		if (auth.login(username, password)) {
-		  dataPanelManager.setAuth(auth);
+		GridAuthentication authentication = new GridAuthentication();
+		if (authentication.login(username, password)) {
+		  authenticationManager.setAuthentication(authentication);
       
       dispose();
       

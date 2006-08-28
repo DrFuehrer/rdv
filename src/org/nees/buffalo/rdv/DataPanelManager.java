@@ -40,6 +40,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.datapanel.DataPanel;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
@@ -50,8 +51,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.rbnb.sapi.ChannelTree;
-
-import edu.ucsd.auth.GridAuth;
 
 /**
  * A class to manage all the data panels.
@@ -70,9 +69,9 @@ public class DataPanelManager {
 	static Log log = LogFactory.getLog(DataPanelManager.class.getName());
 
 	/**
-	 * The authentication token for the data panels.
+	 * The authentication manager for the data panels.
 	 */
-	private GridAuth auth;
+	private AuthenticationManager authenticationManager;
 	
 	/**
 	 * A reference to the RNBN controller for the data panels to use.
@@ -114,13 +113,13 @@ public class DataPanelManager {
 	 * @param rbnbController  the rbnb controller
 	 * @since                 1.2
 	 */
-	public DataPanelManager(RBNBController rbnbController) {
+	public DataPanelManager(RBNBController rbnbController, AuthenticationManager authenticationManager) {
 		this.rbnbController = rbnbController;
+    this.authenticationManager = authenticationManager;
 		dataPanelContainer = new DataPanelContainer();
 		
 		dataPanels = new ArrayList();
 		extensions = new ArrayList();
-		auth = null;
 		
 		loadExtenionManifest();
 	}
@@ -606,20 +605,11 @@ public class DataPanelManager {
   }
   
   /**
-   * Set the authentication object.
+   * Get the authentication manager.
    * 
-   * @param auth  the auth object
+   * @return  the authentication manager
    */
-  public void setAuth(GridAuth auth) {
-    this.auth = auth;
-  }
-  
-  /**
-   * Get the authentication object.
-   * 
-   * @return  the auth object, or null if there is none
-   */
-  public GridAuth getAuth() {
-    return this.auth;
+  public AuthenticationManager getAuthenticationManager() {
+    return this.authenticationManager;
   }  
 }

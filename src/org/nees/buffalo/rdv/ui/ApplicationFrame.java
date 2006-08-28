@@ -265,7 +265,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		loginAction = new DataViewerAction("Login", "Login as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
  				if (loginDialog == null) {
- 					loginDialog = new LoginDialog(frame, dataPanelManager);
+ 					loginDialog = new LoginDialog(frame, dataViewer.getAuthenticationManager());
  				} else {
  					loginDialog.setVisible(true);
  				}			
@@ -274,7 +274,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		logoutAction = new DataViewerAction("Logout", "Logout as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
- 				dataPanelManager.setAuth(null);
+ 				dataViewer.getAuthenticationManager().setAuthentication(null);
  			}			
  		};
  		 		
@@ -520,7 +520,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       public void menuCanceled(MenuEvent arg0) {}
       public void menuDeselected(MenuEvent arg0) {}
       public void menuSelected(MenuEvent arg0) {
-        if (dataPanelManager.getAuth() == null) {
+        if (dataViewer.getAuthenticationManager().getAuthentication() == null) {
           loginAction.setEnabled(true);
           logoutAction.setEnabled(false);
         } else {
