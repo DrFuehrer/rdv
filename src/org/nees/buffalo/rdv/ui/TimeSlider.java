@@ -839,8 +839,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   
   /**
    * Gets the text for the tooltip. This will return a description of the
-   * markers the mouse pointer is around. If there are no markers, this returns
-   * null.
+   * markers the mouse pointer is around.
    * 
    * @param me  the mouse event that triggered this
    * @return    text describing the markers around the mouse pointer
@@ -852,20 +851,25 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     }
 
     double time = getTimeFromX(x);
-    double offset = 2*getPixelTime();
+    double timeOffset = time-value;
     
-    List<EventMarker> markersOver = getMarkersAroundTime(time, offset);
+    double markerOffset = 2*getPixelTime();
+    List<EventMarker> markersOver = getMarkersAroundTime(time, markerOffset);
 
     String text = new String("<html><font size=\"5\">");
+
+    text += DataViewer.formatDateSmart(time);
+    if (timeOffset != 0) {
+      text += " (" + (timeOffset<0?"-":"+") + 
+              DataViewer.formatSeconds(Math.abs(timeOffset))+ ")";
+    }
     
     int numberOfMarkers = markersOver.size();
     if (numberOfMarkers > 0) {
-      text += DataViewer.formatDateSmart(time) + "<br>" +
-              "Found " + numberOfMarkers + " event" +
+      text += "<br>Found " + numberOfMarkers + " event" +
               (numberOfMarkers==1?"":"s") +
-              " (&plusmn;" + DataViewer.formatSeconds(offset) + ")<br><br>";
-    } else {
-      text += DataViewer.formatDateSmart(time);
+              " (&plusmn;" + DataViewer.formatSeconds(markerOffset) +
+              ")<br><br>";
     }
     
     for (EventMarker marker: markersOver) {
