@@ -755,7 +755,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
 
   private void initMarkerSubmitPanel() {
-	  markerSubmitPanel = new MarkerSubmitPanel(rbnb);
+	  markerSubmitPanel = new MarkerSubmitPanel(rbnb, dataViewer.getAuthenticationManager());
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
 		c.weighty = 0;
