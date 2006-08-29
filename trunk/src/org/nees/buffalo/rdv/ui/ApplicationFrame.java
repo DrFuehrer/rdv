@@ -38,6 +38,7 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -166,6 +167,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Icon throbberAnim;
   
   private final Object loadingMonitor = new Object();
+  
+  /** the key mask used for menus shortucts */
+  private final int menuShortcutKeyMask;
  		
 	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager, boolean isApplet) {
 		super();
@@ -176,6 +180,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		busyDialog = null;
 		loadingDialog = null;
+    
+    // set the menu shortcut key mask in a platform independent way
+    menuShortcutKeyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		
 		initFrame(isApplet);
 	}
@@ -245,7 +252,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private void initActions() {
  		fileAction = new DataViewerAction("File", "File Menu", KeyEvent.VK_F);
  		
- 		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
+ 		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, menuShortcutKeyMask|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				if (rbnbConnectionDialog == null) {
  					rbnbConnectionDialog = new RBNBConnectionDialog(frame, rbnb, dataPanelManager);
@@ -255,7 +262,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  		
- 		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
+ 		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, menuShortcutKeyMask|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();
  				rbnb.disconnect();
@@ -337,7 +344,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       }
     };
  
- 		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)) {
+ 		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X) {
  			public void actionPerformed(ActionEvent ae) {
  				dataViewer.exit();
  			}			
@@ -345,37 +352,37 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		controlAction = new DataViewerAction("Control", "Control Menu", KeyEvent.VK_C);
  
- 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK), "icons/rt.gif") {
+ 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, menuShortcutKeyMask), "icons/rt.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.monitor();
  			}			
  		};
  		
- 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK), "icons/play.gif") {
+ 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, menuShortcutKeyMask), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.play();
  			}			
  		};
  
- 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK), "icons/pause.gif") {
+ 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask), "icons/pause.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.pause();
  			}			
  		};
  
- 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK), "icons/begin.gif") {
+ 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_B, menuShortcutKeyMask), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
 				controlPanel.setLocationBegin();
  			}			
  		};
  
- 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK), "icons/end.gif") {
+ 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, menuShortcutKeyMask), "icons/end.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				controlPanel.setLocationEnd();
  			}			
  		};
 
- 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK)) {
+ 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask)) {
  			public void actionPerformed(ActionEvent ae) {
  			  new JumpDateTimeDialog(frame, rbnb);
  			}			
@@ -442,7 +449,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		}; 		
  		
- 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.CTRL_MASK), "icons/hidden.gif") {
+ 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_H, menuShortcutKeyMask), "icons/hidden.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				boolean selected = menuItem.isSelected();
