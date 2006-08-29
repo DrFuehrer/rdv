@@ -243,7 +243,7 @@ public class MarkerSubmitPanel extends JPanel {
   public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
     
-    markerTypeComboBox.setEditable(enabled);
+    markerTypeComboBox.setEnabled(enabled);
     markerContentField.setEnabled(enabled);
     markerSubmitButton.setEnabled(enabled);
   }
