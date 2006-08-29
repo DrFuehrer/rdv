@@ -57,10 +57,13 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.TimeZone;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
+import com.rbnb.sapi.ChannelTree;
 
 public class JumpDateTimeDialog extends JDialog {
 
@@ -85,6 +88,10 @@ public class JumpDateTimeDialog extends JDialog {
 	JLabel timeLabelExample;
 	
 	JLabel errorLabel;
+
+  ChannelTree channelTree;
+  double startTime = -1;
+  double endTime = -1;
 	
 	/** Format to use to display the date property. */
   private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy");
@@ -99,7 +106,14 @@ public class JumpDateTimeDialog extends JDialog {
 		
 		this.rbnb = rbnbController;
     
+    this.channelTree = this.rbnb.getMetadataManager().getMetadataChannelTree();
+    
+    if (this.channelTree == null)
+      return;
+    
     defaultDate = new Date(((long)(rbnb.getLocation()*1000)));
+    
+    getSubscribedStartEndTimes();
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
@@ -226,6 +240,35 @@ public class JumpDateTimeDialog extends JDialog {
 		setVisible(true);
 	}
 	
+  private void getSubscribedStartEndTimes() {
+    
+    boolean hasSubscribedChannels = this.rbnb.hasSubscribedChannels();
+
+    // get the time bounds for all channels
+    Iterator it = channelTree.iterator();
+    while (it.hasNext()) {
+      ChannelTree.Node node = (ChannelTree.Node)it.next();
+      ChannelTree.NodeTypeEnum type = node.getType();
+      if (type != ChannelTree.CHANNEL) {
+        continue;
+      }
+      
+      String channelName = node.getFullName();
+      if (this.rbnb.isSubscribed(channelName) || !hasSubscribedChannels) {
+        double channelStart = node.getStart();
+        double channelDuration = node.getDuration();
+        double channelEnd = channelStart+channelDuration;
+        if (startTime == -1 || channelStart < startTime) {
+          startTime = channelStart;
+        }
+        if (endTime == -1 || channelEnd > endTime) {
+          endTime = channelEnd;
+        }
+      }
+    }
+    
+  }
+  
 	public void setVisible(boolean visible) {
 		if (visible) {
 			dateTextField.requestFocusInWindow();
@@ -266,6 +309,11 @@ public class JumpDateTimeDialog extends JDialog {
 			dateLocation = df.parse(dateAndTime);
 			double secondsLocation = dateLocation.getTime() / 1000;  // convert to seconds
 			
+      if (secondsLocation < startTime || secondsLocation > endTime) {
+        log.debug("Outside the bounderies, revert to earliest time!");
+        dispose();
+      }
+      
 			rbnb.setLocation(secondsLocation);
 			dispose();			
 		} catch (Exception e) {
