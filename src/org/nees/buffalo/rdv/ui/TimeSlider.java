@@ -886,10 +886,6 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
       String label = marker.getProperty("label");
       String content = marker.getProperty("content");
 
-      if (source != null && source.length() > 0) {
-        text += "<b>" + source + "</b>: ";
-      }
-      
       boolean showType = false;
       String dateColor;
       if (type == null) {
@@ -906,8 +902,13 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
       }      
 
       text += "<font color=" + dateColor + ">" + date + "</font> ";
+
       if (showType) {
         text += "<i>" + type + "</i> ";
+      }
+
+      if (source != null && source.length() > 0) {
+        text += "by " + source + ": ";
       }
 
       if (label != null && label.length() > 0) {
