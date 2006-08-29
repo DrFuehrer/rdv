@@ -62,62 +62,65 @@ import org.nees.rbnb.marker.EventMarker;
  * @author Jason P. Hanley
  */
 public class TimeSlider extends JComponent implements MouseListener, MouseMotionListener {
-  
-  static Log log = LogFactory.getLog(TimeSlider.class.getName());
+  /** The logger for this class */
+  protected static final Log log = LogFactory.getLog(TimeSlider.class.getName());
   
   /** The minimum time. */
-  double minimum;
+  protected double minimum;
   
   /** The start of the selected time range. */
-  double start;
+  protected double start;
   
   /** The selected time. */
-  double value;
+  protected double value;
   
   /** The end of the selected time range. */
-  double end;
+  protected double end;
   
   /** The maximum time. */
-  double maximum;
+  protected double maximum;
   
   /** Indicate if the time value may be changed from the UI. */
-  boolean valueChangeable;
+  private boolean valueChangeable;
   
   /** Indicates if a time range may be changed from the UI. */ 
-  boolean rangeChangeable;
+  private boolean rangeChangeable;
   
   /** Indicates if the time value is adjusting. */
-  boolean isAdjusting;
+  private boolean isAdjusting;
   
   /** The starting offset of a click (for buttons). */
-  int clickStart;
+  private int clickStart;
   
   /** List of event markers. */
-  List<EventMarker> markers;  
+  protected final List<EventMarker> markers;  
   
   /** List of valid time ranges. */
-  List<TimeRange> timeRanges;
+  protected final List<TimeRange> timeRanges;
   
   /** List of time adjustment listeners. */
-  List<TimeAdjustmentListener> adjustmentListeners;
+  private final List<TimeAdjustmentListener> adjustmentListeners;
 
   /** The button used to indicate the start time. */
-  JButton startButton;
+  protected final JButton startButton;
   
   /** The button used to indicate the time. */
-  JButton valueButton;
+  protected final JButton valueButton;
   
   /** The button used to indicate the end time. */
-  JButton endButton;
+  protected final JButton endButton;
   
   /** The default image used to show a marker. */
-  Image defaultMarkerImage;
+  protected final Image defaultMarkerImage;
+  
+  /** The image used to show an annotation. */
+  protected final Image annotationMarkerImage;
   
   /** The image used to show a start marker. */
-  Image startMarkerImage;
+  protected final Image startMarkerImage;
   
   /** The image used to show a stop marker. */
-  Image stopMarkerImage;
+  protected final Image stopMarkerImage;
 
   /**
    * Creates a time slider with the maximum available range.
@@ -182,6 +185,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     add(endButton);
     
     defaultMarkerImage = DataViewer.getImage("icons/marker.gif");
+    annotationMarkerImage = DataViewer.getImage("icons/marker-annotation.gif");
     startMarkerImage = DataViewer.getImage("icons/marker-start.gif");
     stopMarkerImage = DataViewer.getImage("icons/marker-stop.gif");
   }
@@ -790,7 +794,9 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
         Image markerImage;
         
         String markerType = marker.getProperty("type");
-        if (markerType.compareToIgnoreCase("start") == 0) {
+        if (markerType.compareToIgnoreCase("annotation") == 0) {
+          markerImage = annotationMarkerImage;
+        } else if (markerType.compareToIgnoreCase("start") == 0) {
           markerImage = startMarkerImage;
         } else if (markerType.compareToIgnoreCase("stop") == 0) {
           markerImage = stopMarkerImage;
@@ -831,6 +837,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    */
   public JToolTip createToolTip() {
     JToolTip toolTip = super.createToolTip();
+    toolTip.setBackground(Color.decode("#FFFFFC"));
     toolTip.setBorder(BorderFactory.createCompoundBorder(
         BorderFactory.createEtchedBorder(),
         BorderFactory.createEmptyBorder(5,5,5,5)));
@@ -875,16 +882,38 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     for (EventMarker marker: markersOver) {
       String date = DataViewer.formatDate(Double.parseDouble(marker.getProperty("timestamp")));
       String source = marker.getProperty("source");
+      String type = marker.getProperty("type");
       String label = marker.getProperty("label");
       String content = marker.getProperty("content");
-      
-      text += "<font color=gray>" + date + "</font> ";
+
       if (source != null && source.length() > 0) {
         text += "<b>" + source + "</b>: ";
       }
+      
+      boolean showType = false;
+      String dateColor;
+      if (type == null) {
+        dateColor = "black";
+      } else if (type.compareToIgnoreCase("annotation") == 0) {
+        dateColor = "blue";
+      } else if (type.compareToIgnoreCase("start") == 0) {
+        dateColor = "green";
+      } else if (type.compareToIgnoreCase("stop") == 0) {
+        dateColor = "red";
+      } else {
+        showType = true;
+        dateColor = "#FF9900";
+      }      
+
+      text += "<font color=" + dateColor + ">" + date + "</font> ";
+      if (showType) {
+        text += "<i>" + type + "</i> ";
+      }
+
       if (label != null && label.length() > 0) {
         text += "<u>" + label + "</u> ";
-      }      
+      }
+
       if (content != null && content.length() > 0) {
         int maxLineLength = 75;
         int maxLines = 10;
