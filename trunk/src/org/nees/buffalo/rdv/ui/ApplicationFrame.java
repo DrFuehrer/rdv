@@ -357,7 +357,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  
- 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK), "icons/play.gif") {
+ 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK), "icons/pause.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.pause();
  			}			
@@ -375,7 +375,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
 
- 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK), "icons/begin.gif") {
+ 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  			  new JumpDateTimeDialog(frame, rbnb);
  			}			
