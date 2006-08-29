@@ -442,7 +442,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		}; 		
  		
- 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H, "icons/hidden.gif") {
+ 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.CTRL_MASK), "icons/hidden.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				boolean selected = menuItem.isSelected();
