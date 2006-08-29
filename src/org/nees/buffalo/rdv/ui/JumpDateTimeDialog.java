@@ -331,7 +331,7 @@ public class JumpDateTimeDialog extends JDialog {
 			
       calculateTimeBounds();
       if (secondsLocation < startTime || secondsLocation > endTime) {
-        showError("<html>The specified date and time is outside the range of" +
+        showError("<html>The specified date and time is outside the range of " +
             "available data. Please<br>specify a date and time between " +
             DataViewer.formatDate(startTime) + " and <br>" +
             DataViewer.formatDate(endTime) + ".</html>");
