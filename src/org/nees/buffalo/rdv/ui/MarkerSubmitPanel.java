@@ -45,6 +45,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.auth.Authentication;
+import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.rbnb.marker.EventMarker;
 
@@ -62,6 +64,11 @@ public class MarkerSubmitPanel extends JPanel {
    * The rbnb controller to interface with the server
    */
   private RBNBController rbnbController;
+  
+  /**
+   * The authentication manager to get an authentication
+   */
+  private final AuthenticationManager authenticationManager;
   
   /**
    * The combo box to select the marker type
@@ -94,10 +101,11 @@ public class MarkerSubmitPanel extends JPanel {
    * 
    * @param rbnbController  the rbnb controller to use for sending the marker
    */
-  public MarkerSubmitPanel(RBNBController rbnbController) {
+  public MarkerSubmitPanel(RBNBController rbnbController, AuthenticationManager authenticationManager) {
     super();
     
     this.rbnbController = rbnbController;
+    this.authenticationManager = authenticationManager;
     
     initPanel();
     
@@ -207,6 +215,14 @@ public class MarkerSubmitPanel extends JPanel {
       startTime = rbnbController.getLocation();
     }
     marker.setProperty("timestamp", Double.toString(startTime));
+    
+    Authentication authentication = authenticationManager.getAuthentication();
+    if (authentication != null) {
+      String username = authentication.get("username");
+      if (username != null || username.length() > 0) {
+        marker.setProperty("source", username);
+      }
+    }
     
     try {
       rbnbController.getMarkerManager().putMarker(marker);
