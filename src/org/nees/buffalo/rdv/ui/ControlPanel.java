@@ -39,6 +39,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -66,6 +67,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
+import org.nees.buffalo.rdv.ui.TimeSlider.TimeRange;
 import org.nees.rbnb.marker.EventMarker;
 
 import com.rbnb.sapi.ChannelTree;
@@ -388,10 +390,9 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
       }
     }
     
-    zoomTimeSlider.clearTimeRanges();
-    globalTimeSlider.clearTimeRanges();
-    
     if (hideEmptyTime) {
+      List<TimeRange> timeRanges = new ArrayList<TimeRange>();
+      
       double markerStartTime = -1;
   
       // get the time bounds for all markers
@@ -409,17 +410,18 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
         if (type.compareToIgnoreCase("start") == 0 && markerStartTime == -1) {
           markerStartTime = markerTime;
         } else if (type.compareToIgnoreCase("stop") == 0 && markerStartTime != -1) {
-          zoomTimeSlider.addTimeRange(markerStartTime, markerTime);
-          globalTimeSlider.addTimeRange(markerStartTime, markerTime);
+          timeRanges.add(new TimeRange(markerStartTime, markerTime));
           markerStartTime = -1;
         }
       }
       
       // add time range for ongoing event
       if (markerStartTime != -1) {
-        zoomTimeSlider.addTimeRange(markerStartTime, Double.MAX_VALUE);
-        globalTimeSlider.addTimeRange(markerStartTime, Double.MAX_VALUE);
+        timeRanges.add(new TimeRange(markerStartTime, Double.MAX_VALUE));
       }
+      
+      zoomTimeSlider.setTimeRanges(timeRanges);
+      globalTimeSlider.setTimeRanges(timeRanges);
     }
 
     if (startTime == -1) {
@@ -773,6 +775,12 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
   public void hideEmptyTime(boolean hideEmptyTime) {
     if (this.hideEmptyTime != hideEmptyTime) {
       this.hideEmptyTime = hideEmptyTime;
+      
+      if (!hideEmptyTime) {
+        zoomTimeSlider.clearTimeRanges();
+        globalTimeSlider.clearTimeRanges();
+      }
+      
       updateTimeBoundaries();
     }
   }

@@ -523,43 +523,63 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   }
   
   /**
-   * Add a time range.
+   * Replace the current set of time ranges with this one.
    * 
-   * @param start  the start of the time range
-   * @param end    the end of the time range
+   * @param newTimeRanges  a list of time ranges
    */
-  public void addTimeRange(double start, double end) {
-    TimeRange timeRange = new TimeRange(start, end);
-
-    for (TimeRange t : timeRanges) {
-      if (t.overlaps(timeRange)) {
-        t.join(timeRange);
-        checkTimeRange(timeRange);
-        return;
-      }
+  public void setTimeRanges(List<TimeRange> newTimeRanges) {
+    timeRanges.clear();
+    timeRanges.addAll(newTimeRanges);
+    
+    double newValue = getClosestValidTime(value);
+    if (value != newValue) {
+      value = newValue;
+      fireValueChanged();
     }
     
-    timeRanges.add(timeRange);
+    double newStart = getClosestValidTime(start);
+    double newEnd = getClosestValidTime(end);
+    if (start != newStart || end != newEnd) {
+      start = newStart;
+      end = newEnd;
+      fireRangeChanged();
+    }
     
-    doLayout();
+    doLayout();    
   }
   
   /**
-   * Checks the time range to make sure it doesn't overlap the one following
-   * it. If they do overlap, the two are joined, and the the following
-   * time range is removed.
+   * Return a time that is valid and the closest possible to the given time. If
+   * the provided time is valid, then the same time will be returned. If the
+   * time is invalid, the nearest valid time will be returned.
    * 
-   * @param timeRange  the time range to check
+   * @param time  the time to use
+   * @return      the closest valid time to the given time
    */
-  private void checkTimeRange(TimeRange timeRange) {
-    int index = timeRanges.indexOf(timeRange);
-    if (index >= 0 && index+1 < timeRanges.size()) {
-      TimeRange t = timeRanges.get(index+1);
-      if (timeRange.end >= t.start) {
-        timeRange.end = t.end;
-        timeRanges.remove(t);
+  private double getClosestValidTime(double time) {
+    double possibleTime = 0;
+    
+    List<TimeRange> actualTimeRanges = getActualTimeRanges();
+    for (int i=0; i<actualTimeRanges.size(); i++) {
+      TimeRange tr = actualTimeRanges.get(i);
+      
+      if (i == 0 && time < tr.start) {
+        return tr.start;
+      } else if (i == actualTimeRanges.size()-1 && time > tr.end) {
+        return tr.end;
+      } else if (tr.contains(time)) {
+        return time;
+      } else if (time > tr.end) {
+        possibleTime = tr.end;
+      } else if (time-possibleTime < tr.start-time) {
+        return possibleTime;
+      } else {
+        return tr.start;
       }
     }
+    
+    // this shouldn't be possible
+    return time;
   }
   
   /**
@@ -1131,7 +1151,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   /**
    * A time range. This is a range in time specified by a start and end time.
    */
-  private class TimeRange implements Comparable<TimeRange> {
+  public static class TimeRange implements Comparable<TimeRange> {
     /** The start of the time range */
     public double start;
     
@@ -1168,35 +1188,6 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
       return ((time >= start) && (time <= end));
     }
     
-    /**
-     * See if the time range overlaps with this one.
-     * 
-     * @param t  the time range to check
-     * @return   true if they overlap, false if they do not
-     */
-    public boolean overlaps(TimeRange t) {
-      if (start < t.start && end >= t.start) {
-        return true;
-      } else if (start > t.start && start <= t.end) {
-        return true;
-      }
-      
-      return false;
-    }
-    
-    /**
-     * If the time range overlaps with this one, union with it.
-     * 
-     * @param t  the time range to join with
-     */
-    public void join(TimeRange t) {
-      if (start < t.start && end >= t.start) {
-        end = t.end;
-      } else if (start > t.start && start <= t.end) {
-        start = t.start;
-      }      
-    }
-
     /**
      * Compare time ranges. This is based first on their start, and then on
      * their end (if needed).
