@@ -54,6 +54,7 @@ import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 
 import java.util.Date;
@@ -89,9 +90,11 @@ public class JumpDateTimeDialog extends JDialog {
 	
 	JLabel errorLabel;
 
-  ChannelTree channelTree;
-  double startTime = -1;
-  double endTime = -1;
+  /** the minimum time allowed */
+  double startTime;
+  
+  /** the maximum time allowed */
+  double endTime;
 	
 	/** Format to use to display the date property. */
   private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MM-dd-yyyy");
@@ -106,15 +109,8 @@ public class JumpDateTimeDialog extends JDialog {
 		
 		this.rbnb = rbnbController;
     
-    this.channelTree = this.rbnb.getMetadataManager().getMetadataChannelTree();
-    
-    if (this.channelTree == null)
-      return;
-    
     defaultDate = new Date(((long)(rbnb.getLocation()*1000)));
     
-    getSubscribedStartEndTimes();
-		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
 		setTitle("Go to time");
@@ -240,9 +236,24 @@ public class JumpDateTimeDialog extends JDialog {
 		setVisible(true);
 	}
 	
-  private void getSubscribedStartEndTimes() {
+  /**
+   * Calculate the start and end time based on the currently subscribed channels
+   * time bounds. If no channels are subscribed all available channels will be
+   * used for this calculation.
+   */
+  private void calculateTimeBounds() {
+    ChannelTree channelTree = rbnb.getMetadataManager().getMetadataChannelTree();
     
-    boolean hasSubscribedChannels = this.rbnb.hasSubscribedChannels();
+    if (channelTree == null) {
+      startTime = 0;
+      endTime = Double.MAX_VALUE;
+      return;
+    }
+    
+    boolean hasSubscribedChannels = rbnb.hasSubscribedChannels();
+    
+    startTime = -1;
+    endTime = -1;
 
     // get the time bounds for all channels
     Iterator it = channelTree.iterator();
@@ -267,6 +278,10 @@ public class JumpDateTimeDialog extends JDialog {
       }
     }
     
+    if (startTime == -1 || endTime == -1) {
+      startTime = 0;
+      endTime = Double.MAX_VALUE;      
+    }
   }
   
 	public void setVisible(boolean visible) {
@@ -277,6 +292,11 @@ public class JumpDateTimeDialog extends JDialog {
 		super.setVisible(visible);
 	}
 	
+  /**
+   * Parse the data and time and go to them. If the date and time are not within
+   * the range of available data, an error will be displayed. If the date and
+   * time are not formatted correctly, an error will be displayed.
+   */
 	private void jumpLocation() {
 		String strDateLocation;
 		String strTimeLocation;
@@ -309,28 +329,43 @@ public class JumpDateTimeDialog extends JDialog {
 			dateLocation = df.parse(dateAndTime);
 			double secondsLocation = dateLocation.getTime() / 1000;  // convert to seconds
 			
+      calculateTimeBounds();
       if (secondsLocation < startTime || secondsLocation > endTime) {
-        log.debug("Outside the bounderies, revert to earliest time!");
-        dispose();
+        showError("<html>The specified date and time is outside the range of" +
+            "available data. Please<br>specify a date and time between " +
+            DataViewer.formatDate(startTime) + " and <br>" +
+            DataViewer.formatDate(endTime) + ".</html>");
+        return;
       }
       
 			rbnb.setLocation(secondsLocation);
 			dispose();			
 		} catch (Exception e) {
-			errorLabel.setForeground(Color.RED);
-			errorLabel.setText("Error: invalid date. Please try again!");
-
-			timeLabel.setForeground(Color.RED);
-			timeTextField.setText(TIME_FORMAT.format(defaultDate));
-			
-			dateLable.setForeground(Color.RED);
-			dateTextField.setText(DATE_FORMAT.format(defaultDate));
-			dateTextField.requestFocusInWindow();
-      
-      pack();
+      showError("<html>The date and time entered are invalid. Please use the " +
+          "format specified<br>above.</html>");
 		}
 	}
+  
+  /**
+   * Show the error message in the UI.
+   * 
+   * @param message  the error message text
+   */
+  private void showError(String message) {
+    errorLabel.setForeground(Color.RED);
+    errorLabel.setText(message);
+
+    timeTextField.setText(TIME_FORMAT.format(defaultDate));
+    
+    dateTextField.setText(DATE_FORMAT.format(defaultDate));
+    dateTextField.requestFocusInWindow();
+    
+    pack();    
+  }
 	
+  /**
+   * Cancel the dialog operation. This disposes the dialog.
+   */
 	private void cancel() {
 		dispose();		
 	}
