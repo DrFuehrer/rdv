@@ -1543,7 +1543,33 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
      * 
      * @param  notify listeners
      */
-    public void removeAgedItems(boolean notify) {}    
+    public void removeAgedItems(boolean notify) {}
+    
+    /**
+     * Remove items that are older than the maximum item age relative to the
+     * latest time provided. Optionally notify listeners that the series has
+     * changed.
+     * 
+     * Note: This overides the version in the base class because it is not
+     *       correct and throws exceptions when it shouldn't.
+     * 
+     * @param latest  the time to age items by
+     * @param notify  if true, notify listeners if the series changes, otherwise
+     *                don't notify listeners
+     */
+    public void removeAgedItems(long latest, boolean notify) {
+      long minAge = latest - this.getMaximumItemAge();
+      
+      boolean removed = false;
+      while (data.size() > 0 && getTimePeriod(0).getSerialIndex() <= minAge) {
+        data.remove(0);
+        removed = true;
+      }
+      
+      if (removed && notify) {
+        fireSeriesChanged();
+      }
+    }
 
     /**
      * Signal that a number of items will be added to the series.
