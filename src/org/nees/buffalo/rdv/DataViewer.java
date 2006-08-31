@@ -35,6 +35,7 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -258,6 +259,39 @@ public class DataViewer {
 
   public void alertError(String errorMessage) {
     JOptionPane.showMessageDialog(applicationFrame, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
+  }
+  
+  /**
+   * Open the URL in an external browser. 
+   * 
+   * @param url  the url to open
+   * @return     true if the command executes successfully, false if there is
+   *             some error
+   */
+  public static boolean browse(URL url) {
+    try { 
+      String osName = System.getProperty("os.name");
+      if (osName.startsWith("Mac OS")) {
+        Class fileMgr = Class.forName("com.apple.eio.FileManager");
+        Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
+        openURL.invoke(null, new Object[] {url});
+      } else if (osName.startsWith("Windows")) {
+        Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+      } else { //assume Unix or Linux
+        String[] browsers = { "sensible-browser", "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
+        String browser = null;
+        for (int count = 0; count < browsers.length && browser == null; count++)
+          if (Runtime.getRuntime().exec(new String[] {"which", browsers[count]}).waitFor() == 0)
+            browser = browsers[count];
+        if (browser == null)
+          throw new Exception("Could not find web browser");
+        else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
+      }
+    } catch(Exception ex) {
+      return false;
+    }
+    
+    return true;
   }
 
 	public static void main(String[] args) {

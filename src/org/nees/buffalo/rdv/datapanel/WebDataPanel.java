@@ -38,8 +38,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -63,8 +61,6 @@ import javax.swing.event.MouseInputAdapter;
 
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
-
-import java.lang.reflect.Method;
 
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.HyperlinkEvent;
@@ -565,30 +561,9 @@ public class WebDataPanel extends AbstractDataPanel {
   }
   
   private void loadExternalPage(URL url) {
-	  
-  	// This method invokes the client's browser passing the url as argument for the target to open
-    try { 
-    
-	  	String osName = System.getProperty("os.name");
-	  	if (osName.startsWith("Mac OS")) {
-	  		Class fileMgr = Class.forName("com.apple.eio.FileManager");
-	  		Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
-	  		openURL.invoke(null, new Object[] {url});
-	  	} else if (osName.startsWith("Windows"))
-	  		Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
-	  	else { //assume Unix or Linux
-	  		String[] browsers = { "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
-	  		String browser = null;
-	  		for (int count = 0; count < browsers.length && browser == null; count++)
-	  			if (Runtime.getRuntime().exec( new String[] {"which", browsers[count]}).waitFor() == 0)
-	  				browser = browsers[count];
-	  		if (browser == null)
-	  			throw new Exception("Could not find web browser");
-	  		else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
-	  	}
-    } catch(Exception ex) {
+    if (!DataViewer.browse(url)) {
     	JOptionPane.showMessageDialog(null,
-                "Error: " + ex.getMessage(),
+    	          "Unable to open the URL in an external browser.",
                 "Web Data Panel Error", JOptionPane.ERROR_MESSAGE);
     }
   }

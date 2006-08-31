@@ -159,7 +159,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	
  	private Action windowAction;
  	private Action closeAllDataPanelsAction;
+  
  	private Action helpAction;
+  private Action usersGuideAction;
+  private Action supportAction;
+  private Action releaseNotesAction;
  	private Action aboutAction;
   
   private JLabel throbber;
@@ -490,7 +494,34 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
  		
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
- 
+    
+    usersGuideAction = new DataViewerAction("RDV Help", "Open the RDV User's Guide", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0)) {
+      public void actionPerformed(ActionEvent ae) {
+        try {
+          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-13-users-guide.php");
+          DataViewer.browse(usersGuideURL);
+        } catch (MalformedURLException e) {}        
+      }
+    };
+    
+    supportAction = new DataViewerAction("RDV Support", "Get support from NEESit", KeyEvent.VK_S) {
+      public void actionPerformed(ActionEvent ae) {
+        try {
+          URL supportURL = new URL("http://it.nees.org/support/");
+          DataViewer.browse(supportURL);
+        } catch (MalformedURLException e) {}        
+      }
+    };    
+    
+    releaseNotesAction = new DataViewerAction("Release Notes", "Open the RDV Release Notes", KeyEvent.VK_R) {
+      public void actionPerformed(ActionEvent ae) {
+        try {
+          URL releaseNotesURL = new URL("http://it.nees.org/library/rdv/rdv-release-notes.php");
+          DataViewer.browse(releaseNotesURL);
+        } catch (MalformedURLException e) {}
+      }
+    };
+    
  		aboutAction = new DataViewerAction("About RDV", "", KeyEvent.VK_A) {
  			public void actionPerformed(ActionEvent ae) {
  				if (aboutDialog == null) {
@@ -689,6 +720,17 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
  		JMenu helpMenu = new JMenu(helpAction);
     
+    menuItem = new JMenuItem(usersGuideAction);
+    helpMenu.add(menuItem);
+    
+    menuItem = new JMenuItem(supportAction);
+    helpMenu.add(menuItem);    
+
+    menuItem = new JMenuItem(releaseNotesAction);
+    helpMenu.add(menuItem);
+    
+    helpMenu.addSeparator();
+
  		menuItem = new JMenuItem(aboutAction);
   		helpMenu.add(menuItem);		
   		
