@@ -155,6 +155,13 @@
 			txtProductVersion="${version} build ${svn.revision}"/>
 	</target>
 	
+	<target name="installer" depends="exe" description="Build windows installer">
+	    <exec executable="makensis">
+			<arg value="/V3"/>
+			<arg value="nsis/rdv.nsi"/>
+		</exec>		
+	</target>
+	
 	<target name="javadoc" description="Build documentation">
 		<mkdir dir="${doc.dir}/api"/>  
 		<javadoc packagenames="org.nees.buffalo.rdv.*" sourcepath="${src.dir}" defaultexcludes="yes" destdir="${doc.dir}/api" author="true" version="true" use="true" windowtitle="RDV API">
