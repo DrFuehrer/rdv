@@ -98,6 +98,9 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   /** List of valid time ranges. */
   protected final List<TimeRange> timeRanges;
   
+  /** List of valid times ranges, taking into account the minimum and maximum */
+  protected final List<TimeRange> actualTimeRanges;
+  
   /** List of time adjustment listeners. */
   private final List<TimeAdjustmentListener> adjustmentListeners;
 
@@ -142,6 +145,9 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     markers = new ArrayList<EventMarker>();
     
     timeRanges = new ArrayList<TimeRange>();
+    
+    actualTimeRanges = new ArrayList<TimeRange>();
+    calculateActualTimeRanges();
     
     adjustmentListeners = new ArrayList<TimeAdjustmentListener>();
 
@@ -394,6 +400,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     if (this.minimum != minimum) {
       this.minimum = minimum;
       
+      calculateActualTimeRanges();
+      
       if (rangeChangeable) {
         if (minimum > start) {
           start = minimum;
@@ -430,6 +438,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   public void setMaximum(double maximum) {
     if (this.maximum != maximum) {
       this.maximum = maximum;
+      
+			calculateActualTimeRanges();
       
       if (rangeChangeable) {
         if (maximum < end) {
@@ -531,6 +541,8 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     timeRanges.clear();
     timeRanges.addAll(newTimeRanges);
     
+    calculateActualTimeRanges();
+    
     double newValue = getClosestValidTime(value);
     if (value != newValue) {
       value = newValue;
@@ -549,6 +561,40 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   }
   
   /**
+   * Tell if the time is valid with respect to the current time bounds and
+   * ranges.
+   * 
+   * @param time  the time to check
+   * @return      true if the time is valid, false if it is not
+   */
+  public boolean isTimeValid(double time) {
+    for (TimeRange timeRange: actualTimeRanges) {
+      if (timeRange.contains(time)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+  
+  /**
+   * Get a time that is valid and greater than or equal to the current one.
+   * 
+   * @return  the next valid time, or -1 if there is none
+   */
+  public double getNextValidTime(double time) {
+    for (TimeRange tr : actualTimeRanges) {
+      if (tr.contains(time)) {
+        return time;
+      } else if (tr.start > time) {
+        return tr.start;
+      }
+    }
+    
+    return -1;
+  }
+  
+  /**
    * Return a time that is valid and the closest possible to the given time. If
    * the provided time is valid, then the same time will be returned. If the
    * time is invalid, the nearest valid time will be returned.
@@ -559,7 +605,6 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   private double getClosestValidTime(double time) {
     double possibleTime = 0;
     
-    List<TimeRange> actualTimeRanges = getActualTimeRanges();
     for (int i=0; i<actualTimeRanges.size(); i++) {
       TimeRange tr = actualTimeRanges.get(i);
       
@@ -587,7 +632,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    */
   public void clearTimeRanges() {
     timeRanges.clear();
-
+    calculateActualTimeRanges();
     doLayout();
   }
   
@@ -601,13 +646,13 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   }
   
   /**
-   * Returns the list of time ranges represented by the time slider. This
+   * Updates the list of time ranges represented by the time slider. This
    * enforces the maximum and minimum values on the list of time ranges.
-   *  
-   * @return  a list of time ranges represented by the time slider
+   * 
+   * @see #actualTimeRanges
    */
-  private List<TimeRange> getActualTimeRanges() {
-    List<TimeRange> actualTimeRanges = new ArrayList<TimeRange>();
+  private void calculateActualTimeRanges() {
+    actualTimeRanges.clear();
     
     if (timeRanges.size() == 0) {
       actualTimeRanges.add(new TimeRange(minimum, maximum));
@@ -638,8 +683,6 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
         actualTimeRanges.add(new TimeRange(rangeStart, rangeEnd));
       }
     }
-    
-    return actualTimeRanges;    
   }
   
   /**
@@ -648,8 +691,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * 
    * @return  the minimum value allowed on the time slider
    */
-  private double getActualMinimum() {
-    List<TimeRange> actualTimeRanges = getActualTimeRanges();
+  public double getActualMinimum() {
     if (actualTimeRanges.size() == 0) {
       return minimum;
     } else {
@@ -663,8 +705,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
    * 
    * @return  the maximum value allowed on the time slider
    */
-  private double getActualMaximum() {
-    List<TimeRange> actualTimeRanges = getActualTimeRanges();
+  public double getActualMaximum() {
     if (actualTimeRanges.size() == 0) {
       return maximum;
     } else {
@@ -681,7 +722,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   private double getTimeLength() {
     double length = 0;
     
-    for (TimeRange t : getActualTimeRanges()) {
+    for (TimeRange t : actualTimeRanges) {
       length += t.length();
     }
     
@@ -721,7 +762,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     double value = factor*length;
     
     double position = 0;
-    for (TimeRange t : getActualTimeRanges()) {
+    for (TimeRange t : actualTimeRanges) {
       double startPosition = position;
       position += t.length();
       
@@ -747,7 +788,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   private int getXFromTime(double time) {
     boolean timeVisible = false;
     double position = 0;
-    for (TimeRange t : getActualTimeRanges()) {
+    for (TimeRange t : actualTimeRanges) {
       if (t.contains(time)) {
         timeVisible = true;
         position += (time - t.start);

@@ -639,6 +639,17 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
       zoomTimeSlider.addTimeAdjustmentListener(this);
     }
     
+    if (rbnbController.getState() == Player.STATE_PLAYING && !globalTimeSlider.isTimeValid(time)) {
+      double newTime = globalTimeSlider.getNextValidTime(time);
+      if (newTime == -1) {
+        newTime = globalTimeSlider.getActualMaximum();
+      }
+      zoomTimeSlider.setValue(newTime);
+      if (newTime > time) {
+        rbnbController.play();
+      }
+    }
+    
     globalTimeSlider.setValue(time);
 
     locationButton.setText(DataViewer.formatDate(time));    
