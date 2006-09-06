@@ -891,7 +891,11 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	public void postData(final ChannelMap channelMap) {
     cachedChannelMap = this.channelMap;
     
-		super.postData(channelMap);
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        JFreeChartDataPanel.this.channelMap = channelMap;
+      }
+    });
 	}
 
   /**
