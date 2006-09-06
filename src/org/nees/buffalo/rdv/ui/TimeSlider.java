@@ -738,19 +738,26 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
   
   /**
    * Get the horizontal point on the slider component corresponding to the given
-   * time.
+   * time. If the time is not visible on the slider, -1 will be returned.
    * 
    * @param time  the time to get the point from
-   * @return      the horizontal (x) point of the time
+   * @return      the horizontal (x) point of the time, or -1 if the point is
+   *              not visible
    */
-  private int getXFromTime(double time) {    
+  private int getXFromTime(double time) {
+    boolean timeVisible = false;
     double position = 0;
     for (TimeRange t : getActualTimeRanges()) {
       if (t.contains(time)) {
+        timeVisible = true;
         position += (time - t.start);
         break;
       }
       position += t.length();
+    }
+    
+    if (!timeVisible) {
+      return -1;
     }
 
     double factor = position / getTimeLength();
@@ -811,6 +818,11 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     for (EventMarker marker : markers) {
       double markerTime = Double.parseDouble(marker.getProperty("timestamp"));
       if (markerTime >= minimum && markerTime <= maximum) {
+        int x = getXFromTime(markerTime);
+        if (x == -1) {
+          continue;
+        }
+        
         Image markerImage;
         
         String markerType = marker.getProperty("type");
@@ -823,8 +835,7 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
         } else {
           markerImage = defaultMarkerImage;
         } 
-
-        int x = getXFromTime(markerTime);
+        
         g.drawImage(markerImage, x-1, insets.top, null);
       }
     }
