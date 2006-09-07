@@ -1078,6 +1078,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
   public void postState(int newState, int oldState) {
     if (newState == Player.STATE_DISCONNECTED) {
+      setTitle("RDV");
+      
       controlAction.setEnabled(false);
       disconnectAction.setEnabled(false);
       importAction.setEnabled(false);
@@ -1086,6 +1088,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       controlPanel.setEnabled(false);
       markerSubmitPanel.setEnabled(false);
     } else if (oldState == Player.STATE_DISCONNECTED) {
+      setTitle(rbnb.getRBNBConnectionString() + " - RDV");
+      
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
       importAction.setEnabled(true);
