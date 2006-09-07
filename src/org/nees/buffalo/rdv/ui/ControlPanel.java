@@ -39,6 +39,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -53,6 +54,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -361,6 +363,21 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     if (ctree == null) {
       return;
     }
+    
+    if (!SwingUtilities.isEventDispatchThread()) {
+      try {
+        SwingUtilities.invokeAndWait(new Runnable() {
+          public void run() {
+            updateTimeBoundaries();
+          }
+        });
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      } catch (InvocationTargetException e) {
+        e.printStackTrace();
+      }
+      return;
+    }
 
     double startTime = -1;
     double endTime = -1;
@@ -595,12 +612,14 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
       zoomMaximumLabel.setText(DataViewer.formatDate(end));
       
       double location = rbnbController.getLocation();
-      if (location < start) {
-        rbnbController.setLocation(start);
-      } else if (location > end) {
-        rbnbController.setLocation(end);
+      double state = rbnbController.getState();
+      if (state != Player.STATE_MONITORING) {
+        if (location < start) {
+          rbnbController.setLocation(start);
+        } else if (location > end) {
+          rbnbController.setLocation(end);
+        }
       }
-
     }
   }  
 
@@ -620,7 +639,22 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    * 
    * @param time  the new time
    */
-	public void postTime(double time) {
+  public void postTime(final double time) {
+    if (!SwingUtilities.isEventDispatchThread()) {
+      try {
+        SwingUtilities.invokeAndWait(new Runnable() {
+          public void run() {
+            postTime(time);
+          }
+        });
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      } catch (InvocationTargetException e) {
+        e.printStackTrace();
+      }
+      return;
+    }    
+    
     if (time < globalTimeSlider.getMinimum()) {
       globalTimeSlider.setMinimum(time);
     } else if (time > globalTimeSlider.getMaximum()) {
