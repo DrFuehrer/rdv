@@ -517,6 +517,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
     
     panel.revalidate();
     
+    image.removeMouseListener(clickMouseListener);
     image.addMouseListener(clickMouseListener);
   }
   

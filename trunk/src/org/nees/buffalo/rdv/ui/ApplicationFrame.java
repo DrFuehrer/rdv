@@ -498,7 +498,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     usersGuideAction = new DataViewerAction("RDV Help", "Open the RDV User's Guide", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0)) {
       public void actionPerformed(ActionEvent ae) {
         try {
-          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-13-users-guide.php");
+          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-14-users-guide.php");
           DataViewer.browse(usersGuideURL);
         } catch (MalformedURLException e) {}        
       }
@@ -1078,6 +1078,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
   public void postState(int newState, int oldState) {
     if (newState == Player.STATE_DISCONNECTED) {
+      setTitle("RDV");
+      
       controlAction.setEnabled(false);
       disconnectAction.setEnabled(false);
       importAction.setEnabled(false);
@@ -1086,6 +1088,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       controlPanel.setEnabled(false);
       markerSubmitPanel.setEnabled(false);
     } else if (oldState == Player.STATE_DISCONNECTED) {
+      setTitle(rbnb.getRBNBConnectionString() + " - RDV");
+      
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
       importAction.setEnabled(true);

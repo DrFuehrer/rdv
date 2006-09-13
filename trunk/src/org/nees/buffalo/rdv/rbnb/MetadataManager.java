@@ -104,6 +104,11 @@ public class MetadataManager {
    * The time to sleep between each metadata update.
    */
   private static final long updateRate = 10000;
+  
+  /**
+   * The timeout used when fetching data.
+   */
+  private static final long FETCH_TIMEOUT = 15000;
 
   /**
    * Create the class using the RBNBController for connection information.
@@ -294,7 +299,12 @@ public class MetadataManager {
     }
     sink.RequestRegistration(cmap);
 
-    cmap = sink.Fetch(-1, cmap);
+    cmap = sink.Fetch(FETCH_TIMEOUT, cmap);
+    
+    if (cmap.GetIfFetchTimedOut()) {
+      log.error("Failed to get metadata.  Fetch timed out.");
+      return ctree;
+    }
 
     ctree = ChannelTree.createFromChannelMap(cmap);
     
@@ -337,10 +347,13 @@ public class MetadataManager {
       //request from start of marker channels to now
       sink.Request(markerChannelMap, 0, markersDuration, "absolute");
       
-      markerChannelMap = sink.Fetch(-1, markerChannelMap);
-      
-      //notify marker listeners
-      fireMarkersUpdated(markerChannelMap);      
+      markerChannelMap = sink.Fetch(FETCH_TIMEOUT, markerChannelMap);
+      if (!markerChannelMap.GetIfFetchTimedOut()) { 
+        //notify marker listeners
+        fireMarkersUpdated(markerChannelMap);
+      } else {
+        log.error("Failed to get event markers. Fetched timed out.");
+      }
     }
     
     return ctree;
