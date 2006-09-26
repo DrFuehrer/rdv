@@ -31,12 +31,7 @@
  */
 
 package org.nees.rbnb;
-/**
 
- * @author NEES Cyberinfrastructure Center (NEESit), San Diego Supercomputer Center
- * Please see copywrite information at the end of this file.
- * @since 060120
- */
 import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
