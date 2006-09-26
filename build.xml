@@ -15,6 +15,9 @@
 	<!-- source directory -->
 	<property name="src.dir" value="src"/>
 	
+	<!-- tests directory -->
+	<property name="tests.dir" value="tests"/>
+	
 	<!-- library dir -->
 	<property name="lib.dir" value="lib"/>
 	
@@ -30,6 +33,7 @@
 	<!-- temporary build dir -->
 	<property name="build.dir" value="build"/>
 	<property name="build.classes" value="${build.dir}/classes"/>
+	<property name="build.tests" value="${build.dir}/tests"/>
 	<property name="build.lib" value="${build.dir}/lib"/>
 	<property name="build.exe" value="${build.dir}/exe"/>
 	
@@ -73,6 +77,7 @@
 	<target name="prepare" depends="checkEnvVars" description="Make directories">
 		<mkdir dir="${build.dir}"/>
 		<mkdir dir="${build.classes}"/>
+		<mkdir dir="${build.tests}"/>
 		<mkdir dir="${build.lib}"/>
 		<mkdir dir="${build.exe}"/>
 		
@@ -115,6 +120,13 @@
 			classpathref="classpath"
 			debug="${debug}">
 	  </javac>
+	  
+		<javac srcdir="${tests.dir}" 
+			destdir="${build.tests}"
+			classpath="${build.classes}"
+			classpathref="classpath"
+			debug="${debug}">
+	  </javac>	  
 	</target>
 		
 	<!-- Package standalone jar -->
@@ -169,38 +181,20 @@
 		</javadoc>
 	</target>
 	
-  <!-- Run some unit tests for event markers -->
-  <target name="test"
-   depends="jar"
-    description="junit dev/QA test for event markers">
-  <!-- java.util.Properties test -->
-  <!--junit printsummary="withOutAndErr"-->
-  <junit printsummary="yes">
-      <classpath refid="classpath"/>
-    <test name="org.nees.rbnb.marker.TestNeesEventProps"
-     haltonfailure="no"
-      outfile="${build.lib}/${junit.log}"/>
-	<formatter type="plain"/>
-  </junit>
-  <!-- xml emission and setting from xml test -->
-  <!--junit printsummary="withOutAndErr"-->
-  <junit printsummary="yes">
-      <classpath refid="classpath"/>
-    <test name="org.nees.rbnb.marker.TestNeesEventXML"
-     haltonfailure="no"
-      outfile="${build.lib}/${junit.log}"/>
-	<formatter type="plain"/>
-  </junit>
-  <!-- DataTurbine submission test -->
-  <!--junit printsummary="withOutAndErr"-->
-  <junit printsummary="yes">
-      <classpath refid="classpath"/>
-    <test name="org.nees.rbnb.TestDataTurbine"
-     haltonfailure="no"
-      outfile="${build.lib}/${junit.log}"/>
-	<formatter type="plain"/>
-  </junit>
-</target>
+  <!-- Run unit tests -->
+  <target name="test" depends="compile" description="Run unit tests">
+		<junit printsummary="true" haltonfailure="true">
+			<classpath>
+				<path refid="classpath"/>
+				<pathelement location="${build.classes}"/>
+				<pathelement location="${build.tests}"/>
+		  </classpath>
+	    <formatter type="plain"/>
+			<batchtest fork="true">
+				<fileset dir="${build.tests}" includes="**/*Test.class"/>
+			</batchtest>
+	  </junit>
+  </target>
   
 	<!-- Run the RDV -->
 	<target name="run" depends="compile" description="Run application">
@@ -211,46 +205,6 @@
 		</java>
 	</target>
 
-	<!-- Run the RDV (connect to localhost) -->
-	<target name="runLocalhost" depends="compile" description="Run application connecting to localhost">
-		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
- 			<jvmarg value="-Xms64M"/>
- 			<jvmarg value="-Xmx256M"/>
-			<jvmarg value="-Dsun.java2d.ddscale=true"/>
-			<arg line="--host localhost --playback-rate 5 --time-scale 10"/>
-		</java>
-	</target>
-		
-	<!-- Run the RDV (connect to rbnb.nees.buffalo.edu) -->
-	<target name="runBuffalo" depends="compile" description="Run application connecting to Buffalo server">
-		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
- 			<jvmarg value="-Xms64M"/>
- 			<jvmarg value="-Xmx256M"/>
-			<jvmarg value="-Dsun.java2d.ddscale=true"/>
-			<arg line="--host rbnb.nees.buffalo.edu --time-scale 10"/>
-		</java>
-	</target>
-	
-	<!-- Run the RDV (connect to neestpm.sdsc.edu) -->
-	<target name="runNEESit" depends="compile" description="Run application connecting to Buffalo server">
-		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
- 			<jvmarg value="-Xms64M"/>
- 			<jvmarg value="-Xmx256M"/>
-			<jvmarg value="-Dsun.java2d.ddscale=true"/>
-			<arg line="--host neestpm.sdsc.edu --channels FakeDAQ/0 'M1 cam1/video.jpg' --time-scale 10 --real-time"/>
-		</java>
-	</target>
-	
-	<!-- Run the RDV (connect to neestpm.sdsc.edu) -->
-  <target name="runMarkers" depends="compile" description="Run application connecting to localhost">
-    <java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
-      <jvmarg value="-Xms64M"/>
-      <jvmarg value="-Xmx256M"/>
-      <jvmarg value="-Dsun.java2d.ddscale=true"/>
-      <arg line="--host localhost --channels Events/EventsChannel --time-scale 10 --real-time"/>
-     </java>
-  </target>	
-
 	<target name="help" depends="compile" description="Show usage">
 		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
 			<arg line="--help"/>
@@ -258,5 +212,5 @@
 	</target>
 		
 	<!-- Catch-all target to aggregate everything -->
-	<target name="all" depends="clean,compile,jar" description="Clean, compile, jar"/>
+	<target name="all" depends="clean,compile,test,jar" description="Clean, compile, test, jar"/>
 </project>
