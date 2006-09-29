@@ -87,7 +87,12 @@ public class ChannelManager {
 	public boolean unsubscribe(String channelName, DataListener listener) {
 		//remove channel from channel list for listener
 		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
-		listenerChannelSubscription.remove(channelName);
+    
+    //see if this listener and channel are actually subscribed
+		if (listenerChannelSubscription == null || !listenerChannelSubscription.remove(channelName)) {
+		  return false;
+    }
+    
 		if (listenerChannelSubscription.size() == 0) {
 			listenerChannelSubscriptions.remove(listener);
 		}
@@ -143,9 +148,13 @@ public class ChannelManager {
    * @param channelName  the channel to check
    * @return             true if only tabular data panels are subscribed, false
    *                     if any other types listeners are subscribed to this
-   *                     channel
+   *                     channel or no listeners are subscribed to this channel
    */
   public boolean isChannelTabularOnly(String channelName) {
+    if (!isChannelSubscribed(channelName)) {
+      return false;
+    }
+    
     Iterator i = listenerChannelSubscriptions.keySet().iterator();
     while (i.hasNext()) {
       DataListener listener = (DataListener)i.next();
