@@ -297,8 +297,7 @@ public class DataTurbine
   public void closeAndKeep () throws Exception {
     try {
       log.debug ("Closing turbine " + serverName + " with cache and archive.");
-      //this.source.Detach ();
-      this.source.CloseRBNBConnection (keepRbnbDataCache, keepRbnbDataArchive);
+      this.source.Detach();
     } catch (Exception e) {
       log.error ("Error closing turbine: " + e);
       throw e;
