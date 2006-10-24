@@ -3,7 +3,6 @@
  */
 package org.nees.buffalo.rdv.datapanel;
 import java.util.Iterator;
-import javax.swing.JComponent;
 import java.awt.BorderLayout;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -15,7 +14,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
-import javax.xml.transform.TransformerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
