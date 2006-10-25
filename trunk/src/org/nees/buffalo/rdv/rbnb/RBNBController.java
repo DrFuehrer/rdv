@@ -59,6 +59,9 @@ import com.rbnb.sapi.Sink;
 public class RBNBController implements Player, MetadataListener {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
+  
+  /** the single instance of this class */
+  protected static RBNBController instance;
 
 	private String rbnbSinkName = "RDV";
   
@@ -117,7 +120,7 @@ public class RBNBController implements Player, MetadataListener {
   
   private final long LOADING_TIMEOUT = 30000;
   
-	public RBNBController() {
+	protected RBNBController() {
     // get the system host name and append it to the sink name
      try {
         InetAddress addr = InetAddress.getLocalHost();
@@ -155,6 +158,19 @@ public class RBNBController implements Player, MetadataListener {
         
 		run();
 	}
+  
+  /**
+   * Get the single instance of this class.
+   * 
+   * @return  the instance of this class
+   */
+  public static RBNBController getInstance() {
+    if (instance == null) {
+      instance = new RBNBController();
+    }
+    
+    return instance;
+  }
 	
 	private void run() {
 		rbnbThread = new Thread(new Runnable() {
