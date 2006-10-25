@@ -81,7 +81,6 @@ import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.action.DataViewerAction;
 import org.nees.buffalo.rdv.action.OfflineAction;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
-import org.nees.buffalo.rdv.rbnb.LocalServer;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
