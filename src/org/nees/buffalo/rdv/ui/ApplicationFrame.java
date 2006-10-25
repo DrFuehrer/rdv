@@ -52,7 +52,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -79,7 +78,10 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
+import org.nees.buffalo.rdv.action.DataViewerAction;
+import org.nees.buffalo.rdv.action.OfflineAction;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
+import org.nees.buffalo.rdv.rbnb.LocalServer;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
@@ -133,6 +135,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action saveAction;
  	private Action importAction;
   private Action exportAction;
+  private Action offlineAction;  
  	private Action exitAction;
  	
  	private Action controlAction;
@@ -348,6 +351,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       }
     };
  
+    offlineAction = new OfflineAction();
+
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X) {
  			public void actionPerformed(ActionEvent ae) {
  				dataViewer.exit();
@@ -581,14 +586,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     fileMenu.addSeparator();
  		
     menuItem = new JMenuItem(importAction);
- 		// LJM 060413 - this function disabled for the 1.3 release
-    // fileMenu.add(menuItem);
+    fileMenu.add(menuItem);
 
     menuItem = new JMenuItem(exportAction);
     fileMenu.add(menuItem);
 
  		fileMenu.addSeparator();
  		
+    menuItem = new JCheckBoxMenuItem(offlineAction);
+    fileMenu.add(menuItem);    
+    
  		menuItem = new JMenuItem(exitAction);
   	fileMenu.add(menuItem);
   		
@@ -932,54 +939,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     new ExportDialog(frame, rbnb, channels);
   }
  	
- 	class DataViewerAction extends AbstractAction {
- 		boolean selected = false;
- 		
- 		public DataViewerAction(String text) {
- 			this(text, null, -1, null, null);
- 		}
- 
- 		public DataViewerAction(String text, String desc) {
- 			this(text, desc, -1, null, null);
- 		}
- 		
-		public DataViewerAction(String text, int mnemonic) {
- 			this(text, null, mnemonic, null, null);
- 		}
- 		
- 		public DataViewerAction(String text, String desc, int mnemonic) {
- 			this(text, desc, mnemonic, null, null);
- 		}
-        
-    public DataViewerAction(String text, String desc, int mnemonic, String iconFileName) {
-      this(text, desc, mnemonic, null, iconFileName);
-    }      
- 		
- 		public DataViewerAction(String text, String desc, int mnemonic, KeyStroke accelerator) {
- 			this(text, desc, mnemonic, accelerator, null);
-		}
-
-    public DataViewerAction(String text, String desc, int mnemonic, KeyStroke accelerator, String iconFileName) {
- 	    super(text);
- 	    putValue(SHORT_DESCRIPTION, desc);
- 	    putValue(MNEMONIC_KEY, new Integer(mnemonic));
- 	    putValue(ACCELERATOR_KEY, accelerator);
- 	    putValue(SMALL_ICON, DataViewer.getIcon(iconFileName));
- 	  }
- 	    
- 		public void actionPerformed(ActionEvent ae) {}
- 		
- 		public boolean isSelected() {
- 			return selected;
- 		}
- 		
- 		public void setSelected(boolean selected) {     
-      this.selected = selected;
-      firePropertyChange("selected", null, Boolean.valueOf(selected));
- 		}
- 	}
-  
-  /**
+ 	/**
    * A check box menu item that uses the "selected" property from it's action.
    */
   class SelectedCheckBoxMenuItem extends JCheckBoxMenuItem {
