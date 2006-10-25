@@ -77,7 +77,10 @@ public class LocalServer {
       return;
     }
     
-    String[] args = {};
+    // lock down access to localhost only
+    String[] args = { "-L" };
+    
+    // start the server
     server = Server.launchNewServer(args);
   }
   
