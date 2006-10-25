@@ -82,7 +82,7 @@ public class DataViewer {
   private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss.SSS a");
 	
 	public DataViewer(boolean isApplet) {
-		rbnb = new RBNBController();
+		rbnb = RBNBController.getInstance();
     authenticationManager = new AuthenticationManager();
 		dataPanelManager = new DataPanelManager(rbnb, authenticationManager);
     configurationManager = new ConfigurationManager(this);
