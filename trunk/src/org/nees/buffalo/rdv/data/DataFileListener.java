@@ -44,8 +44,9 @@ public interface DataFileListener extends EventListener {
   /**
    * Post timestamped data samples.
    * 
-   * @param timestamp  the timestamp of the data
-   * @param values     the data
+   * @param timestamp   the timestamp of the data
+   * @param values      the data
+   * @throws Exception  if there is an error in the processing of the data
    */
-  public void postDataSamples(double timestamp, double[] values);
+  public void postDataSamples(double timestamp, double[] values) throws Exception;
 }

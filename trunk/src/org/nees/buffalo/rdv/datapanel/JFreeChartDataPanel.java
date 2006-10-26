@@ -430,7 +430,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     try {
       reader.readData(listener);
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
       return;
     }
