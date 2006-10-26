@@ -134,8 +134,9 @@ public class DataFileReader {
    * 
    * @param listener      the listener for data
    * @throws IOException  if there is an error reading the data file
+   * @throws Exception    if there is an error posting the data
    */
-  public void readData(DataFileListener listener) throws IOException {
+  public void readData(DataFileListener listener) throws IOException, Exception {
     int currentLine = 0;
     
     int firstDataIndex;
