@@ -49,8 +49,11 @@ import java.util.Map;
  * @author Jason P. Hanley
  */
 public class DataFileReader {
+  /** The data file */
+  private File file;
+  
   /** The reader for the data file */
-  BufferedReader reader;
+  private BufferedReader reader;
   
   /** The properties for the data file */
   private Map<String,String> properties;
@@ -91,6 +94,8 @@ public class DataFileReader {
    * @throws IOException  if there is an error opening or reading the data file
    */
   public DataFileReader(File file) throws IOException {
+    this.file = file;
+    
     reader = new BufferedReader((new FileReader(file)));
     
     properties = new Hashtable<String,String>();
@@ -108,6 +113,21 @@ public class DataFileReader {
     }
     
     parseUnitProperty();
+    
+    if (properties.get("samples") == null) {
+      int samples = scanData();
+      properties.put("samples", Long.toString(samples));
+    }
+  }
+  
+  /**
+   * Get the property value for the specified key.
+   * 
+   * @param key  the property key
+   * @return     the property value, or null if there is no property for the key
+   */
+  public String getProperty(String key) {
+    return properties.get(key);
   }
   
   /**
@@ -115,7 +135,7 @@ public class DataFileReader {
    * 
    * @return  the data file properties
    */
-  public Map getProperties() {
+  public Map<String,String> getProperties() {
     return properties;
   }
 
@@ -261,6 +281,27 @@ public class DataFileReader {
     } else {
       throw new IOException("No data found in data file.");
     }
+  }
+  
+  /**
+   * Scan the data and determine how many samples there are in the file. Note
+   * that this will only return an approximation.
+   * 
+   * @return              an approximate number of samples in the file
+   * @throws IOException  if there is an error reading the file
+   */
+  private int scanData() throws IOException {
+    int samples = 1;
+    
+    while (reader.readLine() != null) {
+      samples++;
+    }
+    
+    reader.close();
+    reader = new BufferedReader((new FileReader(file)));
+    readHeader();    
+    
+    return samples;
   }
   
   /**
