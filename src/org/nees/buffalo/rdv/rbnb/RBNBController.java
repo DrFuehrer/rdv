@@ -179,6 +179,7 @@ public class RBNBController implements Player, MetadataListener {
 			}
 		}, "RBNB");
     rbnbThread.start();
+    log.info("run() - started the threat!");
 	}
 	
 	private void runRBNB() {
@@ -279,8 +280,6 @@ public class RBNBController implements Player, MetadataListener {
       if (timeScale == oldTimeScale) {
         return;
       }
-      
-      log.info("Setting time scale to " + timeScale + ".");
       
       fireTimeScaleChanged(timeScale);      
       
@@ -568,7 +567,6 @@ public class RBNBController implements Player, MetadataListener {
 				e.printStackTrace();
 			}			
 		}
-    
 		if (imageChannels.NumberOfChannels() > 0) {
 			requestedChannels = imageChannels;
 			if (!requestData(location, 0)) {
@@ -635,6 +633,7 @@ public class RBNBController implements Player, MetadataListener {
 
 		
 		try {
+			log.info("Requesting data after location " + DataViewer.formatDate(location) + " for " + DataViewer.formatSeconds(duration) + ".");
 			sink.Request(requestedChannels, location, duration, "absolute");
 		} catch (SAPIException e) {
  			log.error("Failed to request channels at " + DataViewer.formatDate(location) + " for " + DataViewer.formatSeconds(duration) + ".");
@@ -743,14 +742,14 @@ public class RBNBController implements Player, MetadataListener {
 	private ChannelMap getPreFetchChannelMap() {
 		synchronized(preFetchLock) {
 			if (!preFetchDone) {
-				log.debug("Waiting for pre-fetch channel map.");
+				log.info("Waiting for pre-fetch channel map.");
 				try {
 					preFetchLock.wait();
  				} catch (Exception e) {
  					log.error("Failed to wait for channel map.");
  					e.printStackTrace();
  				}
- 				log.debug("Done waiting for pre-fetch channel map.");
+ 				log.info("Done waiting for pre-fetch channel map.");
 			}
 		}
     
@@ -781,13 +780,13 @@ public class RBNBController implements Player, MetadataListener {
       }
 		}
 		
-		log.debug("Monitoring data after location " + DataViewer.formatDate(location) + ".");
+		log.info("Monitoring data after location " + DataViewer.formatDate(location) + ".");
 
     requestIsMonitor = true;
     
 		try {
 			sink.Monitor(requestedChannels, 5);
-			log.info("Monitoring selected data channels.");
+			log.info("Monitoring " + requestedChannels.NumberOfChannels() + " selected data channel(s).");
 		} catch (SAPIException e) {
 			log.error("Failed to monitor channels.");
       e.printStackTrace();
@@ -835,7 +834,7 @@ public class RBNBController implements Player, MetadataListener {
 				//no data was received, this is not an error and we should go on
 				//to see if more data is recieved next time around
 				//TODO see if we should sleep here
-				log.debug("Fetch timed out for monitor.");
+				log.info("Fetch timed out for monitor.");
 				return;
 				
 			} else {
@@ -985,10 +984,10 @@ public class RBNBController implements Player, MetadataListener {
 	private static void printChannelMap(ChannelMap cmap) {
 		String[] channels = cmap.GetChannelList();
 		for (int i=0; i<channels.length; i++) {
-			log.debug("Channel " + channels[i] + ": " + DataViewer.formatDate(cmap.GetTimeStart(i)) + " (" + cmap.GetTimeDuration(i) + ").");
+			log.info("Channel " + channels[i] + ": " + DataViewer.formatDate(cmap.GetTimeStart(i)) + " (" + cmap.GetTimeDuration(i) + ").");
 			double[] times = cmap.GetTimes(i);
 			for (int j=0; j<times.length; j++) {
-				log.debug(" location = " + DataViewer.formatDate(times[j]) + ".");
+				log.info(" location = " + DataViewer.formatDate(times[j]) + ".");
 			}
 		}
 	}	
