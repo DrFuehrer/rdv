@@ -99,10 +99,13 @@ import org.xml.sax.SAXException;
 
 import com.rbnb.sapi.ChannelMap;
 
+import org.nees.buffalo.rdv.rbnb.LogListener;
+import org.nees.buffalo.rdv.rbnb.LogManager;
+
 /**
  * @author Jason P. Hanley
  */
-public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationListener {
+public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationListener, LogListener {
 	
 	static Log log = LogFactory.getLog(JPEGDataPanel.class.getName());
 
@@ -124,6 +127,8 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   
   FlexTPSStream flexTPSStream;
  	 	
+  LogManager logMan;
+  
 	public JPEGDataPanel() {
 		super();
 		
@@ -132,6 +137,9 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		initUI();
 
 		setDataComponent(panel);
+		
+		logMan = LogManager.getInstance();
+		logMan.addLogListener(this);
 	}
   
   public void openPanel(final DataPanelManager dataPanelManager) {
@@ -166,6 +174,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   }
 			
 	private void initImage() {
+		log.info("initImage() - start");
 		image = new JPEGPanel();
     
     clickMouseListener = new MouseInputAdapter() {
@@ -938,7 +947,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		}
 			
 		String channelName = (String)it.next();
-
+		
 		try {			
 			int channelIndex = channelMap.GetIndex(channelName);
 			
@@ -946,7 +955,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 			if (channelIndex == -1) {
 				return;
 			}
-			
+	
 			if (channelMap.GetType(channelIndex) != ChannelMap.TYPE_BYTEARRAY) {
 				log.error("Expected byte array for JPEG data in channel " + channelName + ".");
 				return;
@@ -967,10 +976,10 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 				//no data in this time for us to display
 				return;
 			}
-			
+
 			double imageTime = times[imageIndex];
 			if (imageTime == displayedImageTime) {
-				//we are already displaying this image
+				//log.info("we are already displaying this image");
 				return;
 			}
 			
@@ -1138,7 +1147,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 			
 		public void update(byte[] imageData) {
 			Image newImage = new ImageIcon(imageData).getImage();
-			showImage(newImage);			
+			showImage(newImage);
 		}
 		
 		public void update(String imageFileName) {
@@ -1572,5 +1581,13 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
       return (pan == true || tilt == true || zoom == true ||
           focus == true || iris == true);
     }
+  }
+  
+  /* implementation
+   * @see org.nees.buffalo.rdv.rbnb.LogListener#writeLog()
+   */
+  public void writeLog() {
+  	
+  	log.info("Image panel's busy doing things!");
   }
 }
