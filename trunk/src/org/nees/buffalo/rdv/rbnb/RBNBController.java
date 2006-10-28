@@ -56,7 +56,7 @@ import com.rbnb.sapi.Sink;
  * 
  * @author Jason P. Hanley
  */
-public class RBNBController implements Player, MetadataListener {
+public class RBNBController implements Player, MetadataListener, LogListener {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
   
@@ -120,6 +120,8 @@ public class RBNBController implements Player, MetadataListener {
   
   private final long LOADING_TIMEOUT = 30000;
   
+  LogManager lManager;
+  
 	protected RBNBController() {
     // get the system host name and append it to the sink name
      try {
@@ -157,6 +159,9 @@ public class RBNBController implements Player, MetadataListener {
 		connectionListeners = new ArrayList();
         
 		run();
+		
+		LogManager lManager = LogManager.getInstance();
+		lManager.addLogListener(this);
 	}
   
   /**
@@ -1382,6 +1387,13 @@ public class RBNBController implements Player, MetadataListener {
     return code;
   }
 	
+  public void writeLog() {
+  
+  	log.info("We are in state: " + getStateName(state));
+  	
+  }
+  
+  
 	class SubscriptionRequest {
 		private String channelName;
 		private DataListener listener;
