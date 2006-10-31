@@ -50,6 +50,10 @@ import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
 
+import java.lang.Runtime;
+import java.text.NumberFormat;
+
+
 /**
  * A class to manage a connection to an RBNB server and to post channel data to
  * interested listeners.
@@ -121,6 +125,8 @@ public class RBNBController implements Player, MetadataListener, LogListener {
   private final long LOADING_TIMEOUT = 30000;
   
   LogManager lManager;
+  Runtime runtime;
+  private NumberFormat nf;
   
 	protected RBNBController() {
     // get the system host name and append it to the sink name
@@ -157,14 +163,26 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 		timeScaleChangeListeners = new ArrayList();
 		messageListeners = new ArrayList();
 		connectionListeners = new ArrayList();
+		
+		setupLogger();
         
 		run();
-		
-		LogManager lManager = LogManager.getInstance();
-		lManager.addLogListener(this);
+	
 	}
   
   /**
+   * temporary method to setup log for performance stuff 
+   */
+  private void setupLogger() {
+
+  	runtime = Runtime.getRuntime();
+		LogManager lManager = LogManager.getInstance();
+		lManager.addLogListener(this);
+		
+		nf = NumberFormat.getInstance();
+	}
+
+	/**
    * Get the single instance of this class.
    * 
    * @return  the instance of this class
@@ -184,11 +202,11 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 			}
 		}, "RBNB");
     rbnbThread.start();
-    log.info("run() - started the threat!");
+    log.info("run() - started the threat. TotalMemory: " + nf.format(runtime.maxMemory()));
 	}
 	
 	private void runRBNB() {
-		log.info("RBNB data thread has started.");
+//		log.info("RBNB data thread has started.");
 		
 		while (state != STATE_EXITING) {
 			processSubscriptionRequests();
@@ -253,7 +271,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
         return;
       }
 
-      log.info("Setting location to " + DataViewer.formatDate(location) + ".");
+//      log.info("Setting location to " + DataViewer.formatDate(location) + ".");
 
       if (requestedChannels.NumberOfChannels() > 0) {
         changeStateSafe(STATE_LOADING);
@@ -320,7 +338,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
         return;
       }
 
-      log.info("Setting playback rate to " + playbackRate + " seconds.");
+//      log.info("Setting playback rate to " + playbackRate + " seconds.");
     
       if (state == STATE_PLAYING) {
         getPreFetchChannelMap();
@@ -343,7 +361,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 		
 	private boolean changeStateSafe(int newState) {		
     if (state == newState) {
-      log.info("Already in state " + getStateName(state) + ".");
+//      log.info("Already in state " + getStateName(state) + ".");
       return true;
     } else if (state == STATE_PLAYING) {
       getPreFetchChannelMap();
@@ -362,7 +380,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 
         // detect nested excpetions
         if (message.contains("java.io.InterruptedIOException")) {
-          log.info("RBNB server connection canceled by user.");
+//          log.info("RBNB server connection canceled by user.");
         } else {
           log.error("Failed to connect to the RBNB server.");
           fireErrorMessage("Failed to connect to the RBNB server.");
@@ -404,7 +422,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 		
 		notifyStateListeners(state, oldState);
 
-		log.info("Transitioned from state " + getStateName(oldState) + " to " + getStateName(state) + ".");
+//		log.info("Transitioned from state " + getStateName(oldState) + " to " + getStateName(state) + ".");
 		
 		return true;
 	}
@@ -503,7 +521,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 			requestedChannels = newRequestedChannels;
 		}
 		
-		log.info("Unsubscribed from " + channelName + " for listener " + panel + ".");
+//		log.info("Unsubscribed from " + channelName + " for listener " + panel + ".");
 		
 		if (state == STATE_MONITORING) {
 			monitorData();
@@ -610,7 +628,6 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 		
 		requestedChannels = realRequestedChannels;
 		
-		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data at " + DataViewer.formatDate(location) + ".");
 	}
 	
   
@@ -638,7 +655,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 
 		
 		try {
-			log.info("Requesting data after location " + DataViewer.formatDate(location) + " for " + DataViewer.formatSeconds(duration) + ".");
+//			log.info("Requesting data after location " + DataViewer.formatDate(location) + " for " + DataViewer.formatSeconds(duration) + ".");
 			sink.Request(requestedChannels, location, duration, "absolute");
 		} catch (SAPIException e) {
  			log.error("Failed to request channels at " + DataViewer.formatDate(location) + " for " + DataViewer.formatSeconds(duration) + ".");
@@ -747,14 +764,14 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 	private ChannelMap getPreFetchChannelMap() {
 		synchronized(preFetchLock) {
 			if (!preFetchDone) {
-				log.info("Waiting for pre-fetch channel map.");
+//				log.info("Waiting for pre-fetch channel map.");
 				try {
 					preFetchLock.wait();
  				} catch (Exception e) {
  					log.error("Failed to wait for channel map.");
  					e.printStackTrace();
  				}
- 				log.info("Done waiting for pre-fetch channel map.");
+// 				log.info("Done waiting for pre-fetch channel map.");
 			}
 		}
     
@@ -785,13 +802,12 @@ public class RBNBController implements Player, MetadataListener, LogListener {
       }
 		}
 		
-		log.info("Monitoring data after location " + DataViewer.formatDate(location) + ".");
+//		log.info("Monitoring data after location " + DataViewer.formatDate(location) + ".");
 
     requestIsMonitor = true;
     
 		try {
 			sink.Monitor(requestedChannels, 5);
-			log.info("Monitoring " + requestedChannels.NumberOfChannels() + " selected data channel(s).");
 		} catch (SAPIException e) {
 			log.error("Failed to monitor channels.");
       e.printStackTrace();
@@ -839,7 +855,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 				//no data was received, this is not an error and we should go on
 				//to see if more data is recieved next time around
 				//TODO see if we should sleep here
-				log.info("Fetch timed out for monitor.");
+//				log.info("Fetch timed out for monitor.");
 				return;
 				
 			} else {
@@ -1389,8 +1405,7 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 	
   public void writeLog() {
   
-  	log.info("We are in state: " + getStateName(state));
-  	
+  	log.info("State: " + getStateName(state) + "  AvailableMemory: " + nf.format(runtime.freeMemory()));
   }
   
   
