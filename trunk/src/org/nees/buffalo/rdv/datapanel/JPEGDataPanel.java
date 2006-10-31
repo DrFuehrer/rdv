@@ -101,7 +101,7 @@ import com.rbnb.sapi.ChannelMap;
 
 import org.nees.buffalo.rdv.rbnb.LogListener;
 import org.nees.buffalo.rdv.rbnb.LogManager;
-
+import java.util.List;
 /**
  * @author Jason P. Hanley
  */
@@ -910,13 +910,15 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   
   void channelAdded(String channelName) {
     clearImage();
-    setupFlexTPSStream();    
+    setupFlexTPSStream();
+    log.info("Channel " + channelName + " added to JPEGDataPanel");
   }
   
   void channelRemoved(String channelName) {
     clearImage();
     flexTPSStream = null;
     removeRoboticControls();
+    log.info("Channel " + channelName + " removed from JPEGDataPanel");
   }
 	
 	public void postData(ChannelMap channelMap) {
@@ -1587,7 +1589,11 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
    * @see org.nees.buffalo.rdv.rbnb.LogListener#writeLog()
    */
   public void writeLog() {
-  	
-  	log.info("Image panel's busy doing things!");
+ 
+  	List<String> channels = subscribedChannels();
+  	for (String channel : channels) {
+    	log.info("video channel " + channel + " ,attched=" + attached + " ,paused=" + paused);  		
+  	}
+
   }
 }
