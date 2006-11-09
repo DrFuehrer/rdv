@@ -128,6 +128,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   FlexTPSStream flexTPSStream;
  	 	
   LogManager logMan;
+  private int numFrames = 0;
   
 	public JPEGDataPanel() {
 		super();
@@ -996,6 +997,8 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
  				
 				//update the image index currently displayed for this channel map
 				displayedImageTime = imageTime;
+				numFrames++;
+				
 			} else{
 				log.error("Data array empty for channel " + channelName + ".");	 
 			}
@@ -1006,6 +1009,17 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		}
 
 	}
+  
+  private int getNumFrames() {
+  	
+  	return numFrames;
+  }
+  
+  private void setNumFrames(int nF) {
+  	
+  	numFrames = nF;
+  }
+  
   
   public void postState(int newState, int oldState) {
     super.postState(newState, oldState);
@@ -1589,11 +1603,9 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
    * @see org.nees.buffalo.rdv.rbnb.LogListener#writeLog()
    */
   public void writeLog() {
- 
-  	List<String> channels = subscribedChannels();
-  	for (String channel : channels) {
-    	log.info("video channel " + channel + " ,attched=" + attached + " ,paused=" + paused);  		
-  	}
-
+  	
+  	log.info("VideoChannel: " + super.getTitle() + " Number of frames rendered: " + getNumFrames());
+  
+  	this.setNumFrames(0);
   }
 }
