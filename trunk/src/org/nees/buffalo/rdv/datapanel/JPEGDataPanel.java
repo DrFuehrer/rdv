@@ -99,13 +99,10 @@ import org.xml.sax.SAXException;
 
 import com.rbnb.sapi.ChannelMap;
 
-import org.nees.buffalo.rdv.rbnb.LogListener;
-import org.nees.buffalo.rdv.rbnb.LogManager;
-import java.util.List;
 /**
  * @author Jason P. Hanley
  */
-public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationListener, LogListener {
+public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationListener {
 	
 	static Log log = LogFactory.getLog(JPEGDataPanel.class.getName());
 
@@ -127,7 +124,6 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   
   FlexTPSStream flexTPSStream;
  	 	
-  LogManager logMan;
   private int numFrames = 0;
   
 	public JPEGDataPanel() {
@@ -138,11 +134,17 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		initUI();
 
 		setDataComponent(panel);
+
+		runLogger();
 		
-		logMan = LogManager.getInstance();
-		logMan.addLogListener(this);
 	}
   
+	private void runLogger() {
+		Thread t = new Thread(new LogIt());
+		t.start();
+	}
+	
+	
   public void openPanel(final DataPanelManager dataPanelManager) {
     super.openPanel(dataPanelManager);
     
@@ -1599,13 +1601,20 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
     }
   }
   
-  /* implementation
-   * @see org.nees.buffalo.rdv.rbnb.LogListener#writeLog()
-   */
-  public void writeLog() {
+  private final class LogIt implements Runnable {
   	
-  	log.info("VideoChannel: " + super.getTitle() + " Number of frames rendered: " + getNumFrames());
-  
-  	this.setNumFrames(0);
+  	public void run() {
+  		while(true) {
+    		try {
+      		Thread.sleep(10000);
+      		log.info("VideoChannel: " + getTitle() + " Number of frames rendered: " + getNumFrames());
+      		setNumFrames(0);
+    		}
+        catch (InterruptedException ex) {
+          log.error("Could not sleep!");
+        }
+  		}
+  	}
   }
+  
 }
