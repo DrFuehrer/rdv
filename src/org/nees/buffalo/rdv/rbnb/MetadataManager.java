@@ -332,8 +332,8 @@ public class MetadataManager {
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
       
-      // look for child servers and get their channels      
-      if (node.getType() == ChannelTree.SERVER &&
+      // look for child servers or plugins and get their channels      
+      if ((node.getType() == ChannelTree.SERVER || node.getType() == ChannelTree.PLUGIN) &&
         (path == null || !path.startsWith(node.getFullName()))) {
 
         ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels);
