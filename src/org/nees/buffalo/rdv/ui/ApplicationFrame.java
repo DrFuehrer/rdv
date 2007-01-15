@@ -79,6 +79,7 @@ import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.action.DataViewerAction;
+import org.nees.buffalo.rdv.action.JPEGImportAction;
 import org.nees.buffalo.rdv.action.OfflineAction;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
@@ -132,7 +133,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action logoutAction;
   private Action loadAction;
   private Action saveAction;
- 	private Action importAction;
+  private Action importAction;
+ 	private Action importDataAction;
+  private Action importImagesAction;
   private Action exportAction;
   private Action offlineAction;  
  	private Action exitAction;
@@ -338,11 +341,15 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       }     
     };    
 
- 		importAction = new DataViewerAction("Import Data", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
+    importAction = new DataViewerAction("Import", "Import Menu", KeyEvent.VK_I, "icons/import.gif");
+    
+ 		importDataAction = new DataViewerAction("Import data file", "Import local data to RBNB server", KeyEvent.VK_D) {
  			public void actionPerformed(ActionEvent ae) {
  				showImportDialog();
  			}			
  		};
+    
+    importImagesAction = new JPEGImportAction();
         
     exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
       public void actionPerformed(ActionEvent ae) {
@@ -583,9 +590,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     fileMenu.add(menuItem);
     
     fileMenu.addSeparator();
+    
+    JMenu importSubMenu = new JMenu(importAction);
  		
-    menuItem = new JMenuItem(importAction);
-    fileMenu.add(menuItem);
+    menuItem = new JMenuItem(importDataAction);
+    importSubMenu.add(menuItem);
+    
+    menuItem = new JMenuItem(importImagesAction);
+    importSubMenu.add(menuItem);
+    
+    fileMenu.add(importSubMenu);
 
     menuItem = new JMenuItem(exportAction);
     fileMenu.add(menuItem);
