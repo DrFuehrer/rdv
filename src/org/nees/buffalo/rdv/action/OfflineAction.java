@@ -35,14 +35,12 @@ package org.nees.buffalo.rdv.action;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
-import javax.swing.JCheckBoxMenuItem;
-
 import org.nees.buffalo.rdv.rbnb.LocalServer;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.MessagePopup;
 
 /**
- * Action to toggle offline mode.
+ * Action to control offline mode.
  * 
  * @author Jason P. Hanley
  */
@@ -59,18 +57,17 @@ public class OfflineAction extends DataViewerAction {
    * server.
    */
   public void actionPerformed(ActionEvent ae) {
-    JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
-    if (menuItem.isSelected()) {
-      startServer();
-    } else {
+    if (isSelected()) {
       stopServer();
+    } else {
+      startServer();
     }
   }
   
   /**
    * Start the local server and connect to it.
    */
-  private void startServer() {
+  public void startServer() {
     RBNBController rbnb = RBNBController.getInstance();
     LocalServer server = LocalServer.getInstance();
     
@@ -87,12 +84,14 @@ public class OfflineAction extends DataViewerAction {
     rbnb.setRBNBHostName("localhost");
     rbnb.setRBNBPortNumber(3333);
     rbnb.connect();    
+
+    setSelected(true);
   }
   
   /**
    * Disconnect from the local server and stop it.
    */
-  private void stopServer() {
+  public void stopServer() {
     RBNBController rbnb = RBNBController.getInstance();
     LocalServer server = LocalServer.getInstance();
     
@@ -103,5 +102,7 @@ public class OfflineAction extends DataViewerAction {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    
+    setSelected(false);
   }
 }
