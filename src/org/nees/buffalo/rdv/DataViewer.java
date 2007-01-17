@@ -55,6 +55,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.action.ActionFactory;
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
@@ -467,6 +468,8 @@ public class DataViewer {
   				rbnbController.monitor();
   			}
       }
-		}
+		} else {
+		  ActionFactory.getInstance().getOfflineAction().startServer();
+    }
 	}
 }
