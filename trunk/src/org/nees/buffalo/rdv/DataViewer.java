@@ -72,7 +72,6 @@ public class DataViewer {
 	static Log log = LogFactory.getLog(DataViewer.class.getName());
 	
 	private final RBNBController rbnb;
-  private final AuthenticationManager authenticationManager;
 	private final DataPanelManager dataPanelManager;
 	private final ApplicationFrame applicationFrame;
   private final ConfigurationManager configurationManager;
@@ -84,8 +83,7 @@ public class DataViewer {
 	
 	public DataViewer(boolean isApplet) {
 		rbnb = RBNBController.getInstance();
-    authenticationManager = new AuthenticationManager();
-		dataPanelManager = new DataPanelManager(rbnb, authenticationManager);
+		dataPanelManager = new DataPanelManager(rbnb);
     configurationManager = new ConfigurationManager(this);
 		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);
 	}
@@ -104,10 +102,6 @@ public class DataViewer {
  		return rbnb;
  	}
 
-  public AuthenticationManager getAuthenticationManager() {
-    return authenticationManager;
-  }
- 	
  	public DataPanelManager getDataPanelManager() {
  		return dataPanelManager;
  	}

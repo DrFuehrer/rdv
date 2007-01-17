@@ -90,6 +90,7 @@ import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.auth.Authentication;
 import org.nees.buffalo.rdv.auth.AuthenticationEvent;
 import org.nees.buffalo.rdv.auth.AuthenticationListener;
+import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.w3c.dom.Document;
@@ -148,13 +149,13 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   public void openPanel(final DataPanelManager dataPanelManager) {
     super.openPanel(dataPanelManager);
     
-    dataPanelManager.getAuthenticationManager().addAuthenticationListener(this);
+    AuthenticationManager.getInstance().addAuthenticationListener(this);
   }
   
   public void closePanel() {
     super.closePanel();
     
-    dataPanelManager.getAuthenticationManager().removeAuthenticationListener(this);
+    AuthenticationManager.getInstance().removeAuthenticationListener(this);
   }
   
   private void initUI() {
@@ -854,7 +855,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
     String stream = channel.getMetadata("flexTPS_stream");
 
     // If user successfully login, gaSession should be valid
-    Authentication auth = dataPanelManager.getAuthenticationManager().getAuthentication();
+    Authentication auth = AuthenticationManager.getInstance().getAuthentication();
     String gaSession = null;
     if (auth != null) {
       gaSession = auth.get("session");

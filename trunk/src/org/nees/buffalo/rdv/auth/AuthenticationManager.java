@@ -41,6 +41,9 @@ import java.util.List;
  * @author Jason P. Hanley
  */
 public class AuthenticationManager {
+  /** the instance of this class */
+  private static AuthenticationManager instance;
+  
   /** the authentication */
   private Authentication authentication;
   
@@ -50,8 +53,21 @@ public class AuthenticationManager {
   /**
    * Creates the authentication manager.
    */
-  public AuthenticationManager() {
+  protected AuthenticationManager() {
     listeners = new ArrayList<AuthenticationListener>();
+  }
+  
+  /**
+   * Returns the instance of the authentication manager.
+   * 
+   * @return  the authentication manager
+   */
+  public static AuthenticationManager getInstance() {
+    if (instance == null) {
+      instance = new AuthenticationManager();
+    }
+    
+    return instance;
   }
 
   /**
