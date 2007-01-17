@@ -78,6 +78,7 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
+import org.nees.buffalo.rdv.action.ActionFactory;
 import org.nees.buffalo.rdv.action.DataViewerAction;
 import org.nees.buffalo.rdv.action.JPEGImportAction;
 import org.nees.buffalo.rdv.action.OfflineAction;
@@ -136,8 +137,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action importAction;
  	private Action importDataAction;
   private Action importImagesAction;
-  private Action exportAction;
-  private Action offlineAction;  
+  private Action exportAction; 
  	private Action exitAction;
  	
  	private Action controlAction;
@@ -357,8 +357,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       }
     };
  
-    offlineAction = new OfflineAction();
-
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X) {
  			public void actionPerformed(ActionEvent ae) {
  				dataViewer.exit();
@@ -546,6 +544,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	}
  	
   private void initMenuBar() {
+    ActionFactory actionFactory = ActionFactory.getInstance();
+    
   	menuBar = new JMenuBar();
     menuBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.SINGLE);
   
@@ -606,7 +606,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
  		fileMenu.addSeparator();
  		
-    menuItem = new JCheckBoxMenuItem(offlineAction);
+    menuItem = new DataViewerCheckBoxMenuItem(actionFactory.getOfflineAction());
     fileMenu.add(menuItem);    
     
  		menuItem = new JMenuItem(exitAction);
