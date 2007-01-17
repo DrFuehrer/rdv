@@ -86,6 +86,10 @@ public class DataViewerAction extends AbstractAction {
 	}
 	
 	public void setSelected(boolean selected) {     
+    if (this.selected == selected) {
+      return;
+    }
+    
     this.selected = selected;
     firePropertyChange("selected", null, Boolean.valueOf(selected));
 	}
