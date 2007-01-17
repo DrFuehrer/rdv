@@ -82,6 +82,7 @@ import org.nees.buffalo.rdv.action.ActionFactory;
 import org.nees.buffalo.rdv.action.DataViewerAction;
 import org.nees.buffalo.rdv.action.JPEGImportAction;
 import org.nees.buffalo.rdv.action.OfflineAction;
+import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
@@ -281,7 +282,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		loginAction = new DataViewerAction("Login", "Login as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
  				if (loginDialog == null) {
- 					loginDialog = new LoginDialog(frame, dataViewer.getAuthenticationManager());
+ 					loginDialog = new LoginDialog(frame);
  				} else {
  					loginDialog.setVisible(true);
  				}			
@@ -290,7 +291,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		logoutAction = new DataViewerAction("Logout", "Logout as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
- 				dataViewer.getAuthenticationManager().setAuthentication(null);
+       AuthenticationManager.getInstance().setAuthentication(null);
  			}			
  		};
  		 		
@@ -571,7 +572,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       public void menuCanceled(MenuEvent arg0) {}
       public void menuDeselected(MenuEvent arg0) {}
       public void menuSelected(MenuEvent arg0) {
-        if (dataViewer.getAuthenticationManager().getAuthentication() == null) {
+        if (AuthenticationManager.getInstance().getAuthentication() == null) {
           loginAction.setEnabled(true);
           logoutAction.setEnabled(false);
         } else {
@@ -824,7 +825,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
 
   private void initMarkerSubmitPanel() {
-	  markerSubmitPanel = new MarkerSubmitPanel(rbnb, dataViewer.getAuthenticationManager());
+	  markerSubmitPanel = new MarkerSubmitPanel(rbnb);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0;
 		c.weighty = 0;

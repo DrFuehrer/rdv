@@ -66,11 +66,6 @@ public class MarkerSubmitPanel extends JPanel {
   private RBNBController rbnbController;
   
   /**
-   * The authentication manager to get an authentication
-   */
-  private final AuthenticationManager authenticationManager;
-  
-  /**
    * The combo box to select the marker type
    */
   private JComboBox markerTypeComboBox;
@@ -101,11 +96,10 @@ public class MarkerSubmitPanel extends JPanel {
    * 
    * @param rbnbController  the rbnb controller to use for sending the marker
    */
-  public MarkerSubmitPanel(RBNBController rbnbController, AuthenticationManager authenticationManager) {
+  public MarkerSubmitPanel(RBNBController rbnbController) {
     super();
     
     this.rbnbController = rbnbController;
-    this.authenticationManager = authenticationManager;
     
     initPanel();
     
@@ -216,7 +210,7 @@ public class MarkerSubmitPanel extends JPanel {
     }
     marker.setProperty("timestamp", Double.toString(startTime));
     
-    Authentication authentication = authenticationManager.getAuthentication();
+    Authentication authentication = AuthenticationManager.getInstance().getAuthentication();
     if (authentication != null) {
       String username = authentication.get("username");
       if (username != null || username.length() > 0) {

@@ -64,8 +64,6 @@ public class LoginDialog extends JDialog {
 
  	static Log log = LogFactory.getLog(LoginDialog.class.getName());
 	
-  AuthenticationManager authenticationManager;
-	
 	JLabel headerLabel;
   
   JLabel errorLabel;
@@ -79,10 +77,8 @@ public class LoginDialog extends JDialog {
 	JButton loginButton;
 	JButton cancelButton;
 	
-	public LoginDialog(JFrame owner, AuthenticationManager authenticationManager) {
+	public LoginDialog(JFrame owner) {
 		super(owner, true);
-		
-    this.authenticationManager = authenticationManager;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
@@ -224,7 +220,7 @@ public class LoginDialog extends JDialog {
     
 		GridAuthentication authentication = new GridAuthentication();
 		if (authentication.login(username, password)) {
-		  authenticationManager.setAuthentication(authentication);
+      AuthenticationManager.getInstance().setAuthentication(authentication);
       
       dispose();
       

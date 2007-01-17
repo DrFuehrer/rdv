@@ -69,11 +69,6 @@ public class DataPanelManager {
 	static Log log = LogFactory.getLog(DataPanelManager.class.getName());
 
 	/**
-	 * The authentication manager for the data panels.
-	 */
-	private AuthenticationManager authenticationManager;
-	
-	/**
 	 * A reference to the RNBN controller for the data panels to use.
 	 * 
 	 * @since  1.2
@@ -113,9 +108,8 @@ public class DataPanelManager {
 	 * @param rbnbController  the rbnb controller
 	 * @since                 1.2
 	 */
-	public DataPanelManager(RBNBController rbnbController, AuthenticationManager authenticationManager) {
+	public DataPanelManager(RBNBController rbnbController) {
 		this.rbnbController = rbnbController;
-    this.authenticationManager = authenticationManager;
 		dataPanelContainer = new DataPanelContainer();
 		
 		dataPanels = new ArrayList();
@@ -603,13 +597,4 @@ public class DataPanelManager {
   public List getDataPanels() {
     return dataPanels;
   }
-  
-  /**
-   * Get the authentication manager.
-   * 
-   * @return  the authentication manager
-   */
-  public AuthenticationManager getAuthenticationManager() {
-    return this.authenticationManager;
-  }  
 }
