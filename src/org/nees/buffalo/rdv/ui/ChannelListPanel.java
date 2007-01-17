@@ -258,8 +258,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     if (newChannelTree == null) {
       clearChannelList();
       fireNoChannelsSelected();
-    } else if (!root.equals(rbnb.getRBNBConnectionString())) {
- 				root = rbnb.getRBNBConnectionString();
+    } else if (!root.equals(rbnb.getServerName())) {
+ 				root = rbnb.getServerName();
  				fireRootChanged();
  				fireNoChannelsSelected();
 		} else {

@@ -81,7 +81,6 @@ import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.action.ActionFactory;
 import org.nees.buffalo.rdv.action.DataViewerAction;
 import org.nees.buffalo.rdv.action.JPEGImportAction;
-import org.nees.buffalo.rdv.action.OfflineAction;
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
@@ -1062,7 +1061,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       controlPanel.setEnabled(false);
       markerSubmitPanel.setEnabled(false);
     } else if (oldState == Player.STATE_DISCONNECTED) {
-      setTitle(rbnb.getRBNBConnectionString() + " - RDV");
+      setTitle(rbnb.getServerName() + " - RDV");
       
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
