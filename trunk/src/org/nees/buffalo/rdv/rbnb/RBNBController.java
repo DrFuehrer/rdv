@@ -1187,6 +1187,33 @@ public class RBNBController implements Player, MetadataListener, LogListener {
  	public String getRBNBConnectionString() {
  		return rbnbHostName + ":" + rbnbPortNumber;
  	}
+  
+  /**
+   * Gets the name of the server. If there is no active connection, null is
+   * returned.
+   * 
+   * @return  the name of the server, or null if there is no connection
+   */
+  public String getServerName() {
+    if (sink == null) {
+      return null;
+    }
+    
+    String serverName;
+    
+    try {
+      serverName = sink.GetServerName();
+      
+      // strip out the leading slash that is there for some reason
+      if (serverName.startsWith("/") && serverName.length() >= 2) {
+        serverName = serverName.substring(1);
+      }
+    } catch (IllegalStateException e) {
+      serverName = null;
+    }
+    
+    return serverName;
+  }
 
 	public boolean isConnected() {
 		return sink != null;	

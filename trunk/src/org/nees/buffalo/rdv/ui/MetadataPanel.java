@@ -105,7 +105,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
       return;
     } else if (channel == ROOT_CHANNEL) {
       StringBuffer s = new StringBuffer();
-      s.append("<strong>" + rbnb.getRBNBHostName() + ":" + rbnb.getRBNBPortNumber() + "</strong><br>");
+      s.append("<strong>" + rbnb.getServerName() + "</strong><br>");
       s.append("<em>Data Server</em>");
       s.append("<p style=\"font-size: 10px\">" + children + " Data Source");
       if (children == 0 || children > 1) {
