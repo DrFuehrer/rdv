@@ -14,6 +14,7 @@
 			
 	<!-- source directory -->
 	<property name="src.dir" value="src"/>
+	<property name="src.data.dir" value="${src.dir}/org/nees/data"/>
 	
 	<!-- tests directory -->
 	<property name="tests.dir" value="tests"/>
@@ -36,6 +37,10 @@
 	<property name="build.tests" value="${build.dir}/tests"/>
 	<property name="build.lib" value="${build.dir}/lib"/>
 	<property name="build.exe" value="${build.dir}/exe"/>
+
+	<!-- XML schema information -->
+	<property name="schema.file" value="${doc.dir}/nees_central.xsd"/>
+	<property name="schema.package" value="org.nees.data"/>	
 	
 	<!-- environment access via env.* -->
 	<property environment="env"/>
@@ -61,6 +66,18 @@
 			<pathelement location="ant/ant-contrib.jar"/>
 		</classpath>
 	</taskdef>
+	
+	<!-- JAXB task -->
+	<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
+	  <classpath>
+	  	<fileset file="jaxb/jaxb-xjc.jar"/>
+	    <fileset dir="lib">
+	    	<include name="activation.jar"/>
+	      <include name="jaxb*.jar"/>
+	    	<include name="jsr173_1.0_api.jar"/>
+	    </fileset>
+	  </classpath>
+	</taskdef>
 
 	<target name="checkRBNB" unless="env.RBNB_HOME">
 		<fail message="RBNB_HOME must be defined in your environment."/>
@@ -80,6 +97,8 @@
 		<mkdir dir="${build.tests}"/>
 		<mkdir dir="${build.lib}"/>
 		<mkdir dir="${build.exe}"/>
+		
+		<mkdir dir="${src.data.dir}"/>
 		
 	    <exec executable="svnversion" outputproperty="svn.revision" failifexecutionfails="false">
 			<arg value="."/>
@@ -111,10 +130,18 @@
 	<target name="clean" description="Remove all generated files">
 		<delete dir="${build.dir}"/>
 		<delete file="build.properties"/>
+		<delete dir="${src.data.dir}"/>
 	</target>
 	
 	<!-- Build target -->
 	<target name="compile" depends="prepare" description="Build from source">
+		<xjc schema="${schema.file}"
+			package="${schema.package}"
+			destdir="${src.dir}">
+			<depends file="${schema.file}"/>
+			<produces dir="${src.data.dir}"/>
+		</xjc>
+			
 		<javac srcdir="${src.dir}" 
 			destdir="${build.classes}"
 			classpathref="classpath"
