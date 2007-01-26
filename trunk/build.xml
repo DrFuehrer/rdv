@@ -45,18 +45,12 @@
 	<!-- environment access via env.* -->
 	<property environment="env"/>
 		
-	<!-- pull RBNB location from users' environment, this is checked in the build -->
-	<property name="rbnb.home" value="${env.RBNB_HOME}"/>
-	
 	<!-- classpath -->
 	<path id="classpath">
 		<pathelement location="${build.classes}"/>
 		<pathelement location="."/>
 		<fileset dir="${lib.dir}">
 			<include name="*.jar"/>
-		</fileset>
-		<fileset dir="${rbnb.home}/bin">
-			<include name="rbnb.jar"/>
 		</fileset>
 	</path>
 	
@@ -79,19 +73,12 @@
 	  </classpath>
 	</taskdef>
 
-	<target name="checkRBNB" unless="env.RBNB_HOME">
-		<fail message="RBNB_HOME must be defined in your environment."/>
-	</target>
-	
 	<target name="checkLaunch4j" unless="env.LAUNCH4J_HOME">
 		<fail message="LAUNCH4J_HOME must be defined in your environment."/>
 	</target>
 	
-	<!-- Meta-target that depends on all environment variables -->
-	<target name="checkEnvVars" depends="checkRBNB" description="Check necessary environment variables"/>
-	
 	<!-- target to make temp dirs -->
-	<target name="prepare" depends="checkEnvVars" description="Make directories">
+	<target name="prepare" description="Make directories">
 		<mkdir dir="${build.dir}"/>
 		<mkdir dir="${build.classes}"/>
 		<mkdir dir="${build.tests}"/>
@@ -167,7 +154,6 @@
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
 			<zipgroupfileset dir="${lib.dir}" excludes="junit.jar"/>
-			<zipgroupfileset file="${rbnb.home}/bin/rbnb.jar"/>
 			<manifest>
 				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
 			</manifest>		
