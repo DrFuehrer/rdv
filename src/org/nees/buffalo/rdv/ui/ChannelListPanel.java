@@ -32,9 +32,11 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
@@ -46,21 +48,30 @@ import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -108,14 +119,19 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	private ChannelTree.Node node;
 
 	private ArrayList treeModelListeners;  
-  private ArrayList channelSelectionListeners; 
+  private ArrayList channelSelectionListeners;
+  
+  private JTextField filterTextField;
+  private JButton clearFilterButton;
 
 	private JTree tree;
-  private SimpleInternalFrame treeFrame;
   
  	private boolean showHiddenChannels = false;
   
   private JButton metadataUpdateButton;
+  
+  /** the string used to filter the channel list */
+  private String filterText;
 
 	public ChannelListPanel(DataPanelManager dataPanelManager, RBNBController rbnb, ApplicationFrame frame) {
 		super();
@@ -127,6 +143,8 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		root = EMPTY_ROOT;
     
 		ctree = ChannelTree.EMPTY_TREE;
+    
+    filterText = "";
     
     treeModelListeners = new ArrayList();
     channelSelectionListeners = new ArrayList();
@@ -142,18 +160,78 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 		setLayout(new BorderLayout());
     setMinimumSize(new Dimension(130, 27));
 
-    JComponent treeView = createTree();
+    JComponent filterComponent = createFilterPanel();
+    JComponent treePanel = createTreePanel();
+    
+    JPanel mainPanel = new JPanel();
+    mainPanel.setLayout(new BorderLayout());
+    mainPanel.add(filterComponent, BorderLayout.NORTH);
+    mainPanel.add(treePanel, BorderLayout.CENTER);
+    
     JToolBar channelToolBar = createToolBar();
     
-    treeFrame = new SimpleInternalFrame(
+    SimpleInternalFrame treeFrame = new SimpleInternalFrame(
         DataViewer.getIcon("icons/channels.gif"),
         "Channels",
         channelToolBar,
-        treeView);        
+        mainPanel);        
     add(treeFrame, BorderLayout.CENTER);
 	}
   
-  private JComponent createTree() {
+  /**
+   * Create the UI panel that contains the controls to filter the channel list.
+   * 
+   * @return  the UI component dealing with filtering
+   */
+  private JComponent createFilterPanel() {
+    JPanel filterPanel = new JPanel();
+    filterPanel.setLayout(new BorderLayout());
+    filterPanel.setBackground(Color.white);
+    filterPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+    
+    filterTextField = new JTextField();
+    filterTextField.setToolTipText("Enter text here to filter the channel list");
+    filterTextField.getDocument().addDocumentListener(new DocumentListener() {
+      public void changedUpdate(DocumentEvent e) {
+        setFilter(filterTextField.getText());
+      }
+      public void insertUpdate(DocumentEvent e) { changedUpdate(e); }
+      public void removeUpdate(DocumentEvent e) { changedUpdate(e); }
+    });
+    filterPanel.add(filterTextField, BorderLayout.CENTER);
+    
+    Action focusFilterAction = new AbstractAction() {
+      public void actionPerformed(ActionEvent e) {
+        filterTextField.requestFocusInWindow();
+        filterTextField.selectAll();
+      }
+    };
+    
+    int modifier = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
+    filterTextField.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_F, modifier), "focusFilter");
+    filterTextField.getActionMap().put("focusFilter", focusFilterAction);
+    
+    Action cancelFilterAction = new AbstractAction(null, DataViewer.getIcon("icons/cancel.gif")) {
+      public void actionPerformed(ActionEvent e) {
+        filterTextField.setText(null);
+        setFilter(null);
+      }
+    };
+    cancelFilterAction.putValue(Action.SHORT_DESCRIPTION, "Cancel filter");
+    
+    filterTextField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancelFilter");
+    filterTextField.getActionMap().put("cancelFilter", cancelFilterAction);    
+    
+    clearFilterButton = new JButton(cancelFilterAction);
+    clearFilterButton.setVisible(false);
+    clearFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+    clearFilterButton.setOpaque(false);
+    filterPanel.add(clearFilterButton, BorderLayout.EAST);
+    
+    return filterPanel;
+  }
+  
+  private JComponent createTreePanel() {
     tree = new JTree(this);
     tree.setRootVisible(true);
     tree.setShowsRootHandles(false);
@@ -163,11 +241,10 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
     tree.addTreeSelectionListener(this);
     tree.addMouseListener(this);
-    tree.setBorder(new EmptyBorder(4, 4, 4, 4));
+    tree.setBorder(new EmptyBorder(0, 5, 5, 5));
     
     JScrollPane treeView = new JScrollPane(tree);
     treeView.setBorder(null);
-    
     
     tree.setTransferHandler(new MultiTransferHandler());
     
@@ -176,6 +253,33 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
     return treeView;
   }
   
+  /**
+   * Sets the channel list filter. If the specified filter text is no, no filter
+   * will be used. The filter text may use a * as a wildcard matcher.
+   * 
+   * @param filterText  the text used to filter the channel list
+   */
+  private void setFilter(String filterText) {
+    if (filterText != null) {
+      filterText = filterText.toLowerCase();
+    } else {
+      filterText = "";
+    }
+    
+    if (this.filterText.equals(filterText)) {
+      return;
+    }
+    
+    this.filterText = filterText;
+    
+    fireRootChanged();
+    
+    clearFilterButton.setVisible(filterText.length() > 0);
+    
+    if (filterText.length() > 0) {
+      expandTree();
+    }
+  }
   
   private class MultiTransferHandler extends TransferHandler {
 	  
@@ -488,12 +592,29 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	}
   
   private List getSortedChildren(Object n) {
+    List children;
     if (n == root) {
-      return RBNBUtilities.getSortedChildren(ctree, showHiddenChannels);
+      children = RBNBUtilities.getSortedChildren(ctree, showHiddenChannels);
     } else {
       node = (ChannelTree.Node)n;
-      return RBNBUtilities.getSortedChildren(node, showHiddenChannels);
+      children = RBNBUtilities.getSortedChildren(node, showHiddenChannels);
     }
+    
+    /* if we are filtering, only return nodes that match the filter text or have
+     * descendants that match the filter text */ 
+    if (filterText.length() > 0) {
+      for (int i=children.size()-1; i>=0; i--) {
+        ChannelTree.Node child = (ChannelTree.Node)children.get(i);
+        String fullName = child.getFullName().toLowerCase();
+        String regex = ".*" + filterText.replaceAll("\\*", ".*") + ".*";
+        if (!fullName.matches(regex) &&
+            getSortedChildren(child).size() == 0) {
+          children.remove(i);
+        }
+      }
+    }
+    
+    return children;
   }
 
 	public void addTreeModelListener(TreeModelListener l) {
@@ -862,8 +983,12 @@ public class ChannelListPanel extends JPanel implements TreeModel, TreeSelection
 	public void postState(int newState, int oldState) {
 		if (newState == Player.STATE_DISCONNECTED || newState == Player.STATE_EXITING) {
 			metadataUpdateButton.setEnabled(false);
+      filterTextField.setEnabled(false);
+      clearFilterButton.setEnabled(false);
 		} else {
 			metadataUpdateButton.setEnabled(true);
+      filterTextField.setEnabled(true);
+      clearFilterButton.setEnabled(true);
 		}
 	}
 }
