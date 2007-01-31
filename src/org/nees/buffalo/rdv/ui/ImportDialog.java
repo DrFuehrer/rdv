@@ -187,7 +187,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		dataFileButton = new JButton("Browse");
 		dataFileButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				int status = dataFileChooser.showSaveDialog(dialog);
+				int status = dataFileChooser.showOpenDialog(dialog);
 				if (status == JFileChooser.APPROVE_OPTION) {
 					dataFile = dataFileChooser.getSelectedFile();
 					dataFileTextField.setText(dataFile.getAbsolutePath());
