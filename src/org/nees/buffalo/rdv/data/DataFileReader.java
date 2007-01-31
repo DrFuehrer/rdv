@@ -84,6 +84,9 @@ public class DataFileReader {
   /** The keys that can denote a list of units */
   private static final String[] unitPropertyKeys = {"unit", "units", "channel unit", "channel units"};
   
+  /** The keys that can have the start time */
+  private static final String[] startTimePropertyKeys = {"start time"};
+  
   /** The number of lines to parse before giving up on understanding the file */
   private static final int MAX_HEADER_LINES = 100;
 
@@ -166,6 +169,14 @@ public class DataFileReader {
       firstDataIndex = 0;
     }
     
+    // get start time from header for data files using an elapsed time column
+    double startTime = 0;
+    if (getProperty(startTimePropertyKeys) != null) {
+      try {
+        startTime = ISO8601_DATE_FORMAT.parse(getProperty(startTimePropertyKeys)).getTime()/1000d;
+      } catch (ParseException e) {}
+    }
+    
     do {
       line = line.trim();
       String[] tokens = line.split(delimiters);
@@ -187,7 +198,7 @@ public class DataFileReader {
         }
       } else {
         try {
-          timestamp = Double.parseDouble(tokens[0].trim());
+          timestamp = startTime + Double.parseDouble(tokens[0].trim());
         } catch (NumberFormatException e) {
           continue;
         }
@@ -229,7 +240,7 @@ public class DataFileReader {
       }
       
       // look for properties
-      String[] property = line.split(propertyDelimiter);
+      String[] property = line.split(propertyDelimiter, 2);
       if (property.length == 2) {
         properties.put(stripString(property[0]).toLowerCase(), stripString(property[1]));
         continue;
