@@ -40,6 +40,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -56,7 +58,6 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.action.ActionFactory;
-import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
 import org.nees.buffalo.rdv.ui.ControlPanel;
@@ -80,6 +81,9 @@ public class DataViewer {
   private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm.ss.SSS a");
   private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm.ss.SSS a");
   private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss.SSS a");
+  
+  /** global cache for icons */
+  private static final Map<String, ImageIcon> iconCache = new ConcurrentHashMap<String, ImageIcon>();;
 	
 	public DataViewer(boolean isApplet) {
 		rbnb = RBNBController.getInstance();
@@ -241,14 +245,34 @@ public class DataViewer {
     }
   }
   
+  /**
+   * Loads the given file as an icon and returns it. Previously loaded icon's
+   * are cached, so subsequent calls to this method with the same icon file name
+   * will return the same icon.
+   * 
+   * @param iconFileName  the name of the icon file
+   * @return              the icon, or null if the icon doesn't exist
+   */
   public static ImageIcon getIcon(String iconFileName) {
-    ImageIcon icon = null;
-    if (iconFileName != null) {
-      URL iconURL = Thread.currentThread().getContextClassLoader().getResource(iconFileName);    
-      if (iconURL != null) {
-        icon = new ImageIcon(iconURL);
-      }
+    if (iconFileName == null) {
+      return null;
     }
+    
+    // see if the icon is in the cache
+    ImageIcon icon = iconCache.get(iconFileName);
+    if (icon != null) {
+      return icon;
+    }
+    
+    
+    URL iconURL = Thread.currentThread().getContextClassLoader().getResource(iconFileName);    
+    if (iconURL != null) {
+      icon = new ImageIcon(iconURL);
+      
+      // cache the icon for future requests
+      iconCache.put(iconFileName, icon);
+    }
+    
     return icon;
   }  
 
