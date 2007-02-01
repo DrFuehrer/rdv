@@ -135,8 +135,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action loadAction;
   private Action saveAction;
   private Action importAction;
- 	private Action importDataAction;
-  private Action importImagesAction;
   private Action exportAction; 
  	private Action exitAction;
  	
@@ -343,14 +341,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
     importAction = new DataViewerAction("Import", "Import Menu", KeyEvent.VK_I, "icons/import.gif");
     
- 		importDataAction = new DataViewerAction("Import data file", "Import local data to RBNB server", KeyEvent.VK_D) {
- 			public void actionPerformed(ActionEvent ae) {
- 				showImportDialog();
- 			}			
- 		};
-    
-    importImagesAction = new JPEGImportAction();
-        
     exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
       public void actionPerformed(ActionEvent ae) {
         showExportDialog();
@@ -593,10 +583,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
     JMenu importSubMenu = new JMenu(importAction);
  		
-    menuItem = new JMenuItem(importDataAction);
+    menuItem = new JMenuItem(actionFactory.getDataImportAction());
     importSubMenu.add(menuItem);
     
-    menuItem = new JMenuItem(importImagesAction);
+    menuItem = new JMenuItem(actionFactory.getJPEGImportAction());
     importSubMenu.add(menuItem);
     
     fileMenu.add(importSubMenu);
@@ -931,13 +921,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		JOptionPane.showMessageDialog(this, statusMessage, "Status", JOptionPane.INFORMATION_MESSAGE);
 	}
   
-  public void showImportDialog() {
-    showImportDialog(null);
-  }
-  
-  public void showImportDialog(String sourceName) {
-    new ImportDialog(frame, rbnb, sourceName);
-  }
+  public void showImportDialog() {}
+  public void showImportDialog(String sourceName) {}
   
   public void showExportDialog() {
     List channels = channelListPanel.getSelectedChannels();
