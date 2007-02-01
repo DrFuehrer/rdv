@@ -40,6 +40,12 @@ package org.nees.buffalo.rdv.action;
 public class ActionFactory {
   /** the instance of this class */
   private static ActionFactory instance;
+  
+  /** the action to import data files */
+  private DataImportAction dataImportAction;
+  
+  /** the action to import JPEG files */
+  private JPEGImportAction jpegImportAction;
 
   /** the action to control offline mode */
   private OfflineAction offlineAction;
@@ -62,6 +68,32 @@ public class ActionFactory {
     }
     
     return instance;
+  }
+  
+  /**
+   * Gets the action for importing a data file.
+   * 
+   * @return  the data import action
+   */
+  public DataImportAction getDataImportAction() {
+    if (dataImportAction == null) {
+      dataImportAction = new DataImportAction();
+    }
+    
+    return dataImportAction;
+  }
+  
+  /**
+   * Gets the action for import JPEG files.
+   * 
+   * @return  the JPEG import action
+   */
+  public JPEGImportAction getJPEGImportAction() {
+    if (jpegImportAction == null) {
+      jpegImportAction = new JPEGImportAction();
+    }
+    
+    return jpegImportAction;
   }
   
   /**
