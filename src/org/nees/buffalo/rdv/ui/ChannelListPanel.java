@@ -712,15 +712,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     }.start();
   }
   
-  private void viewChannel(final String channelName, final Extension extension) {
-    log.debug("viewChannel() - start.. channleName: " + channelName);
-    new Thread() {
-      public void run() {
-        dataPanelManager.viewChannel(channelName, extension);
-      }
-    }.start();    
-  }
-  
   private void viewChannels(final List channels, final Extension extension) {
     new Thread() {
       public void run() {
