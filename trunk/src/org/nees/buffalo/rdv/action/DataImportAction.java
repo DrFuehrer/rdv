@@ -52,9 +52,28 @@ public class DataImportAction extends DataViewerAction {
   }
   
   /**
-   * Prompts the user for the data file and uploads it to the RBNB server.
+   * Prompts the user for the data file and source name, then uploads the data
+   * to the RBNB server.
    */
   public void actionPerformed(ActionEvent ae) {
+    importData();
+  }
+  
+  /**
+   * Prompts the user for the data file and source name, then uploads the data
+   * to the RBNB server.
+   */
+  public void importData() {
+    importData(null);
+  }
+
+  /**
+   * Prompts the user for the data file, then uploads the data
+   * to the RBNB server with the specified source name.
+   * 
+   * @param sourceName  the name of the source on the RBNB server
+   */ 
+  public void importData(String sourceName) {
     File dataFile = getFile();
     
     if (dataFile == null) {
@@ -69,7 +88,9 @@ public class DataImportAction extends DataViewerAction {
       return;
     }
     
-    String sourceName = getDefaultSourceName(dataFile);
+    if (sourceName == null || sourceName.length() == 0) {
+      sourceName = getDefaultSourceName(dataFile);
+    }
     
     new ImportDialog(dataFile, sourceName);
   }
