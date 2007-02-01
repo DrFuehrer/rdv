@@ -80,7 +80,6 @@ import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
 import org.nees.buffalo.rdv.action.ActionFactory;
 import org.nees.buffalo.rdv.action.DataViewerAction;
-import org.nees.buffalo.rdv.action.JPEGImportAction;
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
@@ -920,9 +919,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	public void postStatus(String statusMessage) {
 		JOptionPane.showMessageDialog(this, statusMessage, "Status", JOptionPane.INFORMATION_MESSAGE);
 	}
-  
-  public void showImportDialog() {}
-  public void showImportDialog(String sourceName) {}
   
   public void showExportDialog() {
     List channels = channelListPanel.getSelectedChannels();

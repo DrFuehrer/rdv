@@ -1002,17 +1002,6 @@ public class RBNBController implements Player, MetadataListener, LogListener {
 		return lastTime;
 	}
 				
-	private static void printChannelMap(ChannelMap cmap) {
-		String[] channels = cmap.GetChannelList();
-		for (int i=0; i<channels.length; i++) {
-			log.info("Channel " + channels[i] + ": " + DataViewer.formatDate(cmap.GetTimeStart(i)) + " (" + cmap.GetTimeDuration(i) + ").");
-			double[] times = cmap.GetTimes(i);
-			for (int j=0; j<times.length; j++) {
-				log.info(" location = " + DataViewer.formatDate(times[j]) + ".");
-			}
-		}
-	}	
-	
 	
  	// Player Methods
 	
