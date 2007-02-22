@@ -100,8 +100,8 @@ import org.jfree.ui.RectangleEdge;
 import org.jfree.util.ShapeUtilities;
 import org.jfree.util.UnitType;
 import org.nees.buffalo.rdv.data.DataFileChannel;
-import org.nees.buffalo.rdv.data.DataFileListener;
 import org.nees.buffalo.rdv.data.DataFileReader;
+import org.nees.buffalo.rdv.data.DoubleDataSample;
 import org.nees.buffalo.rdv.rbnb.Channel;
 
 import com.rbnb.sapi.ChannelMap;
@@ -404,32 +404,34 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     if (xChannel.getUnit() != null) {
       xChannelName += " (" + xChannel.getUnit() + ")";
     }
-    final int xChannelIndex = channels.indexOf(xChannel);
+    int xChannelIndex = channels.indexOf(xChannel);
     
     String yChannelName = yChannel.getChannelName();
     if (yChannel.getUnit() != null) {
       yChannelName += " (" + yChannel.getUnit() + ")";
     }
-    final int yChannelIndex = channels.indexOf(yChannel);
+    int yChannelIndex = channels.indexOf(yChannel);
     
     String seriesName = xChannelName + " vs. " + yChannelName;
     
-    final XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
+    XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
     
-    DataFileListener listener = new DataFileListener() {
-      public void postDataSamples(double timestamp, double[] values) {
+    try {
+      DoubleDataSample sample;
+      while ((sample = reader.readSample()) != null) {
+        double timestamp = sample.getTimestamp();
+        double[] values = sample.getValues();
+        
         FixedMillisecond time = new FixedMillisecond((long)(timestamp*1000));
         XYTimeSeriesDataItem dataItem = new XYTimeSeriesDataItem(time);
+        
         if (values[xChannelIndex] != Double.NaN && values[yChannelIndex] != Double.NaN) {
           dataItem.setX(values[xChannelIndex]);
           dataItem.setY(values[yChannelIndex]);
         }
+        
         data.add(dataItem, false);
-      }        
-    };
-    
-    try {
-      reader.readData(listener);
+      }
     } catch (Exception e) {
       e.printStackTrace();
       return;

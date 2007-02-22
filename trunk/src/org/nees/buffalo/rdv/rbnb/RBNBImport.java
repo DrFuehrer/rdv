@@ -38,8 +38,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.data.DataFileChannel;
-import org.nees.buffalo.rdv.data.DataFileListener;
 import org.nees.buffalo.rdv.data.DataFileReader;
+import org.nees.buffalo.rdv.data.DoubleDataSample;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.SAPIException;
@@ -50,7 +50,7 @@ import com.rbnb.sapi.Source;
  * 
  * @author  Jason P. Hanley
  */
-public class RBNBImport implements DataFileListener {
+public class RBNBImport {
 	/** the logger for this class */
 	protected static Log log = LogFactory.getLog(RBNBImport.class.getName());
 	
@@ -195,7 +195,10 @@ public class RBNBImport implements DataFileListener {
 
     boolean error = false;
     try {
-      reader.readData(this);
+      DoubleDataSample sample;
+      while ((sample = reader.readSample()) != null) {
+        postDataSamples(sample.getTimestamp(), sample.getValues());
+      }
       source.Flush(cmap);
     } catch (Exception e) {
       e.printStackTrace();
