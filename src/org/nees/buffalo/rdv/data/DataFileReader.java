@@ -69,11 +69,17 @@ public class DataFileReader {
   /** The last line read in the file. */
   private String line;
   
+  /** The start time for the data */
+  private double startTime;
+  
   /** Indicates if there is a time column */
   private boolean hasTimeColumn;
   
   /** Indicates that the time column is in ISO8601 format */
   private boolean timeIsISO8601;
+  
+  /** The number of samples read */
+  private int samples;
   
   /** The date format for ISO8601 */
   private static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
@@ -115,6 +121,16 @@ public class DataFileReader {
       readHeader();
     }
     
+    // get start time from header for data files using an elapsed time column
+    startTime = 0;
+    if (getProperty(startTimePropertyKeys) != null) {
+      try {
+        startTime = ISO8601_DATE_FORMAT.parse(getProperty(startTimePropertyKeys)).getTime()/1000d;
+      } catch (ParseException e) {}
+    }
+    
+    samples = 0;
+    
     parseUnitProperty();
     
     if (properties.get("samples") == null) {
@@ -152,30 +168,24 @@ public class DataFileReader {
   }
     
   /**
-   * Start reading data from the file. For each sample time (or line) the
-   * listener will be called with the data read.
+   * Reads and returns a data sample from the data file. Null will be returned
+   * when the end of the file is reached.
    * 
-   * @param listener      the listener for data
+   * @return              the data sample, or null if the end of the file is
+   *                      reached
    * @throws IOException  if there is an error reading the data file
-   * @throws Exception    if there is an error posting the data
    */
-  public void readData(DataFileListener listener) throws IOException, Exception {
-    int currentLine = 0;
+  public DoubleDataSample readSample() throws IOException {
+    if (line == null) {
+      return null;
+    }
     
     int firstDataIndex;
     if (hasTimeColumn) {
       firstDataIndex = 1;
     } else {
       firstDataIndex = 0;
-    }
-    
-    // get start time from header for data files using an elapsed time column
-    double startTime = 0;
-    if (getProperty(startTimePropertyKeys) != null) {
-      try {
-        startTime = ISO8601_DATE_FORMAT.parse(getProperty(startTimePropertyKeys)).getTime()/1000d;
-      } catch (ParseException e) {}
-    }
+    }    
     
     do {
       line = line.trim();
@@ -189,7 +199,7 @@ public class DataFileReader {
       double[] values = new double[channels.size()];
       
       if (!hasTimeColumn) {
-        timestamp = currentLine;
+        timestamp = samples;
       } else if (timeIsISO8601) {
         try {
           timestamp = ISO8601_DATE_FORMAT.parse(tokens[0].trim()).getTime()/1000d;
@@ -215,12 +225,16 @@ public class DataFileReader {
         values[i-firstDataIndex] = value;
       }
       
-      listener.postDataSamples(timestamp, values);
+      samples++;
       
-      currentLine++;
+      line = reader.readLine();
+      
+      return new DoubleDataSample(timestamp, values);
     } while ((line = reader.readLine()) != null);
+    
+    return null;
   }
-  
+    
   /**
    * Reads the header of the data file. This constructs the data file properties
    * and list of channels.
