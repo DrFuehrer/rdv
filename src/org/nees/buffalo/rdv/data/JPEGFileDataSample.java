@@ -39,10 +39,7 @@ import java.io.File;
  * 
  * @author Jason P. Hanley
  */
-public class JPEGFileDataSample {
-  /** the timestamp of the image */
-  private final double timestamp;
-  
+public class JPEGFileDataSample extends DataSample{
   /** the JPEG image */
   private final byte[] data;
   
@@ -57,18 +54,10 @@ public class JPEGFileDataSample {
    * @param file       the file containing the image
    */
   public JPEGFileDataSample(double timestamp, byte[] data, File file) {
-    this.timestamp = timestamp;
+    super(timestamp);
+    
     this.data = data;
     this.file = file;
-  }
-
-  /**
-   * Gets the image timestamp.
-   * 
-   * @return  the timestamp for the image
-   */
-  public double getTimestamp() {
-    return timestamp;
   }
 
   /**
