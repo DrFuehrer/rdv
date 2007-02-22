@@ -56,6 +56,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -163,9 +164,18 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     JPanel filterPanel = new JPanel();
     filterPanel.setLayout(new BorderLayout());
     filterPanel.setBackground(Color.white);
-    filterPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+    filterPanel.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createEmptyBorder(5, 5, 5, 5),
+        BorderFactory.createCompoundBorder(
+          BorderFactory.createLineBorder(Color.lightGray),
+          BorderFactory.createEmptyBorder(2, 5, 2, 5))));
+    
+    JLabel filterIconLabel = new JLabel(DataViewer.getIcon("icons/filter.gif"));
+    filterIconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+    filterPanel.add(filterIconLabel, BorderLayout.WEST);
     
     filterTextField = new JTextField();
+    filterTextField.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
     filterTextField.setToolTipText("Enter text here to filter the channel list");
     filterTextField.getDocument().addDocumentListener(new DocumentListener() {
       public void changedUpdate(DocumentEvent e) {
