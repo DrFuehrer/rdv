@@ -609,14 +609,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
       popup.addSeparator();
     }
     
-    menuItem = new JMenuItem("Import data to source...", DataViewer.getIcon("icons/import.gif"));
-    menuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        ActionFactory.getInstance().getDataImportAction().importData(sourceName);
-      }
-    });
-    popup.add(menuItem);
-
     menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
