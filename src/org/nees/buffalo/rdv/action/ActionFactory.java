@@ -50,6 +50,9 @@ public class ActionFactory {
   /** the action to control offline mode */
   private OfflineAction offlineAction;
   
+  /** the action to import data from NEEScentral */
+  private CentralImportAction centralImportAction;
+  
   /**
    * Creates the action factory. 
    */
@@ -107,5 +110,18 @@ public class ActionFactory {
     }
     
     return offlineAction;
+  }
+  
+  /**
+   * Gets the NEEScentral import action.
+   *
+   * @return  the NEEScentral import action
+   */
+  public CentralImportAction getCentralImportAction() {
+    if (centralImportAction == null) {
+      centralImportAction = new CentralImportAction();
+    }
+    
+    return centralImportAction;
   }
 }
