@@ -87,6 +87,7 @@ import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
+import org.swixml.SwingEngine;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -195,6 +196,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	
 	private void initFrame(boolean isApplet) {
 		frame = this;
+    
+    SwingEngine.setAppFrame(frame);
 
 		if (!isApplet) {
 			frame.addWindowListener(new WindowAdapter() {
@@ -586,6 +589,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     importSubMenu.add(menuItem);
     
     menuItem = new JMenuItem(actionFactory.getJPEGImportAction());
+    importSubMenu.add(menuItem);
+    
+    importSubMenu.addSeparator();
+    
+    menuItem = new JMenuItem(actionFactory.getCentralImportAction());
     importSubMenu.add(menuItem);
     
     fileMenu.add(importSubMenu);
