@@ -33,6 +33,7 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
@@ -40,6 +41,8 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+
+import org.swixml.SwingEngine;
 
 /**
  * A dialog to display the progress of a task.
@@ -65,7 +68,7 @@ public class ProgressWindow extends JDialog {
    * @param headerText  the text for the header
    */
   public ProgressWindow(String headerText) {
-    super();
+    super(SwingEngine.getAppFrame());
     
     initProgressWindow(headerText);
   }
@@ -77,24 +80,35 @@ public class ProgressWindow extends JDialog {
    * @param headerText  the text for the header
    */
   private void initProgressWindow(String headerText) {
+    setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+    
+    setTitle(headerText);
+    
     JPanel container = new JPanel();
     container.setLayout(new BorderLayout(5, 5));
-    container.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     setContentPane(container);
     
-    
     if (headerText != null) {
-      JLabel headerLabel = new JLabel(headerText);
+      JLabel headerLabel = new JLabel("<html><font size=+1>" + headerText + "</font></html>");
+      headerLabel.setBackground(Color.white);
+      headerLabel.setOpaque(true);
+      headerLabel.setBorder(BorderFactory.createCompoundBorder(
+          BorderFactory.createMatteBorder(0,0,1,0,Color.gray),
+          BorderFactory.createEmptyBorder(10,10,10,10)));
       container.add(headerLabel, BorderLayout.NORTH);
     }
     
     progressBar = new JProgressBar(0, 1000);
-    progressBar.setPreferredSize(new Dimension(400, 16));
+    progressBar.setBorder(BorderFactory.createCompoundBorder(
+      BorderFactory.createEmptyBorder(10, 10, 5, 10),
+      progressBar.getBorder()));
+    progressBar.setPreferredSize(new Dimension(400, 40));
     progressBar.setStringPainted(true);
     progressBar.setValue(0);
     container.add(progressBar, BorderLayout.CENTER);
     
     statusLabel = new JLabel(" ");
+    statusLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
     container.add(statusLabel, BorderLayout.SOUTH);
     
     pack();
