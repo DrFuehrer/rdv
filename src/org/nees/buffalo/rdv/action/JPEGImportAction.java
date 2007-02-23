@@ -136,16 +136,14 @@ public class JPEGImportAction extends DataViewerAction {
     progressWindow.setVisible(true);
     
     JPEGFileCollectionReader reader = new JPEGFileCollectionReader(directory);
+    int samples = reader.getFileCount();
     
     String name = directory.getName();
-    RBNBSource source = new RBNBSource(name);
+    RBNBSource source = new RBNBSource(name, samples);
     
     String channel = "video.jpg";
     String mime = "image/jpeg";
     source.addChannel(channel, mime);
-    
-    int samples = reader.getFileCount();
-    source.setArchiveSize(samples);
     
     int currentSample = 0;
     

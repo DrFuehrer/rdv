@@ -58,7 +58,11 @@ import org.nees.buffalo.rdv.ui.ProgressWindow;
  *
  */
 public class DataImportAction extends DataViewerAction {
+  /** the window to show the progress of the import */
   private ProgressWindow progressWindow;
+  
+  /** the number of samples to collect before sending the data to the server */
+  private static int SAMPLES_PER_FLUSH = 50;
   
   public DataImportAction() {
     super("Import data file",
@@ -206,25 +210,23 @@ public class DataImportAction extends DataViewerAction {
       float maxProgress = (float)(i+1)/dataFiles.size();
       
       DataFileReader reader = new DataFileReader(dataFile);
+      
+      if (reader.getProperty("samples") == null) {
+        throw new IOException("Unable to determine the number of data samples.");
+      }
 
-      RBNBSource source = new RBNBSource(sourceName);
-
+      int samples = Integer.parseInt(reader.getProperty("samples"));
+      int archiveSize = (int)Math.ceil((double)samples / SAMPLES_PER_FLUSH);
+           
+      RBNBSource source = new RBNBSource(sourceName, archiveSize);      
+      
       List<DataFileChannel> channels = reader.getChannels();
       for (DataFileChannel channel : channels) {
         source.addChannel(channel.getChannelName(),
                           "application/octet-stream",
                           channel.getUnit());        
-      }
-      
-      int samples;
-      if (reader.getProperty("samples") != null) {
-        samples = Integer.parseInt(reader.getProperty("samples"));
-        source.setArchiveSize(samples);
-      } else {
-        samples = -1;
-        source.setArchiveSize(1024);
-      }
-      
+      }      
+
       int currentSample = 0;
       
       DoubleDataSample sample;
