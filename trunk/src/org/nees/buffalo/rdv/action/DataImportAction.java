@@ -34,46 +34,48 @@ package org.nees.buffalo.rdv.action;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
-import org.nees.buffalo.rdv.ui.ImportDialog;
+import org.nees.buffalo.rdv.data.DataFileChannel;
+import org.nees.buffalo.rdv.data.DataFileReader;
+import org.nees.buffalo.rdv.data.DoubleDataSample;
+import org.nees.buffalo.rdv.rbnb.RBNBException;
+import org.nees.buffalo.rdv.rbnb.RBNBSource;
+import org.nees.buffalo.rdv.ui.ProgressWindow;
 
 /**
- * An action to import a data file.
+ * An action to import data files.
  * 
  * @author Jason P. Hanley
  *
  */
 public class DataImportAction extends DataViewerAction {
+  private ProgressWindow progressWindow;
+  
   public DataImportAction() {
     super("Import data file",
           "Import local data to RBNB server");
   }
   
   /**
-   * Prompts the user for the data file and source name, then uploads the data
-   * to the RBNB server.
+   * Prompts the user for the data file and uploads the data to the RBNB server.
    */
   public void actionPerformed(ActionEvent ae) {
     importData();
   }
   
   /**
-   * Prompts the user for the data file and source name, then uploads the data
-   * to the RBNB server.
+   * Prompts the user for the data file and uploads the data to the RBNB server.
    */
   public void importData() {
-    importData(null);
-  }
-
-  /**
-   * Prompts the user for the data file, then uploads the data
-   * to the RBNB server with the specified source name.
-   * 
-   * @param sourceName  the name of the source on the RBNB server
-   */ 
-  public void importData(String sourceName) {
     File dataFile = getFile();
     
     if (dataFile == null) {
@@ -88,11 +90,169 @@ public class DataImportAction extends DataViewerAction {
       return;
     }
     
+    importData(dataFile);
+  }
+  
+  /**
+   * Uploads the data to the RBNB server.
+   * 
+   * @param dataFile  the data file
+   */
+  public void importData(File dataFile) {
+    importData(dataFile, null);
+  }
+  
+  /**
+   * Uploads the data to the RBNB server using the given source name.
+   * 
+   * @param dataFile    the data file
+   * @param sourceName  the source name
+   */
+  public void importData(File dataFile, String sourceName) {
+    URL dataFileURL = null;
+    try {
+      dataFileURL = dataFile.toURL();
+    } catch (MalformedURLException e) {}
+    
+    importData(dataFileURL, sourceName);
+  }
+  
+  /**
+   * Uploads the data to the RBNB server using the given source name.
+   * 
+   * @param dataFile    the data file URL
+   * @param sourceName  the source name
+   */
+  public void importData(URL dataFile, String sourceName) {
     if (sourceName == null || sourceName.length() == 0) {
       sourceName = getDefaultSourceName(dataFile);
+    }    
+    
+    importData(Collections.singletonList(dataFile),
+               Collections.singletonList(sourceName));
+  }
+  
+  /**
+   * Uploads the data to the RBNB server.
+   * 
+   * @param dataFiles  the data files
+   */
+  public void importData(List<URL> dataFiles) {
+    List<String> sourceNames = new ArrayList<String>();
+    for (URL dataFile : dataFiles) {
+      sourceNames.add(getDefaultSourceName(dataFile));
     }
     
-    new ImportDialog(dataFile, sourceName);
+    importData(dataFiles, sourceNames);
+  }  
+  
+  /**
+   * Uploads the data to the RBNB using the given source names. This will happen
+   * is a separate thread.
+   * 
+   * @param dataFiles    the data files
+   * @param sourceNames  the source names
+   */
+  public void importData(final List<URL> dataFiles, final List<String> sourceNames) {
+    progressWindow = new ProgressWindow("Importing data...");
+    progressWindow.setVisible(true);
+    
+    new Thread() {
+      public void run() {
+        boolean error = false;
+        try {
+          importDataThread(dataFiles, sourceNames);
+        } catch (IOException e) {
+          error = true;
+          e.printStackTrace();
+        } catch (RBNBException e) {
+          error = true;
+          e.printStackTrace();
+        }
+        
+        progressWindow.dispose();
+
+        if (!error) {
+          JOptionPane.showMessageDialog(null,
+              "Import complete.",
+              "Import complete",
+              JOptionPane.INFORMATION_MESSAGE);        
+          
+        } else {
+          JOptionPane.showMessageDialog(null,
+              "There was an error importing the data file.",
+              "Import failed",
+              JOptionPane.ERROR_MESSAGE);
+        }
+      }
+    }.start();
+  }
+  
+  /**
+   * The thread that does the importing.
+   * 
+   * @param dataFiles       the list of data files to import
+   * @param sourceNames     the names of the sources for the data files
+   * @throws IOException    if there is an error reading the data files
+   * @throws RBNBException  if there is an error importing the data
+   */
+  private void importDataThread(List<URL> dataFiles, List<String> sourceNames) throws IOException, RBNBException {
+    for (int i=0; i<dataFiles.size(); i++) {
+      URL dataFile = dataFiles.get(i);
+      String sourceName = sourceNames.get(i);
+      
+      progressWindow.setStatus("Importing data file " + getFileName(dataFile));
+      float minProgress = (float)(i)/dataFiles.size();
+      float maxProgress = (float)(i+1)/dataFiles.size();
+      
+      DataFileReader reader = new DataFileReader(dataFile);
+
+      RBNBSource source = new RBNBSource(sourceName);
+
+      List<DataFileChannel> channels = reader.getChannels();
+      for (DataFileChannel channel : channels) {
+        source.addChannel(channel.getChannelName(),
+                          "application/octet-stream",
+                          channel.getUnit());        
+      }
+      
+      int samples;
+      if (reader.getProperty("samples") != null) {
+        samples = Integer.parseInt(reader.getProperty("samples"));
+        source.setArchiveSize(samples);
+      } else {
+        samples = -1;
+        source.setArchiveSize(1024);
+      }
+      
+      int currentSample = 0;
+      
+      DoubleDataSample sample;
+      while ((sample = reader.readSample()) != null) {
+        double timestamp = sample.getTimestamp();
+        double[] values = sample.getValues();
+        for (int j=0; j<values.length; j++) {
+          if (values[j] == Double.NaN) {
+            continue;
+          }
+          source.putData(channels.get(j).getChannelName(), timestamp, values[j]);
+        }
+        
+        currentSample++;
+        if (currentSample % 50 == 0) {
+          source.flush();
+        }
+        
+        if (samples != -1) {
+          progressWindow.setProgress(minProgress + maxProgress * currentSample/samples);
+        }
+      }
+      
+      source.flush();
+      source.close();
+      
+      progressWindow.setProgress(maxProgress);
+    }
   }
   
   /**
@@ -100,7 +260,7 @@ public class DataImportAction extends DataViewerAction {
    * 
    * @return  the data file, or null if none is selected
    */
-  private File getFile() {
+  private static File getFile() {
     JFileChooser fileChooser = new JFileChooser();
     
     int returnVal = fileChooser.showOpenDialog(null);
@@ -113,14 +273,36 @@ public class DataImportAction extends DataViewerAction {
   }
   
   /**
+   * Gets the name of the file from the URL.
+   * 
+   * @param file  the file URL
+   * @return      the name of the file
+   */
+  private static String getFileName(URL file) {
+    String fileName = file.getPath();
+    
+    // fix for annoying NEEScentral links
+    if (fileName.endsWith("/content")) {
+      fileName = fileName.substring(0, fileName.length()-8);
+    }
+    
+    int lastPathIndex = fileName.lastIndexOf('/');
+    if (fileName.length() > lastPathIndex+1) {
+      fileName = fileName.substring(lastPathIndex+1);
+    }
+    
+    return fileName;    
+  }
+  
+  /**
    * Gets the default name of the source for the given the file. This will be
    * the name of the file without the extension.
    * 
    * @param dataFile  the data file
    * @return          the source name
    */
-  private String getDefaultSourceName(File dataFile) {
-    String sourceName = dataFile.getName();
+  private static String getDefaultSourceName(URL dataFile) {
+    String sourceName = getFileName(dataFile);
     
     int dotIndex = sourceName.lastIndexOf('.');
     if (dotIndex != -1) {
