@@ -70,24 +70,26 @@ public class RBNBSource {
   private double lastTimestamp;
   
   /**
-   * Creates an RBNBSource object with the given name.
+   * Creates an RBNBSource object with the given name and archive.
    * 
    * @param name            the name of the RBNB source
+   * @param archive         the archive size
    * @throws RBNBException  if there is an error creating the source
    */
-  public RBNBSource(String name) throws RBNBException {
-    this(name, DEFAULT_HOST);
+  public RBNBSource(String name, int archive) throws RBNBException {
+    this(name, archive, DEFAULT_HOST);
   }
   
   /**
    * Creates an RBNBSource object with the given name on the specified host.
    * 
    * @param name            the name of the RBNB source
+   * @param archive         the archive size
    * @param host            the host name of the RBNB server
    * @throws RBNBException  if there is an error creating the source
    */
-  public RBNBSource(String name, String host) throws RBNBException {
-    this(name, host, DEFAULT_PORT);
+  public RBNBSource(String name, int archive, String host) throws RBNBException {
+    this(name, archive, host, DEFAULT_PORT);
   }
   
   /**
@@ -95,35 +97,22 @@ public class RBNBSource {
    * port.
    * 
    * @param name            the name of the RBNB source
+   * @param archive         the archive size
    * @param host            the host name of the RBNB server
    * @param port            the port number of the RBNB server
    * @throws RBNBException  if there is an error creating the source
    */
-  public RBNBSource(String name, String host, int port) throws RBNBException {
+  public RBNBSource(String name, int archive, String host, int port) throws RBNBException {
     this.name = name;
     this.host = host;
     this.port = port;
     
-    source = new Source(1, "none", 0);
+    source = new Source(1, "create", archive);
     cmap = new ChannelMap();
     registered = false;
     
     try {
       open();
-    } catch (SAPIException e) {
-      throw new RBNBException(e);
-    }
-  }
-  
-  /**
-   * Sets the archive size. The archive size is the maximum size of the source. 
-   * 
-   * @param archive         the size of the archive (in frames)
-   * @throws RBNBException  if there is an error creating the source
-   */
-  public void setArchiveSize(int archive) throws RBNBException {
-    try {
-      source.SetRingBuffer(1, "create", archive);
     } catch (SAPIException e) {
       throw new RBNBException(e);
     }
@@ -207,9 +196,10 @@ public class RBNBSource {
     try {
       int cindex = cmap.Add(channel);
       
-      if (mime != null) {
-        cmap.PutMime(cindex, mime);
+      if (mime == null) {
+        mime = "application/octet-stream";
       }
+      cmap.PutMime(cindex, mime);
       
       if (unit != null) {
         cmap.PutUserInfo(cindex, "units=" + unit);
@@ -225,7 +215,7 @@ public class RBNBSource {
    * @throws RBNBException  if there is an error registering the metadata
    */
   private void registerChannels() throws RBNBException {
-    if (!registered) {
+    if (registered) {
       return;
     }
     
