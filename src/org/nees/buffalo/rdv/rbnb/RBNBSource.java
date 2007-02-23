@@ -63,6 +63,9 @@ public class RBNBSource {
   /** the channel map used to post data */
   private final ChannelMap cmap;
   
+  /** flag to see if we have registered the channel metadata */
+  private boolean registered;
+  
   /** the timestamp of the last piece of data posted */
   private double lastTimestamp;
   
@@ -103,6 +106,7 @@ public class RBNBSource {
     
     source = new Source(1, "none", 0);
     cmap = new ChannelMap();
+    registered = false;
     
     try {
       open();
@@ -210,11 +214,28 @@ public class RBNBSource {
       if (unit != null) {
         cmap.PutUserInfo(cindex, "units=" + unit);
       }
-      
-      source.Register(cmap);
     } catch (SAPIException e) {
       throw new RBNBException(e);
     }    
+  }
+  
+  /**
+   * Registers the channel metadata for all the added channels.
+   * 
+   * @throws RBNBException  if there is an error registering the metadata
+   */
+  private void registerChannels() throws RBNBException {
+    if (!registered) {
+      return;
+    }
+    
+    try {
+      source.Register(cmap);
+    } catch (SAPIException e) {
+      throw new RBNBException(e);
+    }
+    
+    registered = true;
   }
   
   /**
@@ -227,6 +248,8 @@ public class RBNBSource {
    * @throws RBNBException  if there is an error putting the data.
    */
   public void putData(String channel, double timestamp, double data) throws RBNBException {
+    registerChannels();
+    
     putTime(timestamp);
     
     int cindex = cmap.GetIndex(channel);
@@ -248,6 +271,8 @@ public class RBNBSource {
    * @throws RBNBException  if there is an error putting the data.
    */
   public void putData(String channel, double timestamp, byte[] data) throws RBNBException {
+    registerChannels();
+    
     putTime(timestamp);
     
     int cindex = cmap.GetIndex(channel);
