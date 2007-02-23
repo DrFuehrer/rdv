@@ -594,7 +594,7 @@ public class CentralImportDialog {
   private void startImport() {
     List<URL> dataFiles = new ArrayList<URL>();
     
-    ListModel dataFileListModel = dataFileList.getModel();
+    DefaultListModel dataFileListModel = (DefaultListModel)dataFileList.getModel();
     if (dataFileListModel.getSize() == 0) {
       return;
     }
@@ -606,6 +606,8 @@ public class CentralImportDialog {
     }
     
     dialog.dispose();
+
+    dataFileListModel.clear();
     
     ActionFactory.getInstance().getDataImportAction().importData(dataFiles);
   }
