@@ -34,8 +34,9 @@ package org.nees.buffalo.rdv.data;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ import java.util.Map;
  */
 public class DataFileReader {
   /** The data file */
-  private File file;
+  private URL file;
   
   /** The reader for the data file */
   private BufferedReader reader;
@@ -97,15 +98,25 @@ public class DataFileReader {
   private static final int MAX_HEADER_LINES = 100;
 
   /**
-   * Create a new data file reader and tries to read it's header.
+   * Create a new data file reader and try to read the data file's header.
    * 
    * @param file          the data file
    * @throws IOException  if there is an error opening or reading the data file
    */
   public DataFileReader(File file) throws IOException {
+    this(file.toURL());
+  }
+
+  /**
+   * Create a new data file reader and try to read the data file's header.
+   * 
+   * @param file          the data file URL
+   * @throws IOException  if there is an error opening or reading the data file
+   */
+  public DataFileReader(URL file) throws IOException {
     this.file = file;
     
-    reader = new BufferedReader((new FileReader(file)));
+    reader = new BufferedReader(new InputStreamReader(file.openStream()));
     
     properties = new Hashtable<String,String>();
     channels = new ArrayList<DataFileChannel>();
@@ -116,7 +127,7 @@ public class DataFileReader {
       readHeader();
     } catch (IOException e) {
       // try parsing with a space delimiter
-      reader = new BufferedReader((new FileReader(file)));
+      reader = new BufferedReader(new InputStreamReader(file.openStream()));
       delimiters = " +";
       readHeader();
     }
@@ -323,7 +334,7 @@ public class DataFileReader {
     }
     
     reader.close();
-    reader = new BufferedReader((new FileReader(file)));
+    reader = new BufferedReader(new InputStreamReader(file.openStream()));
     readHeader();    
     
     return samples;
