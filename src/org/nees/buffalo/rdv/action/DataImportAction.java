@@ -47,6 +47,7 @@ import javax.swing.JOptionPane;
 import org.nees.buffalo.rdv.data.DataFileChannel;
 import org.nees.buffalo.rdv.data.DataFileReader;
 import org.nees.buffalo.rdv.data.DoubleDataSample;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBException;
 import org.nees.buffalo.rdv.rbnb.RBNBSource;
 import org.nees.buffalo.rdv.ui.ProgressWindow;
@@ -175,6 +176,8 @@ public class DataImportAction extends DataViewerAction {
         }
         
         progressWindow.dispose();
+        
+        RBNBController.getInstance().updateMetadata();        
 
         if (!error) {
           JOptionPane.showMessageDialog(null,
