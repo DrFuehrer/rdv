@@ -297,7 +297,7 @@ public class RBNBSource {
    */
   public void flush() throws RBNBException {
     try {
-      source.Flush(cmap, true);
+      source.Flush(cmap);
     } catch (SAPIException e) {
       throw new RBNBException(e);
     }
