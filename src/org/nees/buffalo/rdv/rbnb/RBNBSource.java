@@ -110,6 +110,7 @@ public class RBNBSource {
     source = new Source(1, "create", archive);
     cmap = new ChannelMap();
     registered = false;
+    lastTimestamp = -1;
     
     try {
       open();
@@ -296,7 +297,7 @@ public class RBNBSource {
    */
   public void flush() throws RBNBException {
     try {
-      source.Flush(cmap);
+      source.Flush(cmap, true);
     } catch (SAPIException e) {
       throw new RBNBException(e);
     }
