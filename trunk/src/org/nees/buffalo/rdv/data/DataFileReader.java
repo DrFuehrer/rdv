@@ -56,12 +56,16 @@ public class DataFileReader {
   /** The reader for the data file */
   private BufferedReader reader;
   
+  /** The number of lines in the header */
+  private int headerLength;
+  
   /** The properties for the data file */
   private Map<String,String> properties;
   
   /** The channels in the data file */
   private List<DataFileChannel> channels;
   
+  /** The delimiter for properties */
   private String propertyDelimiter = ":";
   
   /** The delimiters to try for the data items. Tab, comma, and semi-colon */
@@ -128,6 +132,10 @@ public class DataFileReader {
     } catch (IOException e) {
       // try parsing with a space delimiter
       reader = new BufferedReader(new InputStreamReader(file.openStream()));
+      
+      properties.clear();
+      channels.clear();
+      
       delimiters = " +";
       readHeader();
     }
@@ -253,9 +261,9 @@ public class DataFileReader {
    * @throws IOException  if there is an error reading the data file
    */
   private void readHeader() throws IOException {
-    int lines = 0;
+    headerLength = 0;
     
-    while ((line = reader.readLine()) != null && lines++ < MAX_HEADER_LINES) {
+    while ((line = reader.readLine()) != null && headerLength++ < MAX_HEADER_LINES) {
       // time whitespace around line
       line = line.trim();
       
@@ -265,10 +273,12 @@ public class DataFileReader {
       }
       
       // look for properties
-      String[] property = line.split(propertyDelimiter, 2);
-      if (property.length == 2) {
-        properties.put(stripString(property[0]).toLowerCase(), stripString(property[1]));
-        continue;
+      if (channels.size() == 0) {
+        String[] property = line.split(propertyDelimiter, 2);
+        if (property.length == 2) {
+          properties.put(stripString(property[0]).toLowerCase(), stripString(property[1]));
+          continue;
+        }
       }
       
       // try to split line
@@ -335,7 +345,10 @@ public class DataFileReader {
     
     reader.close();
     reader = new BufferedReader(new InputStreamReader(file.openStream()));
-    readHeader();    
+    int i = 0;
+    while (i++ < headerLength) {
+      reader.readLine();
+    }
     
     return samples;
   }
