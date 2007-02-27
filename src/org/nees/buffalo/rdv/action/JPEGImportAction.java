@@ -43,6 +43,7 @@ import javax.swing.JOptionPane;
 
 import org.nees.buffalo.rdv.data.JPEGFileDataSample;
 import org.nees.buffalo.rdv.data.JPEGFileCollectionReader;
+import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBException;
 import org.nees.buffalo.rdv.rbnb.RBNBSource;
 import org.nees.buffalo.rdv.ui.ProgressWindow;
@@ -53,6 +54,9 @@ import org.nees.buffalo.rdv.ui.ProgressWindow;
  * @author Jason P. Hanley
  */
 public class JPEGImportAction extends DataViewerAction {
+  /** the window to show the progress of the import */
+  private ProgressWindow progressWindow;
+  
   public JPEGImportAction() {
     super("Import JPEG files",
           "Import a folder that contains JPEG files");
@@ -77,6 +81,9 @@ public class JPEGImportAction extends DataViewerAction {
       return;
     }
     
+    progressWindow = new ProgressWindow("Importing data...");
+    progressWindow.setVisible(true);    
+    
     new Thread() {
       public void run() {        
         try {
@@ -94,6 +101,10 @@ public class JPEGImportAction extends DataViewerAction {
           // TODO Auto-generated catch block
           e.printStackTrace();
         }
+        
+        progressWindow.dispose();
+        
+        RBNBController.getInstance().updateMetadata();
         
         JOptionPane.showMessageDialog(null,
             "Import complete.",
@@ -131,10 +142,7 @@ public class JPEGImportAction extends DataViewerAction {
    * @throws RBNBException          if there is an error communicating with the
    *                                server
    */
-  private void importDirectory(File directory) throws FileNotFoundException, ParseException, IOException, RBNBException {
-    ProgressWindow progressWindow = new ProgressWindow("Importing data...");
-    progressWindow.setVisible(true);
-    
+  private void importDirectory(File directory) throws FileNotFoundException, ParseException, IOException, RBNBException {   
     JPEGFileCollectionReader reader = new JPEGFileCollectionReader(directory);
     int samples = reader.getFileCount();
     
@@ -160,7 +168,5 @@ public class JPEGImportAction extends DataViewerAction {
     }
     
     source.close();
-    
-    progressWindow.setVisible(false);
   }
 }
