@@ -16,6 +16,9 @@
 	<property name="src.dir" value="src"/>
 	<property name="src.data.dir" value="${src.dir}/org/nees/data"/>
 	
+	<!-- UI definition directory -->
+	<property name="ui.dir" value="ui"/>
+	
 	<!-- tests directory -->
 	<property name="tests.dir" value="tests"/>
 	
@@ -147,6 +150,7 @@
 	<target name="jar" depends="compile" description="Build jar">
 		<jar destfile="${build.lib}/${package.name}.jar" duplicate="preserve">
 			<fileset dir="${build.classes}"/>
+			<fileset dir="." includes="${ui.dir}/**"/>
 			<fileset file="version.properties"/>
 			<fileset file="build.properties"/>
 			<fileset file="LICENSE"/>
