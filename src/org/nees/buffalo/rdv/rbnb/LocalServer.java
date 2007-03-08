@@ -32,6 +32,8 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
+import java.io.File;
+
 import com.rbnb.api.Server;
 
 /**
@@ -46,12 +48,23 @@ public class LocalServer {
   /** the RBNB server */
   private Server server;
   
+  /** the archive directory */
+  private File archiveDirectory;
+  
   /**
    * The default constructor for this singleton class. Declared so constructor
    * is protected.
    */
   protected LocalServer() {
     super();
+    
+    int i=0;
+    do {
+      i++;
+      archiveDirectory = new File(System.getProperty("java.io.tmpdir"), "RDV_archive-" + i);
+    } while (archiveDirectory.exists());
+    
+    archiveDirectory.deleteOnExit();
   }
   
   /**
@@ -77,8 +90,13 @@ public class LocalServer {
       return;
     }
     
+    if (!archiveDirectory.exists()) {
+      archiveDirectory.mkdir();
+    }
+    
     // lock down access to localhost only
-    String[] args = { "-L" };
+    String[] args = { "-L",
+                      "-H", archiveDirectory.getCanonicalPath() };
     
     // start the server
     server = Server.launchNewServer(args);
@@ -96,6 +114,8 @@ public class LocalServer {
     
     server.stop();
     server = null;
+    
+    removeDirectory(archiveDirectory);
   }
   
   /**
@@ -105,5 +125,23 @@ public class LocalServer {
    */
   public boolean isServerRunning() {
     return server != null && server.isRunning();
+  }
+  
+  /**
+   * Remove the directory. If the directory contains any files or directories
+   * they will be removed also.
+   * 
+   * @param directory  the directory to be removed
+   */
+  private static void removeDirectory(File directory) {
+    for (File file: directory.listFiles()) {
+      if (file.isDirectory()) {
+        removeDirectory(file);
+      } else {
+        file.delete();
+      }
+    }
+    
+    directory.delete();
   }
 }
