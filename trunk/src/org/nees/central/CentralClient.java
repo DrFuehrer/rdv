@@ -156,7 +156,7 @@ public class CentralClient {
     try {
       HttpsURLConnection connection = (HttpsURLConnection)url.openConnection();
       if (connection.getResponseCode() == 401) {
-        throw new CentralException("Your are not authorized to view this resource");
+        throw new CentralException("You are not authorized to view this resource");
       }
       
       source = new SAXSource(xmlReader, new InputSource(connection.getInputStream()));
