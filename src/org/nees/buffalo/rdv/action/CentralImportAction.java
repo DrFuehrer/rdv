@@ -66,7 +66,7 @@ public class CentralImportAction extends DataViewerAction {
   public void actionPerformed(ActionEvent ae) {
     if (AuthenticationManager.getInstance().getAuthentication() == null) {
       int ret = JOptionPane.showConfirmDialog(SwingEngine.getAppFrame(),
-        "To access protected files, you must to logged in to NEEScentral.\n" +
+        "To access protected files, you must be logged in to NEEScentral.\n" +
         "Do you want to login now?",
         "Login to NEEScentral?",
         JOptionPane.YES_NO_OPTION,
