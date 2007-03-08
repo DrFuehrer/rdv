@@ -96,7 +96,8 @@ public class LocalServer {
     
     // lock down access to localhost only, set the archive directory, and turn
     // off logging and metrics
-    String[] args = { "-L",
+    String[] args = { "-n", "Working Offline",
+                      "-L",
                       "-H", archiveDirectory.getCanonicalPath(),
                       "-l", "OFF",
                       "-m", "OFF"};
