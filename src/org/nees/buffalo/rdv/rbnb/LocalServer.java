@@ -94,9 +94,12 @@ public class LocalServer {
       archiveDirectory.mkdir();
     }
     
-    // lock down access to localhost only
+    // lock down access to localhost only, set the archive directory, and turn
+    // off logging and metrics
     String[] args = { "-L",
-                      "-H", archiveDirectory.getCanonicalPath() };
+                      "-H", archiveDirectory.getCanonicalPath(),
+                      "-l", "OFF",
+                      "-m", "OFF"};
     
     // start the server
     server = Server.launchNewServer(args);
