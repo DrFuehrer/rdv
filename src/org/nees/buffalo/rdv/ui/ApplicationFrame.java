@@ -1049,6 +1049,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
       controlPanel.setEnabled(false);
       markerSubmitPanel.setEnabled(false);
+      
+      ActionFactory.getInstance().getOfflineAction().setSelected(false);
     } else if (oldState == Player.STATE_DISCONNECTED) {
       setTitle(rbnb.getServerName() + " - RDV");
       

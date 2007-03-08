@@ -71,7 +71,7 @@ public class OfflineAction extends DataViewerAction {
     RBNBController rbnb = RBNBController.getInstance();
     LocalServer server = LocalServer.getInstance();
     
-    rbnb.disconnect();
+    rbnb.disconnect(true);
     
     try {
       server.startServer();
@@ -95,7 +95,7 @@ public class OfflineAction extends DataViewerAction {
     RBNBController rbnb = RBNBController.getInstance();
     LocalServer server = LocalServer.getInstance();
     
-    rbnb.disconnect();
+    rbnb.disconnect(true);
     
     try {
       server.stopServer();
