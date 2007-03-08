@@ -58,6 +58,7 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.action.ActionFactory;
+import org.nees.buffalo.rdv.rbnb.LocalServer;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
 import org.nees.buffalo.rdv.ui.ControlPanel;
@@ -94,9 +95,15 @@ public class DataViewer {
 
 	public void exit() {
 		applicationFrame.dispose();
+    
 		if (rbnb != null) {
 			rbnb.exit();
 		}
+    
+    try {
+      LocalServer.getInstance().stopServer();
+    } catch (Exception e) {}
+    
 		log.info("Exiting.");
 
 		System.exit(0);
