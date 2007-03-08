@@ -690,7 +690,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     if (xyMode) {
       if (series == 0 && chans == 1) {
-        domainAxis.setLabel((String)channels.get(0));
+        String channelDisplay = getChannelDisplay((String)channels.get(0));
+        domainAxis.setLabel(channelDisplay);
         rangeAxis.setLabel(null);
       } else if (series == 1 && chans == 0) {
         XYTimeSeries xySeries = ((XYTimeSeriesCollection)dataCollection).getSeries(0); 
@@ -701,15 +702,18 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
           rangeAxis.setLabel(channelNames[1]);
         }
       } else if (series == 1 && chans == 2) {
-        domainAxis.setLabel((String)channels.get(0));
-        rangeAxis.setLabel((String)channels.get(1));
+        String channelDisplay1 = getChannelDisplay((String)channels.get(0));
+        domainAxis.setLabel(channelDisplay1);
+        String channelDisplay2 = getChannelDisplay((String)channels.get(1));
+        rangeAxis.setLabel(channelDisplay2);
       } else {
         domainAxis.setLabel(null);
         rangeAxis.setLabel(null);        
       }      
     } else {
       if (series == 1) {
-        rangeAxis.setLabel((String)channels.get(0));
+        String channelDisplay = getChannelDisplay((String)channels.get(0));
+        rangeAxis.setLabel(channelDisplay);
       } else {
         rangeAxis.setLabel(null);
       }
