@@ -48,6 +48,9 @@ public class LocalServer {
   /** the RBNB server */
   private Server server;
   
+  /** the port for the local server */
+  private int port;
+  
   /** the archive directory */
   private File archiveDirectory;
   
@@ -57,6 +60,8 @@ public class LocalServer {
    */
   protected LocalServer() {
     super();
+    
+    port = getRandomPort();
     
     int i=0;
     do {
@@ -81,6 +86,15 @@ public class LocalServer {
   }
   
   /**
+   * Gets the port number for the server.
+   * 
+   * @return  the port number the server is on
+   */
+  public int getPort() {
+    return port;    
+  }
+  
+  /**
    * Starts the local RBNB server. If one is already started, this does nothing.
    * 
    * @throws Exception  if there is an error starting the server
@@ -97,6 +111,7 @@ public class LocalServer {
     // lock down access to localhost only, set the archive directory, and turn
     // off logging and metrics
     String[] args = { "-n", "Working Offline",
+                      "-a", "localhost:" + port,
                       "-L",
                       "-H", archiveDirectory.getCanonicalPath(),
                       "-l", "OFF",
@@ -129,6 +144,15 @@ public class LocalServer {
    */
   public boolean isServerRunning() {
     return server != null && server.isRunning();
+  }
+  
+  /**
+   * Gets a random port number in the range of 49152 to 65535.
+   * 
+   * @return  a port number
+   */
+  private int getRandomPort() {
+    return (int)(Math.random()*(65535-49152)) + 49152;
   }
   
   /**

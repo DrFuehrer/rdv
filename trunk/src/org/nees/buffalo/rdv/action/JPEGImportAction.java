@@ -147,7 +147,9 @@ public class JPEGImportAction extends DataViewerAction {
     int samples = reader.getFileCount();
     
     String name = directory.getName();
-    RBNBSource source = new RBNBSource(name, samples);
+    RBNBController rbnb = RBNBController.getInstance();
+    RBNBSource source = new RBNBSource(name, samples,
+        rbnb.getRBNBHostName(), rbnb.getRBNBPortNumber());
     
     String channel = "video.jpg";
     String mime = "image/jpeg";

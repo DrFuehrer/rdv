@@ -220,8 +220,10 @@ public class DataImportAction extends DataViewerAction {
 
       int samples = Integer.parseInt(reader.getProperty("samples"));
       int archiveSize = (int)Math.ceil((double)samples / SAMPLES_PER_FLUSH);
-           
-      RBNBSource source = new RBNBSource(sourceName, archiveSize);      
+      
+      RBNBController rbnb = RBNBController.getInstance();
+      RBNBSource source = new RBNBSource(sourceName, archiveSize,
+          rbnb.getRBNBHostName(), rbnb.getRBNBPortNumber());      
       
       List<DataFileChannel> channels = reader.getChannels();
       for (DataFileChannel channel : channels) {
