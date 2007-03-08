@@ -270,7 +270,7 @@ public class DataImportAction extends DataViewerAction {
   private static File getFile() {
     JFileChooser fileChooser = new JFileChooser();
     
-    int returnVal = fileChooser.showOpenDialog(null);
+    int returnVal = fileChooser.showDialog(null, "Import");
     
     if (returnVal == JFileChooser.APPROVE_OPTION) {
       return fileChooser.getSelectedFile();
