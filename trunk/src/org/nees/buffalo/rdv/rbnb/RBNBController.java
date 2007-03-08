@@ -1259,9 +1259,56 @@ public class RBNBController implements Player, MetadataListener, LogListener {
     }
   }
 	
+  /**
+   * Disconnect from the RBNB server. This method will return immediately.
+   */
 	public void disconnect() {
-		setState(STATE_DISCONNECTED);
+		disconnect(false);
 	}
+  
+  /**
+   * Disconnect from the RBNB server. If block is set, this method will not
+   * return until the server has disconnected.
+   * 
+   * @param block  if true, wait for the server to disconnect
+   * @return       true if the server disconnected
+   */
+	public boolean disconnect(boolean block) {
+	  if (!isConnected()) {
+	    return true;
+	  }    
+   
+    if (block) {
+      final Thread object = Thread.currentThread();
+      StateListener listener = new StateListener() {
+        public void postState(int newState, int oldState) {
+          if (newState == STATE_DISCONNECTED) {
+            synchronized (object) {
+              object.notify();
+            }
+          }
+        }
+      };
+      addStateListener(listener);
+      
+      synchronized (object) {
+        setState(STATE_DISCONNECTED);
+        
+        try {
+          object.wait();
+        } catch (InterruptedException e) {
+          return false;
+        }
+      }
+      
+      removeStateListener(listener);
+      
+    } else {
+      setState(STATE_DISCONNECTED);
+    }
+
+    return true;
+	}  
 	
 	public void reconnect() {
     setState(STATE_DISCONNECTED);
