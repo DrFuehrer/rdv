@@ -35,6 +35,7 @@ package org.nees.buffalo.rdv.data;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.ParseException;
@@ -43,6 +44,8 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
 
 /**
  * A class to read data from a data file.
@@ -120,7 +123,7 @@ public class DataFileReader {
   public DataFileReader(URL file) throws IOException {
     this.file = file;
     
-    reader = new BufferedReader(new InputStreamReader(file.openStream()));
+    reader = getReader();
     
     properties = new Hashtable<String,String>();
     channels = new ArrayList<DataFileChannel>();
@@ -131,7 +134,8 @@ public class DataFileReader {
       readHeader();
     } catch (IOException e) {
       // try parsing with a space delimiter
-      reader = new BufferedReader(new InputStreamReader(file.openStream()));
+      reader.close();
+      reader = getReader();
       
       properties.clear();
       channels.clear();
@@ -253,6 +257,28 @@ public class DataFileReader {
     
     return null;
   }
+  
+  /**
+   * Gets a buffered reader for the data file. If the data file is compressed
+   * with zip or gzip it will, the reader will output the uncompressed stream.
+   * 
+   * @return              a read for the data file
+   * @throws IOException  if an error occurs creating the reader
+   */
+  private BufferedReader getReader() throws IOException {
+    InputStream inputStream = file.openStream();
+    
+    String path = file.getPath().toLowerCase();
+    if (path.endsWith(".zip")) {
+      ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+      zipInputStream.getNextEntry();
+      inputStream = zipInputStream;
+    } else if (path.endsWith(".gz")) {
+      inputStream = new GZIPInputStream(inputStream);
+    }
+    
+    return new BufferedReader(new InputStreamReader(inputStream));    
+  }
     
   /**
    * Reads the header of the data file. This constructs the data file properties
@@ -344,7 +370,7 @@ public class DataFileReader {
     }
     
     reader.close();
-    reader = new BufferedReader(new InputStreamReader(file.openStream()));
+    reader = getReader();
     int i = 0;
     while (i++ < headerLength) {
       reader.readLine();
