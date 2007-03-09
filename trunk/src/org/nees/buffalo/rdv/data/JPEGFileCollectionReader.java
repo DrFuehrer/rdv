@@ -63,6 +63,9 @@ public class JPEGFileCollectionReader {
   /** the timestamp format for the file names */
   private static final SimpleDateFormat ISO_8601_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH.mm.ss.SSS'Z'");
   
+  /** the timestamp format for the file names (JpgSaverSink format) */
+  private static final SimpleDateFormat SHORT_ISO_8601_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+  
   /**
    * Creates a new reader for the collection of JPEG files in the specified
    * directory.
@@ -152,9 +155,15 @@ public class JPEGFileCollectionReader {
   
   /**
    * Get the timestamp from the name of the file. This will look for a timestamp
-   * in a file following this format:
+   * in a file following these formats:
    * 
-   * NAME_YYYY-MM-DDTHH.MM.SS.NNNNNNZ.jpg
+   * NAME_YYYY-MM-DDTHH.MM.SS.NNNZ.jpg
+   * 
+   * or
+   * 
+   * NAME_YYYYMMDDTHHMMSSNNN.jpg
+   * 
+   * where the NAME is optional and will be ignored.
    *   
    * @param file             the file to look at
    * @return                 a timestamp in seconds since the epoch
@@ -163,14 +172,19 @@ public class JPEGFileCollectionReader {
   private double getTimestamp(File file) throws ParseException {
     String name = file.getName();
     
-    Pattern pattern = Pattern.compile("^.+_(.+).(?i)jpe{0,1}g$");
+    Pattern pattern = Pattern.compile("_?([0-9TZ\\-\\.]+).(?i)jpe?g$");
     Matcher matcher = pattern.matcher(name);
     if (!matcher.find()) {
       throw new ParseException("Can't find a timestamp in this file name.", 0);
     }
     
     String timeString = matcher.group(1);
-    double timestamp = ISO_8601_DATE_FORMAT.parse(timeString).getTime()/1000d;
+    double timestamp;
+    if (timeString.length() == 17) {
+      timestamp = SHORT_ISO_8601_DATE_FORMAT.parse(timeString).getTime()/1000d;
+    } else {
+      timestamp = ISO_8601_DATE_FORMAT.parse(timeString).getTime()/1000d;
+    }
     return timestamp;
   }
   
