@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/swixml.jar"/>
 	<classpathentry kind="lib" path="lib/rbnb.jar"/>
+	<classpathentry kind="lib" path="lib/bzip2.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
