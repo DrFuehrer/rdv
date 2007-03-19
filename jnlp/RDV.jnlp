@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+"
-  codebase="http://nees.buffalo.edu/software/RDV"
+  codebase="http://it.nees.org/software/rdv"
   href="RDV.jnlp">
 	<information>
 		<title>RDV</title>
-		<vendor>University at Buffalo</vendor>
-		<homepage href="http://nees.buffalo.edu/software/RDV/" />
-		<description>A tool to view synchronzied, streaming data from a RBNB server.</description>
+		<vendor>University at Buffalo, NEESit</vendor>
+		<homepage href="http://it.nees.org/software/rdv/"/>
+		<description>A tool to view synchronzied, streaming data from a Data Turbine server.</description>
 		<icon href="RDV.gif"/>
 		<offline-allowed/>
+		<shortcut online="false">
+			<desktop/>
+			<menu submenu="RDV"/>
+		</shortcut>
 	</information>
 	<security>
 		<all-permissions/>
