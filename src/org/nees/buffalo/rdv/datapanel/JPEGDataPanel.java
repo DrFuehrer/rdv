@@ -125,8 +125,6 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   
   FlexTPSStream flexTPSStream;
  	 	
-  private int numFrames = 0;
-  
 	public JPEGDataPanel() {
 		super();
 		
@@ -135,17 +133,8 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		initUI();
 
 		setDataComponent(panel);
-
-		runLogger();
-		
 	}
   
-	private void runLogger() {
-		Thread t = new Thread(new LogIt());
-		t.start();
-	}
-	
-	
   public void openPanel(final DataPanelManager dataPanelManager) {
     super.openPanel(dataPanelManager);
     
@@ -178,7 +167,6 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   }
 			
 	private void initImage() {
-		log.info("initImage() - start");
 		image = new JPEGPanel();
     
     clickMouseListener = new MouseInputAdapter() {
@@ -915,14 +903,12 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   void channelAdded(String channelName) {
     clearImage();
     setupFlexTPSStream();
-    log.info("Channel " + channelName + " added to JPEGDataPanel");
   }
   
   void channelRemoved(String channelName) {
     clearImage();
     flexTPSStream = null;
     removeRoboticControls();
-    log.info("Channel " + channelName + " removed from JPEGDataPanel");
   }
 	
 	public void postData(ChannelMap channelMap) {
@@ -985,7 +971,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 
 			double imageTime = times[imageIndex];
 			if (imageTime == displayedImageTime) {
-				//log.info("we are already displaying this image");
+				//we are already displaying this image
 				return;
 			}
 			
@@ -1000,8 +986,6 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
  				
 				//update the image index currently displayed for this channel map
 				displayedImageTime = imageTime;
-				numFrames++;
-				
 			} else{
 				log.error("Data array empty for channel " + channelName + ".");	 
 			}
@@ -1012,17 +996,6 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		}
 
 	}
-  
-  private int getNumFrames() {
-  	
-  	return numFrames;
-  }
-  
-  private void setNumFrames(int nF) {
-  	
-  	numFrames = nF;
-  }
-  
   
   public void postState(int newState, int oldState) {
     super.postState(newState, oldState);
@@ -1601,21 +1574,4 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
           focus == true || iris == true);
     }
   }
-  
-  private final class LogIt implements Runnable {
-  	
-  	public void run() {
-  		while(true) {
-    		try {
-      		Thread.sleep(10000);
-      		log.info("VideoChannel: " + getTitle() + " Number of frames rendered: " + getNumFrames());
-      		setNumFrames(0);
-    		}
-        catch (InterruptedException ex) {
-          log.error("Could not sleep!");
-        }
-  		}
-  	}
-  }
-  
 }
