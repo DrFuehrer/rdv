@@ -1056,7 +1056,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
-      importAction.setEnabled(true);
+      importAction.setEnabled(rbnb.getRBNBHostName().equals("localhost"));
       exportAction.setEnabled(true);
 
       controlPanel.setEnabled(true);
