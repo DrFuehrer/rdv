@@ -58,16 +58,16 @@ public class OfflineAction extends DataViewerAction {
    */
   public void actionPerformed(ActionEvent ae) {
     if (isSelected()) {
-      stopServer();
+      stopOffline();
     } else {
-      startServer();
+      goOffline();
     }
   }
   
   /**
    * Start the local server and connect to it.
    */
-  public void startServer() {
+  public void goOffline() {
     RBNBController rbnb = RBNBController.getInstance();
     LocalServer server = LocalServer.getInstance();
     
@@ -89,19 +89,11 @@ public class OfflineAction extends DataViewerAction {
   }
   
   /**
-   * Disconnect from the local server and stop it.
+   * Disconnect from the local server.
    */
-  public void stopServer() {
+  public void stopOffline() {
     RBNBController rbnb = RBNBController.getInstance();
-    LocalServer server = LocalServer.getInstance();
-    
     rbnb.disconnect(true);
-    
-    try {
-      server.stopServer();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
     
     setSelected(false);
   }

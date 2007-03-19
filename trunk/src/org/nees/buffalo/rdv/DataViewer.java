@@ -494,7 +494,7 @@ public class DataViewer {
   			}
       }
 		} else {
-		  ActionFactory.getInstance().getOfflineAction().startServer();
+		  ActionFactory.getInstance().getOfflineAction().goOffline();
     }
 	}
 }
