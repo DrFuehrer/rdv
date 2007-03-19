@@ -6,7 +6,7 @@
 	<property name="package.name" value="RDV"/>
 	
 	<!-- compile with debugging information -->
-	<property name="debug" value="on"/>
+	<property name="debug" value="off"/>
 	
 	<!-- get version information -->
 	<property file="version.properties"/>
