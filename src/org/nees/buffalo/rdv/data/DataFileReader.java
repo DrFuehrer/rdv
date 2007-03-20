@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
@@ -93,6 +94,11 @@ public class DataFileReader {
   
   /** The date format for ISO8601 */
   private static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+  
+  // set timezone to UTC
+  static {
+    ISO8601_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+  }
 
   /** The keys that can denote a list of channels */
   private static final String[] channelPropertyKeys = {"channel", "channels", "channel name", "channel names", "active channel", "active channels"};
