@@ -93,7 +93,7 @@ public class DataFileReader {
   private int samples;
   
   /** The date format for ISO8601 */
-  private static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+  private static final SimpleDateFormat ISO8601_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
   
   // set timezone to UTC
   static {
@@ -156,7 +156,7 @@ public class DataFileReader {
     startTime = 0;
     if (getProperty(startTimePropertyKeys) != null) {
       try {
-        startTime = ISO8601_DATE_FORMAT.parse(getProperty(startTimePropertyKeys)).getTime()/1000d;
+        startTime = parseTimestamp(getProperty(startTimePropertyKeys));
       } catch (ParseException e) {}
     }
     
@@ -233,7 +233,7 @@ public class DataFileReader {
         timestamp = samples;
       } else if (timeIsISO8601) {
         try {
-          timestamp = ISO8601_DATE_FORMAT.parse(tokens[0].trim()).getTime()/1000d;
+          timestamp = parseTimestamp(tokens[0].trim());
         } catch (ParseException e) {
           continue;
         }
@@ -468,7 +468,7 @@ public class DataFileReader {
    * @param value  the value string
    * @return       true if it is a number, false otherwise
    */
-  private boolean isNumber(String value) {
+  private static boolean isNumber(String value) {
     try {
       Double.parseDouble(value);
     } catch (NumberFormatException e) {
@@ -484,14 +484,46 @@ public class DataFileReader {
    * @param iso8601  the timestamp string
    * @return         true if it is a timestamp, false otherwise
    */
-  private boolean isTimestamp(String iso8601) {
+  private static boolean isTimestamp(String iso8601) {
     try {
-      ISO8601_DATE_FORMAT.parse(iso8601);
+      parseTimestamp(iso8601);
     } catch (ParseException e) {
       return false;
     }
     
     return true;
+  }
+  
+  /**
+   * Parse the ISO8601 timestamp.
+   * 
+   * @param timestamp        the timestamp to parse
+   * @return                 the time in seconds
+   * @throws ParseException  if there is an error parsing the timestamp
+   */
+  private static double parseTimestamp(String timestamp) throws ParseException {
+    if (timestamp.endsWith("Z")) {
+      timestamp = timestamp.substring(0, timestamp.length()-1);
+    }
+    
+    String[] parts = timestamp.split("\\.", 2);
+    timestamp = parts[0];
+    
+    double subseconds;
+    if (parts.length == 2) {
+      try {
+        subseconds = Double.parseDouble("0." + parts[1]);
+      } catch (NumberFormatException e) {
+        throw new ParseException("Invalid subseconds field", timestamp.length());
+      }
+    }
+    else {
+      subseconds = 0;
+    }
+    
+    double time = ISO8601_DATE_FORMAT.parse(timestamp).getTime()/1000d;
+    time += subseconds;
+    return time;
   }
   
   /**
