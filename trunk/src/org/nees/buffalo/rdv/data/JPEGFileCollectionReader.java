@@ -42,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,6 +66,12 @@ public class JPEGFileCollectionReader {
   
   /** the timestamp format for the file names (JpgSaverSink format) */
   private static final SimpleDateFormat SHORT_ISO_8601_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmssSSS");
+  
+  // set timezone to UTC
+  static {
+    ISO_8601_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+    SHORT_ISO_8601_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+  }  
   
   /**
    * Creates a new reader for the collection of JPEG files in the specified
