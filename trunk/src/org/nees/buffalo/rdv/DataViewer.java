@@ -290,34 +290,27 @@ public class DataViewer {
   /**
    * Open the URL in an external browser. 
    * 
-   * @param url  the url to open
-   * @return     true if the command executes successfully, false if there is
-   *             some error
+   * @param url         the url to open
+   * @throws Exception  if there is an error opening the browser
    */
-  public static boolean browse(URL url) {
-    try { 
-      String osName = System.getProperty("os.name");
-      if (osName.startsWith("Mac OS")) {
-        Class fileMgr = Class.forName("com.apple.eio.FileManager");
-        Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
-        openURL.invoke(null, new Object[] {url});
-      } else if (osName.startsWith("Windows")) {
-        Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
-      } else { //assume Unix or Linux
-        String[] browsers = { "sensible-browser", "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
-        String browser = null;
-        for (int count = 0; count < browsers.length && browser == null; count++)
-          if (Runtime.getRuntime().exec(new String[] {"which", browsers[count]}).waitFor() == 0)
-            browser = browsers[count];
-        if (browser == null)
-          throw new Exception("Could not find web browser");
-        else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
-      }
-    } catch(Exception ex) {
-      return false;
+  public static void browse(URL url) throws Exception {
+    String osName = System.getProperty("os.name");
+    if (osName.startsWith("Mac OS")) {
+      Class fileMgr = Class.forName("com.apple.eio.FileManager");
+      Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
+      openURL.invoke(null, new Object[] {url});
+    } else if (osName.startsWith("Windows")) {
+      Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+    } else { //assume Unix or Linux
+      String[] browsers = { "sensible-browser", "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
+      String browser = null;
+      for (int count = 0; count < browsers.length && browser == null; count++)
+        if (Runtime.getRuntime().exec(new String[] {"which", browsers[count]}).waitFor() == 0)
+          browser = browsers[count];
+      if (browser == null)
+        throw new Exception("Could not find web browser");
+      else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
     }
-    
-    return true;
   }
 
 	public static void main(String[] args) {

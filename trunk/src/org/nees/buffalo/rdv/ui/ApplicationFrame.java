@@ -501,7 +501,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         try {
           URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-15-users-guide.php");
           DataViewer.browse(usersGuideURL);
-        } catch (MalformedURLException e) {}        
+        } catch (Exception e) {}        
       }
     };
     
@@ -510,7 +510,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         try {
           URL supportURL = new URL("http://it.nees.org/support/");
           DataViewer.browse(supportURL);
-        } catch (MalformedURLException e) {}        
+        } catch (Exception e) {}        
       }
     };    
     
@@ -519,7 +519,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         try {
           URL releaseNotesURL = new URL("http://it.nees.org/library/rdv/rdv-release-notes.php");
           DataViewer.browse(releaseNotesURL);
-        } catch (MalformedURLException e) {}
+        } catch (Exception e) {}
       }
     };
     
