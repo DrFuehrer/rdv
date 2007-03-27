@@ -61,6 +61,7 @@ import javax.swing.event.MouseInputAdapter;
 
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.video.VLCLauncher;
 
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.HyperlinkEvent;
@@ -189,9 +190,14 @@ public class WebDataPanel extends AbstractDataPanel {
     htmlRenderer.addHyperlinkListener(new HyperlinkListener() {
       public void hyperlinkUpdate(HyperlinkEvent evt) {
     	  if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {  // a hyperlink is clicked on the page
-    		  URL url = evt.getURL();
-          
-          handleExternal(url);  // handleing hyperlink clicks on JEditPane open external browser 
+          URL url = evt.getURL();
+          String location;
+          if (url == null) {
+            location = evt.getDescription();
+          } else {
+            location = url.toString();
+          }
+          loadExternalPage(location);
     	  }
       }  
     });
@@ -398,7 +404,20 @@ public class WebDataPanel extends AbstractDataPanel {
    * Loads the webpage URL specified in the address text field.
    */
   private void loadPage() {
-      loadPage(locationField.getText());
+    String location = locationField.getText();
+    
+    try {
+      location = URLDecoder.decode(location, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+    
+    if (!location.matches("^[a-zA-Z]+://.*")) {
+      // assume http if no protocol is specified
+      location = "http://" + location;
+    }    
+
+    loadPage(location);
   }
   
   /**
@@ -407,45 +426,15 @@ public class WebDataPanel extends AbstractDataPanel {
    * @param location  the webpage URL to load
    */
   private void loadPage(String location) {
-    
     // clear out old document
     htmlRenderer.setDocument(htmlRenderer.getEditorKit().createDefaultDocument());
-    
+
      // clear description
     setDescription(null);
-    
-    // indicate to open link via external browser
-    boolean openExternal = false;
-    
+
     try {
-
-      location = URLDecoder.decode(location, "UTF-8");
-
-      if (!location.startsWith("http://")) {
-        if (location.matches("^[a-zA-Z]+://.*")) { // mainly: https://
-          openExternal = true;
-//           throw new MalformedURLException("We don't support this protocol");
-        } else {
-          // assume http if no protocol is specified
-          location = "http://" + location;
-        }
-      }      
-
-      if (!openExternal)
-        openExternal = isLinkSpecial(location);
-        
-      URL url = new URL(location);
-      if (openExternal) {
-        handleExternal(url);
-  
-      } else {
-  
-          htmlRenderer.setPage(url);
-   	      htmlRenderer.requestFocusInWindow();
-      }
- 
-    } 
-    catch (Exception e) {
+      htmlRenderer.setPage(new URL(location));
+    } catch (Exception e) {
       locationField.selectAll();
       JOptionPane.showMessageDialog(null,
           "Failed to load page: " + e.getMessage() + ".",
@@ -455,20 +444,30 @@ public class WebDataPanel extends AbstractDataPanel {
       reloadMenuItem.setEnabled(false);
       autoReloadMenu.setEnabled(false);
     }
+      
+    htmlRenderer.requestFocusInWindow();
   }
   
-  private void handleExternal(URL url) {
-
-    int i = JOptionPane.showConfirmDialog(null,
-        "This Link requires an external browser!\n"
-        + "Proceed with launching a new window?",
-        "Please Confirm",
-        JOptionPane.YES_NO_OPTION);
-    
-    if (i == 0) // (constant) YES_OPTION selected
-      loadExternalPage(url);
-    
-  }
+  /**
+   * Load the webpage URL specified by <code>location</code> in an external
+   * program.
+   * 
+   * @param location  the webpage URL to load
+   */
+  private void loadExternalPage(String location) {
+    try {
+      if (location.startsWith("udp")) {
+        VLCLauncher.launchVLC(location.toString());
+      } else {
+        DataViewer.browse(new URL(location));
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      JOptionPane.showMessageDialog(null,
+          "Unable to open the URL in an external program.",
+          "Web Data Panel Error", JOptionPane.ERROR_MESSAGE);
+    }
+  }  
   
   /**
    * Called when the page has been loaded. Sets the page title.
@@ -559,32 +558,6 @@ public class WebDataPanel extends AbstractDataPanel {
       setAutoReloadTime(Long.parseLong(value));
     }
   }
-  
-  private void loadExternalPage(URL url) {
-    if (!DataViewer.browse(url)) {
-    	JOptionPane.showMessageDialog(null,
-    	          "Unable to open the URL in an external browser.",
-                "Web Data Panel Error", JOptionPane.ERROR_MESSAGE);
-    }
-  }
-
-  // a simple url parser to decide whether the link is a pdf or an MS document
-  private boolean isLinkSpecial(String link) {
-
-	  if (link == null) return false;
-	  
-	  if (link.charAt(link.length() - 4) == '.') {
-		  String eXtension = link.substring(link.length() - 3); // extension of url if any 
-		  if (("pdf").equalsIgnoreCase(eXtension)               // file extensions that need special handling  
-					|| ("doc").equalsIgnoreCase(eXtension)
-					|| ("xls").equalsIgnoreCase(eXtension)
-          || ("xml").equalsIgnoreCase(eXtension))
-			  return true;		  
-	  }
-
-	  return false;
-  }
-  
   
   public String toString() {
     return "Web Data Panel";
