@@ -52,7 +52,7 @@ public class VLCLauncher {
   private static final String DEFAULT_VLC_PATH_WINDOWS = "c:\\Program Files\\VideoLAN\\VLC\\vlc.exe";
 
   /** the default path for VLC on Mac */
-  private static final String DEFAULT_VLC_PATH_MAC = "open /Applications/VLC.app";
+  private static final String DEFAULT_VLC_PATH_MAC = "/Applications/VLC.app/Contents/MacOS/VLC";
 
   /**
    * Launch VLC.
