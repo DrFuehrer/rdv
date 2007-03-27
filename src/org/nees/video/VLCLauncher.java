@@ -91,7 +91,7 @@ public class VLCLauncher {
     
     String vlcCommand = vlcPath;
     if (mrl != null && mrl.trim().length() > 0) {
-      vlcCommand += " \"" + mrl + "\"";
+      vlcCommand += " " + mrl;
     }
     
     return Runtime.getRuntime().exec(vlcCommand);
