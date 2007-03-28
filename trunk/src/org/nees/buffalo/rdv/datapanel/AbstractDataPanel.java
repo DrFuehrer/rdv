@@ -84,6 +84,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
+import org.nees.buffalo.rdv.ui.ChannelListDataFlavor;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import org.nees.buffalo.rdv.ui.ScrollablePopupMenu;
 import org.nees.buffalo.rdv.ui.ToolBarButton;
@@ -922,27 +923,22 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		try {
       int dropAction = e.getDropAction();
       if (dropAction == DnDConstants.ACTION_LINK) {
-  			DataFlavor stringFlavor = DataFlavor.stringFlavor;
+  			DataFlavor channelListDataFlavor = new ChannelListDataFlavor();
   			Transferable tr = e.getTransferable();
-  			if(e.isDataFlavorSupported(stringFlavor)) {
+  			if(e.isDataFlavorSupported(channelListDataFlavor)) {
           e.acceptDrop(DnDConstants.ACTION_LINK);
           e.dropComplete(true);
 
-  				final String channels = (String)tr.getTransferData(stringFlavor);
+  				final List<String> channels = (List<String>)tr.getTransferData(channelListDataFlavor);
           
           new Thread() {
             public void run() {
-              String delim = ",";
-              String[] tokens = channels.split(delim);
-              String channelName = "";
-              for (int i = 0; i < tokens.length; i++) {
-                channelName = tokens[i];
-        
+              for (String channel : channels) {
                 boolean status;
                 if (supportsMultipleChannels()) {
-                  status = addChannel(channelName);
+                  status = addChannel(channel);
                 } else {
-                  status = setChannel(channelName);
+                  status = setChannel(channel);
                 }
                 
                 if (!status) {
