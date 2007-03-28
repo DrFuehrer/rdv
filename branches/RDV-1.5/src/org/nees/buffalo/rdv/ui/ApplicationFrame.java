@@ -1039,6 +1039,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       
       controlAction.setEnabled(false);
       disconnectAction.setEnabled(false);
+      saveAction.setEnabled(false);
       importAction.setEnabled(false);
       exportAction.setEnabled(false);
 
@@ -1051,7 +1052,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
-      importAction.setEnabled(rbnb.getRBNBHostName().equals("localhost"));
+      
+      boolean offline = rbnb.getRBNBHostName().equals("localhost");
+      saveAction.setEnabled(!offline);
+      importAction.setEnabled(offline);
+      
       exportAction.setEnabled(true);
 
       controlPanel.setEnabled(true);
