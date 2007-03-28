@@ -52,6 +52,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.action.ActionFactory;
 import org.nees.buffalo.rdv.datapanel.DataPanel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ControlPanel;
@@ -226,6 +227,11 @@ public class ConfigurationManager {
       
       int state = RBNBController.getState(findChildNodeText(rbnbNodes, "state"));
       if (state != RBNBController.STATE_DISCONNECTED) {
+        if (host.equals("localhost") && port >= 49152 && port <= 65535) {
+          ActionFactory.getInstance().getOfflineAction().goOffline();
+          return;
+        }
+        
         if (!rbnb.connect(true)) {
           return;
         }
