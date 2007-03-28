@@ -218,7 +218,6 @@ public class RBNBExport {
   
         // write channel names
         fileWriter.write("Time\t");
-        fileWriter.write("Timestamp\t");
         for (int i=0; i<numericChannels.size(); i++) {
           String channel = (String)numericChannels.get(i);
           String[] channelParts = channel.split("/");
@@ -234,7 +233,6 @@ public class RBNBExport {
         ChannelMap rmap = sink.Fetch(-1);
         
         fileWriter.write("Seconds\t");
-        fileWriter.write("ISO8601\t");
         for (int i=0; i<numericChannels.size(); i++) {
           String channel = (String)numericChannels.get(i);
           String unit = null;
@@ -326,7 +324,6 @@ public class RBNBExport {
           }
           
           fileWriter.write(Double.toString(t-dataStartTime) + "\t");
-          fileWriter.write(RBNBUtilities.secondsToISO8601(t) + "\t");
           for (int i=0; i<numericChannels.size(); i++) {
             String c = (String)numericChannels.get(i);
             if (c.equals(s.getChannel()) && t == s.getTime()) {
