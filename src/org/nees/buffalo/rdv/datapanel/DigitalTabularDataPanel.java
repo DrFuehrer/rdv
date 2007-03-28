@@ -79,6 +79,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
+import org.nees.buffalo.rdv.ui.ChannelListDataFlavor;
 
 /**
  * A Data Panel extension to display numeric data in a tabular form. Maximum and
@@ -635,9 +636,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 		try {
 			int dropAction = e.getDropAction();
 			if (dropAction == DnDConstants.ACTION_LINK) {
-				DataFlavor stringFlavor = DataFlavor.stringFlavor;
+        DataFlavor channelListDataFlavor = new ChannelListDataFlavor();
 				Transferable tr = e.getTransferable();
-				if (e.isDataFlavorSupported(stringFlavor)) {
+				if (e.isDataFlavorSupported(channelListDataFlavor)) {
 					e.acceptDrop(DnDConstants.ACTION_LINK);
 					e.dropComplete(true);
 
@@ -650,22 +651,16 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 																// component
 					final int tableNum = (int) (clickX * columnGroupCount / compWidth);
 
-					final String channels = (String) tr
-							.getTransferData(stringFlavor);
+					final List<String> channels = (List<String>)tr.getTransferData(channelListDataFlavor);
 
 					new Thread() {
 						public void run() {
-							String delim = ",";
-							String[] tokens = channels.split(delim);
-							String channelName = "";
-							for (int i = 0; i < tokens.length; i++) {
-								channelName = tokens[i];
-
+							for (String channel : channels) {
 								boolean status;
 								if (supportsMultipleChannels()) {
-									status = addChannel(channelName, tableNum);
+									status = addChannel(channel, tableNum);
 								} else {
-									status = setChannel(channelName);
+									status = setChannel(channel);
 								}
 
 								if (!status) {

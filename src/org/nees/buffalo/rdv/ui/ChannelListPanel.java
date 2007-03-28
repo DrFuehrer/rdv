@@ -36,7 +36,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
@@ -335,8 +334,8 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     }    
   }
   
-  public List getSelectedChannels() {
-    ArrayList selectedChannels = new ArrayList();
+  public List<String> getSelectedChannels() {
+    ArrayList<String> selectedChannels = new ArrayList<String>();
     
     TreePath[] selectedPaths = tree.getSelectionPaths();
     if (selectedPaths != null) {
@@ -443,21 +442,13 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
   }
   
 	public Transferable createChannelsTransferable() {
-    List channels = getSelectedChannels();
+    List<String> channels = getSelectedChannels();
     
     if (channels.size() == 0) {
       return null;
     }
     
-    String selectedChannels = "";
-    for (int i=0; i<channels.size(); i++) {
-      selectedChannels += channels.get(i);
-      if (i < channels.size()-1) {
-        selectedChannels += ",";
-      }
-    }
-
-    return new StringSelection(selectedChannels); 
+    return new ChannelListTransferable(channels); 
   }
   
   private class ChannelTransferHandler extends TransferHandler {
