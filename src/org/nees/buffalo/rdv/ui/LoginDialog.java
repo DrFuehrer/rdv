@@ -1,9 +1,10 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://nees.buffalo.edu/software/RDV/
+ * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005 University at Buffalo
+ * Copyright (c) 2005-2007 University at Buffalo
+ * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +24,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL: https://svn.nees.org/svn/telepresence/RDV/trunk/src/org/nees/buffalo/rdv/ui/RBNBConnectionDialog.java $
- * $Revision: 1602 $
- * $Date: 2006-05-11 09:34:42 -0700 (Thu, 11 May 2006) $
- * $Author: jphanley $
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
  */
 
 package org.nees.buffalo.rdv.ui;
