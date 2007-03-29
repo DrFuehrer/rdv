@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2006 University at Buffalo
- * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +34,7 @@ package org.nees.buffalo.rdv.rbnb;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Vector;
 
 import org.apache.commons.logging.Log;
@@ -51,17 +47,11 @@ import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
 
 /**
- * A class to manage a connection to an RBNB server and to post channel data to
- * interested listeners.
- * 
  * @author Jason P. Hanley
  */
 public class RBNBController implements Player, MetadataListener {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
-  
-  /** the single instance of this class */
-  protected static RBNBController instance;
 
 	private String rbnbSinkName = "RDV";
   
@@ -84,7 +74,6 @@ public class RBNBController implements Player, MetadataListener {
 
 	private ChannelManager channelManager;
   private MetadataManager metadataManager;
-  private MarkerManager markerManager;
 	
 	private Vector timeListeners;
 	private Vector stateListeners;
@@ -119,16 +108,19 @@ public class RBNBController implements Player, MetadataListener {
 	private final double PLAYBACK_REFRESH_RATE = 0.05;
   
   private final long LOADING_TIMEOUT = 30000;
-  
-	protected RBNBController() {
-    // get the system host name and append it to the sink name
-     try {
-        InetAddress addr = InetAddress.getLocalHost();
-        String hostname = addr.getHostName();
-        rbnbSinkName += "@" + hostname;
-     } catch (UnknownHostException e) {}
-        
-    state = STATE_DISCONNECTED;
+	
+	public RBNBController() {
+		
+      // This gets the system host name and appends it to the sink name
+       try {
+          InetAddress addr = InetAddress.getLocalHost();
+          String hostname = addr.getHostName();
+          rbnbSinkName += "@" + hostname;
+       } catch (UnknownHostException e) {
+          log.error ("couldn't get the system host name");
+       }
+          
+      state = STATE_DISCONNECTED;
 		
 		rbnbHostName = DEFAULT_RBNB_HOST_NAME;
 		rbnbPortNumber = DEFAULT_RBNB_PORT_NUMBER;
@@ -146,7 +138,6 @@ public class RBNBController implements Player, MetadataListener {
 
 		channelManager = new ChannelManager();
     metadataManager = new MetadataManager(this);
-    markerManager = new MarkerManager(this);
 
 		timeListeners = new Vector();
 		stateListeners = new Vector();
@@ -158,19 +149,6 @@ public class RBNBController implements Player, MetadataListener {
         
 		run();
 	}
-  
-  /**
-   * Get the single instance of this class.
-   * 
-   * @return  the instance of this class
-   */
-  public static RBNBController getInstance() {
-    if (instance == null) {
-      instance = new RBNBController();
-    }
-    
-    return instance;
-  }
 	
 	private void run() {
 		rbnbThread = new Thread(new Runnable() {
@@ -185,6 +163,7 @@ public class RBNBController implements Player, MetadataListener {
 		log.info("RBNB data thread has started.");
 		
 		while (state != STATE_EXITING) {
+			
 			processSubscriptionRequests();
       processLocationUpdate();       
       processTimeScaleUpdate();
@@ -193,8 +172,7 @@ public class RBNBController implements Player, MetadataListener {
 					
 			switch (state) {
 				case STATE_LOADING:
-          log.warn("You must always manually transition from the loading state.");
-          changeStateSafe(STATE_STOPPED);
+					loadAllData();
 					break;
 				case STATE_PLAYING:
 					updateDataPlaying();
@@ -219,59 +197,48 @@ public class RBNBController implements Player, MetadataListener {
 	// State Processing Methods
 	
 	private void processSubscriptionRequests() {
-    while (!updateSubscriptionRequests.isEmpty()) {
-      SubscriptionRequest subscriptionRequest;
-  		synchronized (updateSubscriptionRequests) {
-				subscriptionRequest = (SubscriptionRequest)updateSubscriptionRequests.remove(0);
-      }      
-			String channelName = subscriptionRequest.getChannelName();
-			DataListener listener = subscriptionRequest.getListener();		
-			if (subscriptionRequest.isSubscribe()) {
-				subscribeSafe(channelName, listener);
-			} else {
-				unsubscribeSafe(channelName, listener);
+		//skip lock if no subscription requests
+		if (updateSubscriptionRequests.size() == 0) {
+			return;
+		}
+		
+		synchronized (updateSubscriptionRequests) {
+			//loop of subscription requests
+			for (int i=0; i<updateSubscriptionRequests.size(); i++) {
+				SubscriptionRequest subscriptionRequest = (SubscriptionRequest)updateSubscriptionRequests.get(i);
+				String channelName = subscriptionRequest.getChannelName();
+				DataListener listener = subscriptionRequest.getListener();		
+				if (subscriptionRequest.isSubscribe()) {
+					subscribeSafe(channelName, listener);
+				} else {
+					unsubscribeSafe(channelName, listener);
+				}
 			}
-    }
+			updateSubscriptionRequests.clear();
+		}
 	}
 
 	private void processLocationUpdate() {
     if (updateLocation != -1) {
-      double oldLocation = location;
-      
       synchronized (updateLocationLock) {
         location = updateLocation;
         updateLocation = -1;
-      }
-      
-      if (oldLocation == location) {
-        return;
       }
 
       log.info("Setting location to " + DataViewer.formatDate(location) + ".");
 
       if (requestedChannels.NumberOfChannels() > 0) {
         changeStateSafe(STATE_LOADING);
-        
-        double duration;
-        if (oldLocation < location && oldLocation > location-timeScale) {
-          duration = location - oldLocation;
-        } else {
-          duration = timeScale;
-        }
-        loadData(location, duration);
-        
-        changeStateSafe(STATE_STOPPED);
-      } else {
-        updateTimeListeners(location);
       }
     }
 	}
     
   private void processTimeScaleUpdate() {
     if (updateTimeScale != -1) {
-      double oldTimeScale = timeScale;
+      double oldTimeScale;
       
-      synchronized (updateTimeScaleLock) {
+      synchronized (updateTimeScaleLock) {        
+        oldTimeScale = timeScale;
         timeScale = updateTimeScale;
         updateTimeScale = -1;        
       }
@@ -287,17 +254,18 @@ public class RBNBController implements Player, MetadataListener {
       if (timeScale > oldTimeScale && requestedChannels.NumberOfChannels() > 0) {    
         //TODO make this loading smarter
 
-        int originalState = state;
+        if (state == STATE_PLAYING) {
+          getPreFetchChannelMap();
+        }
 
+        int originalState = state;
         changeStateSafe(STATE_LOADING);
-        loadData();
+        loadAllData();
 
         if (originalState == STATE_PLAYING) {
           changeStateSafe(STATE_PLAYING);
         } else if (originalState == STATE_MONITORING) {
           changeStateSafe(STATE_MONITORING);
-        } else {
-          changeStateSafe(STATE_STOPPED);
         }
       }
     }    
@@ -305,9 +273,10 @@ public class RBNBController implements Player, MetadataListener {
 	
 	private void processPlaybackRateUpdate() {
     if (updatePlaybackRate != -1) {
-      double oldPlaybackRate = playbackRate;
+      double oldPlaybackRate;
       
-      synchronized (updatePlaybackRateLock) {       
+      synchronized (updatePlaybackRateLock) {
+        oldPlaybackRate = playbackRate;        
       	playbackRate = updatePlaybackRate;
         updatePlaybackRate = -1;        
       }
@@ -319,7 +288,10 @@ public class RBNBController implements Player, MetadataListener {
       log.info("Setting playback rate to " + playbackRate + " seconds.");
     
       if (state == STATE_PLAYING) {
-        getPreFetchChannelMap();
+        if (!preFetchDone) {
+          //wait for last prefetch to finish
+          getPreFetchChannelMap();
+        }
         preFetchData(location, playbackRate);
       }
     
@@ -328,25 +300,30 @@ public class RBNBController implements Player, MetadataListener {
 	}
     
   private void processStateChangeRequests() {
-    while (!stateChangeRequests.isEmpty()) {
-      int updateState;
+    if (stateChangeRequests.size() > 0 && state != STATE_LOADING) {
       synchronized (stateChangeRequests) {
-        updateState = ((Integer)stateChangeRequests.remove(0)).intValue();
+        for (int i=0; i<stateChangeRequests.size(); i++) {
+          int updateState = ((Integer)stateChangeRequests.get(i)).intValue();
+          changeStateSafe(updateState);
+        }
+        stateChangeRequests.clear();
       }
-      changeStateSafe(updateState);
     }
   }
 		
-	private boolean changeStateSafe(int newState) {		
-    if (state == newState) {
-      log.info("Already in state " + getStateName(state) + ".");
-      return true;
-    } else if (state == STATE_PLAYING) {
-      getPreFetchChannelMap();
-    } else if (state == STATE_EXITING) {
+	private void requestStateChange(int state) {
+		synchronized (stateChangeRequests) {
+      stateChangeRequests.add(new Integer(state));
+    }
+	}
+	
+	private boolean changeStateSafe(int newState) {
+		int oldState = state;
+			
+		if (oldState == STATE_EXITING) {
 			log.error("Can not transition out of exiting state to " + getStateName(state) + " state.");
 			return false;
- 		} else if (state == STATE_DISCONNECTED && newState != STATE_EXITING) {
+ 		} else if (oldState == STATE_DISCONNECTED && newState != STATE_EXITING && newState != STATE_DISCONNECTED) {
       fireConnecting();
       
 			try {
@@ -380,7 +357,9 @@ public class RBNBController implements Player, MetadataListener {
         }
 				break;		
 			case STATE_PLAYING:
-			  preFetchData(location, playbackRate);
+				if (oldState == STATE_MONITORING || oldState == STATE_STOPPED) {
+					preFetchData(location, playbackRate);
+				}
 				break;
 			case STATE_LOADING:
 			case STATE_STOPPED:
@@ -395,7 +374,6 @@ public class RBNBController implements Player, MetadataListener {
 				return false;
 		}
 		
-    int oldState = state;
 		state = newState;
 		
 		notifyStateListeners(state, oldState);
@@ -455,17 +433,18 @@ public class RBNBController implements Player, MetadataListener {
 		//notify channel manager
 		channelManager.subscribe(channelName, panel);
 		
-    int originalState = state;
-    
-    changeStateSafe(STATE_LOADING);
+		log.info("Subscribed to " + channelName + " for listener " + panel + ".");
+
+    if (state == STATE_PLAYING) {
+      getPreFetchChannelMap();
+    }
+   
 		loadData(channelName);
     
-    if (originalState == STATE_MONITORING) {
-      changeStateSafe(STATE_MONITORING);
-		} else if (originalState == STATE_PLAYING) {
-      changeStateSafe(STATE_PLAYING);
-    } else {
-      changeStateSafe(STATE_STOPPED);
+    if (state == STATE_MONITORING) {
+      monitorData();
+		} else if (state == STATE_PLAYING) {
+      preFetchData(location, playbackRate);
     }
 		
 		fireSubscriptionNotification(channelName);
@@ -512,49 +491,56 @@ public class RBNBController implements Player, MetadataListener {
 	
 	
 	// Load Methods
-
-  /**
-   * Load data for all channels.
-   */
-  private void loadData() {
-    loadData(location, timeScale);
-  }
-
-  /**
-   * Load data for all channels.
-   * 
-   * @param location  the end time
-   * @param duration  the duration
-   */
-  private void loadData(double location, double duration) {
-    String[] subscribedChannels = requestedChannels.GetChannelList();
-    loadData(Arrays.asList(subscribedChannels), location, duration);
-  }
-  
-  /**
-   * Load data for the specified channel.
-   * 
-   * @param channelName  the name of the channel
-   */
-  private void loadData(String channelName) {
-    loadData(Collections.singletonList(channelName), location, timeScale);
-  }
 	
-  /**
-   * Load data for the specified channels.
-   * 
-   * @param channelNames  a list of channel names
-   * @param location      the end time
-   * @param duration      the amount of data to load
-   */
-	private void loadData(List<String> channelNames, double location, double duration) {
+	private boolean loadData(String channelName) {
 		ChannelMap realRequestedChannels = requestedChannels;
+		
+		requestedChannels = new ChannelMap();
+		try {
+			requestedChannels.Add(channelName);
+		} catch (SAPIException e) {
+			log.error("Failed to add channel " + channelName + ".");
+			requestedChannels = realRequestedChannels;
+			e.printStackTrace();
+			return false;
+		}
+		
+		double requestTimeScale;
+		if (isVideo(metaDataChannelTree, channelName)) {
+			requestTimeScale = 0;
+    } else if (channelManager.isChannelTabularOnly(channelName)) {
+      requestTimeScale = 1;
+		} else {
+			requestTimeScale = timeScale;
+		}
+		if (!requestData(location-requestTimeScale, requestTimeScale)) {
+      fireErrorMessage("Failed to load data for channel " + channelName + " from the server. Please try again later.");
+			requestedChannels = realRequestedChannels;
+      changeStateSafe(STATE_STOPPED);
+			return false;
+		}
+		
+		updateDataMonitoring();
+		updateTimeListeners(location);
+		
+		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data for channel " + channelName + " at " + DataViewer.formatDate(location) + ".");
+		
+		requestedChannels = realRequestedChannels;
+		
+		return true;
+	}
+	
+	private void loadAllData() {
+		ChannelMap realRequestedChannels = requestedChannels;
+		
+		String[] allSubscribedChannels = requestedChannels.GetChannelList();
 		
 		ChannelMap imageChannels = new ChannelMap();
     ChannelMap tabularChannels = new ChannelMap();
 		ChannelMap otherChannels = new ChannelMap();
 		
-		for (String channelName : channelNames) {
+		for (int i=0; i<allSubscribedChannels.length; i++) {
+			String channelName = allSubscribedChannels[i];
 			try {
 				if (isVideo(metaDataChannelTree, channelName)) {
 					imageChannels.Add(channelName);
@@ -568,7 +554,7 @@ public class RBNBController implements Player, MetadataListener {
 				e.printStackTrace();
 			}			
 		}
-    
+		
 		if (imageChannels.NumberOfChannels() > 0) {
 			requestedChannels = imageChannels;
 			if (!requestData(location, 0)) {
@@ -595,7 +581,7 @@ public class RBNBController implements Player, MetadataListener {
 		
 		if (otherChannels.NumberOfChannels() > 0) {
 			requestedChannels = otherChannels;
-			if (!requestData(location-duration, duration)) {
+			if (!requestData(location-timeScale, timeScale)) {
         fireErrorMessage("Failed to load data from the server. Please try again later.");
 				requestedChannels = realRequestedChannels;
         changeStateSafe(STATE_STOPPED);
@@ -606,11 +592,12 @@ public class RBNBController implements Player, MetadataListener {
 		}
 		
 		requestedChannels = realRequestedChannels;
+		changeStateSafe(STATE_STOPPED);
 		
-		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data at " + DataViewer.formatDate(location) + ".");
+		log.info("Loaded " + DataViewer.formatSeconds(timeScale) + " of data for all channels at " + DataViewer.formatDate(location) + ".");
 	}
 	
-  
+	
 	// Playback Methods
 	
 	private boolean requestData(double location, double duration) {
@@ -633,6 +620,7 @@ public class RBNBController implements Player, MetadataListener {
 			requestIsMonitor = false;
 		}
 
+		log.debug("Requesting data at location " + DataViewer.formatDate(location) + " for " + duration + " seconds.");
 		
 		try {
 			sink.Request(requestedChannels, location, duration, "absolute");
@@ -753,7 +741,9 @@ public class RBNBController implements Player, MetadataListener {
  				log.debug("Done waiting for pre-fetch channel map.");
 			}
 		}
-    
+		
+		preFetchDone = false;
+		
 		ChannelMap fetchedMap = preFetchChannelMap;
 		preFetchChannelMap = null;
 		
@@ -804,6 +794,7 @@ public class RBNBController implements Player, MetadataListener {
 
 	private void updateDataMonitoring() {	
 		//stop monitoring if no channels selected
+		//TODO see if this should be posible or indicates an error in the program
 		if (requestedChannels.NumberOfChannels() == 0) {
       fireStatusMessage("Stopping real time. No channels are selected.");
 			changeStateSafe(STATE_STOPPED);
@@ -982,6 +973,17 @@ public class RBNBController implements Player, MetadataListener {
 		return lastTime;
 	}
 				
+	private static void printChannelMap(ChannelMap cmap) {
+		String[] channels = cmap.GetChannelList();
+		for (int i=0; i<channels.length; i++) {
+			log.debug("Channel " + channels[i] + ": " + DataViewer.formatDate(cmap.GetTimeStart(i)) + " (" + cmap.GetTimeDuration(i) + ").");
+			double[] times = cmap.GetTimes(i);
+			for (int j=0; j<times.length; j++) {
+				log.debug(" location = " + DataViewer.formatDate(times[j]) + ".");
+			}
+		}
+	}	
+	
 	
  	// Player Methods
 	
@@ -993,19 +995,19 @@ public class RBNBController implements Player, MetadataListener {
     if (state != STATE_MONITORING) {
       setLocation(System.currentTimeMillis()/1000d);
     }
-    setState(STATE_MONITORING);
+    requestStateChange(STATE_MONITORING);
 	}
 	
 	public void play() {
-		setState(STATE_PLAYING);
+		requestStateChange(STATE_PLAYING);
 	}
 	
 	public void pause() {
-		setState(STATE_STOPPED);
+		requestStateChange(STATE_STOPPED);
 	}
 	
 	public void exit() {
-		setState(STATE_EXITING);
+		requestStateChange(STATE_EXITING);
 		
 		//wait for thread to finish
  		int count = 0;
@@ -1015,9 +1017,7 @@ public class RBNBController implements Player, MetadataListener {
 	}
   
   public void setState(int state) {
-    synchronized (stateChangeRequests) {
-      stateChangeRequests.add(new Integer(state));
-    }
+		requestStateChange(state);
   }
 	
 	public double getLocation() {
@@ -1025,26 +1025,20 @@ public class RBNBController implements Player, MetadataListener {
 	}
 		
 	public void setLocation(final double location) {
-    if (location < 0) {
-      log.error("Location not set; location must be nonnegative.");
-      return;
-    }
-    
     synchronized (updateLocationLock) {
     	updateLocation = location;
     }
 	}
     
+  public double getRequestedLocation() {
+    return updateLocation; 
+  }
+	
 	public double getPlaybackRate() {
 		return playbackRate;
 	}
 
 	public void setPlaybackRate(final double playbackRate) {
-		if (playbackRate <= 0) {
-		  log.error("Playback rate not set; playback rate must be positive.");
-      return;
-		}
-	
     synchronized (updatePlaybackRateLock) {
     	updatePlaybackRate = playbackRate;
     }
@@ -1055,11 +1049,6 @@ public class RBNBController implements Player, MetadataListener {
 	}
 	
 	public void setTimeScale(double timeScale) {
-	  if (timeScale <= 0) {
-	    log.error("Time scale not set; time scale must be positive.");
-      return;
-	  }
-	
     synchronized (updateTimeScaleLock) {
       updateTimeScale = timeScale;
     }
@@ -1084,15 +1073,6 @@ public class RBNBController implements Player, MetadataListener {
 	public boolean isSubscribed(String channelName) {
 		return channelManager.isChannelSubscribed(channelName);
 	}
-  
-  /**
-   * Returns true if there is at least one listener subscribed to a channel.
-   * 
-   * @return  true if there are channel listener, false if there are none
-   */
-  public boolean hasSubscribedChannels() {
-    return channelManager.hasSubscribedChannels();
-  }
 
 	public void addStateListener(StateListener stateListener) {
 		stateListener.postState(state, state);
@@ -1156,33 +1136,6 @@ public class RBNBController implements Player, MetadataListener {
  	public String getRBNBConnectionString() {
  		return rbnbHostName + ":" + rbnbPortNumber;
  	}
-  
-  /**
-   * Gets the name of the server. If there is no active connection, null is
-   * returned.
-   * 
-   * @return  the name of the server, or null if there is no connection
-   */
-  public String getServerName() {
-    if (sink == null) {
-      return null;
-    }
-    
-    String serverName;
-    
-    try {
-      serverName = sink.GetServerName();
-      
-      // strip out the leading slash that is there for some reason
-      if (serverName.startsWith("/") && serverName.length() >= 2) {
-        serverName = serverName.substring(1);
-      }
-    } catch (IllegalStateException e) {
-      serverName = null;
-    }
-    
-    return serverName;
-  }
 
 	public boolean isConnected() {
 		return sink != null;	
@@ -1213,7 +1166,7 @@ public class RBNBController implements Player, MetadataListener {
       addConnectionListener(listener);
       
       synchronized (object) {
-        setState(STATE_STOPPED);
+        requestStateChange(STATE_STOPPED);
         
         try {
           object.wait();
@@ -1224,7 +1177,7 @@ public class RBNBController implements Player, MetadataListener {
       
       removeConnectionListener(listener);
     } else {
-      setState(STATE_STOPPED);
+      requestStateChange(STATE_STOPPED);
     }
     
     return true;
@@ -1239,60 +1192,13 @@ public class RBNBController implements Player, MetadataListener {
     }
   }
 	
-  /**
-   * Disconnect from the RBNB server. This method will return immediately.
-   */
 	public void disconnect() {
-		disconnect(false);
+		requestStateChange(STATE_DISCONNECTED);
 	}
-  
-  /**
-   * Disconnect from the RBNB server. If block is set, this method will not
-   * return until the server has disconnected.
-   * 
-   * @param block  if true, wait for the server to disconnect
-   * @return       true if the server disconnected
-   */
-	public boolean disconnect(boolean block) {
-	  if (!isConnected()) {
-	    return true;
-	  }    
-   
-    if (block) {
-      final Thread object = Thread.currentThread();
-      StateListener listener = new StateListener() {
-        public void postState(int newState, int oldState) {
-          if (newState == STATE_DISCONNECTED) {
-            synchronized (object) {
-              object.notify();
-            }
-          }
-        }
-      };
-      addStateListener(listener);
-      
-      synchronized (object) {
-        setState(STATE_DISCONNECTED);
-        
-        try {
-          object.wait();
-        } catch (InterruptedException e) {
-          return false;
-        }
-      }
-      
-      removeStateListener(listener);
-      
-    } else {
-      setState(STATE_DISCONNECTED);
-    }
-
-    return true;
-	}  
 	
 	public void reconnect() {
-    setState(STATE_DISCONNECTED);
-    setState(STATE_STOPPED);
+		requestStateChange(STATE_DISCONNECTED);
+    requestStateChange(STATE_STOPPED);
 	}
 	
 	public void addSubscriptionListener(SubscriptionListener subscriptionListener) {
@@ -1377,15 +1283,7 @@ public class RBNBController implements Player, MetadataListener {
   
   public void channelTreeUpdated(ChannelTree ctree) {
     metaDataChannelTree = ctree;
-  }
-  
-  
-  //Public Marker Methods
-  
-  public MarkerManager getMarkerManager() {
-    return markerManager;
-  }
-  
+  }  
 	
 	//Public Static Methods
 
@@ -1423,6 +1321,7 @@ public class RBNBController implements Player, MetadataListener {
    * 
    * @param stateName  the state name
    * @return           the state code
+   * @since            1.3
    */
   public static int getState(String stateName) {
     int code;

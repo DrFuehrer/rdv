@@ -61,6 +61,7 @@ public class ApplicationApplet extends JApplet {
 
 		if (playbackRateString != null && !playbackRateString.equals("")) {
       double playbackRate = Double.parseDouble(playbackRateString);
+      controlPanel.setPlaybackRate(playbackRate);
       rbnbController.setPlaybackRate(playbackRate);
 		}
 

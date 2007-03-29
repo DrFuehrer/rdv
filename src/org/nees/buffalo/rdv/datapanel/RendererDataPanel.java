@@ -64,6 +64,11 @@ public class RendererDataPanel extends AbstractDataPanel {
     setDataComponent(renderer);
   }
 
+  void clearData() {
+    lastTime = -1;
+    renderer.clear();
+  }
+
   public boolean supportsMultipleChannels() {
     return true;
   }

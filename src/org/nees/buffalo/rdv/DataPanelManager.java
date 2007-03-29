@@ -51,11 +51,12 @@ import org.w3c.dom.NodeList;
 
 import com.rbnb.sapi.ChannelTree;
 
+import edu.ucsd.auth.GridAuth;
+
 /**
  * A class to manage all the data panels.
  * 
  * @author  Jason P. Hanley
- * @author  Wei Deng
  * @since   1.2
  */
 public class DataPanelManager {
@@ -67,6 +68,22 @@ public class DataPanelManager {
 	 */
 	static Log log = LogFactory.getLog(DataPanelManager.class.getName());
 
+	/**
+	 * The authentication token for the data panels.
+	 * 
+	 * @author Wei Deng
+	 * @since 1.3
+	 */
+	private GridAuth auth;
+	
+	public void setAuth(GridAuth auth) {
+		this.auth = auth;
+	}
+	
+	public GridAuth getAuth() {
+		return this.auth;
+	}
+	
 	/**
 	 * A reference to the RNBN controller for the data panels to use.
 	 * 
@@ -113,6 +130,7 @@ public class DataPanelManager {
 		
 		dataPanels = new ArrayList();
 		extensions = new ArrayList();
+		auth = null;
 		
 		loadExtenionManifest();
 	}

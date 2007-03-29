@@ -59,6 +59,15 @@ public class HelloWorldDataPanel extends AbstractDataPanel {
 	}
 
 	/**
+	 * Set the message to the default
+	 * 
+	 * @since  1.2
+	 */
+	void clearData() {
+		label.setText("Hello World!");
+	}
+
+	/**
 	 * Return false indicating we don't support multiple channels.
 	 * 
 	 * @since  1.2

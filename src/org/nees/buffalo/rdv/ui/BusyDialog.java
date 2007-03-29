@@ -121,11 +121,11 @@ public class BusyDialog extends JDialog {
 		c.insets = new java.awt.Insets(0,5,5,5);
 		container.add(busyProgressBar, c);
     
-    /* cancelButton = new JButton("Cancel");
+    cancelButton = new JButton("Cancel");
     c.gridx = 1;
     c.weightx = 0;
     c.insets = new java.awt.Insets(0,5,5,5);
-    container.add(cancelButton, c); */    
+    container.add(cancelButton, c);    
 		
 		pack();
 		centerOnOwner();
@@ -139,7 +139,7 @@ public class BusyDialog extends JDialog {
    * @since     1.2
    */
   public void setCancelActionListener(ActionListener al) {
-    // cancelButton.addActionListener(al);
+    cancelButton.addActionListener(al);
   }
 	
 	/**

@@ -35,13 +35,9 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -57,8 +53,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.action.ActionFactory;
-import org.nees.buffalo.rdv.rbnb.LocalServer;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
 import org.nees.buffalo.rdv.ui.ControlPanel;
@@ -73,21 +67,18 @@ public class DataViewer {
 	
 	static Log log = LogFactory.getLog(DataViewer.class.getName());
 	
-	private final RBNBController rbnb;
-	private final DataPanelManager dataPanelManager;
-	private final ApplicationFrame applicationFrame;
-  private final ConfigurationManager configurationManager;
+	private RBNBController rbnb;
+	private DataPanelManager dataPanelManager;
+	private ApplicationFrame applicationFrame;
+  private ConfigurationManager configurationManager;
 
 	private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
-  private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm.ss.SSS a");
-  private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm.ss.SSS a");
-  private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss.SSS a");
-  
-  /** global cache for icons */
-  private static final Map<String, ImageIcon> iconCache = new ConcurrentHashMap<String, ImageIcon>();;
+  private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm a");
+  private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm a");
+  private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss a");
 	
 	public DataViewer(boolean isApplet) {
-		rbnb = RBNBController.getInstance();
+		rbnb = new RBNBController();
 		dataPanelManager = new DataPanelManager(rbnb);
     configurationManager = new ConfigurationManager(this);
 		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);
@@ -95,15 +86,9 @@ public class DataViewer {
 
 	public void exit() {
 		applicationFrame.dispose();
-    
 		if (rbnb != null) {
 			rbnb.exit();
 		}
-    
-    try {
-      LocalServer.getInstance().stopServer();
-    } catch (Exception e) {}
-    
 		log.info("Exiting.");
 
 		System.exit(0);
@@ -112,7 +97,7 @@ public class DataViewer {
  	public RBNBController getRBNBController() {
  		return rbnb;
  	}
-
+ 	
  	public DataPanelManager getDataPanelManager() {
  		return dataPanelManager;
  	}
@@ -154,64 +139,16 @@ public class DataViewer {
  		} else if (seconds < 1 && seconds != 0) {
 			secondsString = Double.toString(round(seconds*1000)) + " ms";
  		} else if (seconds < 60) {
- 		 	secondsString = Double.toString(round(seconds)) + " s";
+ 		 	secondsString = Double.toString(round(seconds)) + " seconds";
  		} else if (seconds < 60*60) {
-			secondsString = Double.toString(round(seconds/60)) + " m";
+			secondsString = Double.toString(round(seconds/60)) + " minutes";
  		} else if (seconds < 60*60*24){
- 			secondsString = Double.toString(round(seconds/(60*60))) + " h";
- 		} else if (seconds < 60*60*24*7){
- 			secondsString = Double.toString(round(seconds/(60*60*24))) + " d";
-    } else {
-      secondsString = Double.toString(round(seconds/(60*60*24*7))) + " w";
+ 			secondsString = Double.toString(round(seconds/(60*60))) + " hours";
+ 		} else {
+ 			secondsString = Double.toString(round(seconds/(60*60*24))) + " days";
  		}
-    
  		return secondsString;
  	}
-
-  /**
-   * Returns a double representing the amount of seconds represented by the
-   * specified string.
-   * 
-   * The string can be a number, optionally followed by a unit
-   * of time. Valid units are 'ns' (nanosecond), 'us' (microsecond), 'ms'
-   * (millisecond), 's' (second), 'm' (minute), 'h' (hour), 'd' (day), and 'w'
-   * (week). If no unit is specified, it is assume to be seconds. There may be
-   * whitespace around the number and the unit. 
-   * 
-   * @param t                          the time formatted string
-   * @return                           the time in seconds represented by the
-   *                                   string
-   * @throws IllegalArgumentException  if the string is formatted incorrectly
-   */
-  public static double parseTime(String t) throws IllegalArgumentException {
-    double time;
-    
-    t = t.trim().toLowerCase();
-
-    if (t.length() == 0) {
-      throw new IllegalArgumentException("Empty input string.");
-    } else if (t.endsWith("ns")) {
-      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000;
-    } else if (t.endsWith("us")) {
-      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000000;
-    } else if (t.endsWith("ms")) {
-      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000000000;      
-    } else if (t.endsWith("s")) {
-      time = Double.parseDouble(t.substring(0, t.length()-1).trim());
-    } else if (t.endsWith("m")) {
-      time = Double.parseDouble(t.substring(0, t.length()-1).trim()) * 60;
-    } else if (t.endsWith("h")) {
-      time = Double.parseDouble(t.substring(0, t.length()-1).trim()) * 60 * 60;
-    } else if (t.endsWith("d")) {
-      time = Double.parseDouble(t.substring(0, t.length()-1).trim()) * 60 * 60 * 24;
-    } else if (t.endsWith("w")) {
-      time = Double.parseDouble(t.substring(0, t.length()-1).trim()) * 60 * 60 * 24 * 7;
-    } else {
-      time = Double.parseDouble(t);
-    }
-    
-    return time;
-  }
  	
  	public static String formatBytes(int bytes) {
  		String bytesString;
@@ -252,65 +189,19 @@ public class DataViewer {
     }
   }
   
-  /**
-   * Loads the given file as an icon and returns it. Previously loaded icon's
-   * are cached, so subsequent calls to this method with the same icon file name
-   * will return the same icon.
-   * 
-   * @param iconFileName  the name of the icon file
-   * @return              the icon, or null if the icon doesn't exist
-   */
   public static ImageIcon getIcon(String iconFileName) {
-    if (iconFileName == null) {
-      return null;
+    ImageIcon icon = null;
+    if (iconFileName != null) {
+      URL iconURL = Thread.currentThread().getContextClassLoader().getResource(iconFileName);    
+      if (iconURL != null) {
+        icon = new ImageIcon(iconURL);
+      }
     }
-    
-    // see if the icon is in the cache
-    ImageIcon icon = iconCache.get(iconFileName);
-    if (icon != null) {
-      return icon;
-    }
-    
-    
-    URL iconURL = Thread.currentThread().getContextClassLoader().getResource(iconFileName);    
-    if (iconURL != null) {
-      icon = new ImageIcon(iconURL);
-      
-      // cache the icon for future requests
-      iconCache.put(iconFileName, icon);
-    }
-    
     return icon;
   }  
 
   public void alertError(String errorMessage) {
     JOptionPane.showMessageDialog(applicationFrame, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
-  }
-  
-  /**
-   * Open the URL in an external browser. 
-   * 
-   * @param url         the url to open
-   * @throws Exception  if there is an error opening the browser
-   */
-  public static void browse(URL url) throws Exception {
-    String osName = System.getProperty("os.name");
-    if (osName.startsWith("Mac OS")) {
-      Class fileMgr = Class.forName("com.apple.eio.FileManager");
-      Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
-      openURL.invoke(null, new Object[] {url});
-    } else if (osName.startsWith("Windows")) {
-      Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
-    } else { //assume Unix or Linux
-      String[] browsers = { "sensible-browser", "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
-      String browser = null;
-      for (int count = 0; count < browsers.length && browser == null; count++)
-        if (Runtime.getRuntime().exec(new String[] {"which", browsers[count]}).waitFor() == 0)
-          browser = browsers[count];
-      if (browser == null)
-        throw new Exception("Could not find web browser");
-      else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
-    }
   }
 
 	public static void main(String[] args) {
@@ -371,7 +262,7 @@ public class DataViewer {
 		options.addOption(realTimeOption);			
 		options.addOption(helpOption);
 
-		String configFile = null;
+		File configurationFile = null;
 		String hostName = null;
 		int portNumber = -1;
 		String[] channels = null;
@@ -393,7 +284,7 @@ public class DataViewer {
 
 		String[] leftOverOptions = line.getArgs();
 		if (leftOverOptions != null && leftOverOptions.length > 0) {
-			configFile = leftOverOptions[0];
+			configurationFile = new File(leftOverOptions[0]);
 		}
 
 	    	if (line.hasOption('h')) {
@@ -437,23 +328,13 @@ public class DataViewer {
     RBNBController rbnbController = dataViewer.getRBNBController();
     ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
 
-    if (configFile != null) {
-      URL configURL;      
-      try {
-        if (configFile.matches("^[a-zA-Z]+://.*")) {
-          configURL = new URL(configFile);
-        } else {
-          configURL = new File(configFile).toURL();
-        }
-        
-        dataViewer.getConfigurationManager().loadConfiguration(configURL);
-        return;
-      } catch (MalformedURLException e) {
-        dataViewer.alertError("\"" + configFile + "\" is not a valid configuration file URL.");
-      }
+    if (configurationFile != null) {
+      dataViewer.getConfigurationManager().loadConfiguration(configurationFile);
+      return;
     }
     
 		if (playbackRate != -1) {
+      controlPanel.setPlaybackRate(playbackRate);
 			rbnbController.setPlaybackRate(playbackRate);
 		}
 		
@@ -486,8 +367,6 @@ public class DataViewer {
   				rbnbController.monitor();
   			}
       }
-		} else {
-		  ActionFactory.getInstance().getOfflineAction().goOffline();
-    }
+		}
 	}
 }

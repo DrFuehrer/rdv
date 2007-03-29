@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2006 University at Buffalo
- * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,24 +46,19 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.border.EmptyBorder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -87,135 +81,70 @@ import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRendererState;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
-import org.jfree.data.general.Series;
-import org.jfree.data.general.SeriesException;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
-import org.jfree.data.xy.AbstractXYDataset;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.util.ShapeUtilities;
 import org.jfree.util.UnitType;
-import org.nees.buffalo.rdv.data.DataFileChannel;
-import org.nees.buffalo.rdv.data.DataFileReader;
-import org.nees.buffalo.rdv.data.DoubleDataSample;
 import org.nees.buffalo.rdv.rbnb.Channel;
 
+import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelMap;
 
 /**
- * A data panel to plot data time series and xy charts. 
- * 
  * @author Jason P. Hanley
  */
-public class JFreeChartDataPanel extends AbstractDataPanel {	
-  /**
-   * The logger for this class.
-   */
+public class JFreeChartDataPanel extends AbstractDataPanel {
+	
 	static Log log = LogFactory.getLog(JFreeChartDataPanel.class.getName());
 	
-  /**
-   * The chart.
-   */
 	JFreeChart chart;
-  
-  /**
-   * The xy plot for this chart.
-   */
   XYPlot xyPlot;
-  
-  /**
-   * The domain (horizontal) axis that contains a value. This will be a number
-   * axis for an xy plot or a date axis for a timeseries plot.
-   */
   ValueAxis domainAxis;
-  
-  /**
-   * The range (vertical) axis that contains a number.
-   */
   NumberAxis rangeAxis;
-  
-  /**
-   * The component that renderers the chart.
-   */
 	ChartPanel chartPanel;
-  
-  /**
-   * The data set for the chart.
-   */
 	XYDataset dataCollection;
-  
-  /**
-   * The legend for the series in the chart.
-   */
-  LegendTitle seriesLegend;
+  LegendTitle rangeLegend;
 	
-  /**
-   * The container for the chart component.
-   */
 	JPanel chartPanelPanel;
 	
-  /**
-   * A bit to indicate if we are plotting time series charts of x vs. y charts.
-   */
 	final boolean xyMode;
 	
-  /**
-   * The timestamp for the last piece if data displayed.
-   */
-  double lastTimeDisplayed;
+	int lastXYDataIndex;
   
-  /**
-   * The number of local data series.
-   */
-  int localSeries;
-  
-  /**
-   * A channel map used to cache the values of an xy data set when only one
-   * channel has been added.
-   */
   ChannelMap cachedChannelMap;
   
   /**
-   * Plot colors for each series.
+   * Plot colors for each channel (series)
    */
   HashMap<String,Color> colors;
   
   /**
-   * Colors used for the series.
+   * Colors used for the series
    */
   final static Color[] seriesColors = {Color.decode("#FF0000"), Color.decode("#0000FF"),
                     Color.decode("#009900"), Color.decode("#FF9900"),
                     Color.decode("#9900FF"), Color.decode("#FF0099"),
                     Color.decode("#0099FF"), Color.decode("#990000"),
                     Color.decode("#000099"), Color.black};
-
-  /**
-   * The file chooser UI used to select a local data file.
-   */
-  JFileChooser chooser;
-  
-  /**
-   * Constructs a chart data panel in time series mode.
-   */
+    
 	public JFreeChartDataPanel() {
 		this(false);
 	}
-
-  /**
-   * Constructs a chart data panel.
-   * 
-   * @param xyMode  if true in x vs. y mode, otherwise in time series mode
-   */
+		
 	public JFreeChartDataPanel(boolean xyMode) {
 		super();
 		
 		this.xyMode = xyMode;
 		
-    lastTimeDisplayed = -1;
+		lastXYDataIndex = -1;
     
     colors = new HashMap<String,Color>();
 		
@@ -224,14 +153,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		setDataComponent(chartPanelPanel);
 	}
 		
-  /**
-   * Create the chart and setup it's UI.
-   */
 	private void initChart() {
-    XYToolTipGenerator toolTipGenerator;
-    
 		if (xyMode) {
-			dataCollection = new XYTimeSeriesCollection();
+			dataCollection = new XYSeriesCollection();
       
       NumberAxis domainAxis = new NumberAxis();
       domainAxis.setAutoRangeIncludesZero(true);
@@ -242,39 +166,47 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       });
       this.domainAxis = domainAxis;
       
-      toolTipGenerator = new StandardXYToolTipGenerator("{0}: {1} , {2}",
+      rangeAxis = new NumberAxis();
+      rangeAxis.setAutoRangeIncludesZero(true);
+      
+      StandardXYToolTipGenerator toolTipGenerator = new StandardXYToolTipGenerator("{1} , {2}",
           new DecimalFormat(),
           new DecimalFormat());
+      StandardXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
+          toolTipGenerator);
+      renderer.setDefaultEntityRadius(6);      
+      
+      xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
+      
+      chart = new JFreeChart(null, null, xyPlot, false);
 		} else {
 			dataCollection = new TimeSeriesCollection();
       
       domainAxis = new DateAxis();
       domainAxis.setLabel("Time");
-            
-      toolTipGenerator = new StandardXYToolTipGenerator("{0}: {1} , {2}",
+      
+      rangeAxis = new NumberAxis();
+      rangeAxis.setAutoRangeIncludesZero(true);
+      
+      StandardXYToolTipGenerator toolTipGenerator = new StandardXYToolTipGenerator("{0}: {1} , {2}",
           new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"),
           new DecimalFormat());
-    }
+      StandardXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
+          toolTipGenerator);
+      renderer.setDefaultEntityRadius(6);
+
+      xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
+      
+      chart = new JFreeChart(xyPlot);
+		}
     
-    rangeAxis = new NumberAxis();
-    rangeAxis.setAutoRangeIncludesZero(true);    
     rangeAxis.addChangeListener(new AxisChangeListener() {
       public void axisChanged(AxisChangeEvent ace) {
         boundsChanged();
       }        
     });    
     
-    StandardXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
-        toolTipGenerator);
-    renderer.setDefaultEntityRadius(6);    
-    
-    xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
-    
-    chart = new JFreeChart(xyPlot);    
 		chart.setAntiAlias(false);
-    
-    seriesLegend = chart.getLegend();
-    chart.removeLegend();    
 
 		chartPanel = new ChartPanel(chart, true);
     chartPanel.setInitialDelay(0);
@@ -292,19 +224,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     popupMenu.insert(copyChartMenuItem, 2);
 
     popupMenu.insert(new JPopupMenu.Separator(), 3);
-    
-    if (xyMode) {
-      popupMenu.add(new JPopupMenu.Separator());
-      
-      JMenuItem addLocalSeriesMenuItem = new JMenuItem("Add local series...");
-      addLocalSeriesMenuItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-          addLocalSeries();
-        }        
-      });
-      
-      popupMenu.add(addLocalSeriesMenuItem);
-    }
 
 		chartPanelPanel = new JPanel();
 		chartPanelPanel.setLayout(new BorderLayout());
@@ -327,156 +246,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     clipboard.setContents(contents, null);
   }
   
-  /**
-   * Add data from a local file as a series to this chart. This will ask the
-   * user for the file name, and which channels to use.
-   */
-  private void addLocalSeries() {
-    if (chooser == null) {
-      chooser = new JFileChooser();
-    }
-    
-    int returnVal = chooser.showOpenDialog(dataComponent);
-    if(returnVal != JFileChooser.APPROVE_OPTION) {
-      return;
-    }
-    
-    File file = chooser.getSelectedFile();
-    if (file == null || !file.isFile() || !file.exists()) {
-      return;
-    }
-    
-    DataFileReader reader;
-    try {
-      reader = new DataFileReader(file);
-    } catch (IOException e) {
-      JOptionPane.showMessageDialog(dataComponent,
-          e.getMessage(),
-          "Problem reading data file",
-          JOptionPane.ERROR_MESSAGE);
-      return;
-    }
-    
-    List<DataFileChannel> channels = reader.getChannels();
-    if (channels.size() < 2) {
-      JOptionPane.showMessageDialog(dataComponent,
-          "There must be at least 2 channels in the data file",
-          "Problem with data file",
-          JOptionPane.ERROR_MESSAGE);      
-      return;
-    }
-    
-    DataFileChannel xChannel;
-    DataFileChannel yChannel;
-    
-    if (channels.size() == 2) {
-      xChannel = channels.get(0);
-      yChannel = channels.get(1);
-    } else {    
-      xChannel = (DataFileChannel)JOptionPane.showInputDialog(
-          dataComponent,
-          "Select the x channel:",
-          "Add local channel",
-          JOptionPane.PLAIN_MESSAGE,
-          null,
-          channels.toArray(),
-          null);
-      
-      if (xChannel == null) {
-        return;
-      }
-      
-      yChannel = (DataFileChannel)JOptionPane.showInputDialog(
-          dataComponent,
-          "Select the y channel:",
-          "Add local channel",
-          JOptionPane.PLAIN_MESSAGE,
-          null,
-          channels.toArray(),
-          null);
-      
-      if (yChannel == null) {
-        return;
-      }
-    }
-
-    String xChannelName = xChannel.getChannelName();
-    if (xChannel.getUnit() != null) {
-      xChannelName += " (" + xChannel.getUnit() + ")";
-    }
-    int xChannelIndex = channels.indexOf(xChannel);
-    
-    String yChannelName = yChannel.getChannelName();
-    if (yChannel.getUnit() != null) {
-      yChannelName += " (" + yChannel.getUnit() + ")";
-    }
-    int yChannelIndex = channels.indexOf(yChannel);
-    
-    String seriesName = xChannelName + " vs. " + yChannelName;
-    
-    XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
-    
-    try {
-      DoubleDataSample sample;
-      while ((sample = reader.readSample()) != null) {
-        double timestamp = sample.getTimestamp();
-        double[] values = sample.getValues();
-        
-        FixedMillisecond time = new FixedMillisecond((long)(timestamp*1000));
-        XYTimeSeriesDataItem dataItem = new XYTimeSeriesDataItem(time);
-        
-        if (values[xChannelIndex] != Double.NaN && values[yChannelIndex] != Double.NaN) {
-          dataItem.setX(values[xChannelIndex]);
-          dataItem.setY(values[yChannelIndex]);
-        }
-        
-        data.add(dataItem, false);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      return;
-    }
-    
-    Color color = getLeastUsedColor();
-    colors.put(seriesName, color);      
-    
-    ((XYTimeSeriesCollection)dataCollection).addSeries(data);
-    localSeries++;
-    
-    setSeriesColors();
-    
-    updateTitle();
-    
-    updateLegend();
-  }
-  
-  /**
-   * Remove the local series from the chart.
-   * 
-   * @param seriesName  the name of the local series.
-   */
-  private void removeLocalSeries(String seriesName) {
-    XYTimeSeries series = ((XYTimeSeriesCollection)dataCollection).getSeries(seriesName);
-    
-    if (series == null) {
-      return;
-    }
-    
-    localSeries--;
-    ((XYTimeSeriesCollection)dataCollection).removeSeries(series);
-    
-    colors.remove(seriesName);
-    setSeriesColors();
-    
-    updateTitle();
-    
-    updateLegend();
-  }
-  
-  /**
-   * Called when the bounds of an axis are changed. This updates the data panel
-   * properties for these values.
-   */
   private void boundsChanged() {
     if (xyMode) {
       if (domainAxis.isAutoRange()) {
@@ -497,173 +266,110 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     }
   }
 		
-  /**
-   * Indicates that this data panel can support multiple channels. This always
-   * returns true.
-   * 
-   * @return  always true
-   */
 	public boolean supportsMultipleChannels() {
 		return true;
 	}
 	
-  /**
-   * Called when a channel has been added.
-   * 
-   * @param channelName  the new channel
-   */
-  void channelAdded(String channelName) {
-    String channelDisplay = getChannelDisplay(channelName);
-    String seriesName = null;
-    Color color = null;
-    
-    if (xyMode) {
-      if (channels.size() % 2 == 0) {
-        String firstChannelName = (String)channels.get(channels.size()-2);
-        String firstChannelDisplay = getChannelDisplay(firstChannelName);
-        seriesName = firstChannelDisplay + " vs. " + channelDisplay;
-        
-        color = getLeastUsedColor();
-        
-        XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
-        data.setMaximumItemAge((long)(timeScale*1000), (long)(time*1000));
-        
-        int position = dataCollection.getSeriesCount() - localSeries;
-        ((XYTimeSeriesCollection)dataCollection).addSeries(position, data);
-      }
-    } else {
-      seriesName = channelDisplay;
-      
-      color = getLeastUsedColor();
-      
-			FastTimeSeries data = new FastTimeSeries(seriesName, FixedMillisecond.class);
-			data.setMaximumItemAge((long)(timeScale*1000), (long)(time*1000));
-			((TimeSeriesCollection)dataCollection).addSeries(data);
+	public boolean addChannel(String channelName) {
+		if (xyMode && !channels.contains(channelName) && channels.size() == 2) {
+			log.warn("We don't support more than 2 channels.");
+			return false;			
 		}
-    
-    if (seriesName != null) {
-      // find the least used color and set it
-      colors.put(seriesName, color);
-      setSeriesColors();      
-    }
-    
-    updateTitle();    
-    
-    updateLegend();    
-  }
+		
+		return super.addChannel(channelName);
+	}
   
-  /**
-   * Remove the channel from the data panel.
-   * 
-   * @param channelName  the channel to remove
-   * @return             true if the channel was removed, false otherwise
-   */
-  public boolean removeChannel(String channelName) {
+  void channelAdded(String channelName) {
+    String seriesName = getSeriesName(channelName);
+    
     if (xyMode) {
-      if (!channels.contains(channelName)) {
-        return false;
+      if (channels.size() == 1) {
+        XYSeries data = new FastXYSeries(seriesName);
+        ((XYSeriesCollection)dataCollection).addSeries(data);
       }
-      
-      int channelIndex = channels.indexOf(channelName);
-      
-      String firstChannel, secondChannel;
-      if (channelIndex % 2 == 0) {
-        firstChannel = channelName;
-        if (channelIndex+1 < channels.size()) {
-          secondChannel = (String)channels.get(channelIndex+1);
-        } else {
-          secondChannel = null;
-        }
-      } else {
-        firstChannel = (String)channels.get(channelIndex-1);
-        secondChannel = channelName;
-      }
-      
-      rbnbController.unsubscribe(firstChannel, this);
-      channels.remove(firstChannel);
-
-      if (secondChannel != null) {
-        rbnbController.unsubscribe(secondChannel, this);
-        channels.remove(secondChannel);
-        
-        String firstChannelDisplay = getChannelDisplay(firstChannel);
-        String secondChannelDisplay = getChannelDisplay(secondChannel);
-        String seriesName = firstChannelDisplay + " vs. " + secondChannelDisplay;
-        
-        XYTimeSeriesCollection dataCollection = (XYTimeSeriesCollection)this.dataCollection;
-        XYTimeSeries data = dataCollection.getSeries(seriesName);
-        dataCollection.removeSeries(data);
-        
-        colors.remove(seriesName);
-      }
-      
-      channelRemoved(channelName);
-      
-      return true;
     } else {
-      return super.removeChannel(channelName);
-    }
+      if (channels.size() == 1) {
+        rangeLegend = chart.getLegend();
+        chart.removeLegend();
+        rangeAxis.setLabel(seriesName);
+      } else {
+        if (chart.getLegend() == null) {
+          chart.addLegend(rangeLegend);
+        }
+        rangeAxis.setLabel(null);
+      }
+      
+			TimeSeries data = new FastTimeSeries(seriesName, FixedMillisecond.class);
+			data.setMaximumItemAge((int)(timeScale*1000*2));
+			((TimeSeriesCollection)dataCollection).addSeries(data);
+            
+      // find the least used color
+      int usage = -1;
+      Color color = null;
+      for (int i=0; i<seriesColors.length; i++) {
+        int seriesUsingColor = seriesUsingColor(seriesColors[i], channelName);
+        if (usage == -1 || seriesUsingColor < usage) {
+          usage = seriesUsingColor;
+          color = seriesColors[i]; 
+        }
+      }      
+      
+      // set the series color
+      colors.put(channelName, color);
+			setSeriesColors();
+		}
+		
+		setAxisName();    
   }
 	
-  /**
-   * Called when a channel has been removed.
-   * 
-   * @param  the name of the channel that was removed
-   */
   void channelRemoved(String channelName) {
-		if (!xyMode) {
-      String channelDisplay = getChannelDisplay(channelName);
-      
+		String seriesName = getSeriesName(channelName);
+		
+		if (xyMode) {
+      clearData();
+			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+			//TODO add this functionality
+		} else {      
 			TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-			TimeSeries data = dataCollection.getSeries(channelDisplay);
+			TimeSeries data = dataCollection.getSeries(seriesName);
 			dataCollection.removeSeries(data);
-      
-      colors.remove(channelDisplay);
-		}
-    
-    setSeriesColors();
-    
-    updateTitle();
-    
-    updateLegend();
-  }
-  
-  /**
-   * Return a color that is least used.
-   * 
-   * @return            the color
-   */
-  private Color getLeastUsedColor() {
-    int usage = -1;
-    Color color = null;
-    for (int i=0; i<seriesColors.length; i++) {
-      int seriesUsingColor = getSeriesUsingColor(seriesColors[i]);
-      if (usage == -1 || seriesUsingColor < usage) {
-        usage = seriesUsingColor;
-        color = seriesColors[i]; 
-      }
-    }
 
-    return color;
-  }
+      if (channels.size() == 1) {
+        rangeLegend = chart.getLegend();
+        chart.removeLegend();
+        Object[] channelsArray = channels.toArray();
+        rangeAxis.setLabel(getSeriesName((String)channelsArray[0]));
+      } else {
+        if (chart.getLegend() == null) {
+          chart.addLegend(rangeLegend);
+        }
+        rangeAxis.setLabel(null);
+      }
+      
+      colors.remove(channelName);
+      setSeriesColors();
+		}
+	}
   
   /**
-   * Count the number of series using the specified color for their series
-   * plot.
+   * Count the number of channels using the specified color for their series
+   * plot. The count will exclude the specified channel from the count.
    * 
-   * @param color          the color to find
-   * @return               the number of series using this color
+   * @param color           the color to find
+   * @param excludeChannel  the channel to skip
+   * @return                the number of channels using this color
    */
-  private int getSeriesUsingColor(Color color) {
+  private int seriesUsingColor(Color color, String excludeChannel) {
     if (color == null) {
       return 0;
     }
     
     int count = 0;
     
-    for (int i=0; i<dataCollection.getSeriesCount(); i++) {
-      Paint p = xyPlot.getRenderer().getSeriesPaint(i);
-      if (p.equals(color)) {
+    for (int i=0; i<channels.size(); i++) {
+      String channel = (String)channels.get(i);
+      Paint p = (Color)xyPlot.getRenderer().getSeriesPaint(i);
+      if (p.equals(color) && !channel.equals(excludeChannel)) {
         count++;
       }
     }
@@ -672,243 +378,118 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
   }
   
   /**
-   * Set the color for all the series.
+   * Set the series color for all the channels.
    */
   private void setSeriesColors() {
-    for (int i=0; i<dataCollection.getSeriesCount(); i++) {
-      String series = (String)dataCollection.getSeriesKey(i);
-      xyPlot.getRenderer().setSeriesPaint(i, colors.get(series));
+    Iterator i = channels.iterator();
+    int index = 0;
+    while (i.hasNext()) {
+      xyPlot.getRenderer().setSeriesPaint(index++, colors.get(i.next()));
     }
-  }
-  
-  /**
-   * Update the legend and axis labels based on the series being viewed.
-   */
-  private void updateLegend() {
-    int series = dataCollection.getSeriesCount();
-    int chans = channels.size();
-    
-    if (xyMode) {
-      if (series == 0 && chans == 1) {
-        String channelDisplay = getChannelDisplay((String)channels.get(0));
-        domainAxis.setLabel(channelDisplay);
-        rangeAxis.setLabel(null);
-      } else if (series == 1 && chans == 0) {
-        XYTimeSeries xySeries = ((XYTimeSeriesCollection)dataCollection).getSeries(0); 
-        String seriesName = (String)xySeries.getKey();
-        String[] channelNames = seriesName.split(" vs. ");
-        if (channelNames.length == 2) {
-          domainAxis.setLabel(channelNames[0]);
-          rangeAxis.setLabel(channelNames[1]);
-        }
-      } else if (series == 1 && chans == 2) {
-        String channelDisplay1 = getChannelDisplay((String)channels.get(0));
-        domainAxis.setLabel(channelDisplay1);
-        String channelDisplay2 = getChannelDisplay((String)channels.get(1));
-        rangeAxis.setLabel(channelDisplay2);
-      } else {
-        domainAxis.setLabel(null);
-        rangeAxis.setLabel(null);        
-      }      
-    } else {
-      if (series == 1) {
-        String channelDisplay = getChannelDisplay((String)channels.get(0));
-        rangeAxis.setLabel(channelDisplay);
-      } else {
-        rangeAxis.setLabel(null);
-      }
-    }
-    
-    if (series >= 2) {
-      if (chart.getLegend() == null) {
-        chart.addLegend(seriesLegend);
-      }
-    } else {
-      if (chart.getLegend() != null) {
-        seriesLegend = chart.getLegend();
-      }
-      chart.removeLegend();      
-    }    
   }
 	
-  /**
-   * Get the title of this data panel. This overides the super class
-   * implementation to deal with x vs. y plots.
-   * 
-   * @return  the title of the data panel
-   */
 	String getTitle() {
-		if (xyMode) {
-      int remoteSeries = dataCollection.getSeriesCount()-localSeries;
-      
-      String title = new String();
-			Iterator i = channels.iterator();
-      while (i.hasNext()) {
-        String firstChannel = (String)i.next();
-        title += firstChannel;
-        if (i.hasNext()) {
-          String secondChannel = (String)i.next();
-          title += " vs. " + secondChannel;
-          if (i.hasNext() || localSeries > 0) {
-            title += ", ";
-          }          
-        }
-      }
-      
-      for (int j=remoteSeries; j<remoteSeries+localSeries; j++) {
-        String seriesName = (String)dataCollection.getSeriesKey(j);
-        title += seriesName;
-        if (j<remoteSeries+localSeries-1) {
-          title += ", ";
-        }
-      }      
-
-      return title;
+		if (xyMode && channels.size() == 2) {
+			Object[] channelsArray = channels.toArray();
+			return channelsArray[0] + " vs. " + channelsArray[1];
 		} else {
 			return super.getTitle();
 		}
 	}
   
-  /**
-   * Get the component to display the channels in the header of the data panel.
-   * This overides the super class implementation to deal with x vs. y plots.
-   * 
-   * @return  the component displaying the channels for the data panel
-   */
   JComponent getChannelComponent() {
-    if (xyMode) {
-      int remoteSeries = dataCollection.getSeriesCount()-localSeries;
-
-      if (channels.size() == 0 && localSeries == 0) {
-        return null;
-      }
-      
+    if (xyMode && channels.size() == 2) {
       JPanel titleBar = new JPanel();
       titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
       titleBar.setOpaque(false);
       
       if (showChannelsInTitle) {
         Iterator i = channels.iterator();
-        while (i.hasNext()) {
-          String firstChannel = (String)i.next();
-          String series = firstChannel;
-          if (i.hasNext()) {
-            series += " vs. " + (String)i.next();
-          }
-          titleBar.add(new ChannelTitle(series, firstChannel));
-        }
+        titleBar.add(new ChannelTitle((String)i.next()));
         
-        for (int j=remoteSeries; j<remoteSeries+localSeries; j++) {
-          String seriesName = (String)dataCollection.getSeriesKey(j);
-          titleBar.add(new LocalChannelTitle(seriesName));
-        }
+        JLabel label = new JLabel("vs.");
+        label.setBorder(new EmptyBorder(0, 0, 0, 5));
+        label.setForeground(SimpleInternalFrame.getTextForeground(true));
+        titleBar.add(label);
+        
+        titleBar.add(new ChannelTitle((String)i.next()));
       }
       
       return titleBar;
     } else {
       return super.getChannelComponent();
     }
-  }
-  
-  /**
-   * A channel title component for local channels.
-   */
-  class LocalChannelTitle extends ChannelTitle {
-    /**
-     * Create a local channel title.
-     * 
-     * @param seriesName  the name of the series
-     */
-    public LocalChannelTitle(String seriesName) {
-      super(seriesName, seriesName);
-    }
-
-    /**
-     * Return an actionlistener to remove this series.
-     */
-    protected ActionListener getActionListener(final String seriesName, final String channelName) {
-      return new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-          removeLocalSeries(seriesName);
-        }
-      };
-    }    
-  }
+  }  
 	
-  /**
-   * Get the string for this channel to display in the UI. This will show the
-   * channel units if there are any.
-   *  
-   * @param channelName  the name of the channel
-   * @return             the string to display the channel in the UI
-   */
-  private String getChannelDisplay(String channelName) {
-    String seriesName = channelName;
+	private void setAxisName() {	
+		if (xyMode) {
+			Object[] channelsArray = channels.toArray();
+			
+			if (channels.size() == 1) {
+				String channelName = (String)channelsArray[0];
+				String seriesName = getSeriesName(channelName);
+				domainAxis.setLabel(seriesName);
+			} else if (channels.size() == 2) {
+				String channelName = (String)channelsArray[1];
+				String seriesName = getSeriesName(channelName);
+				rangeAxis.setLabel(seriesName);
+			}
+		}
+	}
+	
+	private String getSeriesName(String channelName) {
+		String seriesName = channelName;
     Channel channel = rbnbController.getChannel(channelName);
     if (channel != null) {
       String unit = channel.getMetadata("units");
-      if (unit != null) {
-        seriesName += " (" + unit + ")";
-      }
+  		if (unit != null) {
+  			seriesName += " (" + unit + ")";
+  		}
     }
-    return seriesName;    
-  }
+		return seriesName;
+	}
 		
-  /**
-   * Called when the time scale changes. This updates the maximum age of the
-   * dataset.
-   * 
-   * @param newTimeScale  the new time scale
-   */
 	public void timeScaleChanged(double newTimeScale) {
 		super.timeScaleChanged(newTimeScale);
 
     SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        int series = dataCollection.getSeriesCount();
-        if (xyMode) {
-          series -= localSeries;
-        }
-        
-    		for (int i=0; i<series; i++) {
+      public void run() {    
+    		for (int i=0; i<dataCollection.getSeriesCount(); i++) {
     			if (xyMode) {
-    				XYTimeSeriesCollection xyTimeSeriesCollection = (XYTimeSeriesCollection)dataCollection;
-    				XYTimeSeries data = xyTimeSeriesCollection.getSeries(i);
-            data.setMaximumItemAge((long)(timeScale*1000), (long)(time*1000));
+    				XYSeriesCollection xySeriesDataCollection = (XYSeriesCollection)dataCollection;
+    				XYSeries data = xySeriesDataCollection.getSeries(i);
+    				//TODO add correspoding code for XYSeries
+    				data.setMaximumItemCount((int)(256*timeScale));
     			} else {
-    				TimeSeriesCollection timeSeriesCollection = (TimeSeriesCollection)dataCollection;
-    				FastTimeSeries data = (FastTimeSeries)timeSeriesCollection.getSeries(i);
-    				data.setMaximumItemAge((long)(timeScale*1000), (long)(time*1000));
+    				TimeSeriesCollection timeSeriesDataCollection = (TimeSeriesCollection)dataCollection;
+    				TimeSeries data = timeSeriesDataCollection.getSeries(i);
+    				data.setMaximumItemAge((int)(timeScale*1000));
     			}
     		}
-        
-        if (!xyMode) {
-          domainAxis.setRange((time-timeScale)*1000, time*1000);
-        }        
       }
-    });		
+    });
+		
+		if (!xyMode) {
+			setTimeAxis();
+		}		
 	}
-  
-  /**
-   * Posts new data to the data panel.
-   * 
-   * @param channelMap  the channel map with the new data
-   */
+	
 	public void postData(final ChannelMap channelMap) {
     cachedChannelMap = this.channelMap;
     
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        JFreeChartDataPanel.this.channelMap = channelMap;
-      }
-    });
+		super.postData(channelMap);
+		
+		if (xyMode) {
+			lastXYDataIndex = -1;
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+			  public void run() {
+			    postDataTimeSeries(channelMap);
+			  }
+			});
+		}
 	}
 
-  /**
-   * Posts the data in the channel map when in time series mode.
-   * 
-   * @param channelMap  the channel map with the new data
-   */
 	private void postDataTimeSeries(ChannelMap channelMap) {
 		//loop over all channels and see if there is data for them
 		Iterator i = channels.iterator();
@@ -923,17 +504,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		}
 	}
 	
-  /**
-   * Posts the data in the channel map to the specified channel when in time
-   * seires mode.
-   * 
-   * @param channelMap    the channel map containing the new data
-   * @param channelName   the name of the channel to post data to
-   * @param channelIndex  the index of the channel in the channel map
-   */
 	private void postDataTimeSeries(ChannelMap channelMap, String channelName, int channelIndex) {
 		TimeSeriesCollection dataCollection = (TimeSeriesCollection)this.dataCollection;
-    FastTimeSeries timeSeriesData = (FastTimeSeries)dataCollection.getSeries(getChannelDisplay(channelName));
+    FastTimeSeries timeSeriesData = (FastTimeSeries)dataCollection.getSeries(getSeriesName(channelName));
     if (timeSeriesData == null) {
       log.error("We don't have a data collection to post this data.");
       return;
@@ -1000,7 +573,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 					break;
 			}
 			
-      timeSeriesData.fireSeriesChanged();
+      timeSeriesData.stopAdd();
       
 			chart.setNotify(true);
 			chart.fireChartChanged();
@@ -1010,58 +583,21 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		}
 	}
 	
-  /**
-   * Posts a new time. This pulls data out of a posted channel map when in x vs.
-   * y mode.
-   * 
-   * @param time  the new time
-   */
 	public void postTime(double time) {
-    if (time < this.time) {
-      clearData();
-    }
-    
 		super.postTime(time);
 		
-    SwingUtilities.invokeLater(new Runnable() {
-      public void run() {
-        if (xyMode) {
+		if (xyMode) {
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
           postDataXY(channelMap, cachedChannelMap);
-        } else if (channelMap != null) {
-          postDataTimeSeries(channelMap);
-          channelMap = null;
         }
-        
-        setTimeAxis();
-      }
-    });
+      });
+		} else {
+			setTimeAxis();
+		}		
 	}
-  
-  /**
-   * Posts the data in the channel map when in x vs. y mode.
-   * 
-   * @param channelMap        the new channel map
-   * @param cachedChannelMap  the cached channel map
-   */
-  private void postDataXY(ChannelMap channelMap, ChannelMap cachedChannelMap) {
-    //loop over all channels and see if there is data for them
-    int seriesCount = dataCollection.getSeriesCount()-localSeries;
-    for (int i=0; i<seriesCount; i++) {
-      postDataXY(channelMap, cachedChannelMap, i);
-    }
-    
-    lastTimeDisplayed = time;
-  }  
 
-  /**
-   * Posts the data in the channel map to the specified channel when in x vs. y
-   * mode.
-   * 
-   * @param channelMap        the new channel map
-   * @param cachedChannelMap  the cached channel map
-   * @param series            the index of the series
-   */
-	private void postDataXY(ChannelMap channelMap, ChannelMap cachedChannelMap, int series) {
+	private void postDataXY(ChannelMap channelMap, ChannelMap cachedChannelMap) {
 		if (!xyMode) {
 			log.error("Tried to post X vs. Y data when not in xy mode.");
 			return;
@@ -1072,14 +608,19 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			return;
 		}
 		
+		//Check to see if we have 2 channels for x vs. y mode
+		if (channels.size() != 2) {
+			return;
+		}
+
 		Object[] channelsArray = channels.toArray();
-		String xChannelName = (String)channelsArray[series*2];
-		String yChannelName = (String)channelsArray[series*2+1];
+		String xChannelName = (String)channelsArray[0];
+		String yChannelName = (String)channelsArray[1];
 
 		//get the channel indexes for the  x and y channels
 		int xChannelIndex = channelMap.GetIndex(xChannelName);
 		int yChannelIndex = channelMap.GetIndex(yChannelName);
-    
+
     int firstXChannelIndex = -1;    
     
 		//return if this channel map doesn't have data for the y channel
@@ -1099,45 +640,28 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		try {
 			//TODO make sure data is at the same timestamp
 			double[] times = channelMap.GetTimes(yChannelIndex); //FIXME go over all channel times
-      
-      int startIndex = -1;
-      
-      // determine what time we should load data from
-      double dataStartTime;
-      if (lastTimeDisplayed == time) {
-        dataStartTime = time-timeScale;
-      } else {
-        dataStartTime = lastTimeDisplayed;
-      }
 
-      for (int i=0; i<times.length; i++) {
-          if (times[i] > dataStartTime && times[i] <= time) {
-              startIndex = i;
-              break;
-          }
-      }
-      
-      //see if there is no data in the time range we are loooking at
-      if (startIndex == -1) {
-          return;
-      }       
-      
-      int endIndex = startIndex;
-      
-      for (int i=times.length-1; i>startIndex; i--) {
-          if (times[i] <= time) {
-              endIndex = i;
-              break;
-          }
-      }      
+			int startIndex = lastXYDataIndex + 1;
+			int endIndex = startIndex;
+			if (startIndex < times.length) {
+				for (int i=times.length-1; i>startIndex; i--) {
+					if (times[i] <= time) {
+						endIndex = i;
+						break;
+					}
+				}			
+			} else {
+				//no more data in channel map for us to display
+				return;
+			}
+
+			lastXYDataIndex = endIndex;
 			
-			XYTimeSeriesCollection dataCollection = (XYTimeSeriesCollection)this.dataCollection;
-      XYTimeSeries xySeriesData = (XYTimeSeries)dataCollection.getSeries(series);
+			XYSeriesCollection dataCollection = (XYSeriesCollection)this.dataCollection;
+      FastXYSeries xySeriesData = (FastXYSeries)dataCollection.getSeries(0);
 			
 			//FIXME assume data of same type
 			int typeID = channelMap.GetType(yChannelIndex);
-      
-      FixedMillisecond time;
 					
 			chart.setNotify(false);
       
@@ -1150,8 +674,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               cachedChannelMap.GetDataAsFloat64(firstXChannelIndex);
 					double[] yDoubleData = channelMap.GetDataAsFloat64(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-            time = new FixedMillisecond((long)(times[i]*1000));
-						xySeriesData.add(time, xDoubleData[i], yDoubleData[i], false);
+						xySeriesData.add(xDoubleData[i], yDoubleData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_FLOAT32:
@@ -1160,8 +683,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               cachedChannelMap.GetDataAsFloat32(firstXChannelIndex);
 					float[] yFloatData = channelMap.GetDataAsFloat32(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-            time = new FixedMillisecond((long)(times[i]*1000));
-						xySeriesData.add(time, xFloatData[i], yFloatData[i], false);
+						xySeriesData.add(xFloatData[i], yFloatData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_INT64:
@@ -1170,8 +692,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               cachedChannelMap.GetDataAsInt64(firstXChannelIndex);
 					long[] yLongData = channelMap.GetDataAsInt64(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-            time = new FixedMillisecond((long)(times[i]*1000));
-						xySeriesData.add(time, xLongData[i], yLongData[i], false);
+						xySeriesData.add(xLongData[i], yLongData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT32:
@@ -1180,8 +701,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               cachedChannelMap.GetDataAsInt32(firstXChannelIndex);
 					int[] yIntData = channelMap.GetDataAsInt32(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-            time = new FixedMillisecond((long)(times[i]*1000));
-						xySeriesData.add(time, xIntData[i], yIntData[i], false);
+						xySeriesData.add(xIntData[i], yIntData[i]);
 					}
 					break;
 				case ChannelMap.TYPE_INT16:
@@ -1190,8 +710,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               cachedChannelMap.GetDataAsInt16(firstXChannelIndex);
 					short[] yShortData = channelMap.GetDataAsInt16(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-            time = new FixedMillisecond((long)(times[i]*1000));
-						xySeriesData.add(time, xShortData[i], yShortData[i], false);
+						xySeriesData.add(xShortData[i], yShortData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_INT8:
@@ -1200,8 +719,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               cachedChannelMap.GetDataAsInt8(firstXChannelIndex);
 					byte[] yByteData = channelMap.GetDataAsInt8(yChannelIndex);
 					for (int i=startIndex; i<=endIndex; i++) {
-            time = new FixedMillisecond((long)(times[i]*1000));
-						xySeriesData.add(time, xByteData[i], yByteData[i], false);
+						xySeriesData.add(xByteData[i], yByteData[i]);
 					}
 					break;					
 				case ChannelMap.TYPE_BYTEARRAY:					
@@ -1211,7 +729,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 					break;
 			}
       
-      xySeriesData.fireSeriesChanged();
+      xySeriesData.stopAdd();
 			
 			chart.setNotify(true);
 			chart.fireChartChanged();
@@ -1225,63 +743,31 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 
 	}
 	
-  /**
-   * Sets the time axis to display within the current time and time scale. This
-   * assumes it is called in the event dispatch thread.
-   */
 	private void setTimeAxis() {
 		if (chart == null) {
 			log.warn("Chart object is null. This shouldn't happen.");
 			return;
 		}
-    
-    int series = dataCollection.getSeriesCount();
-    if (xyMode) {
-      series -= localSeries;
-    }
-
-    for (int i=0; i<series; i++) {
-      if (xyMode) {
-        XYTimeSeriesCollection xyTimeSeriesDataCollection = (XYTimeSeriesCollection)dataCollection;
-        XYTimeSeries data = xyTimeSeriesDataCollection.getSeries(i);
-        data.removeAgedItems((long)(time*1000));        
-      } else {
-        TimeSeriesCollection timeSeriesDataCollection = (TimeSeriesCollection)dataCollection;
-        TimeSeries data = timeSeriesDataCollection.getSeries(i);
-        data.removeAgedItems((long)(time*1000), true);
-      }
-    }
-    
-    if (!xyMode) {
-      domainAxis.setRange((time-timeScale)*1000, time*1000);
-    }
+		
+    domainAxis.setRange((time-timeScale)*1000, time*1000);
 	}	
 	
-  /**
-   * Removes all data from all the series.
-   */
 	void clearData() {
 		if (chart == null) {
 			return;
 		}
 		
+		final XYDataset dataCollectionInvokeLater = this.dataCollection;
 		SwingUtilities.invokeLater(new Runnable() {
 			  public void run() {
-          lastTimeDisplayed = -1;
-          
-          int series = dataCollection.getSeriesCount();
-          if (xyMode) {
-            series -= localSeries;
-          }          
-
-				  for (int i=0; i<series; i++) {
+				  for (int i=0; i<dataCollection.getSeriesCount(); i++) {
 					  if (xyMode) {
-						  XYTimeSeriesCollection xyTimeSeriesDataCollection = (XYTimeSeriesCollection)dataCollection;
-						  XYTimeSeries data = xyTimeSeriesDataCollection.getSeries(i);
+						  XYSeriesCollection dataCollection = (XYSeriesCollection)dataCollectionInvokeLater;
+						  XYSeries data = dataCollection.getSeries(i);
 						  data.clear();
 					  } else {
-						  TimeSeriesCollection timeSeriesDataCollection = (TimeSeriesCollection)dataCollection;
-						  TimeSeries data = timeSeriesDataCollection.getSeries(i);
+						  TimeSeriesCollection dataCollection = (TimeSeriesCollection)dataCollectionInvokeLater;
+						  TimeSeries data = dataCollection.getSeries(i);
 						  data.clear();				
 					  }
 				  }
@@ -1291,12 +777,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 		log.info("Cleared data display.");
 	}
   
-  /**
-   * Sets properties for the data panel.
-   * 
-   * @param key    the key for the property
-   * @param value  the value for the property
-   */
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
     
@@ -1313,9 +793,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     }
   }
 	
-  /**
-   * Get the name of this data panel.
-   */
 	public String toString() {
 		return "JFreeChart Data Panel";
 	}
@@ -1327,7 +804,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     /**
      * A counter to prevent unnecessary Graphics2D.draw() events in drawItem()
      */
-    private int previousDrawnItem = 1;
+    private int previousDrawnItem = 0;
 
     public FastXYItemRenderer() {
       super();
@@ -1386,7 +863,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
             s.seriesPath.reset();
             s.setLastPointGood(false);
           }
-          previousDrawnItem = 1;
+          previousDrawnItem = 0;
         }
 
         if (getDrawSeriesLineAsPath()) {
@@ -1450,7 +927,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               // Only draw line if it is more than a pixel away from the
               // previous one
               if ((transX1 - transX0 > 2 || transX1 - transX0 < -2
-                  || transY1 - transY0 > 2 || transY1 - transY0 < -2)) {
+                  || transY1 - transY0 > 2 || transY1 - transY0 < -2)
+                  || 0 == previousDrawnItem) {
                 previousDrawnItem = 1;
 
                 if (orientation == PlotOrientation.HORIZONTAL) {
@@ -1531,54 +1009,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * This is an optimizied version of the TimeSeries class. It adds methods to
    * support fast loading of large amounts of data. 
    */
-  public class FastTimeSeries extends TimeSeries {
+  class FastTimeSeries extends TimeSeries {
     public FastTimeSeries(String name, Class timePeriodClass) {
       super(name, timePeriodClass);
-    }
-    
-    /**
-     * Set the maximum item age. Age items according to the latest time.
-     * 
-     * @param periods  the maximum item age
-     * @param latest   the latest time to age by
-     */
-    public void setMaximumItemAge(long periods, long latest) {
-      setMaximumItemAge(periods);
-      removeAgedItems(latest, true);
-    }
-    
-    /**
-     * Does nothing. This class only supports aging items with an explicit
-     * latest time.
-     * 
-     * @param  notify listeners
-     */
-    public void removeAgedItems(boolean notify) {}
-    
-    /**
-     * Remove items that are older than the maximum item age relative to the
-     * latest time provided. Optionally notify listeners that the series has
-     * changed.
-     * 
-     * Note: This overides the version in the base class because it is not
-     *       correct and throws exceptions when it shouldn't.
-     * 
-     * @param latest  the time to age items by
-     * @param notify  if true, notify listeners if the series changes, otherwise
-     *                don't notify listeners
-     */
-    public void removeAgedItems(long latest, boolean notify) {
-      long minAge = latest - this.getMaximumItemAge();
-      
-      boolean removed = false;
-      while (data.size() > 0 && getTimePeriod(0).getSerialIndex() <= minAge) {
-        data.remove(0);
-        removed = true;
-      }
-      
-      if (removed && notify) {
-        fireSeriesChanged();
-      }
     }
 
     /**
@@ -1609,631 +1042,63 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         RegularTimePeriod last = getTimePeriod(count-1);
         if (period.compareTo(last) > 0) {
           data.add(item);
-        } else {
-          int index = Collections.binarySearch(data, item);
-          if (index < 0) {
-            data.add(-index - 1, item);
-          }
         }
       }      
     }
-  }
-  
-  /**
-   * Represents one timestamped (x,y) data item.
-   */
-  public class XYTimeSeriesDataItem implements Cloneable, Comparable<XYTimeSeriesDataItem>, Serializable {
-    private static final long serialVersionUID = 941152355835111553L;
+    
+    /**
+     * Signal that the adding of items has ended.
+     * 
+     * This fires a series changed event.
+     */
+    public void stopAdd() {
+      removeAgedItems(false);
 
-    /** The time period */
-    private final RegularTimePeriod period;
-    
-    /** The x value */
-    private Number x;
-    
-    /** The y value */
-    private Number y;
-    
-    /**
-     * Construct a new data item with the time.
-     * 
-     * @param period  the time for the data
-     */
-    public XYTimeSeriesDataItem(RegularTimePeriod period) {
-      this(period, null, null);
-    }
-    
-    /**
-     * Construct a new data item with timestamped (x,y) values.
-     * 
-     * @param period  the time for the data
-     * @param x       the x value
-     * @param y       the y value
-     */
-    public XYTimeSeriesDataItem(RegularTimePeriod period, Number x, Number y) {
-      if (period == null) {
-        throw new IllegalArgumentException("Null 'period' argument.");   
-      }
-      
-      this.period = period;
-      this.x = x;
-      this.y = y;
-    }
-    
-    /**
-     * Get a copy of this data item.
-     */
-    public Object clone() {
-      return new XYTimeSeriesDataItem(period, x.doubleValue(), y.doubleValue());
-    }
-
-    /**
-     * Compare this data item to another. This only compares the time of the
-     * data item.
-     * 
-     * @param o  the data item to compare to
-     * @return   an integer indicating the order of this data item relative to
-     *           the other
-     */
-    public int compareTo(XYTimeSeriesDataItem d) {
-      return period.compareTo(d.getPeriod());
-    }
-    
-    /**
-     * Test if this object is equal to another.
-     * 
-     * @return  true if the object is equal, false otherwise
-     */
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      
-      if (o instanceof XYTimeSeriesDataItem) {
-        XYTimeSeriesDataItem d = (XYTimeSeriesDataItem)o;
-        return period.equals(d.getPeriod()) && x.equals(d.getX()) && y.equals(d.getY());
-      }
-      
-      return false;
-    }
-    
-    /**
-     * Get the hash code for this object.
-     */
-    public int hashCode() {
-      int result;
-      result = period.hashCode();
-      result = 29 * result + (x != null ? x.hashCode() : 0);
-      result = 29 * result + (y != null ? y.hashCode() : 0);
-      return result;
-    }
-    
-    /**
-     * Get the time period for this data item.
-     * 
-     * @return  the time period
-     */
-    public RegularTimePeriod getPeriod() {
-      return period;
-    }
-    
-    /**
-     * Get the x value.
-     * 
-     * @return  the x value
-     */
-    public Number getX() {
-      return x;
-    }
-    
-    /**
-     * Set the x value.
-     * 
-     * @param x  the new value of x
-     */
-    public void setX(Number x) {
-      this.x = x;
-    }
-    
-    /**
-     * Get the y value.
-     * 
-     * @return  the y value
-     */
-    public Number getY() {
-      return y;
-    }
-    
-    /**
-     * Set the y value
-     * @param y  the new value of y
-     */
-    public void setY(Number y) {
-      this.y = y;
-    }
-    
-    /**
-     * Set the x and y value.
-     * 
-     * @param x  the new value of x
-     * @param y  the new value of y
-     */
-    public void setValue(Number x, Number y) {
-      this.x = x;
-      this.y = y;
-    }
-  }
-  
-  /**
-   * A sequence of (x,y) data items that are timestamped. Only one data item may
-   * is allowed per time.
-   */
-  public class XYTimeSeries extends Series implements Serializable {
-    private static final long serialVersionUID = -5092511186726301050L;
-
-    /**
-     * The time period of the series.
-     */
-    private Class timePeriodClass;
-    
-    /**
-     * The list of data items.
-     */
-    private ArrayList<XYTimeSeriesDataItem> data;
-    
-    /**
-     * The old age of a data item relative to the newest one or a given time.
-     */
-    private long maximumItemAge;
-
-    /**
-     * Creates an empty series.
-     * 
-     * @param name             the name of the series
-     * @param timePeriodClass  the time period
-     */
-    public XYTimeSeries(String name, Class timePeriodClass) {
-      super(name);
-      
-      this.timePeriodClass = timePeriodClass;
-      
-      data = new ArrayList<XYTimeSeriesDataItem>();
-      maximumItemAge = Long.MAX_VALUE;
-    }
-    
-    /**
-     * Get the time period for this series.
-     * 
-     * @return  the class of the time period
-     */
-    public Class getTimePeriodClass() {
-      return timePeriodClass;
-    }
-    
-    /**
-     * Call to optimize the addition of large amount of data items.
-     * 
-     * @param items  the number of item that will be added.
-     */
-    public void startAdd(int items) {
-      data.ensureCapacity(data.size()+items);
-    }
-    
-    /**
-     * Add a data item and notify series change listeners.
-     * 
-     * @param period  the period of the data item
-     * @param x       the x value of the data item
-     * @param y       the y value of the data item.
-     */
-    public void add(RegularTimePeriod period, Number x, Number y) {
-     add(period, x, y, true); 
-    }
-
-    /**
-     * Add a data item. Optionally notify series change listeners.
-     * 
-     * @param period  the period of the data item
-     * @param x       the x value of the data item
-     * @param y       the y value of the data item
-     * @param notify  if true notify series change listeners
-     */
-    public void add(RegularTimePeriod period, Number x, Number y, boolean notify) {
-      add(new XYTimeSeriesDataItem(period, x, y), notify);
-    }
-    
-    /**
-     * Add the data item and notify series change listeners.
-     * 
-     * @param item  the data item to add
-     */
-    public void add(XYTimeSeriesDataItem item) {
-      add(item, true);
-    }
-    
-    /**
-     * Add the data item. Optionally notify series change listeners.
-     * 
-     * @param item    the data item to add
-     * @param notify  if true notify series change listeners
-     */
-    public void add(XYTimeSeriesDataItem item, boolean notify) {
-      if (item == null) {
-        throw new IllegalArgumentException("Null 'item' argument.");
-      }
-      
-      if (!item.getPeriod().getClass().equals(timePeriodClass)) {
-        throw new SeriesException("Invalid time period class for this series.");
-      }
-      
-      boolean added = false;
-      int count = getItemCount();
-      if (count == 0) {
-        data.add(item);
-        added = true;
-      } else {
-        RegularTimePeriod last = getDataItem(count-1).getPeriod();
-        if (item.getPeriod().compareTo(last) > 0) {
-          data.add(item);
-          added = true;
-        } else {
-          int index = Collections.binarySearch(data, item);
-          if (index < 0) {
-            data.add(-index - 1, item);
-            added = true;
-          }          
-        }
-      }
-      
-      if (added && notify) {
-        fireSeriesChanged();
-      }
-    }
-    
-    /**
-     * Update the values at the time period.
-     * 
-     * @param period  the time period to update
-     * @param x       the new x value
-     * @param y       the new y value
-     */
-    public void update(RegularTimePeriod period, Number x, Number y) {
-      XYTimeSeriesDataItem item = getDataItem(period);
-      if (item != null) {
-        item.setValue(x, y);
-        
-        fireSeriesChanged();
-      } else {
-        throw new SeriesException("Period does not exist.");
-      }
-    }
-    
-    /**
-     * Delete the data item at the time period.
-     * 
-     * @param period  the time period at which to delete the data item
-     */
-    public void delete(RegularTimePeriod period) {
-      int index = getIndex(period);
-      data.remove(index);
       fireSeriesChanged();
     }
-
-    /**
-     * Remove all data items from the series.
-     */
-    public void clear() {
-      if (data.size() > 0) {
-        data.clear();
-        fireSeriesChanged();
-      }
-    }
-    
-    /**
-     * Get the data item at the specified index.
-     * 
-     * @param index  the index at which the data item is located
-     * @return       the data item, or null if there is none at the index
-     */
-    public XYTimeSeriesDataItem getDataItem(int index) {
-      return data.get(index);
-    }
-    
-    /**
-     * Get the data item at the specified time.
-     * 
-     * @param period  the time of the data item
-     * @return        the data item or null if there is no data item at the time
-     */
-    public XYTimeSeriesDataItem getDataItem(RegularTimePeriod period) {
-      int index = getIndex(period);
-      if (index >= 0) {
-        return data.get(index);
-      } else {
-        return null;
-      }
-    }
-    
-    /**
-     * Get the index of the data item at the specified time.
-     * 
-     * @param period  the time to look for the data item
-     * @return        the index of the data item, or a negative number if not
-     */
-    public int getIndex(RegularTimePeriod period) {
-      if (period == null) {
-        throw new IllegalArgumentException("Null 'period' argument");
-      }
-      
-      XYTimeSeriesDataItem dummy = new XYTimeSeriesDataItem(period);
-      return Collections.binarySearch(data, dummy);
-    }
-    
-    /**
-     * Get the number of data items in this series.
-     * 
-     * @return  the number of data items in this series
-     */
-    public int getItemCount() {
-      return data.size();
-    }
-    
-    /**
-     * Get a read-only list of the data item in this series.
-     * 
-     * @return  a list of data item in this series
-     */
-    public List<XYTimeSeriesDataItem> getItems() {
-      return Collections.unmodifiableList(data);
-    }
-    
-    /**
-     * Get the maximum ago of a data item.
-     * 
-     * @return  the maximum age
-     */
-    public long getMaximumItemAge() {
-      return maximumItemAge;
-    }
-    
-    /**
-     * Set the maximum ago of a data item.
-     * 
-     * @param periods  the maximum age
-     */
-    public void setMaximumItemAge(long periods) {
-      if (periods < 0) {
-        throw new IllegalArgumentException("Negative 'periods' argument.");
-      }
-      maximumItemAge = periods;
-      removeAgedItems();       
-    }
-    
-    /**
-     * Set the maximum age of a data item. Age items according to the latest
-     * time
-     * 
-     * @param periods  the maximum age
-     * @param latest   the latest time to age by
-     */
-    public void setMaximumItemAge(long periods, long latest) {
-      if (periods < 0) {
-        throw new IllegalArgumentException("Negative 'periods' argument.");
-      }
-      maximumItemAge = periods;
-      removeAgedItems(latest);       
-    }    
-    
-    /**
-     * Remove data items that exceed the maximum age and notify series change
-     * listeners if any data items are aged.
-     */
-    public void removeAgedItems() {
-      removeAgedItems(true);
-    }
-    
-    /**
-     * Remove data items that exceed the maximum age. Optionally notify series
-     * change listeners if any data items are aged.
-     * 
-     * @param notify  if true notify series change listeners
-     */
-    public void removeAgedItems(boolean notify) {
-      int items = getItemCount(); 
-      if (items > 0) {
-        removeAgedItems(getDataItem(items-1).getPeriod().getSerialIndex(), notify);
-      }
-    }
-    
-    /**
-     * Remove data items that exceed the maximum age starting at the given time.
-     * Notify series change listeners if any data items are aged.
-     * 
-     * @param latest  the time to start at
-     */
-    public void removeAgedItems(long latest) {
-      removeAgedItems(latest, true);
-    }
-    
-    /**
-     * Remove data items that exceed the maximum age starting at the given time.
-     * Optionally notify series change listeners if any data items are aged.
-     * 
-     * @param latest  the time to start at
-     * @param notify  if true notify series change listenerss
-     */
-    public void removeAgedItems(long latest, boolean notify) {
-      boolean removed = false;
-      
-      long minimumItemAge = latest - maximumItemAge;
-      while (getItemCount() > 0 && getDataItem(0).getPeriod().getSerialIndex() < minimumItemAge) {
-        data.remove(0);
-        removed = true;
-      }
-      
-      if (notify && removed) {
-        fireSeriesChanged();
-      }
-    }
   }
   
   /**
-   * A collection of XYTimeSeries objects that form a dataset. 
+   * An optimized version of XYSeries. 
    */
-  public class XYTimeSeriesCollection extends AbstractXYDataset implements Serializable {
-    private static final long serialVersionUID = 4352896561682820035L;
-    
-    /** List of series */
-    private List<XYTimeSeries> data;
+  class FastXYSeries extends XYSeries {
+    public FastXYSeries(Comparable key) {
+      super(key, false, true);
+    }
     
     /**
-     * Create an empty dataset.
+     * Signal that a number of items will be added to the series.
+     * 
+     * This increases the capacity of this series to ensure it hold at least the
+     * number of elements specified plus the current number of elements.
+     * 
+     * @param items  the number of items to be added
      */
-    public XYTimeSeriesCollection() {
-      super();
-      
-      data = new ArrayList<XYTimeSeries>();
+    public void startAdd(int items) {
+      ((ArrayList)data).ensureCapacity(data.size()+items);
     }
 
     /**
-     * Get the number of data series in this collection
-     * 
-     * @return  the number of data series
-     */
-    public int getSeriesCount() {
-      return data.size();
-    }
-    
-    /**
-     * Get a list of all data series in this collection. This list is read-only.
-     * 
-     * @return  a list of data series
-     */
-    public List<XYTimeSeries> getSeries() {
-      return Collections.unmodifiableList(this.data);
+     * Adds a data item to the series.
+     *
+     * @param x  the x value.
+     * @param y  the y value.
+     */    
+    public void add(double x, double y) {
+      data.add(new XYDataItem(x, y));
+        
+      if (getItemCount() > getMaximumItemCount()) {
+        data.remove(0);
+      }
     }    
     
     /**
-     * Get the data series at the specified index.
+     * Signal that the adding of items has ended.
      * 
-     * @param series  the index of the series
-     * @return        if found, the series, null otherwise
+     * This fires a series changed event.
      */
-    public XYTimeSeries getSeries(int series) {
-      if ((series < 0) || (series >= getSeriesCount())) {
-        throw new IllegalArgumentException("The 'series' argument is out of bounds (" + series + ").");
-      }
-
-      return data.get(series);      
-    }
-    
-    /**
-     * Get the data series with the specified key.
-     * 
-     * @param key  the key to the data series
-     * @return     if foud, the data series, null otherwise
-     */
-    public XYTimeSeries getSeries(String key) {
-      for (XYTimeSeries xyTimeSeries : data) {
-        Comparable k = xyTimeSeries.getKey();
-        if (k != null && k.equals(key)) {
-          return xyTimeSeries;
-        }
-      }
-      
-      return null;
-    }
-
-    /**
-     * Get the key for the specified series index.
-     * @param key  the index to the data series
-     * @return     if found, the key for the series, null otherwise
-     */
-    public Comparable getSeriesKey(int series) {
-      return getSeries(series).getKey();
-    }
-    
-    /**
-     * Add the series to the collection.
-     * 
-     * @param series  the series to add
-     */
-    public void addSeries(XYTimeSeries series) {
-      addSeries(getSeriesCount(), series);
-    }
-    
-    /**
-     * Add the series to the collection at the specified index.
-     * 
-     * @param index   the index at which to add the series
-     * @param series  the series to add
-     */
-    public void addSeries(int index, XYTimeSeries series) {
-      if (series == null) {
-        throw new IllegalArgumentException("Null 'series' argument.");
-      }
-      data.add(index, series);
-      series.addChangeListener(this);
-      fireDatasetChanged();      
-    }
-    
-    /**
-     * Remove the series from the collection.
-     * 
-     * @param series  the series to remove
-     */
-    public void removeSeries(XYTimeSeries series) {
-      if (series == null) {
-        throw new IllegalArgumentException("Null 'series' argument.");
-      }
-      data.remove(series);
-      series.removeChangeListener(this);
-      fireDatasetChanged();      
-    }
-    
-    /**
-     * Remove the series, specified by the, index from the collection.
-     * 
-     * @param index  the index of the series
-     */
-    public void removeSeries(int index) {
-      XYTimeSeries series = getSeries(index);
-      if (series != null) {
-        removeSeries(series);
-      }
-    }
-
-    /**
-     * Get the number of data items in the specified series
-     * 
-     * @param series  the index to the data series
-     */
-    public int getItemCount(int series) {
-      return getSeries(series).getItemCount();
-    }
-
-    /**
-     * Get the x value of the series at the specified data item.
-     * 
-     * @param series  the index of the data series
-     * @param item    the index of the data item
-     * @return        the x value
-     */
-    public Number getX(int series, int item) {
-      XYTimeSeries xyTimeSeries = getSeries(series);
-      return xyTimeSeries.getDataItem(item).getX();
-    }
-
-    /**
-     * Get the x yalue of the series at the specified data item.
-     * 
-     * @param series  the index of the data series
-     * @param item    the index of the data item
-     * @return        the y value
-     */
-    public Number getY(int series, int item) {
-      XYTimeSeries xyTimeSeries = getSeries(series);
-      return xyTimeSeries.getDataItem(item).getY();
-    }
+    public void stopAdd() {
+      fireSeriesChanged();
+    }    
   }
 }

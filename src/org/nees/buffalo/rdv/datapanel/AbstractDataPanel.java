@@ -79,12 +79,12 @@ import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
+import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.DataListener;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
-import org.nees.buffalo.rdv.ui.ChannelListDataFlavor;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import org.nees.buffalo.rdv.ui.ScrollablePopupMenu;
 import org.nees.buffalo.rdv.ui.ToolBarButton;
@@ -142,6 +142,13 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 */
 	List channels;
 	
+	/**
+	 * A list of units for channels.
+	 * 
+	 * @since  1.1
+	 */
+	Hashtable units;
+   
    /** A list of lower threshold values for channels.
     *  @since 1.3
     */
@@ -264,6 +271,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
      */
 		channels = new CopyOnWriteArrayList();
     
+		units = new Hashtable();
       lowerThresholds = new Hashtable ();
       upperThresholds = new Hashtable ();
 		
@@ -350,6 +358,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		
 		channels.add(channelName);
         
+		String unit = channel.getMetadata("units");
+		if (unit != null) {
+			units.put(channelName, unit);
+		}
+		
+      
       /** these parameters are defined in the NEESit DAQ protocol.
        * @see org.nees.rbnb.DaqToRbnb
        * see line 495 of https://svn.nees.org/svn/telepresence/fake_daq/fake_daq.c
@@ -400,6 +414,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     rbnbController.unsubscribe(channelName, this);
     
   	channels.remove(channelName);
+  	units.remove(channelName);
     lowerThresholds.remove(channelName);
     upperThresholds.remove(channelName);
     updateTitle();
@@ -441,6 +456,15 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	void setDataComponent(JComponent dataComponent) {
 		this.dataComponent = dataComponent;
 	}
+	
+	/*
+	 * Clear the data displayed on the data panel. This is called when the
+	 * RBNBController is loading data from a new time period or when starting to
+	 * view data in realtime.
+	 * 
+	 * @since  1.1
+	 */
+	abstract void clearData();
 	
 	/*
 	 * Get the title of the data panel. Override this method if you want something
@@ -551,9 +575,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
       titleBar.add(getDescriptionComponent(), BorderLayout.WEST);
     }
     
-    JComponent titleComponent = getChannelComponent();
-    if (titleComponent != null) {
-      titleBar.add(titleComponent, BorderLayout.CENTER);
+    if (channels.size() > 0) {
+      titleBar.add(getChannelComponent(), BorderLayout.CENTER);
     }
     
     return titleBar;
@@ -568,10 +591,6 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
   }
   
   JComponent getChannelComponent() {
-    if (channels.size() == 0) {
-      return null;
-    }
-    
     JPanel channelBar = new JPanel();
     channelBar.setOpaque(false);
     channelBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -635,6 +654,10 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	
 	public void postState(int newState, int oldState) {
     state = newState;
+    
+    if (newState == Player.STATE_LOADING) {
+      clearData();  
+    }
 	}
 	
 	/**
@@ -923,22 +946,27 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		try {
       int dropAction = e.getDropAction();
       if (dropAction == DnDConstants.ACTION_LINK) {
-  			DataFlavor channelListDataFlavor = new ChannelListDataFlavor();
+  			DataFlavor stringFlavor = DataFlavor.stringFlavor;
   			Transferable tr = e.getTransferable();
-  			if(e.isDataFlavorSupported(channelListDataFlavor)) {
+  			if(e.isDataFlavorSupported(stringFlavor)) {
           e.acceptDrop(DnDConstants.ACTION_LINK);
           e.dropComplete(true);
 
-  				final List<String> channels = (List<String>)tr.getTransferData(channelListDataFlavor);
+  				final String channels = (String)tr.getTransferData(stringFlavor);
           
           new Thread() {
             public void run() {
-              for (String channel : channels) {
+              String delim = ",";
+              String[] tokens = channels.split(delim);
+              String channelName = "";
+              for (int i = 0; i < tokens.length; i++) {
+                channelName = tokens[i];
+        
                 boolean status;
                 if (supportsMultipleChannels()) {
-                  status = addChannel(channel);
+                  status = addChannel(channelName);
                 } else {
-                  status = setChannel(channel);
+                  status = setChannel(channelName);
                 }
                 
                 if (!status) {
@@ -961,16 +989,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	public void dragExit(DropTargetEvent e) {}
   
   class ChannelTitle extends JPanel {
-    public ChannelTitle(String channelName) {
-      this(channelName, channelName);
-    }
-    
-    public ChannelTitle(String seriesName, String channelName) {
+    public ChannelTitle(final String channelName) {
       setLayout(new BorderLayout());
       setBorder(new EmptyBorder(0, 0, 0, 5));
       setOpaque(false);
       
-      JLabel text = new JLabel(seriesName);
+      JLabel text = new JLabel(channelName);
       text.setForeground(SimpleInternalFrame.getTextForeground(true));
       add(text, BorderLayout.CENTER);
       
@@ -978,16 +1002,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
       closeButton.setToolTipText("Remove channel");
       closeButton.setBorder(null);
       closeButton.setOpaque(false);
-      closeButton.addActionListener(getActionListener(seriesName, channelName));
-      add(closeButton, BorderLayout.EAST);
-    }
-    
-    protected ActionListener getActionListener(final String seriesName, final String channelName) {
-      return new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
+      closeButton.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent arg0) {
           removeChannel(channelName);
         }
-      };
+      });
+      add(closeButton, BorderLayout.EAST);
     }
   }
   

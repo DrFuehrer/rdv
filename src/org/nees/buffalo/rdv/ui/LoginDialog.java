@@ -54,8 +54,8 @@ import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.auth.AuthenticationManager;
-import org.nees.buffalo.rdv.auth.GridAuthentication;
+import org.nees.buffalo.rdv.DataPanelManager;
+import edu.ucsd.auth.GridAuth;
 
 /**
  * @author Wei Deng
@@ -64,9 +64,9 @@ public class LoginDialog extends JDialog {
 
  	static Log log = LogFactory.getLog(LoginDialog.class.getName());
 	
+  DataPanelManager dataPanelManager;
+	
 	JLabel headerLabel;
-  
-  JLabel errorLabel;
 	
 	JLabel userNameLabel;
 	JTextField userNameTextField;
@@ -77,8 +77,10 @@ public class LoginDialog extends JDialog {
 	JButton loginButton;
 	JButton cancelButton;
 	
-	public LoginDialog(JFrame owner) {
+	public LoginDialog(JFrame owner, DataPanelManager dataPanelManager) {
 		super(owner, true);
+		
+    this.dataPanelManager = dataPanelManager;
 		
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		
@@ -112,16 +114,6 @@ public class LoginDialog extends JDialog {
 		c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new Insets(0,0,0,0);
     container.add(headerLabel, c);
-    
-    errorLabel = new JLabel();
-    errorLabel.setVisible(false);
-    errorLabel.setForeground(Color.RED);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 0;
-    c.gridx = 0;
-    c.gridy = 1;
-    c.insets = new Insets(10,10,0,10);
-    container.add(errorLabel, c);    
 		
 		c.gridwidth = 1;
 		
@@ -129,7 +121,7 @@ public class LoginDialog extends JDialog {
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 1;
 		c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new Insets(10,10,10,5);
     container.add(userNameLabel, c);
@@ -138,7 +130,7 @@ public class LoginDialog extends JDialog {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
-		c.gridy = 2;
+		c.gridy = 1;
 		c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new Insets(10,0,10,10);
     container.add(userNameTextField, c);
@@ -147,7 +139,7 @@ public class LoginDialog extends JDialog {
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 2;
 		c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new Insets(0,10,10,5);
     container.add(userPasswordLabel, c);
@@ -156,7 +148,7 @@ public class LoginDialog extends JDialog {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
-		c.gridy = 3;
+		c.gridy = 2;
 		c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new Insets(0,0,10,10);
     container.add(userPasswordField, c);
@@ -188,7 +180,7 @@ public class LoginDialog extends JDialog {
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0;
 		c.gridx = 0;
-		c.gridy = 4;
+		c.gridy = 3;
 		c.gridwidth = 2;
 		c.anchor = GridBagConstraints.LINE_END;
     c.insets = new Insets(0,10,10,5);
@@ -201,15 +193,9 @@ public class LoginDialog extends JDialog {
 	
 	public void setVisible(boolean visible) {
 		if (visible) {
-      errorLabel.setVisible(false);
-      
 			userNameTextField.requestFocusInWindow();
 	 		userNameTextField.setSelectionStart(0);
-	 		userNameTextField.setSelectionEnd(userNameTextField.getText().length());
-      
-      userPasswordField.setText("");
-      
-      pack();
+	 		userNameTextField.setSelectionEnd(userNameTextField.getText().length());			
 		}
 		super.setVisible(visible);
 	}
@@ -217,28 +203,15 @@ public class LoginDialog extends JDialog {
 	private void login() {
 		String username = userNameTextField.getText();
 		String password = new String(userPasswordField.getPassword());
-    
-		GridAuthentication authentication = new GridAuthentication();
-		if (authentication.login(username, password)) {
-      AuthenticationManager.getInstance().setAuthentication(authentication);
-      
-      dispose();
-      
-      errorLabel.setVisible(false);
-      userPasswordField.setText("");
-    } else {
-      errorLabel.setText("Invalid username or password, please try again.");
-      errorLabel.setVisible(true);
-      
-      userPasswordField.requestFocusInWindow();
-      userPasswordField.setSelectionStart(0);
-      userPasswordField.setSelectionEnd(userPasswordField.getPassword().length);
-      
-      pack();
-    }
+		GridAuth auth = new GridAuth();
+		auth.login(username, password);
+		this.dataPanelManager.setAuth(auth);
+		
+		dispose();
 	}
 	
 	private void cancel() {
 		dispose();		
-	}	
+	}
+	
 }

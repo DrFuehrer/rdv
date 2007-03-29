@@ -36,6 +36,7 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.AbstractAction;
@@ -46,6 +47,8 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -65,8 +68,16 @@ import org.nees.buffalo.rdv.rbnb.ProgressListener;
 public class ImportDialog extends JDialog implements ProgressListener {
 	static Log log = LogFactory.getLog(ImportDialog.class.getName());
 	
+	ImportDialog dialog;
+	
+	JFrame owner;
+	RBNBController rbnb;
+	
 	JTextField sourceNameTextField;
 	
+	JTextField dataFileTextField;
+	JButton dataFileButton;
+	JFileChooser dataFileChooser;
 	File dataFile;
 	
 	JButton importButton;
@@ -77,15 +88,20 @@ public class ImportDialog extends JDialog implements ProgressListener {
 	RBNBImport rbnbImport;
 	boolean importing;
 	
-  public ImportDialog(File dataFile, String sourceName) {
-		super();
-    
-    this.dataFile = dataFile;
+	public ImportDialog(JFrame owner, RBNBController rbnb) {
+    this(owner, rbnb, null);
+  }
+   
+  public ImportDialog(JFrame owner, RBNBController rbnb, String sourceName) {
+		super(owner);
 		
-    RBNBController rbnb = RBNBController.getInstance();
+		this.owner = owner;
+		this.rbnb = rbnb;
+
+		dialog = this;
+
 		String rbnbHostName = rbnb.getRBNBHostName();
 		int rbnbPortNumber = rbnb.getRBNBPortNumber();
-    
 		rbnbImport = new RBNBImport(rbnbHostName, rbnbPortNumber);
 		importing = false;
 		
@@ -96,7 +112,6 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		initComponents();
     
     sourceNameTextField.setText(sourceName);
-    sourceNameTextField.selectAll();
 	}
 	
 	private void initComponents() {
@@ -114,7 +129,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.ipadx = 0;
 		c.ipady = 0;
 
-		JLabel headerLabel = new JLabel("Please specify the desired source name for the data.");
+		JLabel headerLabel = new JLabel("Please specify the desired source name and the data file to import.");
     headerLabel.setBackground(Color.white);
     headerLabel.setOpaque(true);
     headerLabel.setBorder(BorderFactory.createCompoundBorder(
@@ -148,6 +163,54 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.insets = new java.awt.Insets(10,0,10,10);
     container.add(sourceNameTextField, c);
 		
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.gridx = 0;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.NORTHEAST;
+		c.insets = new java.awt.Insets(0,10,10,5);
+    container.add(new JLabel("Data file: "), c);
+		
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.gridx = 1;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.NORTHWEST;		
+		dataFileTextField = new JTextField(20);
+		dataFileTextField.setEditable(false);
+		c.insets = new java.awt.Insets(0,0,10,5);
+    container.add(dataFileTextField, c);
+		
+		dataFileChooser = new JFileChooser();
+		dataFileButton = new JButton("Browse");
+		dataFileButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int status = dataFileChooser.showSaveDialog(dialog);
+				if (status == JFileChooser.APPROVE_OPTION) {
+					dataFile = dataFileChooser.getSelectedFile();
+					dataFileTextField.setText(dataFile.getAbsolutePath());
+          if (sourceNameTextField.getText().length() == 0) {
+            String testName = dataFile.getName();
+            int dotIndex = testName.lastIndexOf('.');
+            if (dotIndex != -1) {
+              testName = testName.substring(0, dotIndex);
+            }
+            sourceNameTextField.setText(testName);
+          }
+				}
+			}
+		});
+		c.fill = GridBagConstraints.NONE;
+		c.weightx = 0;
+		c.gridx = 2;
+		c.gridy = 2;
+		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.NORTHWEST;
+		c.insets = new java.awt.Insets(0,0,10,10);
+    container.add(dataFileButton, c);
+		
 		importProgressBar = new JProgressBar(0, 100000);
 		importProgressBar.setStringPainted(true);
 		importProgressBar.setValue(0);
@@ -155,7 +218,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 0.5;
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.gridwidth = GridBagConstraints.REMAINDER;;
 		c.anchor = GridBagConstraints.CENTER;
     c.insets = new java.awt.Insets(0,10,10,10);
@@ -173,7 +236,6 @@ public class ImportDialog extends JDialog implements ProgressListener {
     inputMap.put(KeyStroke.getKeyStroke("ENTER"), "import");
     actionMap.put("export", importAction);
 		importButton = new JButton(importAction);
-    getRootPane().setDefaultButton(importButton);
 		panel.add(importButton);
     
     Action cancelAction = new AbstractAction() {
@@ -190,7 +252,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		c.fill = GridBagConstraints.NONE;
 		c.weightx = 0.5;
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 4;
 		c.gridwidth = GridBagConstraints.REMAINDER;;
 		c.anchor = GridBagConstraints.LINE_END;
 		c.insets = new java.awt.Insets(0,0,10,5);
@@ -210,7 +272,7 @@ public class ImportDialog extends JDialog implements ProgressListener {
     disableUI();
     pack();
     importing = true;
-    rbnbImport.startImport(sourceName, dataFile, this);
+    rbnbImport.startImport(sourceName, dataFile, dialog);
   }
   
   private void cancel() {
@@ -224,11 +286,13 @@ public class ImportDialog extends JDialog implements ProgressListener {
  	private void disableUI() {
  		importButton.setEnabled(false);
  		sourceNameTextField.setEnabled(false);
+ 		dataFileButton.setEnabled(false);
  	}
  	
  	private void enableUI() {
  		importButton.setEnabled(true);
  		sourceNameTextField.setEnabled(true);
+ 		dataFileButton.setEnabled(true); 		
  	}
 	
 	public void postProgress(double progress) {
@@ -240,16 +304,16 @@ public class ImportDialog extends JDialog implements ProgressListener {
 
 	public void postCompletion() {
 		importing = false;
-		RBNBController.getInstance().updateMetadata();
+		rbnb.updateMetadata();
 		dispose();
-		JOptionPane.showMessageDialog(this, "Import complete.", "Import complete", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(owner, "Import complete.", "Import complete", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	public void postError(String errorMessage) {
 		importing = false;
-    RBNBController.getInstance().updateMetadata();
+		rbnb.updateMetadata();
 		importProgressBar.setValue(0);
-    importProgressBar.setVisible(false);
+        importProgressBar.setVisible(false);
 		enableUI();
 		JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
 	}
