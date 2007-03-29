@@ -1,9 +1,10 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://nees.buffalo.edu/software/RDV/
+ * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005 University at Buffalo
+ * Copyright (c) 2005-2007 University at Buffalo
+ * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +29,7 @@
  * $Date$
  * $Author$
  */
+
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.Color;

@@ -1,3 +1,35 @@
+/*
+ * RDV
+ * Real-time Data Viewer
+ * http://it.nees.org/software/rdv/
+ * 
+ * Copyright (c) 2005-2007 University at Buffalo
+ * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
+ */
+
 package org.nees.rbnb;
 
 /**
@@ -8,10 +40,10 @@ package org.nees.rbnb;
  * @since 050928
  * Copyright (c) 2005, NEES Cyberinfrastructure Center (NEESit), San Diego Supercomputer Center
  * All rights reserved. See full notice in the source, at the end of the file.
- * $LastChangedDate: 2006-07-26 13:59:11 -0400 (Wed, 26 Jul 2006) $
- * $LastChangedRevision: 3037 $
- * $LastChangedBy: jphanley $
- * $HeadURL: https://jphanley@svn.nees.org/svn/telepresence/RDV/branches/marker/src/org/nees/rbnb/DataTurbine.java $ 
+ * $LastChangedDate$
+ * $LastChangedRevision$
+ * $LastChangedBy$
+ * $HeadURL$ 
  */
 
 import com.rbnb.sapi.Source;
