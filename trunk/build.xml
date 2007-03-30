@@ -2,9 +2,6 @@
 
 <project name="RDV" default="compile" basedir=".">
 	
-	<!-- name of the application -->
-	<property name="package.name" value="RDV"/>
-	
 	<!-- compile with debugging information -->
 	<property name="debug" value="off"/>
 	
@@ -34,11 +31,15 @@
 	<!-- icons directory -->
 	<property name="icons.dir" value="icons"/>
 	
+	<!-- JNLP directory -->
+	<property name="jnlp.dir" value="jnlp"/>
+	
 	<!-- temporary build dir -->
 	<property name="build.dir" value="build"/>
 	<property name="build.classes" value="${build.dir}/classes"/>
 	<property name="build.tests" value="${build.dir}/tests"/>
 	<property name="build.lib" value="${build.dir}/lib"/>
+	<property name="build.dist" value="${build.dir}/dist"/>
 	<property name="build.exe" value="${build.dir}/exe"/>
 
 	<!-- XML schema information -->
@@ -82,15 +83,7 @@
 	
 	<!-- target to make temp dirs -->
 	<target name="prepare" description="Make directories">
-		<mkdir dir="${build.dir}"/>
-		<mkdir dir="${build.classes}"/>
-		<mkdir dir="${build.tests}"/>
-		<mkdir dir="${build.lib}"/>
-		<mkdir dir="${build.exe}"/>
-		
-		<mkdir dir="${src.data.dir}"/>
-		
-	    <exec executable="svnversion" outputproperty="svn.revision" failifexecutionfails="false">
+		<exec executable="svnversion" outputproperty="svn.revision" failifexecutionfails="false">
 			<arg value="."/>
 		</exec>
 		
@@ -122,22 +115,30 @@
 		<delete file="build.properties"/>
 		<delete dir="${src.data.dir}"/>
 	</target>
-	
-	<!-- Build target -->
-	<target name="compile" depends="prepare" description="Build from source">
+
+	<target name="generate" depends="prepare" description="Generate source files">
+		<mkdir dir="${src.data.dir}"/>
+		
 		<xjc schema="${schema.file}"
 			package="${schema.package}"
 			destdir="${src.dir}">
 			<depends file="${schema.file}"/>
 			<produces dir="${src.data.dir}"/>
 		</xjc>
-			
+	</target>	
+	
+	<!-- Build target -->
+	<target name="compile" depends="generate" description="Build from source">
+		<mkdir dir="${build.classes}"/>
+		
 		<javac srcdir="${src.dir}" 
 			destdir="${build.classes}"
 			classpathref="classpath"
 			debug="${debug}">
 	  </javac>
-	  
+		
+		<mkdir dir="${build.tests}"/>
+		
 		<javac srcdir="${tests.dir}" 
 			destdir="${build.tests}"
 			classpath="${build.classes}"
@@ -148,7 +149,9 @@
 		
 	<!-- Package standalone jar -->
 	<target name="jar" depends="compile" description="Build jar">
-		<jar destfile="${build.lib}/${package.name}.jar" duplicate="preserve">
+		<mkdir dir="${build.lib}"/>
+		
+		<jar destfile="${build.lib}/${ant.project.name}.jar" duplicate="preserve">
 			<fileset dir="${build.classes}"/>
 			<fileset dir="." includes="${ui.dir}/**"/>
 			<fileset file="version.properties"/>
@@ -165,19 +168,48 @@
 		<!--taskdef resource="proguard/ant/task.properties"
 		         classpath="proguard/proguard.jar" />
 		<proguard configuration="proguard/RDV.pro">
-			<injar path="${build.lib}/${package.name}.jar"/>
-			<outjar path="${build.lib}/${package.name}p.jar"/>
+			<injar path="${build.lib}/${ant.project.name}.jar"/>
+			<outjar path="${build.lib}/${ant.project.name}p.jar"/>
 		</proguard>
-		<move file="${build.lib}/${package.name}p.jar" tofile="${build.lib}/${package.name}.jar"/-->
+		<move file="${build.lib}/${ant.project.name}p.jar" tofile="${build.lib}/${ant.project.name}.jar"/ -->
 	</target>
-
+	
+	<target name="sign" depends="jar" description="Sign the jar">
+		<input message="Please enter keystore password:" addproperty="keystorepass" />
+		<signjar jar="${build.lib}/${ant.project.name}.jar" alias="neesit" storepass="${keystorepass}"/>	
+	</target>
+	
+	<target name="dist" depends="sign" description="Build the distribution zip file">
+		<mkdir dir="${build.dist}"/>
+		
+		<copy file="${jnlp.dir}/README" todir="${build.dist}">
+			<filterset>
+				<filter token="DIST_NAME" value="${ant.project.name} ${version}"/>
+				<filter token="DIST_DIR" value="${ant.project.name}-${version}"/>
+				<filter token="DIST_FILE" value="${ant.project.name}-${version}.zip"/>
+			</filterset>
+		</copy>
+		
+		<zip destfile="${build.dist}/${ant.project.name}-${version}.zip">
+			<zipfileset file="${build.lib}/${ant.project.name}.jar" prefix="${ant.project.name}-${version}"/>
+			<zipfileset file="${build.dist}/README" prefix="${ant.project.name}-${version}"/>
+			<zipfileset file="LICENSE" prefix="${ant.project.name}-${version}"/>
+			<zipfileset dir="${jnlp.dir}" excludes="README" prefix="${ant.project.name}-${version}"/>
+		</zip>
+		
+		<delete file="${build.dist}/README"/>
+	</target>
+	
 	<target name="exe" depends="checkLaunch4j,jar" description="Build windows executable">
+		<mkdir dir="${build.exe}"/>
+		
 		<property name="launch4j.home" value="${env.LAUNCH4J_HOME}"/>
 		<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask"
 			classpath="${launch4j.home}/launch4j.jar:${launch4j.home}/lib/xstream.jar"/>
+		
 		<launch4j configFile="launch4j/RDV-launch4j.xml"
-			jar="${build.lib}/${package.name}.jar"
-			outfile="${build.exe}/${package.name}.exe"
+			jar="${build.lib}/${ant.project.name}.jar"
+			outfile="${build.exe}/${ant.project.name}.exe"
 			fileVersion="${version}.0"
 			txtFileVersion="${version} build ${svn.revision}"
 			productVersion="${version}.0"
@@ -185,7 +217,7 @@
 	</target>
 	
 	<target name="installer" depends="exe" description="Build windows installer">
-	    <exec executable="makensis">
+		<exec executable="makensis">
 			<arg value="/V3"/>
 			<arg value="nsis/rdv.nsi"/>
 		</exec>		
@@ -199,7 +231,7 @@
 	</target>
 	
   <!-- Run unit tests -->
-  <target name="test" depends="compile" description="Run unit tests">
+	<target name="test" depends="compile" description="Run unit tests">
 		<junit printsummary="true" haltonfailure="true">
 			<classpath>
 				<path refid="classpath"/>
@@ -229,5 +261,6 @@
 	</target>
 		
 	<!-- Catch-all target to aggregate everything -->
-	<target name="all" depends="clean,compile,test,jar" description="Clean, compile, test, jar"/>
+	<target name="all" depends="clean,compile,test,jar,sign,dist" description="Clean, compile, test, jar, sign, and dist"/>
+	
 </project>
