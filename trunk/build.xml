@@ -156,6 +156,7 @@
 			<fileset dir="." includes="${ui.dir}/**"/>
 			<fileset file="version.properties"/>
 			<fileset file="build.properties"/>
+			<fileset file="rdv.properties"/>
 			<fileset file="LICENSE"/>
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
