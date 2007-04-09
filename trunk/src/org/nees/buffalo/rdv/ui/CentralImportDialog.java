@@ -68,6 +68,7 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 
+import org.nees.buffalo.rdv.AppProperties;
 import org.nees.buffalo.rdv.action.ActionFactory;
 import org.nees.buffalo.rdv.auth.Authentication;
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
@@ -251,6 +252,9 @@ public class CentralImportDialog {
     }
     
     centralClient = new CentralClient(session);
+    
+    String centralHostName = AppProperties.getProperty("central.hostname", "central.nees.org");
+    centralClient.setHostname(centralHostName);
   }
   
   /**

@@ -55,6 +55,7 @@ import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.AppProperties;
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.auth.GridAuthentication;
 
@@ -219,7 +220,9 @@ public class LoginDialog extends JDialog {
 		String username = userNameTextField.getText();
 		String password = new String(userPasswordField.getPassword());
     
-		GridAuthentication authentication = new GridAuthentication();
+    String centralHostName = AppProperties.getProperty("central.hostname", "central.nees.org");
+		GridAuthentication authentication = new GridAuthentication(centralHostName);
+    
 		if (authentication.login(username, password)) {
       AuthenticationManager.getInstance().setAuthentication(authentication);
       
