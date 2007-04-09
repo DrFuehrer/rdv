@@ -47,9 +47,21 @@ public class GridAuthentication implements Authentication {
    * Create an authentication object for GridAuth.
    */
   public GridAuthentication() {
+    this(null);
+  }
+
+  /**
+   * Create an authentication object for GridAuth. Using the specified GridAuth
+   * instance.
+   */
+  public GridAuthentication(String hostName) {
     super();
     
     gridAuth = new GridAuth();
+    
+    if (hostName != null) {
+      gridAuth.setServiceHandler("https://" + hostName + "/cgi-bin/handler.cgi");
+    }
   }
   
   /**
