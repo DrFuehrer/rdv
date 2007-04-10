@@ -212,7 +212,14 @@ public class CentralClient {
       
       List<Experiment> experiments = project.getExperiment();
       for (int i=0; i<experiments.size(); i++) {
-        experiments.get(i).setName("Experiment-" + (i+1));
+        Experiment experiment = experiments.get(i);
+        
+        int experimentId = getIdFromLink(experiment.getLink());
+        if (experimentId != -1) {
+          experiment.setId(experimentId);
+        }
+        
+        experiment.setName("Experiment-" + (i+1));
       }      
       
       fixDataFiles(project.getDataFile(), "NEES-");
@@ -257,10 +264,16 @@ public class CentralClient {
       
       List<Trial> trials = experiment.getTrial(); 
       for (int i=0; i<trials.size(); i++) {
-        trials.get(i).setName(new JAXBElement(new QName("uri","local"), String.class, "Trial-" + (i+1)));
+        Trial trial = trials.get(i);
+        int trialId = getIdFromLink(trial.getLink());
+        if (trialId != -1) {
+          trial.setId(trialId);
+        }
+        
+        trial.setName(new JAXBElement(new QName("uri","local"), String.class, "Trial-" + (i+1)));
       }      
       
-      fixDataFiles(experiment.getDataFile(), "Experiment-");
+      fixDataFiles(experiment.getDataFile(), new String[] { "Experiment-", "Simulation-" });
     } else {
       experiment = null;
     }
@@ -304,10 +317,17 @@ public class CentralClient {
       
       List<Repetition> repetitions = trial.getRepetition(); 
       for (int i=0; i<repetitions.size(); i++) {
-        repetitions.get(i).setName(new JAXBElement(new QName("uri","local"), String.class, "Rep-" + (i+1)));
+        Repetition repetition = repetitions.get(i);
+        
+        int repetitionId = getIdFromLink(repetition.getLink());
+        if (repetitionId != -1) {
+          repetition.setId(repetitionId);
+        }
+        
+        repetition.setName(new JAXBElement(new QName("uri","local"), String.class, "Rep-" + (i+1)));
       }
       
-      fixDataFiles(trial.getDataFile(), "Trial-");
+      fixDataFiles(trial.getDataFile(), new String[] { "Trial-", "Run-" });
     } else {
       trial = null;
     }
@@ -354,7 +374,7 @@ public class CentralClient {
       repetition = repetitions.get(0);
       repetition.setId(repetitionId);
       
-      fixDataFiles(repetition.getDataFile());
+      fixDataFiles(repetition.getDataFile(), "Rep-");
     } else {
       repetition = null;
     }
@@ -378,11 +398,6 @@ public class CentralClient {
     DataFile dataFile;
     if (dataFiles.size() == 1) {
       dataFile = dataFiles.get(0);
-      
-      // fix for broken isDirectory support
-      if (dataFile.getDataFile().size() > 0 || !dataFile.getName().contains(".")) {
-        dataFile.setIsDirectory(true);
-      }
       
       // fix for broken content link
       if (dataFile.getContentLink().startsWith("/File")) {
@@ -438,7 +453,7 @@ public class CentralClient {
    * @param dataFiles  the data file to fix
    */
   private static void fixDataFiles(List<DataFile> dataFiles) {
-    fixDataFiles(dataFiles, null);
+    fixDataFiles(dataFiles, (String[])null);
   }
   
   /**
@@ -452,6 +467,21 @@ public class CentralClient {
    * @param startFilter  a filter for the data files
    */
   private static void fixDataFiles(List<DataFile> dataFiles, String startFilter) {
+    String[] startFilters = new String[] { startFilter };
+    fixDataFiles(dataFiles, startFilters);
+  }
+  
+  /**
+   * "Fixes" the data files by populating various fields based on educated
+   * guesses. This is also removes any duplicate data file from the list.
+   * 
+   * Any data file who's name begins with the start filter will be removed from
+   * the list. 
+   * 
+   * @param dataFiles     the data file to fix
+   * @param startFilters  an array of filters for the data files
+   */    
+  private static void fixDataFiles(List<DataFile> dataFiles, String[] startFilters) {
     for (DataFile dataFile : dataFiles) {
       // fix for broken links
       String link = dataFile.getLink();
@@ -490,10 +520,48 @@ public class CentralClient {
       
       if (hasDuplicate(dataFiles, dataFile)) {
         dataFiles.remove(i);
-      } else if (startFilter != null && dataFile.getName().startsWith(startFilter)) {
-        dataFiles.remove(i);
+      } else if (startFilters != null) {
+        for (String startFilter : startFilters) {
+          if (dataFile.getName().startsWith(startFilter)) {
+            dataFiles.remove(i);
+            break;
+          }
+        }
       }
     }    
+  }
+  
+  /**
+   * Parses the id from the end of a link. The link will be in the format: 
+   * 
+   * /REST/LEVEL1/ID/LEVEL2/ID
+   * 
+   * where the id for the lowest level (closest to the end) will be returned.
+   * There can be any number of levels.
+   * 
+   * @param link  the link to parse
+   * @return      the id embedded in the link, or -1 if one wasn't found
+   */
+  private static int getIdFromLink(String link) {
+    int slashIndex = link.lastIndexOf('/');
+    if (slashIndex == -1) {
+      return -1;
+    }
+    
+    if (slashIndex+1 == link.length()) {
+      return getIdFromLink(link.substring(0, link.length()-1));
+    }
+    
+    String idString = link.substring(slashIndex+1);
+    
+    int id;
+    try {
+      id = Integer.parseInt(idString);
+    } catch (NumberFormatException e) {
+      id = -1;
+    }
+    
+    return id;
   }
   
   /**

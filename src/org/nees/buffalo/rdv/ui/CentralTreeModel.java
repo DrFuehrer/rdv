@@ -146,20 +146,21 @@ public class CentralTreeModel implements TreeModel {
    */
   public void setProject(Project project) {
     List<Project> projects = root.getProject();
-    int index = -1;
+    int projectIndex = -1;
+    
     for (int i=0; i<projects.size(); i++) {
       Project p = projects.get(i);
       if (project.getId().equals(p.getId())) {
-        index = i;
+        projectIndex = i;
         break;
       }
     }
     
-    if (index == -1) {
+    if (projectIndex == -1) {
       return;
     }
     
-    projects.set(index, project);
+    projects.set(projectIndex, project);
     
     TreePath path = new TreePath(new Object[] {root, project});
     fireTreeStructureChanged(path);    
@@ -179,9 +180,27 @@ public class CentralTreeModel implements TreeModel {
         break;
       }
     }
+    
+    if (project == null) {
+      return;
+    }
 
-    int experimentNumber = Integer.parseInt(experiment.getName().substring(11));
-    project.getExperiment().set(experimentNumber-1, experiment);
+    List<Experiment> experiments = project.getExperiment();
+    int experimentIndex = -1;
+    
+    for (int i=0; i<experiments.size(); i++) {
+      Experiment e = experiments.get(i);
+      if (e.getId().equals(experiment.getId())) {
+        experimentIndex = i;
+        break;
+      }
+    }
+    
+    if (experimentIndex == -1) {
+      return;
+    }
+    
+    project.getExperiment().set(experimentIndex, experiment);
     
     TreePath path = new TreePath(new Object[] {root, project, experiment});
     fireTreeStructureChanged(path);    
@@ -202,6 +221,10 @@ public class CentralTreeModel implements TreeModel {
         break;
       }
     }
+    
+    if (project == null) {
+      return;
+    }
 
     Experiment experiment = null;
     for (Experiment e : project.getExperiment()) {
@@ -211,8 +234,26 @@ public class CentralTreeModel implements TreeModel {
       }
     }
     
-    int trialNumber = Integer.parseInt(trial.getName().getValue().substring(6));
-    experiment.getTrial().set(trialNumber-1, trial);
+    if (experiment == null) {
+      return;
+    }
+    
+    List<Trial> trials = experiment.getTrial();
+    int trialIndex = -1;
+    
+    for (int i=0; i<trials.size(); i++) {
+      Trial t = trials.get(i);
+      if (t.getId().equals(trial.getId())) {
+        trialIndex = i;
+        break;
+      }
+    }
+    
+    if (trialIndex == -1) {
+      return;
+    }
+    
+    experiment.getTrial().set(trialIndex, trial);
     
     TreePath path = new TreePath(new Object[] {root, project, experiment, trial});
     fireTreeStructureChanged(path);
@@ -234,6 +275,10 @@ public class CentralTreeModel implements TreeModel {
         break;
       }
     }
+    
+    if (project == null) {
+      return;
+    }
 
     Experiment experiment = null;
     for (Experiment e : project.getExperiment()) {
@@ -241,6 +286,10 @@ public class CentralTreeModel implements TreeModel {
         experiment = e;
         break;
       }
+    }
+    
+    if (experiment == null) {
+      return;
     }
 
     Trial trial = null;
@@ -251,8 +300,26 @@ public class CentralTreeModel implements TreeModel {
       }
     }
     
-    int repetitionNumber = Integer.parseInt(repetition.getName().getValue().substring(4));
-    trial.getRepetition().set(repetitionNumber-1, repetition);
+    if (trial == null) {
+      return;
+    }
+    
+    List<Repetition> repetitions = trial.getRepetition();
+    int repetitionIndex = -1;
+    
+    for (int i=0; i<repetitions.size(); i++) {
+      Repetition r = repetitions.get(i);
+      if (r.getId().equals(repetition.getId())) {
+        repetitionIndex = i;
+        break;
+      }
+    }
+    
+    if (repetitionIndex == -1) {
+      return;
+    }
+    
+    trial.getRepetition().set(repetitionIndex, repetition);
     
     TreePath path = new TreePath(new Object[] {root, project, experiment, trial, repetition});
     fireTreeStructureChanged(path);    
