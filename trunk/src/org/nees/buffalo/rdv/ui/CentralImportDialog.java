@@ -337,15 +337,7 @@ public class CentralImportDialog {
       return;
     }
     
-    List<Experiment> experiments;
-    try {
-      experiments = centralClient.getExperiments(project.getId());
-    } catch (CentralException e) {
-      handleCentralException(e);
-      return;
-    }
-    
-    for (Experiment experiment : experiments) {
+    for (Experiment experiment : project.getExperiment()) {
       int experimentId = experiment.getId();
       
       try {
@@ -376,15 +368,7 @@ public class CentralImportDialog {
       return;
     }
     
-    List<Trial> trials;
-    try {
-      trials = centralClient.getTrials(project.getId(), experiment.getId());
-    } catch (CentralException e) {
-      handleCentralException(e);
-      return;
-    }
-    
-    for (Trial trial : trials) {
+    for (Trial trial : experiment.getTrial()) {
       int trialId = trial.getId();
       
       try {
@@ -416,15 +400,7 @@ public class CentralImportDialog {
       return;
     }
     
-    List<Repetition> repetitions;
-    try {
-      repetitions = centralClient.getRepetitions(project.getId(), experiment.getId(), trial.getId());
-    } catch (CentralException e) {
-      handleCentralException(e);
-      return;
-    }
-    
-    for (Repetition repetition : repetitions) {
+    for (Repetition repetition : trial.getRepetition()) {
       int repetitionId = repetition.getId();
       
       try {
