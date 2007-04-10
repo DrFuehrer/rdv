@@ -399,6 +399,11 @@ public class CentralClient {
     if (dataFiles.size() == 1) {
       dataFile = dataFiles.get(0);
       
+      // fix for broken isDirectory support    
+      if (!dataFile.isIsDirectory() && dataFile.getDataFile().size() > 0) {    
+        dataFile.setIsDirectory(true);   
+      }
+      
       // fix for broken content link
       if (dataFile.getContentLink().startsWith("/File")) {
         dataFile.setContentLink("/REST" + dataFile.getContentLink());
