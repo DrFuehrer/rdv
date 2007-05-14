@@ -83,6 +83,8 @@ import org.nees.data.Repetition;
 import org.nees.data.Trial;
 import org.swixml.SwingEngine;
 
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 /**
  * A dialog to browse NEEScentral and select data files to import.
  * 
@@ -444,7 +446,14 @@ public class CentralImportDialog {
   private void updateDataFiles(List<DataFile> dataFiles) {
     for (DataFile dataFile : dataFiles) {
       try {
-        dataFile = centralClient.getDataFile(dataFile.getLink());
+        String link = dataFile.getLink();
+        try {
+          link = URLEncoder.encode(link, "UTF-8"); // encode all non-ascii
+          link = link.replaceAll("%2F", "/");      // decode back the slash for calling REST
+        } catch (UnsupportedEncodingException ue) {
+          continue;
+        }
+        dataFile = centralClient.getDataFile(link);
       } catch (CentralException e) {
         handleCentralException(e);
         continue;
