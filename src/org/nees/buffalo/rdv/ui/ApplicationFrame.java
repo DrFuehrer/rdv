@@ -750,11 +750,23 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     helpMenu.addSeparator();
 
  		menuItem = new JMenuItem(aboutAction);
-  		helpMenu.add(menuItem);		
+  	helpMenu.add(menuItem);		
   		
-  		menuBar.add(helpMenu);
-      
-      menuBar.add(Box.createHorizontalGlue());
+  	menuBar.add(helpMenu);
+
+    Icon neesLogo = DataViewer.getIcon("icons/NEESit_logo.gif");
+    JLabel logoLabel = new JLabel(neesLogo);
+    logoLabel.setBorder(new EmptyBorder(0,200,0,10));
+    menuBar.add(logoLabel);
+
+
+    neesLogo = DataViewer.getIcon("icons/ub-logo.gif");
+    logoLabel = new JLabel(neesLogo);
+//    logoLabel.setBorder(new EmptyBorder(0,0,0,0));
+    menuBar.add(logoLabel);
+    
+    menuBar.add(Box.createHorizontalGlue());
+    
     throbberStop = DataViewer.getIcon("icons/throbber.png");
     throbberAnim = DataViewer.getIcon("icons/throbber_anim.gif");
     throbber = new JLabel(throbberStop);
