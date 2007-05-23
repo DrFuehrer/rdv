@@ -589,6 +589,13 @@ public class CentralImportDialog {
     
     for (int i=0; i<dataFileListModel.getSize(); i++) {
       DataFile dataFile = (DataFile)dataFileListModel.getElementAt(i);
+      try {
+        dataFile.setContentLink(URLEncoder.encode(dataFile.getContentLink(), "UTF-8"));
+        dataFile.setContentLink(dataFile.getContentLink().replaceAll("%2F", "/"));
+      } catch (UnsupportedEncodingException ue) {
+        continue;
+      }
+
       URL dataFileURL = centralClient.getDataFileURL(dataFile);
       dataFiles.add(dataFileURL);
     }
