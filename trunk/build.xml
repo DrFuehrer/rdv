@@ -160,7 +160,7 @@
 			<fileset file="LICENSE"/>
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
-			<zipgroupfileset dir="${lib.dir}" excludes="log4j-1.2.13.jar,junit.jar"/>
+			<zipgroupfileset dir="${lib.dir}" excludes="jaxb*.jar,log4j-1.2.13.jar,junit.jar"/>
 			<manifest>
 				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
 			</manifest>		
