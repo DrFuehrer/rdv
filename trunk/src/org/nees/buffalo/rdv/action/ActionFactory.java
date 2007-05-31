@@ -124,4 +124,12 @@ public class ActionFactory {
     
     return centralImportAction;
   }
+  
+  /** Sets the NEEScentral import action to null
+   * 
+   */
+  public void setCentralImportAction() {
+    if (centralImportAction != null)
+      centralImportAction = null;
+  }
 }
