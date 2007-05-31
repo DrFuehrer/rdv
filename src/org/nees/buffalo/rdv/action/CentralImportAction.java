@@ -77,9 +77,16 @@ public class CentralImportAction extends DataViewerAction {
     }
     
     if (dialog == null) {
-      dialog = new CentralImportDialog();
+      dialog = new CentralImportDialog(this);
     } else {
       dialog.setVisible(true);
     }
+  }
+  
+  /** Sets this dialog to null 
+   * 
+   */
+  public void dispose() {
+    dialog = null;
   }
 }
