@@ -500,7 +500,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     usersGuideAction = new DataViewerAction("RDV Help", "Open the RDV User's Guide", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0)) {
       public void actionPerformed(ActionEvent ae) {
         try {
-          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-15-users-guide.php");
+          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-16-users-guide.php");
           DataViewer.browse(usersGuideURL);
         } catch (Exception e) {}        
       }
