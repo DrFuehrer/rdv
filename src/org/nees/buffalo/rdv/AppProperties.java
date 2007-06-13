@@ -68,6 +68,11 @@ public final class AppProperties {
    *                      found
    */
   public static String getProperty(String key, String defaultValue) {
+    String value = System.getProperty(key);
+    if (value != null) {
+      return value;
+    }
+    
     return appProperties.getProperty(key, defaultValue);
   }
   
