@@ -85,9 +85,6 @@ import org.swixml.SwingEngine;
 
 import java.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
-
-import org.nees.buffalo.rdv.action.CentralImportAction;
-
 /**
  * A dialog to browse NEEScentral and select data files to import.
  * 
@@ -118,14 +115,10 @@ public class CentralImportDialog {
   /** the list of tree path's already populated */
   private List<TreePath> populatedTreePaths;
   
-  /** CentralImportAction dialog that initiated this class   */
-  private final CentralImportAction actionDialog;
-  
   /**
    * Creates the NEEScentral import dialog.
    */
-  public CentralImportDialog(CentralImportAction dialog) {
-    this.actionDialog = dialog;
+  public CentralImportDialog() {
     populatedTreePaths = new ArrayList<TreePath>();
     
     setupUI();
@@ -213,7 +206,6 @@ public class CentralImportDialog {
     
     cancelButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
-        actionDialog.dispose();  // set CentralImportAction to null
         dialog.dispose();
       }
     });
