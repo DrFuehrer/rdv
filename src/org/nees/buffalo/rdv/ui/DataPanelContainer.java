@@ -33,6 +33,7 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.datatransfer.StringSelection;
@@ -49,10 +50,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.DataViewer;
 
 /**
  * A container to hold the UI components for the data panels. They may add and
@@ -130,6 +133,8 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
     gridLayout = new GridLayout(1, 1, 8, 8);
     setLayout(gridLayout);
     
+    initLogo();
+    
 		dataPanels = new ArrayList();
     dragGestures =  new HashMap();
 		
@@ -137,6 +142,16 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
     
     previousPositions = new HashMap<JComponent, Integer>();
 	}
+  
+  /**
+   * Add the NEESit and UB logo as the initial background.
+   */
+  private void initLogo() {
+    JLabel backgroundImage = new JLabel(DataViewer.getIcon("icons/neesitandub.gif"));
+    backgroundImage.setPreferredSize(new Dimension(1,1));
+    backgroundImage.setMinimumSize(new Dimension(1,1));
+    add(backgroundImage);    
+  }
 	
 	/**
 	 * Add a data panel UI component to this container.
