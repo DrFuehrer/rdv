@@ -292,8 +292,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		logoutAction = new DataViewerAction("Logout", "Logout as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
        AuthenticationManager.getInstance().setAuthentication(null);
-       ActionFactory actionFactory = ActionFactory.getInstance();
-       actionFactory.setCentralImportAction();
  			}			
  		};
  		 		
