@@ -138,7 +138,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action importAction;
   private Action exportAction; 
  	private Action exitAction;
- 	
+ 	private Action exportVideoAction;
+  
  	private Action controlAction;
  	private DataViewerAction realTimeAction;
  	private DataViewerAction playAction;
@@ -343,13 +344,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };    
 
     importAction = new DataViewerAction("Import", "Import Menu", KeyEvent.VK_I, "icons/import.gif");
-    
+
+    exportVideoAction = new DataViewerAction("Export Video", "Export video on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
+      public void actionPerformed(ActionEvent ae) {
+        showExportVideoDialog();
+      }
+    };
+ 
     exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
       public void actionPerformed(ActionEvent ae) {
         showExportDialog();
       }
     };
- 
+
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X) {
  			public void actionPerformed(ActionEvent ae) {
  				dataViewer.exit();
@@ -599,8 +606,15 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
     fileMenu.add(importSubMenu);
 
+    JMenu exportSubMenu = new JMenu(exportAction);
+    
+    menuItem = new JMenuItem(exportVideoAction);
+    exportSubMenu.add(menuItem);
+    
     menuItem = new JMenuItem(exportAction);
-    fileMenu.add(menuItem);
+    exportSubMenu.add(menuItem);
+    
+    fileMenu.add(exportSubMenu);
 
  		fileMenu.addSeparator();
  		
@@ -928,6 +942,20 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	public void postStatus(String statusMessage) {
 		JOptionPane.showMessageDialog(this, statusMessage, "Status", JOptionPane.INFORMATION_MESSAGE);
 	}
+
+  public void showExportVideoDialog() {
+    List channels = channelListPanel.getSelectedChannels();
+    if (channels.size() == 0) {
+      channels = RBNBUtilities.getAllChannels(rbnb.getMetadataManager().getMetadataChannelTree(), channelListPanel.isShowingHiddenChannles());
+    }
+
+    showExportVideoDialog(channels);
+  }
+  
+  public void showExportVideoDialog(List channels) {
+    new ExportVideoDialog(frame, rbnb, channels);
+  }
+
   
   public void showExportDialog() {
     List channels = channelListPanel.getSelectedChannels();
