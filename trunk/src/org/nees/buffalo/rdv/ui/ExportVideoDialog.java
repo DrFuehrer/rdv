@@ -68,8 +68,8 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   DefaultListModel videoChannelModel;
   
   JTextField directoryTextField;
-  JFileChooser dataFileChooser;
-  JButton dataFileButton;  
+  JFileChooser directoryChooser;
+  JButton directoryButton;  
   
   JProgressBar exportProgressBar;
   
@@ -94,7 +94,7 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     
     setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     
-    setTitle("Export data to disk");
+    setTitle("Export video data to disk");
     setChannelModel();
     initComponents();
   }
@@ -241,17 +241,16 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     c.insets = new java.awt.Insets(0,0,10,5);
     container.add(directoryTextField, c);
     
-    dataFileChooser = new JFileChooser();
-    dataFileChooser.setDialogTitle("Select export directory");
-    dataFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-    directoryTextField.setText(dataFileChooser.getCurrentDirectory().getAbsolutePath());
-    dataFileButton = new JButton("Browse");
-    dataFileButton.addActionListener(new ActionListener() {
+    directoryChooser = new JFileChooser();
+    directoryChooser.setDialogTitle("Select export directory");
+    directoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    directoryTextField.setText(directoryChooser.getCurrentDirectory().getAbsolutePath());
+    directoryButton = new JButton("Browse");
+    directoryButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
- //       dataFileChooser.setSelectedFile(new File(dataFileTextField.getText()));
-        int status = dataFileChooser.showOpenDialog(null);
+        int status = directoryChooser.showOpenDialog(null);
         if (status == JFileChooser.APPROVE_OPTION) {
-          directoryTextField.setText(dataFileChooser.getSelectedFile().getAbsolutePath());
+          directoryTextField.setText(directoryChooser.getSelectedFile().getAbsolutePath());
         }
       }
     });
@@ -262,7 +261,7 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,0,10,10);
-    container.add(dataFileButton, c);
+    container.add(directoryButton, c);
     
     exportProgressBar = new JProgressBar(0, 100000);
     exportProgressBar.setStringPainted(true);
@@ -324,14 +323,14 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   private void disableUI() {
     videoChannelList.setEnabled(false);
     directoryTextField.setEnabled(false);
-    dataFileButton.setEnabled(false);
+    directoryButton.setEnabled(false);
     exportButton.setEnabled(false);
   }
   
   private void enableUI() {
     videoChannelList.setEnabled(true);
     directoryTextField.setEnabled(true);
-    dataFileButton.setEnabled(true);
+    directoryButton.setEnabled(true);
     exportButton.setEnabled(true);    
   }
   
