@@ -139,6 +139,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action exportAction; 
  	private Action exitAction;
  	private Action exportVideoAction;
+  private Action exportDataAction;
   
  	private Action controlAction;
  	private DataViewerAction realTimeAction;
@@ -344,14 +345,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };    
 
     importAction = new DataViewerAction("Import", "Import Menu", KeyEvent.VK_I, "icons/import.gif");
+    
+    exportAction = new DataViewerAction("Export", "Export Menu", KeyEvent.VK_E, "icons/export.gif");
 
-    exportVideoAction = new DataViewerAction("Export Video", "Export video on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
+    exportVideoAction = new DataViewerAction("Export Video Channels", "Export video on server to local computer") {
       public void actionPerformed(ActionEvent ae) {
         showExportVideoDialog();
       }
     };
  
-    exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
+    exportDataAction = new DataViewerAction("Export Data Channels", "Export data on server to local computer") {
       public void actionPerformed(ActionEvent ae) {
         showExportDialog();
       }
@@ -608,10 +611,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
     JMenu exportSubMenu = new JMenu(exportAction);
     
-    menuItem = new JMenuItem(exportVideoAction);
+    menuItem = new JMenuItem(exportDataAction);
     exportSubMenu.add(menuItem);
     
-    menuItem = new JMenuItem(exportAction);
+    menuItem = new JMenuItem(exportVideoAction);
     exportSubMenu.add(menuItem);
     
     fileMenu.add(exportSubMenu);
