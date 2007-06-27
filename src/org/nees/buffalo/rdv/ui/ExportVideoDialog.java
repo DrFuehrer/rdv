@@ -133,7 +133,7 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     c.ipadx = 0;
     c.ipady = 0;
 
-    JLabel headerLabel = new JLabel("Select the time range and data channels to export.");
+    JLabel headerLabel = new JLabel("Select the time range and video channels to export.");
     headerLabel.setBackground(Color.white);
     headerLabel.setOpaque(true);
     headerLabel.setBorder(BorderFactory.createCompoundBorder(
@@ -160,7 +160,7 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     
     timeSlider = new TimeSlider();
     timeSlider.setValueChangeable(false);
-    timeSlider.setValueVisible(false);    
+    timeSlider.setValueVisible(false);
     timeSlider.addTimeAdjustmentListener(new TimeAdjustmentListener() {
       public void timeChanged(TimeEvent event) {}
       public void rangeChanged(TimeEvent event) {
@@ -185,7 +185,7 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     c.insets = new java.awt.Insets(0,10,10,10);
     container.add(timeSlider, c);
     
-    JLabel numericHeaderLabel = new JLabel("Data Channels:");
+    JLabel numericHeaderLabel = new JLabel("Video Channels:");
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 0;
     c.gridx = 0;
@@ -229,7 +229,7 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,10,10,5);
-    container.add(new JLabel("Data file: "), c);    
+    container.add(new JLabel("Choose Directory: "), c);    
     
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1;
