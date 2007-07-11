@@ -76,6 +76,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.audio.AudioPlayer;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
@@ -121,6 +122,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JSplitPane leftPanel;
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
+  private AudioPlayerPanel audioPlayerPanel;
   private MarkerSubmitPanel markerSubmitPanel;
 	private DataPanelContainer dataPanelContainer;
  	private JSplitPane splitPane;
@@ -155,6 +157,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action showChannelListAction;
   private Action showMetadataPanelAction;
  	private Action showControlPanelAction;
+  private Action showAudioPlayerPanelAction;
   private Action showMarkerPanelAction;
  	private Action dataPanelAction;
  	private Action dataPanelHorizontalLayoutAction;
@@ -231,6 +234,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		initRightPanel();
 		initControls();         
 		initDataPanelContainer();
+    initAudioPlayerPanel();
     initMarkerSubmitPanel();    
     
 		initSplitPane();
@@ -443,7 +447,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				controlPanel.setVisible(menuItem.isSelected());
  			}			
  		};
- 
+
+    showAudioPlayerPanelAction = new DataViewerAction ("Show Audio Player", "", KeyEvent.VK_A, "icons/audio.gif") {
+      public void actionPerformed (ActionEvent ae) {
+        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
+        audioPlayerPanel.setVisible(menuItem.isSelected());
+      }
+    };    
+    
     showMarkerPanelAction = new DataViewerAction ("Show Marker Panel", "", KeyEvent.VK_M, "icons/info.gif") {
       public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
@@ -688,6 +699,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem = new JCheckBoxMenuItem(showControlPanelAction);
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
+    
+    menuItem = new JCheckBoxMenuItem(showAudioPlayerPanelAction);
+    menuItem.setSelected(false);
+    viewMenu.add(menuItem);
  		
     menuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
     menuItem.setSelected(true);
@@ -837,6 +852,25 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		log.info("Added data panel container.");
 	}
+  
+  private void initAudioPlayerPanel() {
+    audioPlayerPanel = new AudioPlayerPanel();
+    audioPlayerPanel.setVisible(false);
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 0;
+    c.weighty = 0;
+    c.gridx = 0;
+    c.gridy = 2;
+    c.gridwidth = 2;
+    c.gridheight = 1;
+    c.ipadx = 0;
+    c.ipady = 0;
+    c.insets = new java.awt.Insets (0, 0, 8, 6);
+    c.anchor = GridBagConstraints.SOUTHWEST;        
+    rightPanel.add (audioPlayerPanel, c);
+    
+    log.info ("Added Audio Player Panel.");
+  }
 
   private void initMarkerSubmitPanel() {
 	  markerSubmitPanel = new MarkerSubmitPanel(rbnb);
@@ -844,7 +878,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		c.gridwidth = 2;
 		c.gridheight = 1;
 		c.ipadx = 0;
