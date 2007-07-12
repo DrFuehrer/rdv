@@ -53,6 +53,7 @@ import javax.swing.SwingUtilities;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.DataViewer;
+import org.nees.buffalo.rdv.rbnb.TimeRange;
 import org.nees.rbnb.marker.EventMarker;
 
 /**
@@ -1199,70 +1200,5 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     endButton.setEnabled(enabled && rangeChangeable);
     
     repaint();
-  }
-  
-  /**
-   * A time range. This is a range in time specified by a start and end time.
-   */
-  public static class TimeRange implements Comparable<TimeRange> {
-    /** The start of the time range */
-    public double start;
-    
-    /** The end of the time range */
-    public double end;
-    
-    /**
-     * Create a time range.
-     * 
-     * @param start  the start of the time range
-     * @param end    the end of the time range
-     */
-    public TimeRange(double start, double end) {
-      this.start = start;
-      this.end = end;
-    }
-    
-    /**
-     * The length of the time range. Simply end-start.
-     * 
-     * @return  the length of the time range
-     */
-    public double length() {
-      return end-start;
-    }
-    
-    /**
-     * See if the time is within the time range.
-     * 
-     * @param time  the time to check
-     * @return      true if the time is within the time range, false otherwise
-     */
-    public boolean contains(double time) {
-      return ((time >= start) && (time <= end));
-    }
-    
-    /**
-     * Compare time ranges. This is based first on their start, and then on
-     * their end (if needed).
-     * 
-     * @param d  the time range to compare with
-     * @return   0 if they are the same, -1 if this is less than the other, and
-     *           1 if this is greater than the other.
-     */
-    public int compareTo(TimeRange t) {
-      if (start == t.start) {
-        if (end == t.end) {
-          return 0;
-        } else if (end < t.end) {
-          return -1;
-        } else {
-          return 1;
-        }
-      } else if (start < t.start) {
-        return -1;
-      } else {
-        return 1;
-      }
-    }
   }
 }

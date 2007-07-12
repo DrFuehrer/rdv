@@ -34,8 +34,6 @@ package org.nees.buffalo.rdv.rbnb;
 
 import java.util.Iterator;
 
-import org.nees.buffalo.rdv.ui.TimeSlider.TimeRange;
-
 import com.rbnb.sapi.ChannelTree;
 
 /**

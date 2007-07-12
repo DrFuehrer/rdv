@@ -90,7 +90,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBHelper;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
-import org.nees.buffalo.rdv.ui.TimeSlider.TimeRange;
+import org.nees.buffalo.rdv.rbnb.TimeRange;
 import org.swixml.SwingEngine;
 
 import com.jgoodies.looks.HeaderStyle;
