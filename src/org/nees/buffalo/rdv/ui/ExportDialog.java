@@ -32,6 +32,7 @@
 
 package org.nees.buffalo.rdv.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -94,8 +95,11 @@ public class ExportDialog extends JDialog implements ProgressListener {
   RBNBExport export;
   boolean exporting;
   
+  JButton startTimeButton;
+  JLabel durationLabel;
+  JButton endTimeButton;
+  
   TimeSlider timeSlider;
-  JLabel timeRangeLabel;
   
   JList numericChannelList;
   DefaultListModel numericChannelModel;
@@ -174,7 +178,41 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.insets = new java.awt.Insets(0,0,0,0);    
     container.add(headerLabel, c);
     
-    timeRangeLabel = new JLabel();
+    JPanel timeButtonPanel = new JPanel();
+    timeButtonPanel.setLayout(new BorderLayout());
+    
+    startTimeButton = new JButton();
+    startTimeButton.setBorder(null);
+    startTimeButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        double startTime = DateTimeDialog.showDialog(ExportDialog.this, 
+            timeSlider.getStart(),
+            timeSlider.getMinimum(), timeSlider.getEnd());
+        if (startTime >= 0) {
+          timeSlider.setStart(startTime);
+        }
+      }      
+    });
+    timeButtonPanel.add(startTimeButton, BorderLayout.WEST);
+    
+    durationLabel = new JLabel();
+    durationLabel.setHorizontalAlignment(JLabel.CENTER);
+    timeButtonPanel.add(durationLabel, BorderLayout.CENTER);
+    
+    endTimeButton = new JButton();
+    endTimeButton.setBorder(null);
+    endTimeButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        double endTime = DateTimeDialog.showDialog(ExportDialog.this,
+            timeSlider.getEnd(),
+            timeSlider.getStart(), timeSlider.getMaximum());
+        if (endTime >= 0) {
+          timeSlider.setEnd(endTime);
+        }
+      }      
+    });
+    timeButtonPanel.add(endTimeButton, BorderLayout.EAST);
+    
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 0;
     c.gridx = 0;
@@ -182,7 +220,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.gridwidth = GridBagConstraints.REMAINDER;
     c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new java.awt.Insets(10,10,10,10);
-    container.add(timeRangeLabel, c);    
+    container.add(timeButtonPanel, c);    
     
     timeSlider = new TimeSlider();
     timeSlider.setValueChangeable(false);
@@ -397,10 +435,9 @@ public class ExportDialog extends JDialog implements ProgressListener {
     double end = timeSlider.getEnd();
     double duration = end-start;
     
-    timeRangeLabel.setText("Export data from " + 
-        DataViewer.formatDate(start) + " to " +
-        DataViewer.formatDate(end)+
-        " (" + DataViewer.formatSeconds(duration) + ")");
+    startTimeButton.setText(DataViewer.formatDate(start));
+    durationLabel.setText(DataViewer.formatSeconds(duration));
+    endTimeButton.setText(DataViewer.formatDate(end));
   }
   
   private List<String> getSelectedChannels() {
