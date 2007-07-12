@@ -71,7 +71,7 @@ import org.nees.buffalo.rdv.rbnb.RBNBHelper;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
-import org.nees.buffalo.rdv.ui.TimeSlider.TimeRange;
+import org.nees.buffalo.rdv.rbnb.TimeRange;
 import org.nees.rbnb.marker.EventMarker;
 
 import com.rbnb.sapi.ChannelTree;
