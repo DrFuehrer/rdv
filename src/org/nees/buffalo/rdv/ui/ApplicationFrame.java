@@ -87,8 +87,10 @@ import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.RBNBHelper;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
+import org.nees.buffalo.rdv.ui.TimeSlider.TimeRange;
 import org.swixml.SwingEngine;
 
 import com.jgoodies.looks.HeaderStyle;
@@ -402,9 +404,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
 
- 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask)) {
+ 		gotoTimeAction = new DataViewerAction("Go to time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask)) {
  			public void actionPerformed(ActionEvent ae) {
- 			  new JumpDateTimeDialog(frame, rbnb);
+        TimeRange timeRange = RBNBHelper.getChannelsTimeRange();
+ 			  double time = DateTimeDialog.showDialog(frame, rbnb.getLocation(), timeRange.start, timeRange.end);
+        if (time >= 0) {
+          rbnb.setLocation(time);
+        }
  			}			
  		};
  

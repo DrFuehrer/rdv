@@ -67,6 +67,7 @@ import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
+import org.nees.buffalo.rdv.rbnb.RBNBHelper;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
@@ -262,7 +263,11 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     locationButton.setBorder(null);
     locationButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
-        new JumpDateTimeDialog(rbnbController);
+        TimeRange timeRange = RBNBHelper.getChannelsTimeRange();
+        double time = DateTimeDialog.showDialog(ControlPanel.this, rbnbController.getLocation(), timeRange.start, timeRange.end);
+        if (time >= 0) {
+          rbnbController.setLocation(time);
+        }
       }
     });
     firstRowPanel.add(locationButton, BorderLayout.EAST);
