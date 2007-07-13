@@ -421,17 +421,25 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   
   private boolean createDirectory(File directory) {
     File file = new File(directory.getPath());
-    return file.mkdir();
+    return file.mkdirs();
   }
   
   private boolean checkDirectory(File directory) {
     
     if (directory.exists()) {
-      int overwriteReturn = JOptionPane.showConfirmDialog(null,
-          directory.getName() + " already exists. Do you want to resume?",
-          "Write into existing directory?",
-          JOptionPane.YES_NO_OPTION);
-      if (overwriteReturn == JOptionPane.NO_OPTION) {
+      if (directory.isDirectory()) {
+        int overwriteReturn = JOptionPane.showConfirmDialog(null,
+            directory.getName() + " already exists.\nResume writing in the same folder?",
+            "Write into existing directory?",
+            JOptionPane.YES_NO_OPTION);
+        if (overwriteReturn == JOptionPane.NO_OPTION) {
+          return false;        
+        }
+      }  
+      else {
+        JOptionPane.showMessageDialog(null,
+            "Could not create directory " + directory.getPath() + "\nA file with that name already exists!",
+            "Create Directory error", JOptionPane.INFORMATION_MESSAGE);
         return false;
       }
       
