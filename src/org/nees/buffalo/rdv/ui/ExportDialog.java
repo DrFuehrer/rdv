@@ -35,6 +35,7 @@ package org.nees.buffalo.rdv.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -183,6 +184,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     
     startTimeButton = new JButton();
     startTimeButton.setBorder(null);
+    startTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     startTimeButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         double startTime = DateTimeDialog.showDialog(ExportDialog.this, 
@@ -201,6 +203,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     
     endTimeButton = new JButton();
     endTimeButton.setBorder(null);
+    endTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     endTimeButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         double endTime = DateTimeDialog.showDialog(ExportDialog.this,
