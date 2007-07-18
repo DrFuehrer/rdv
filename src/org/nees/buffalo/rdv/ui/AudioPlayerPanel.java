@@ -43,10 +43,13 @@ import java.net.URL;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.border.EmptyBorder;
 
 import org.nees.audio.AudioErrorListener;
@@ -99,9 +102,24 @@ public class AudioPlayerPanel extends JPanel {
       }
     });
     p.add(playButton, BorderLayout.WEST);
+   
+    // popup menu for URL text field
+    JPopupMenu popupMenu = new JPopupMenu();
+
+    final JMenuItem pasteMenuItem = new JMenuItem("Paste");
+    pasteMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        TransferHandler.getPasteAction().actionPerformed(
+            new ActionEvent(streamURLField, ae.getID(), ae
+                .getActionCommand(), ae.getWhen(), ae
+                .getModifiers()));
+      }
+    });
+    popupMenu.add(pasteMenuItem);
     
     streamURLField = new JTextField();
     streamURLField.setBorder(null);
+    streamURLField.setComponentPopupMenu(popupMenu);
     streamURLField.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
         updateURL();
