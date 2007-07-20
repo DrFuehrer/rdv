@@ -44,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -182,9 +183,20 @@ public class ExportDialog extends JDialog implements ProgressListener {
     JPanel timeButtonPanel = new JPanel();
     timeButtonPanel.setLayout(new BorderLayout());
     
+    MouseListener hoverMouseListener = new MouseAdapter() {
+      public void mouseEntered(MouseEvent e) {
+        e.getComponent().setForeground(Color.red);
+      }
+      public void mouseExited(MouseEvent e) {
+        e.getComponent().setForeground(Color.blue);
+      }
+    };
+    
     startTimeButton = new JButton();
     startTimeButton.setBorder(null);
     startTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    startTimeButton.setForeground(Color.blue);
+    startTimeButton.addMouseListener(hoverMouseListener);
     startTimeButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         double startTime = DateTimeDialog.showDialog(ExportDialog.this, 
@@ -204,6 +216,8 @@ public class ExportDialog extends JDialog implements ProgressListener {
     endTimeButton = new JButton();
     endTimeButton.setBorder(null);
     endTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    endTimeButton.setForeground(Color.blue);
+    endTimeButton.addMouseListener(hoverMouseListener);
     endTimeButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         double endTime = DateTimeDialog.showDialog(ExportDialog.this,
@@ -389,6 +403,8 @@ public class ExportDialog extends JDialog implements ProgressListener {
   }
   
   private void disableUI() {
+    startTimeButton.setEnabled(false);
+    endTimeButton.setEnabled(false);
     numericChannelList.setEnabled(false);
     dataFileTextField.setEnabled(false);
     dataFileButton.setEnabled(false);
@@ -396,6 +412,8 @@ public class ExportDialog extends JDialog implements ProgressListener {
   }
   
   private void enableUI() {
+    startTimeButton.setEnabled(true);
+    endTimeButton.setEnabled(true);
     numericChannelList.setEnabled(true);
     dataFileTextField.setEnabled(true);
     dataFileButton.setEnabled(true);

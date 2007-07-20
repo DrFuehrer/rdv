@@ -44,6 +44,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -83,7 +84,6 @@ import org.nees.rbnb.marker.EventMarker;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import javax.swing.border.BevelBorder;
 
 public class ExportVideoDialog extends JDialog implements ProgressListener {
   
@@ -131,7 +131,7 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     
     setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     
-    setTitle("Export video data to disk");
+    setTitle("Export video to disk");
     setChannelModel();
     initComponents();
   }
@@ -188,9 +188,20 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     JPanel timeButtonPanel = new JPanel();
     timeButtonPanel.setLayout(new BorderLayout());
     
+    MouseListener hoverMouseListener = new MouseAdapter() {
+      public void mouseEntered(MouseEvent e) {
+        e.getComponent().setForeground(Color.red);
+      }
+      public void mouseExited(MouseEvent e) {
+        e.getComponent().setForeground(Color.blue);
+      }
+    };
+    
     startTimeButton = new JButton();
-    startTimeButton.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+    startTimeButton.setBorder(null);
     startTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    startTimeButton.setForeground(Color.blue);
+    startTimeButton.addMouseListener(hoverMouseListener);
     startTimeButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         double startTime = DateTimeDialog.showDialog(ExportVideoDialog.this, 
@@ -208,8 +219,10 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     timeButtonPanel.add(durationLabel, BorderLayout.CENTER);
     
     endTimeButton = new JButton();
-    endTimeButton.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+    endTimeButton.setBorder(null);
     endTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    endTimeButton.setForeground(Color.blue);
+    endTimeButton.addMouseListener(hoverMouseListener);
     endTimeButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         double endTime = DateTimeDialog.showDialog(ExportVideoDialog.this,
@@ -394,6 +407,8 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   }
   
   private void disableUI() {
+    startTimeButton.setEnabled(false);
+    endTimeButton.setEnabled(false);
     videoChannelList.setEnabled(false);
     directoryTextField.setEnabled(false);
     directoryButton.setEnabled(false);
@@ -401,6 +416,8 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   }
   
   private void enableUI() {
+    startTimeButton.setEnabled(true);
+    endTimeButton.setEnabled(true);
     videoChannelList.setEnabled(true);
     directoryTextField.setEnabled(true);
     directoryButton.setEnabled(true);

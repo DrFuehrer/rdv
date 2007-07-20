@@ -354,13 +354,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
     exportAction = new DataViewerAction("Export", "Export Menu", KeyEvent.VK_E, "icons/export.gif");
 
-    exportVideoAction = new DataViewerAction("Export Video Channels", "Export video on server to local computer") {
+    exportVideoAction = new DataViewerAction("Export video channels", "Export video on server to local computer") {
       public void actionPerformed(ActionEvent ae) {
         showExportVideoDialog();
       }
     };
  
-    exportDataAction = new DataViewerAction("Export Data Channels", "Export data on server to local computer") {
+    exportDataAction = new DataViewerAction("Export data channels", "Export data on server to local computer") {
       public void actionPerformed(ActionEvent ae) {
         showExportDialog();
       }
