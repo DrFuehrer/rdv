@@ -525,6 +525,16 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   
   private void exportVideo() {
     
+    List<String> selectedChannels = getSelectedChannels();
+    
+    if (selectedChannels.size() == 0){
+      JOptionPane.showMessageDialog(this,
+          "No video channels selected!",
+          "Export Video channels",
+          JOptionPane.ERROR_MESSAGE);
+      return;
+    }
+    
     File directory = new File(directoryTextField.getText());
     
     if (!checkDirectory(directory)) {
@@ -532,8 +542,6 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     }
 
     disableUI();
-    
-    List<String> selectedChannels = getSelectedChannels();
     
     double start = timeSlider.getStart();
     double end = timeSlider.getEnd();
