@@ -988,10 +988,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
   public void showExportVideoDialog() {
     List channels = channelListPanel.getSelectedChannels();
-    if (channels.size() == 0) {
-      channels = RBNBUtilities.getAllChannels(rbnb.getMetadataManager().getMetadataChannelTree(), channelListPanel.isShowingHiddenChannles());
-    }
-
     showExportVideoDialog(channels);
   }
   
