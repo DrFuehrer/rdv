@@ -140,10 +140,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action loadAction;
   private Action saveAction;
   private Action importAction;
-  private Action exportAction; 
+  protected Action exportAction; 
  	private Action exitAction;
- 	private Action exportVideoAction;
-  private Action exportDataAction;
+ 	protected Action exportVideoAction;
+  protected Action exportDataAction;
   
  	private Action controlAction;
  	private DataViewerAction realTimeAction;
@@ -633,6 +633,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
     menuItem = new JMenuItem(exportVideoAction);
     exportSubMenu.add(menuItem);
+    
+    exportAction.setEnabled(false);
+    exportVideoAction.setEnabled(false);
+    exportDataAction.setEnabled(false);
     
     fileMenu.add(exportSubMenu);
 
@@ -1129,9 +1133,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       boolean offline = rbnb.getRBNBHostName().equals("localhost");
       saveAction.setEnabled(!offline);
       importAction.setEnabled(offline);
-      
-      exportAction.setEnabled(true);
-
+ 
       controlPanel.setEnabled(true);
       markerSubmitPanel.setEnabled(true);
     }
