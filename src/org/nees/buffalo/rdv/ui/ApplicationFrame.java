@@ -992,6 +992,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
   public void showExportVideoDialog() {
     List channels = channelListPanel.getSelectedChannels();
+    if (channels.size() == 0) {
+      JOptionPane.showMessageDialog(this, "No video channel(s) selected!", "video export", JOptionPane.ERROR_MESSAGE);
+      return;
+    }
     showExportVideoDialog(channels);
   }
   
