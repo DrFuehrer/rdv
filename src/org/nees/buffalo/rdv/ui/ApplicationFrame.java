@@ -616,6 +616,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     menuItem = new JMenuItem(actionFactory.getDataImportAction());
     importSubMenu.add(menuItem);
     
+    menuItem = new JMenuItem(actionFactory.getOpenSeesDataImportAction());
+    importSubMenu.add(menuItem);
+    
     menuItem = new JMenuItem(actionFactory.getJPEGImportAction());
     importSubMenu.add(menuItem);
     
