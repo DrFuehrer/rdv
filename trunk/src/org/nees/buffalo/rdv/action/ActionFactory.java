@@ -53,6 +53,8 @@ public class ActionFactory {
   /** the action to import data from NEEScentral */
   private CentralImportAction centralImportAction;
   
+  /** the action to import OpenSees specific xml data file */
+  private OpenSeesDataImportAction osDataImportAction;
   /**
    * Creates the action factory. 
    */
@@ -123,5 +125,17 @@ public class ActionFactory {
     }
     
     return centralImportAction;
+  }
+  
+  /**
+   * Gets the OpenSees DataImportAction
+   * @return the OpenSeesDataImportAction
+   */
+  public OpenSeesDataImportAction getOpenSeesDataImportAction() {
+    if (osDataImportAction == null) {
+      osDataImportAction = new OpenSeesDataImportAction();
+    }
+    
+    return osDataImportAction;
   }
 }
