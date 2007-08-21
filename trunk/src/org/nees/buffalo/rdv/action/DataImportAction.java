@@ -73,6 +73,11 @@ public class DataImportAction extends DataViewerAction {
           "Import local data to RBNB server");
   }
   
+  /** constructor with generic parameters */
+  public DataImportAction(String text, String desc) {
+    super(text, desc);
+  }
+  
   /**
    * Prompts the user for the data file and uploads the data to the RBNB server.
    */
