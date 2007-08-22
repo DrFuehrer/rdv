@@ -341,7 +341,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
         
         if (!frame.exportDataAction.isEnabled()) {
           for (ChannelTree.Node c : channels) {
-            if (c.getMime() != null && c.getMime().equals("application/octet-stream")) {
+            if (c.getMime() == null || c.getMime().equals("application/octet-stream")) {
               this.frame.exportDataAction.setEnabled(true);
               break;
             }
