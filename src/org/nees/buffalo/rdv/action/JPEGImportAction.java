@@ -40,6 +40,7 @@ import java.text.ParseException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileFilter;
 
 import org.nees.buffalo.rdv.data.JPEGFileDataSample;
 import org.nees.buffalo.rdv.data.JPEGFileCollectionReader;
@@ -48,6 +49,12 @@ import org.nees.buffalo.rdv.rbnb.RBNBException;
 import org.nees.buffalo.rdv.rbnb.RBNBSource;
 import org.nees.buffalo.rdv.ui.ProgressWindow;
 
+import java.util.zip.ZipInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
 /**
  * A class to import a collection of JPEG images into an RBNB server. 
  * 
@@ -60,6 +67,15 @@ public class JPEGImportAction extends DataViewerAction {
   public JPEGImportAction() {
     super("Import JPEG files",
           "Import a folder that contains JPEG files");
+  }
+  
+  /** Helper class to delete a temporary folder created on file system */
+  private static DirectoryDeleter deleterThread;
+  /** Thread to delete folder on Exit */
+  static
+  {
+      deleterThread = new DirectoryDeleter();
+      Runtime.getRuntime().addShutdownHook(deleterThread);
   }
   
   /**
@@ -121,17 +137,106 @@ public class JPEGImportAction extends DataViewerAction {
    */
   private File getDirectory() {
     JFileChooser directoryChooser = new JFileChooser();
-    directoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    directoryChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+    
+
+    directoryChooser.setFileFilter(new FileFilter() {
+      public boolean accept(File f) {
+        // accept only Zip files and Folders
+        return (f.isDirectory() || f.getName().toLowerCase().endsWith(".zip"));
+      }
+      public String getDescription() {
+        return "Directory or Zip file";
+      }
+    });
     
     int returnVal = directoryChooser.showDialog(null, "Import");
     
     if (returnVal == JFileChooser.APPROVE_OPTION) {
+      // check to see if a zip file selected
+      if (!directoryChooser.getSelectedFile().isDirectory()) {
+        try {
+          File zipDirectory = createZipDirectory(directoryChooser.getSelectedFile());
+          return zipDirectory;
+          
+        } catch (FileNotFoundException fe) {
+          fe.printStackTrace();
+          return null;
+        } catch (IOException ie) {
+          ie.printStackTrace();
+          return null;
+        }
+      }
+      
       return directoryChooser.getSelectedFile();
+      
     } else {
       return null;
     }
   }
   
+  /** Create a temporary folder to store zip extracted files
+   * 
+   * @param zipFile Zip source file to extract
+   * @return folder containing extracted files
+   */
+  private File createZipDirectory(File zipFile) throws FileNotFoundException, IOException {
+
+    String dirName = zipFile.getName().substring(0, zipFile.getName().indexOf("."));
+    
+    File zipDir = new File(System.getProperty("java.io.tmpdir"), dirName);
+    zipDir.deleteOnExit();
+
+    if (!zipDir.exists()) {
+      zipDir.mkdir();
+    }
+
+    // create a zip input stream for extraction
+    ZipInputStream zipStream = new ZipInputStream(new FileInputStream(zipFile));
+      
+    createZipDirectory(zipDir, zipStream);
+    
+    // helper to empty and delete the temporary folder
+    deleterThread.add(zipDir);
+    
+    return zipDir;
+  }
+
+  /** Extract and store the zip files to the destination zip directory
+   * 
+   * @param zipDirectory directory to store extracted files
+   * @param zipStream zip input stream for reading zip files
+   */
+  private void createZipDirectory(File zipDirectory, ZipInputStream zipStream) throws IOException {
+    
+    final int BUFFER = 2048;
+    ZipEntry entry;
+    BufferedOutputStream dest = null;
+    String extractedName;
+    
+    while ((entry = zipStream.getNextEntry()) != null) {
+      int count;
+      byte data[] = new byte[BUFFER];
+      
+      extractedName = entry.getName();
+      // get ride off the zip files' path to make them all in one level 
+      if (extractedName.indexOf("\\") > 0) {
+        extractedName = extractedName.substring((extractedName.lastIndexOf("\\")),  extractedName.length());        
+      }
+      
+      // write the files to the disk
+      OutputStream fos = new FileOutputStream(zipDirectory.getPath() + "/" + extractedName);
+      dest = new BufferedOutputStream(fos, BUFFER);
+      while ((count = zipStream.read(data, 0, BUFFER)) != -1) {
+         dest.write(data, 0, count);
+      }
+      dest.flush();
+      dest.close();      
+    }
+
+    zipStream.close();
+  }
+
   /**
    * Upload the JPEG files in the given directory to the RBNB server.
    * 
