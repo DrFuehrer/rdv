@@ -48,6 +48,15 @@ public class OpenSeesDataImportAction extends DataImportAction {
     super("Import OpenSees data file",
         "Import local data to RBNB server");
   }
+ 
+  /** Helper class to delete a temporary folder created on file system */
+  private static DirectoryDeleter deleterThread;
+  /** Thread to delete folder on Exit */
+  static
+  {
+      deleterThread = new DirectoryDeleter();
+      Runtime.getRuntime().addShutdownHook(deleterThread);
+  }
   
   /**
    * Prompts the user for the input OpesSees data file and uploads the data to the RBNB server.
@@ -259,10 +268,11 @@ public class OpenSeesDataImportAction extends DataImportAction {
     File dir = new File(System.getProperty("java.io.tmpdir"), folderName);
     dir.deleteOnExit();
 
-    if (!dir.exists()) {
+    if (!dir.exists() || !dir.isDirectory()) {
       dir.mkdir();
     }
     
+    deleterThread.add(dir);
     return dir;
   }
 
