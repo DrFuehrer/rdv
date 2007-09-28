@@ -581,6 +581,7 @@ public class CentralImportDialog {
    */
   private void startImport() {
     List<URL> dataFiles = new ArrayList<URL>();
+    List<URL> zipVideoFiles = new ArrayList<URL>();
     
     DefaultListModel dataFileListModel = (DefaultListModel)dataFileList.getModel();
     if (dataFileListModel.getSize() == 0) {
@@ -597,14 +598,25 @@ public class CentralImportDialog {
       }
 
       URL dataFileURL = centralClient.getDataFileURL(dataFile);
-      dataFiles.add(dataFileURL);
+      if (dataFile.getName().endsWith(".zip")) {
+        zipVideoFiles.add(dataFileURL);
+      } else {
+        dataFiles.add(dataFileURL);        
+      }
+
     }
     
     dialog.dispose();
 
     dataFileListModel.clear();
+    if (dataFiles.size() > 0) {
+      ActionFactory.getInstance().getDataImportAction().importData(dataFiles);      
+    }
     
-    ActionFactory.getInstance().getDataImportAction().importData(dataFiles);
+    if (zipVideoFiles.size() > 0) {
+      ActionFactory.getInstance().getJPEGImportAction().importZipVideo(zipVideoFiles);
+    }
+
   }
   
   /**

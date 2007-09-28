@@ -49,11 +49,16 @@ import org.nees.buffalo.rdv.rbnb.RBNBException;
 import org.nees.buffalo.rdv.rbnb.RBNBSource;
 import org.nees.buffalo.rdv.ui.ProgressWindow;
 
+import java.util.List;
 import java.util.zip.ZipInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.zip.ZipEntry;
 /**
  * A class to import a collection of JPEG images into an RBNB server. 
@@ -97,12 +102,17 @@ public class JPEGImportAction extends DataViewerAction {
       return;
     }
     
-    progressWindow = new ProgressWindow("Importing data...");
-    progressWindow.setVisible(true);    
-    
+    startImportThread(directory);
+
+  }
+  
+  private void startImportThread(final File directory) {
+
     new Thread() {
       public void run() {        
         try {
+          progressWindow = new ProgressWindow("Importing directory " + directory.getName());
+          progressWindow.setVisible(true);    
           importDirectory(directory);
         } catch (FileNotFoundException e) {
           // TODO Auto-generated catch block
@@ -129,7 +139,7 @@ public class JPEGImportAction extends DataViewerAction {
       }
     }.start();        
   }
-  
+
   /**
    * Prompt the user for the directory to import the JPEG files from.
    * 
@@ -177,8 +187,10 @@ public class JPEGImportAction extends DataViewerAction {
   
   /** Create a temporary folder to store zip extracted files
    * 
-   * @param zipFile Zip source file to extract
+   * @param  zipFile  the zip file File source to extract files from
    * @return folder containing extracted files
+   * @throws FileNotFoundException
+   * @throws IOException
    */
   private File createZipDirectory(File zipFile) throws FileNotFoundException, IOException {
 
@@ -201,6 +213,64 @@ public class JPEGImportAction extends DataViewerAction {
     
     return zipDir;
   }
+  
+  /**
+   * Create a temporary folder to store zip extracted files
+   * 
+   * @param  zipFile  the zip file URL source to extract files from
+   * @return folder containing extracted files
+   * @throws FileNotFoundException
+   * @throws IOException
+   */
+  private File createZipDirectory(URL zipFile) throws FileNotFoundException, IOException {
+
+    String dirName = getFileName(zipFile);
+    File zipDir = new File(System.getProperty("java.io.tmpdir"), dirName);
+    zipDir.deleteOnExit();
+
+    if (!zipDir.exists()) {
+      zipDir.mkdir();
+    }
+
+    InputStream inputStream = zipFile.openStream();
+    // create a zip input stream for extraction
+    ZipInputStream zipStream = new ZipInputStream(inputStream);
+      
+    createZipDirectory(zipDir, zipStream);
+    
+    // helper to empty and delete the temporary folder
+    deleterThread.add(zipDir);
+    
+    return zipDir;
+  }
+  
+  /**
+   * Gets the name of the file from the URL.
+   * 
+   * @param file  the file URL
+   * @return      the name of the file
+   */
+  private static String getFileName(URL file) {
+    String fileName = file.getPath();
+
+    // fix for annoying NEEScentral links
+    if (fileName.endsWith("/content")) {
+      fileName = fileName.substring(0, fileName.length()-8);
+    }
+    
+    int lastPathIndex = fileName.lastIndexOf('/');
+    if (fileName.length() > lastPathIndex+1) {
+      fileName = fileName.substring(lastPathIndex+1);
+    }
+    
+    // fix for possible non-ascii characters encoded in file name
+    try {
+      fileName = URLDecoder.decode(fileName, "UTF-8");
+    } catch (UnsupportedEncodingException ue) {  }
+    
+    return fileName;    
+  }
+
 
   /** Extract and store the zip files to the destination zip directory
    * 
@@ -209,6 +279,7 @@ public class JPEGImportAction extends DataViewerAction {
    */
   private void createZipDirectory(File zipDirectory, ZipInputStream zipStream) throws IOException {
     
+   
     final int BUFFER = 2048;
     ZipEntry entry;
     BufferedOutputStream dest = null;
@@ -223,7 +294,6 @@ public class JPEGImportAction extends DataViewerAction {
       if (extractedName.indexOf("\\") > 0) {
         extractedName = extractedName.substring((extractedName.lastIndexOf("\\")),  extractedName.length());        
       }
-      
       // write the files to the disk
       OutputStream fos = new FileOutputStream(zipDirectory.getPath() + "/" + extractedName);
       dest = new BufferedOutputStream(fos, BUFFER);
@@ -231,7 +301,7 @@ public class JPEGImportAction extends DataViewerAction {
          dest.write(data, 0, count);
       }
       dest.flush();
-      dest.close();      
+      dest.close();
     }
 
     zipStream.close();
@@ -276,4 +346,23 @@ public class JPEGImportAction extends DataViewerAction {
     
     source.close();
   }
+  
+  /**
+   * Imports URL zip files containing video images to RBNB
+   *  
+   * @param zipURLs list of URL zip files
+   */
+  public void importZipVideo(List<URL> zipURLs) {
+    
+    for (URL zipUrl : zipURLs) {
+      try {
+        final File zipDir = createZipDirectory(zipUrl);
+        startImportThread(zipDir);        
+      } catch (IOException ie) {
+        ie.printStackTrace();
+      }
+
+    }
+  }
+  
 }
