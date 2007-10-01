@@ -225,6 +225,14 @@ public class JPEGImportAction extends DataViewerAction {
   private File createZipDirectory(URL zipFile) throws FileNotFoundException, IOException {
 
     String dirName = getFileName(zipFile);
+    if (dirName.toLowerCase().endsWith(".jpg.zip")) {
+      dirName = dirName.substring(0, dirName.length() - 8);
+    }
+    
+    if (dirName.indexOf("_") > 0) {
+      dirName = dirName.substring(0, dirName.indexOf("_"));
+    }
+    
     File zipDir = new File(System.getProperty("java.io.tmpdir"), dirName);
     zipDir.deleteOnExit();
 
