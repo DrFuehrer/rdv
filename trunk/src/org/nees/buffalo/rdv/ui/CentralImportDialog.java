@@ -598,7 +598,7 @@ public class CentralImportDialog {
       }
 
       URL dataFileURL = centralClient.getDataFileURL(dataFile);
-      if (dataFile.getName().endsWith(".zip")) {
+      if (dataFile.getName().toLowerCase().endsWith(".jpg.zip")) {
         zipVideoFiles.add(dataFileURL);
       } else {
         dataFiles.add(dataFileURL);        
