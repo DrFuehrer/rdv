@@ -49,7 +49,9 @@ import org.nees.buffalo.rdv.rbnb.RBNBException;
 import org.nees.buffalo.rdv.rbnb.RBNBSource;
 import org.nees.buffalo.rdv.ui.ProgressWindow;
 
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -68,6 +70,14 @@ import java.util.zip.ZipEntry;
 public class JPEGImportAction extends DataViewerAction {
   /** the window to show the progress of the import */
   private ProgressWindow progressWindow;
+  
+  private boolean createDirDone;
+  
+  private Object createDirLock = new Object();
+
+  private boolean importDone = true;
+  
+  private Object importLock = new Object();
   
   public JPEGImportAction() {
     super("Import JPEG files",
@@ -109,22 +119,28 @@ public class JPEGImportAction extends DataViewerAction {
   private void startImportThread(final File directory) {
 
     new Thread() {
-      public void run() {        
+      public void run() {
+        
+        synchronized(createDirLock) {
+          if (!createDirDone) {
+            try {
+              createDirLock.wait();
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+          }
+        }
         try {
           progressWindow = new ProgressWindow("Importing directory " + directory.getName());
           progressWindow.setVisible(true);    
           importDirectory(directory);
         } catch (FileNotFoundException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         } catch (ParseException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         } catch (IOException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         } catch (RBNBException e) {
-          // TODO Auto-generated catch block
           e.printStackTrace();
         }
         
@@ -136,8 +152,14 @@ public class JPEGImportAction extends DataViewerAction {
             "Import complete.",
             "Import complete",
             JOptionPane.INFORMATION_MESSAGE);
+        
+        synchronized(importLock) {
+          importDone = true;
+          importLock.notify();
+        }
       }
-    }.start();        
+    }.start();
+    
   }
 
   /**
@@ -177,7 +199,7 @@ public class JPEGImportAction extends DataViewerAction {
           return null;
         }
       }
-      
+      createDirDone = true;
       return directoryChooser.getSelectedFile();
       
     } else {
@@ -185,6 +207,14 @@ public class JPEGImportAction extends DataViewerAction {
     }
   }
   
+  private File createZipDirectory(File zip) throws FileNotFoundException, IOException {
+    
+    ZipFile zipFile = new ZipFile(zip.getPath());
+    
+    return  createZipDirectory(zipFile);
+    
+  }
+
   /** Create a temporary folder to store zip extracted files
    * 
    * @param  zipFile  the zip file File source to extract files from
@@ -192,10 +222,16 @@ public class JPEGImportAction extends DataViewerAction {
    * @throws FileNotFoundException
    * @throws IOException
    */
-  private File createZipDirectory(File zipFile) throws FileNotFoundException, IOException {
+  private File createZipDirectory(ZipFile zipFile) throws FileNotFoundException, IOException {
 
-    String dirName = zipFile.getName().substring(0, zipFile.getName().indexOf("."));
+    createDirDone = false;
     
+    String dirName = zipFile.getName();
+    if (dirName.indexOf("\\") > 0) {
+      dirName = dirName.substring((dirName.lastIndexOf("\\")),  dirName.length());        
+    }
+    dirName = dirName.substring(0, dirName.indexOf("."));
+
     File zipDir = new File(System.getProperty("java.io.tmpdir"), dirName);
     zipDir.deleteOnExit();
 
@@ -204,9 +240,9 @@ public class JPEGImportAction extends DataViewerAction {
     }
 
     // create a zip input stream for extraction
-    ZipInputStream zipStream = new ZipInputStream(new FileInputStream(zipFile));
+//    ZipInputStream zipStream = new ZipInputStream(zipFile);
       
-    createZipDirectory(zipDir, zipStream);
+    createZipDirectory(zipDir, zipFile);
     
     // helper to empty and delete the temporary folder
     deleterThread.add(zipDir);
@@ -222,9 +258,12 @@ public class JPEGImportAction extends DataViewerAction {
    * @throws FileNotFoundException
    * @throws IOException
    */
-  private File createZipDirectory(URL zipFile) throws FileNotFoundException, IOException {
+  private File createZipDirectory(URL zipUrl) throws FileNotFoundException, IOException {
 
-    String dirName = getFileName(zipFile);
+    createDirDone = false;
+
+    String dirName = getFileName(zipUrl);
+
     if (dirName.toLowerCase().endsWith(".jpg.zip")) {
       dirName = dirName.substring(0, dirName.length() - 8);
     }
@@ -240,7 +279,7 @@ public class JPEGImportAction extends DataViewerAction {
       zipDir.mkdir();
     }
 
-    InputStream inputStream = zipFile.openStream();
+    InputStream inputStream = zipUrl.openStream();
     // create a zip input stream for extraction
     ZipInputStream zipStream = new ZipInputStream(inputStream);
       
@@ -252,6 +291,68 @@ public class JPEGImportAction extends DataViewerAction {
     return zipDir;
   }
   
+  
+  /** Extract and store the zip files to the destination zip directory
+   * 
+   * @param zipDirectory directory to store extracted files
+   * @param zipStream zip input stream for reading zip files
+   */
+  private void createZipDirectory(final File zipDirectory, final ZipInputStream zipStream) throws IOException {
+    
+    new Thread() {
+      public void run() {
+        final int BUFFER = 2048;
+        ZipEntry entry;
+        BufferedOutputStream dest = null;
+        String extractedName;
+        
+        progressWindow = new ProgressWindow("extracting files");
+        progressWindow.setVisible(true);
+
+        int nFiles = 1000;
+        int numRead = 0;
+        try {
+          while ((entry = zipStream.getNextEntry()) != null) {
+            int count;
+            byte data[] = new byte[BUFFER];
+            
+            extractedName = entry.getName();
+            // get ride off the zip files' path to make them all in one level 
+            if (extractedName.indexOf("\\") > 0) {
+              extractedName = extractedName.substring((extractedName.lastIndexOf("\\") + 1),  extractedName.length());        
+            }
+            
+            progressWindow.setStatus("extracting file " + extractedName);
+            if (numRead == 1000) numRead = 0; 
+            progressWindow.setProgress((float)++numRead/nFiles);
+
+            // write the files to the disk
+            OutputStream fos = new FileOutputStream(zipDirectory.getPath() + "/" + extractedName);
+            dest = new BufferedOutputStream(fos, BUFFER);
+            while ((count = zipStream.read(data, 0, BUFFER)) != -1) {
+               dest.write(data, 0, count);
+            }
+            dest.flush();
+            dest.close();
+          }
+
+          progressWindow.setProgress(1);
+          progressWindow.dispose();
+          zipStream.close();
+          
+        } catch (IOException ie) {
+          ie.printStackTrace();
+        }
+        
+        synchronized(createDirLock) {
+          createDirDone = true;
+          createDirLock.notify();
+        }
+
+      }
+    }.start();
+    
+  }
   /**
    * Gets the name of the file from the URL.
    * 
@@ -285,34 +386,60 @@ public class JPEGImportAction extends DataViewerAction {
    * @param zipDirectory directory to store extracted files
    * @param zipStream zip input stream for reading zip files
    */
-  private void createZipDirectory(File zipDirectory, ZipInputStream zipStream) throws IOException {
+  private void createZipDirectory(final File zipDirectory, final ZipFile zipFile) throws IOException {
     
-   
-    final int BUFFER = 2048;
-    ZipEntry entry;
-    BufferedOutputStream dest = null;
-    String extractedName;
-    
-    while ((entry = zipStream.getNextEntry()) != null) {
-      int count;
-      byte data[] = new byte[BUFFER];
-      
-      extractedName = entry.getName();
-      // get ride off the zip files' path to make them all in one level 
-      if (extractedName.indexOf("\\") > 0) {
-        extractedName = extractedName.substring((extractedName.lastIndexOf("\\")),  extractedName.length());        
-      }
-      // write the files to the disk
-      OutputStream fos = new FileOutputStream(zipDirectory.getPath() + "/" + extractedName);
-      dest = new BufferedOutputStream(fos, BUFFER);
-      while ((count = zipStream.read(data, 0, BUFFER)) != -1) {
-         dest.write(data, 0, count);
-      }
-      dest.flush();
-      dest.close();
-    }
+    new Thread() {
+      public void run() {
+        
+        final int BUFFER = 2048;
+        ZipEntry entry;
+        BufferedOutputStream dest = null;
+        String extractedName;
+        progressWindow = new ProgressWindow("extracting files");
+        progressWindow.setVisible(true);
+        
+        try {
 
-    zipStream.close();
+          int nFiles = zipFile.size();
+          Enumeration entries = zipFile.entries();
+          
+          int numRead = 0;
+          while (entries.hasMoreElements()) {
+            entry = (ZipEntry)entries.nextElement();
+            int count;
+            byte data[] = new byte[BUFFER];
+            
+            extractedName = entry.getName();
+            // get ride off the zip files' path to make them all in one level 
+            if (extractedName.indexOf("\\") > 0) {
+              extractedName = extractedName.substring((extractedName.lastIndexOf("\\") + 1),  extractedName.length());        
+            }
+            progressWindow.setStatus("extracting file " + extractedName);
+            progressWindow.setProgress((float)++numRead/nFiles);
+            // write the files to the disk
+            OutputStream fos = new FileOutputStream(zipDirectory.getPath() + "/" + extractedName);
+            dest = new BufferedOutputStream(fos, BUFFER);
+            InputStream inStream = zipFile.getInputStream(entry);
+            while ((count = inStream.read(data, 0, BUFFER)) != -1) {
+               dest.write(data, 0, count);
+            }
+            dest.flush();
+            dest.close();
+          }
+          progressWindow.setProgress(1);
+          zipFile.close();
+        } catch (IOException ioe) {
+          ioe.printStackTrace();
+        }
+        progressWindow.dispose();
+        
+        synchronized(createDirLock) {
+          createDirDone = true;
+          createDirLock.notify();
+        }
+      }
+    }.start();
+    
   }
 
   /**
@@ -362,14 +489,29 @@ public class JPEGImportAction extends DataViewerAction {
    */
   public void importZipVideo(List<URL> zipURLs) {
     
-    for (URL zipUrl : zipURLs) {
-      try {
-        final File zipDir = createZipDirectory(zipUrl);
-        startImportThread(zipDir);        
-      } catch (IOException ie) {
-        ie.printStackTrace();
-      }
-
+    for (final URL zipUrl : zipURLs) {
+      new Thread() {
+        public void run() {
+          try {
+            synchronized(importLock) {
+              if (!importDone) {
+                try {
+                  importLock.wait();
+                } catch (Exception e) {
+                  e.printStackTrace();
+                }
+              }
+            }
+            importDone = false;
+            final File zipDir = createZipDirectory(zipUrl);
+            startImportThread(zipDir);        
+          } catch (IOException ie) {
+            ie.printStackTrace();
+          }
+          
+        }
+      }.start();
+      
     }
   }
   
