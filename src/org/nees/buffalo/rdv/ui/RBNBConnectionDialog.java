@@ -37,6 +37,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -153,6 +155,15 @@ public class RBNBConnectionDialog extends JDialog {
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new Insets(0,0,10,10);
+    rbnbPortTextField.addFocusListener(
+      new FocusListener() {
+        public void focusGained(FocusEvent focusEvent) {
+          rbnbPortTextField.setSelectionStart(0);
+          rbnbPortTextField.setSelectionEnd(rbnbPortTextField.getText().length());
+        }
+        public void focusLost(FocusEvent focusEvent){}     
+      }
+    );
     container.add(rbnbPortTextField, c);
 		
 		JPanel buttonPanel = new JPanel();
