@@ -317,11 +317,9 @@ public class JPEGImportAction extends DataViewerAction {
             byte data[] = new byte[BUFFER];
             
             extractedName = entry.getName();
-            // get ride off the zip files' path to make them all in one level 
-            if (extractedName.indexOf("\\") > 0) {
-              extractedName = extractedName.substring((extractedName.lastIndexOf("\\") + 1),  extractedName.length());        
-            }
-            
+            // get ride off the zip files' path to make them all in one level
+            extractedName = stripFilePath(extractedName);
+
             progressWindow.setStatus("extracting file " + extractedName);
             if (numRead == 1000) numRead = 0; 
             progressWindow.setProgress((float)++numRead/nFiles);
@@ -352,6 +350,18 @@ public class JPEGImportAction extends DataViewerAction {
       }
     }.start();
     
+  }
+  
+  private String stripFilePath(String fileName) {
+    if (fileName.indexOf("\\") > 0) {
+      fileName = fileName.substring((fileName.lastIndexOf("\\") + 1),  fileName.length());        
+    }
+    
+    if (fileName.indexOf("/") > 0) {
+      fileName = fileName.substring((fileName.lastIndexOf("/") + 1),  fileName.length());
+    }    
+    
+    return fileName;
   }
   /**
    * Gets the name of the file from the URL.
@@ -410,10 +420,9 @@ public class JPEGImportAction extends DataViewerAction {
             byte data[] = new byte[BUFFER];
             
             extractedName = entry.getName();
-            // get ride off the zip files' path to make them all in one level 
-            if (extractedName.indexOf("\\") > 0) {
-              extractedName = extractedName.substring((extractedName.lastIndexOf("\\") + 1),  extractedName.length());        
-            }
+            // get ride off the zip files' path to make them all in one level
+            extractedName = stripFilePath(extractedName);
+
             progressWindow.setStatus("extracting file " + extractedName);
             progressWindow.setProgress((float)++numRead/nFiles);
             // write the files to the disk
