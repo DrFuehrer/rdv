@@ -130,7 +130,7 @@ public class RBNBConnectionDialog extends JDialog {
     c.insets = new Insets(10,10,10,5);
     container.add(rbnbHostNameLabel, c);
 		
-		rbnbHostNameTextField = new JTextField(rbnb.getRBNBHostName(), 25);
+		rbnbHostNameTextField = new JTextField(25);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
@@ -148,7 +148,7 @@ public class RBNBConnectionDialog extends JDialog {
     c.insets = new Insets(0,10,10,5);
     container.add(rbnbPortLabel, c);
 
-		rbnbPortTextField = new JTextField(Integer.toString(rbnb.getRBNBPortNumber()));
+		rbnbPortTextField = new JTextField();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
@@ -206,6 +206,8 @@ public class RBNBConnectionDialog extends JDialog {
 	
 	public void setVisible(boolean visible) {
 		if (visible) {
+      rbnbHostNameTextField.setText(rbnb.getRBNBHostName());
+      rbnbPortTextField.setText(Integer.toString(rbnb.getRBNBPortNumber()));
 			rbnbHostNameTextField.requestFocusInWindow();
 	 		rbnbHostNameTextField.setSelectionStart(0);
 	 		rbnbHostNameTextField.setSelectionEnd(rbnbHostNameTextField.getText().length());			
