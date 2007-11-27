@@ -58,13 +58,6 @@
 		</fileset>
 	</path>
 	
-	<!-- define ant-contrib tasks -->
-	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
-		<classpath>
-			<pathelement location="ant/ant-contrib.jar"/>
-		</classpath>
-	</taskdef>
-	
 	<!-- JAXB task -->
 	<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
 	  <classpath>
@@ -81,42 +74,12 @@
 		<fail message="LAUNCH4J_HOME must be defined in your environment."/>
 	</target>
 	
-	<!-- target to make temp dirs -->
-	<target name="prepare" description="Make directories">
-		<exec executable="svnversion" outputproperty="svn.revision" failifexecutionfails="false">
-			<arg value="."/>
-		</exec>
-		
-		<property file="build.properties"/>
-		
-		<if>
-			<not>
-				<equals arg1="${svn.revision}" arg2="${build.revision}"/>
-			</not>
-			<then>
-				<property file="build.properties"/>
-				<propertyfile file="build.properties">
-					<entry key="build.revision" value="${svn.revision}"/>
-					<entry key="build.timestamp"
-						type="date"
-						pattern="yyyy-MM-dd'T'HH:mm:ss"
-						value="now"/>
-					<entry key="build.username" value="${user.name}"/>
-					<entry key="build.os" value="${os.name}"/>
-					<entry key="build.os.version" value="${os.version}"/>
-					<entry key="build.arch" value="${os.arch}"/>
-				</propertyfile>
-			</then>
-		</if>		
-	</target>
-	
 	<target name="clean" description="Remove all generated files">
 		<delete dir="${build.dir}"/>
-		<delete file="build.properties"/>
 		<delete dir="${src.data.dir}"/>
 	</target>
 
-	<target name="generate" depends="prepare" description="Generate source files">
+	<target name="generate" description="Generate source files">
 		<mkdir dir="${src.data.dir}"/>
 		
 		<xjc schema="${schema.file}"
@@ -155,7 +118,6 @@
 			<fileset dir="${build.classes}"/>
 			<fileset dir="." includes="${ui.dir}/**"/>
 			<fileset file="version.properties"/>
-			<fileset file="build.properties"/>
 			<fileset file="rdv.properties"/>
 			<fileset file="LICENSE"/>
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>

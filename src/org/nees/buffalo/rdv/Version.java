@@ -91,13 +91,9 @@ public final class Version {
 			Properties versionProperties = new Properties();
 			versionProperties.load(DataViewer.getResourceAsStream("version.properties"));
 			
-			Properties buildProperties = new Properties();
-			buildProperties.load(DataViewer.getResourceAsStream("build.properties"));
-			
 			major = Integer.parseInt(versionProperties.getProperty("version.major"));
 			minor = Integer.parseInt(versionProperties.getProperty("version.minor"));
 			release = Integer.parseInt(versionProperties.getProperty("version.release"));
-			build = buildProperties.getProperty("build.revision");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
