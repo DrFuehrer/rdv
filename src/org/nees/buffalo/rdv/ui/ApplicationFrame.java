@@ -140,10 +140,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action loadAction;
   private Action saveAction;
   private Action importAction;
-  protected Action exportAction; 
+  private Action exportAction; 
  	private Action exitAction;
- 	protected Action exportVideoAction;
-  protected Action exportDataAction;
+ 	private Action exportVideoAction;
+  private Action exportDataAction;
   
  	private Action controlAction;
  	private DataViewerAction realTimeAction;
@@ -616,9 +616,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     menuItem = new JMenuItem(actionFactory.getDataImportAction());
     importSubMenu.add(menuItem);
     
-    menuItem = new JMenuItem(actionFactory.getOpenSeesDataImportAction());
-    importSubMenu.add(menuItem);
-    
     menuItem = new JMenuItem(actionFactory.getJPEGImportAction());
     importSubMenu.add(menuItem);
     
@@ -636,10 +633,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
     menuItem = new JMenuItem(exportVideoAction);
     exportSubMenu.add(menuItem);
-    
-    exportAction.setEnabled(false);
-    exportVideoAction.setEnabled(false);
-    exportDataAction.setEnabled(false);
     
     fileMenu.add(exportSubMenu);
 
@@ -995,10 +988,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
   public void showExportVideoDialog() {
     List channels = channelListPanel.getSelectedChannels();
-    if (channels.size() == 0) {
-      JOptionPane.showMessageDialog(this, "No video channel(s) selected!", "video export", JOptionPane.ERROR_MESSAGE);
-      return;
-    }
     showExportVideoDialog(channels);
   }
   
@@ -1140,7 +1129,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       boolean offline = rbnb.getRBNBHostName().equals("localhost");
       saveAction.setEnabled(!offline);
       importAction.setEnabled(offline);
- 
+      
+      exportAction.setEnabled(true);
+
       controlPanel.setEnabled(true);
       markerSubmitPanel.setEnabled(true);
     }

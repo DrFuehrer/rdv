@@ -142,14 +142,10 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
         int size = node.getSize();
         Channel channelMetadata = (Channel)rbnb.getChannel(channel);
         String unit = channelMetadata.getMetadata("units");
-        String description = channelMetadata.getMetadata("description");
 
         s.append("<strong>" + channel + "</strong>");
         if (unit != null) {
           s.append(" (" + unit + ")");
-        }
-        if (description != null) {
-          s.append("<br>" + description);
         }
         
         if (mime != null) {
