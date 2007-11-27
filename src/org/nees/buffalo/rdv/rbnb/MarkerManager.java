@@ -137,7 +137,7 @@ public class MarkerManager implements DataListener {
    */
   public void putMarker(EventMarker eventMarker) throws Exception {    
     DataTurbine markerSource = new DataTurbine (rbnbSourceName);
-    markerSource.setServerName(rbnbController.getRBNBConnectionString());
+    markerSource.setServerName(rbnbController.getRBNBHostName());
     markerSource.open();
     markerSource.putMarker(eventMarker, rbnbChannel);
     markerSource.closeAndKeep();

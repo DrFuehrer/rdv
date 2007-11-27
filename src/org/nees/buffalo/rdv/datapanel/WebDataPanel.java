@@ -40,7 +40,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -61,7 +60,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 
-import org.nees.audio.AudioPlayer;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.video.VLCLauncher;
@@ -461,36 +459,6 @@ public class WebDataPanel extends AbstractDataPanel {
     try {
       if (location.startsWith("udp")) {
         VLCLauncher.launchVLC(location.toString());
-      } else if (location.startsWith("http://")){
-        boolean isAudio = false;
-        
-        // see if this is a icecast/shoutcast stream
-        try {
-          URL url = new URL (location);
-          URLConnection connection = url.openConnection();
-          
-          String contentType = connection.getHeaderField("Content-Type");
-          
-          // detect icecast streams by content type
-          if (contentType != null && contentType.compareToIgnoreCase("audio/mpeg") == 0) {
-            isAudio = true;
-          } else {
-            // detect shoutcast streams - they start with ICY
-            byte[] buffer = new byte[3];
-            connection.getInputStream().read(buffer);
-            connection.getInputStream().close();
-            String protocol = new String(buffer);
-            if (protocol.compareToIgnoreCase("ICY") == 0) {
-              isAudio = true;
-            }
-          }
-        } catch (Exception e) {} // ignore all exceptions in audio stream detection
-        
-        if (isAudio) {
-          AudioPlayer.getInstance().setURL(new URL(location));
-        } else {        
-          DataViewer.browse(new URL(location));
-        }
       } else {
         DataViewer.browse(new URL(location));
       }

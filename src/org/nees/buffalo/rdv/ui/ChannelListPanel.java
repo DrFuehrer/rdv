@@ -312,56 +312,8 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
 	 			}
 	 		}
     }
-    
-    if (newChannelTree == null)
-      return;
-    enableExportMenu(newChannelTree);
 	}
   
-  /**
-   * method to enable export menu as well as exportVideo or exportData menu(s)
-   * @param newChannelTree left ChannelTree of all channels
-   */
-  private void enableExportMenu(ChannelTree newChannelTree) {
-    
-    Iterator it = newChannelTree.iterator();
-    while (it.hasNext()) {
-      
-      if (frame.exportAction.isEnabled() && frame.exportDataAction.isEnabled()
-          && frame.exportVideoAction.isEnabled()) {
-        return;
-      }
-
-      ChannelTree.Node node = (ChannelTree.Node)it.next();
-      NodeTypeEnum type = node.getType();
-      if (type == ChannelTree.SOURCE) {
-        frame.exportAction.setEnabled(true);
-
-        List<ChannelTree.Node> channels = node.getChildren();
-        
-        if (!frame.exportDataAction.isEnabled()) {
-          for (ChannelTree.Node c : channels) {
-            if (c.getMime() == null || c.getMime().equals("application/octet-stream")) {
-              this.frame.exportDataAction.setEnabled(true);
-              break;
-            }
-          }
-        }
-        
-        if (!frame.exportVideoAction.isEnabled()) {
-          for (ChannelTree.Node c : channels) {
-            if (c.getMime() == null) { // find a test for video/jpeg mime types
-              this.frame.exportVideoAction.setEnabled(true);
-              break;
-            }
-          }
-        }
-
-      }
-    }
-    
-  }
-
   private class FilterPropertyChangeListener implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent pce) {
       if (!pce.getPropertyName().equals("filter")) {

@@ -21,7 +21,5 @@
 	<classpathentry kind="lib" path="lib/swixml.jar"/>
 	<classpathentry kind="lib" path="lib/rbnb.jar"/>
 	<classpathentry kind="lib" path="lib/bzip2.jar"/>
-	<classpathentry kind="lib" path="lib/jl1.0.jar"/>
-	<classpathentry kind="lib" path="lib/mp3spi1.9.4.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
