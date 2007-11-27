@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +75,6 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.audio.AudioPlayer;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
@@ -87,10 +85,8 @@ import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
-import org.nees.buffalo.rdv.rbnb.RBNBHelper;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
-import org.nees.buffalo.rdv.rbnb.TimeRange;
 import org.swixml.SwingEngine;
 
 import com.jgoodies.looks.HeaderStyle;
@@ -124,7 +120,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JSplitPane leftPanel;
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
-  private AudioPlayerPanel audioPlayerPanel;
   private MarkerSubmitPanel markerSubmitPanel;
 	private DataPanelContainer dataPanelContainer;
  	private JSplitPane splitPane;
@@ -140,11 +135,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action loadAction;
   private Action saveAction;
   private Action importAction;
-  protected Action exportAction; 
+  private Action exportAction; 
  	private Action exitAction;
- 	protected Action exportVideoAction;
-  protected Action exportDataAction;
-  
+ 	
  	private Action controlAction;
  	private DataViewerAction realTimeAction;
  	private DataViewerAction playAction;
@@ -159,7 +152,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action showChannelListAction;
   private Action showMetadataPanelAction;
  	private Action showControlPanelAction;
-  private Action showAudioPlayerPanelAction;
   private Action showMarkerPanelAction;
  	private Action dataPanelAction;
  	private Action dataPanelHorizontalLayoutAction;
@@ -236,7 +228,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		initRightPanel();
 		initControls();         
 		initDataPanelContainer();
-    initAudioPlayerPanel();
     initMarkerSubmitPanel();    
     
 		initSplitPane();
@@ -352,20 +343,12 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
     importAction = new DataViewerAction("Import", "Import Menu", KeyEvent.VK_I, "icons/import.gif");
     
-    exportAction = new DataViewerAction("Export", "Export Menu", KeyEvent.VK_E, "icons/export.gif");
-
-    exportVideoAction = new DataViewerAction("Export video channels", "Export video on server to local computer") {
-      public void actionPerformed(ActionEvent ae) {
-        showExportVideoDialog();
-      }
-    };
- 
-    exportDataAction = new DataViewerAction("Export data channels", "Export data on server to local computer") {
+    exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
       public void actionPerformed(ActionEvent ae) {
         showExportDialog();
       }
     };
-
+ 
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X) {
  			public void actionPerformed(ActionEvent ae) {
  				dataViewer.exit();
@@ -404,13 +387,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
 
- 		gotoTimeAction = new DataViewerAction("Go to time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask)) {
+ 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask)) {
  			public void actionPerformed(ActionEvent ae) {
-        TimeRange timeRange = RBNBHelper.getChannelsTimeRange();
- 			  double time = DateTimeDialog.showDialog(frame, rbnb.getLocation(), timeRange.start, timeRange.end);
-        if (time >= 0) {
-          rbnb.setLocation(time);
-        }
+ 			  new JumpDateTimeDialog(frame, rbnb);
  			}			
  		};
  
@@ -453,14 +432,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				controlPanel.setVisible(menuItem.isSelected());
  			}			
  		};
-
-    showAudioPlayerPanelAction = new DataViewerAction ("Show Audio Player", "", KeyEvent.VK_A, "icons/audio.gif") {
-      public void actionPerformed (ActionEvent ae) {
-        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
-        audioPlayerPanel.setVisible(menuItem.isSelected());
-      }
-    };    
-    
+ 
     showMarkerPanelAction = new DataViewerAction ("Show Marker Panel", "", KeyEvent.VK_M, "icons/info.gif") {
       public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
@@ -527,9 +499,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     usersGuideAction = new DataViewerAction("RDV Help", "Open the RDV User's Guide", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0)) {
       public void actionPerformed(ActionEvent ae) {
         try {
-          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-17-users-guide.php");
+          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-15-users-guide.php");
           DataViewer.browse(usersGuideURL);
-        } catch (Exception e) {}        
+        } catch (MalformedURLException e) {}        
       }
     };
     
@@ -538,7 +510,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         try {
           URL supportURL = new URL("http://it.nees.org/support/");
           DataViewer.browse(supportURL);
-        } catch (Exception e) {}        
+        } catch (MalformedURLException e) {}        
       }
     };    
     
@@ -547,7 +519,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         try {
           URL releaseNotesURL = new URL("http://it.nees.org/library/rdv/rdv-release-notes.php");
           DataViewer.browse(releaseNotesURL);
-        } catch (Exception e) {}
+        } catch (MalformedURLException e) {}
       }
     };
     
@@ -616,32 +588,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     menuItem = new JMenuItem(actionFactory.getDataImportAction());
     importSubMenu.add(menuItem);
     
-    menuItem = new JMenuItem(actionFactory.getOpenSeesDataImportAction());
-    importSubMenu.add(menuItem);
-    
     menuItem = new JMenuItem(actionFactory.getJPEGImportAction());
-    importSubMenu.add(menuItem);
-    
-    importSubMenu.addSeparator();
-    
-    menuItem = new JMenuItem(actionFactory.getCentralImportAction());
     importSubMenu.add(menuItem);
     
     fileMenu.add(importSubMenu);
 
-    JMenu exportSubMenu = new JMenu(exportAction);
-    
-    menuItem = new JMenuItem(exportDataAction);
-    exportSubMenu.add(menuItem);
-    
-    menuItem = new JMenuItem(exportVideoAction);
-    exportSubMenu.add(menuItem);
-    
-    exportAction.setEnabled(false);
-    exportVideoAction.setEnabled(false);
-    exportDataAction.setEnabled(false);
-    
-    fileMenu.add(exportSubMenu);
+    menuItem = new JMenuItem(exportAction);
+    fileMenu.add(menuItem);
 
  		fileMenu.addSeparator();
  		
@@ -712,10 +665,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem = new JCheckBoxMenuItem(showControlPanelAction);
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
-    
-    menuItem = new JCheckBoxMenuItem(showAudioPlayerPanelAction);
-    menuItem.setSelected(false);
-    viewMenu.add(menuItem);
  		
     menuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
     menuItem.setSelected(true);
@@ -795,11 +744,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     helpMenu.addSeparator();
 
  		menuItem = new JMenuItem(aboutAction);
-  	helpMenu.add(menuItem);		
+  		helpMenu.add(menuItem);		
   		
-  	menuBar.add(helpMenu);
-
-    menuBar.add(Box.createHorizontalGlue());
+  		menuBar.add(helpMenu);
+      
+      menuBar.add(Box.createHorizontalGlue());
     throbberStop = DataViewer.getIcon("icons/throbber.png");
     throbberAnim = DataViewer.getIcon("icons/throbber_anim.gif");
     throbber = new JLabel(throbberStop);
@@ -865,25 +814,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		log.info("Added data panel container.");
 	}
-  
-  private void initAudioPlayerPanel() {
-    audioPlayerPanel = new AudioPlayerPanel();
-    audioPlayerPanel.setVisible(false);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 0;
-    c.weighty = 0;
-    c.gridx = 0;
-    c.gridy = 2;
-    c.gridwidth = 2;
-    c.gridheight = 1;
-    c.ipadx = 0;
-    c.ipady = 0;
-    c.insets = new java.awt.Insets (0, 0, 8, 6);
-    c.anchor = GridBagConstraints.SOUTHWEST;        
-    rightPanel.add (audioPlayerPanel, c);
-    
-    log.info ("Added Audio Player Panel.");
-  }
 
   private void initMarkerSubmitPanel() {
 	  markerSubmitPanel = new MarkerSubmitPanel(rbnb);
@@ -891,7 +821,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.weightx = 0;
 		c.weighty = 0;
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 2;
 		c.gridwidth = 2;
 		c.gridheight = 1;
 		c.ipadx = 0;
@@ -992,20 +922,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	public void postStatus(String statusMessage) {
 		JOptionPane.showMessageDialog(this, statusMessage, "Status", JOptionPane.INFORMATION_MESSAGE);
 	}
-
-  public void showExportVideoDialog() {
-    List channels = channelListPanel.getSelectedChannels();
-    if (channels.size() == 0) {
-      JOptionPane.showMessageDialog(this, "No video channel(s) selected!", "video export", JOptionPane.ERROR_MESSAGE);
-      return;
-    }
-    showExportVideoDialog(channels);
-  }
-  
-  public void showExportVideoDialog(List channels) {
-    new ExportVideoDialog(frame, rbnb, channels);
-  }
-
   
   public void showExportDialog() {
     List channels = channelListPanel.getSelectedChannels();
@@ -1140,7 +1056,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       boolean offline = rbnb.getRBNBHostName().equals("localhost");
       saveAction.setEnabled(!offline);
       importAction.setEnabled(offline);
- 
+      
+      exportAction.setEnabled(true);
+
       controlPanel.setEnabled(true);
       markerSubmitPanel.setEnabled(true);
     }

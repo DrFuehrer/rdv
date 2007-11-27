@@ -49,6 +49,9 @@ import org.swixml.SwingEngine;
  *
  */
 public class CentralImportAction extends DataViewerAction {
+  /** the central import dialog */
+  private CentralImportDialog dialog;
+  
   /**
    * Creates the central import action.
    */
@@ -73,6 +76,10 @@ public class CentralImportAction extends DataViewerAction {
       }
     }
     
-    new CentralImportDialog();
+    if (dialog == null) {
+      dialog = new CentralImportDialog();
+    } else {
+      dialog.setVisible(true);
+    }
   }
 }

@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,14 +141,10 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
         int size = node.getSize();
         Channel channelMetadata = (Channel)rbnb.getChannel(channel);
         String unit = channelMetadata.getMetadata("units");
-        String description = channelMetadata.getMetadata("description");
 
         s.append("<strong>" + channel + "</strong>");
         if (unit != null) {
           s.append(" (" + unit + ")");
-        }
-        if (description != null) {
-          s.append("<br>" + description);
         }
         
         if (mime != null) {

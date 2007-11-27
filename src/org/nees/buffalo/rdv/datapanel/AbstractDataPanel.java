@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,7 +84,6 @@ import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
 import org.nees.buffalo.rdv.rbnb.TimeScaleListener;
-import org.nees.buffalo.rdv.ui.ChannelListDataFlavor;
 import org.nees.buffalo.rdv.ui.DataPanelContainer;
 import org.nees.buffalo.rdv.ui.ScrollablePopupMenu;
 import org.nees.buffalo.rdv.ui.ToolBarButton;
@@ -924,22 +922,27 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 		try {
       int dropAction = e.getDropAction();
       if (dropAction == DnDConstants.ACTION_LINK) {
-  			DataFlavor channelListDataFlavor = new ChannelListDataFlavor();
+  			DataFlavor stringFlavor = DataFlavor.stringFlavor;
   			Transferable tr = e.getTransferable();
-  			if(e.isDataFlavorSupported(channelListDataFlavor)) {
+  			if(e.isDataFlavorSupported(stringFlavor)) {
           e.acceptDrop(DnDConstants.ACTION_LINK);
           e.dropComplete(true);
 
-  				final List<String> channels = (List<String>)tr.getTransferData(channelListDataFlavor);
+  				final String channels = (String)tr.getTransferData(stringFlavor);
           
           new Thread() {
             public void run() {
-              for (String channel : channels) {
+              String delim = ",";
+              String[] tokens = channels.split(delim);
+              String channelName = "";
+              for (int i = 0; i < tokens.length; i++) {
+                channelName = tokens[i];
+        
                 boolean status;
                 if (supportsMultipleChannels()) {
-                  status = addChannel(channel);
+                  status = addChannel(channelName);
                 } else {
-                  status = setChannel(channel);
+                  status = setChannel(channelName);
                 }
                 
                 if (!status) {

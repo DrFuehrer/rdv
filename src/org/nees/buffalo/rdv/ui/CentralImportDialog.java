@@ -68,7 +68,6 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 
-import org.nees.buffalo.rdv.AppProperties;
 import org.nees.buffalo.rdv.action.ActionFactory;
 import org.nees.buffalo.rdv.auth.Authentication;
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
@@ -83,8 +82,6 @@ import org.nees.data.Repetition;
 import org.nees.data.Trial;
 import org.swixml.SwingEngine;
 
-import java.net.URLEncoder;
-import java.io.UnsupportedEncodingException;
 /**
  * A dialog to browse NEEScentral and select data files to import.
  * 
@@ -254,9 +251,6 @@ public class CentralImportDialog {
     }
     
     centralClient = new CentralClient(session);
-    
-    String centralHostName = AppProperties.getProperty("central.hostname", "central.nees.org");
-    centralClient.setHostname(centralHostName);
   }
   
   /**
@@ -339,7 +333,15 @@ public class CentralImportDialog {
       return;
     }
     
-    for (Experiment experiment : project.getExperiment()) {
+    List<Experiment> experiments;
+    try {
+      experiments = centralClient.getExperiments(project.getId());
+    } catch (CentralException e) {
+      handleCentralException(e);
+      return;
+    }
+    
+    for (Experiment experiment : experiments) {
       int experimentId = experiment.getId();
       
       try {
@@ -370,7 +372,15 @@ public class CentralImportDialog {
       return;
     }
     
-    for (Trial trial : experiment.getTrial()) {
+    List<Trial> trials;
+    try {
+      trials = centralClient.getTrials(project.getId(), experiment.getId());
+    } catch (CentralException e) {
+      handleCentralException(e);
+      return;
+    }
+    
+    for (Trial trial : trials) {
       int trialId = trial.getId();
       
       try {
@@ -402,7 +412,15 @@ public class CentralImportDialog {
       return;
     }
     
-    for (Repetition repetition : trial.getRepetition()) {
+    List<Repetition> repetitions;
+    try {
+      repetitions = centralClient.getRepetitions(project.getId(), experiment.getId(), trial.getId());
+    } catch (CentralException e) {
+      handleCentralException(e);
+      return;
+    }
+    
+    for (Repetition repetition : repetitions) {
       int repetitionId = repetition.getId();
       
       try {
@@ -446,14 +464,7 @@ public class CentralImportDialog {
   private void updateDataFiles(List<DataFile> dataFiles) {
     for (DataFile dataFile : dataFiles) {
       try {
-        String link = dataFile.getLink();
-        try {
-          link = URLEncoder.encode(link, "UTF-8"); // encode all non-ascii
-          link = link.replaceAll("%2F", "/");      // decode back the slash for calling REST
-        } catch (UnsupportedEncodingException ue) {
-          continue;
-        }
-        dataFile = centralClient.getDataFile(link);
+        dataFile = centralClient.getDataFile(dataFile.getLink());
       } catch (CentralException e) {
         handleCentralException(e);
         continue;
@@ -581,7 +592,6 @@ public class CentralImportDialog {
    */
   private void startImport() {
     List<URL> dataFiles = new ArrayList<URL>();
-    List<URL> zipVideoFiles = new ArrayList<URL>();
     
     DefaultListModel dataFileListModel = (DefaultListModel)dataFileList.getModel();
     if (dataFileListModel.getSize() == 0) {
@@ -590,33 +600,15 @@ public class CentralImportDialog {
     
     for (int i=0; i<dataFileListModel.getSize(); i++) {
       DataFile dataFile = (DataFile)dataFileListModel.getElementAt(i);
-      try {
-        dataFile.setContentLink(URLEncoder.encode(dataFile.getContentLink(), "UTF-8"));
-        dataFile.setContentLink(dataFile.getContentLink().replaceAll("%2F", "/"));
-      } catch (UnsupportedEncodingException ue) {
-        continue;
-      }
-
       URL dataFileURL = centralClient.getDataFileURL(dataFile);
-      if (dataFile.getName().toLowerCase().endsWith(".jpg.zip")) {
-        zipVideoFiles.add(dataFileURL);
-      } else {
-        dataFiles.add(dataFileURL);        
-      }
-
+      dataFiles.add(dataFileURL);
     }
     
     dialog.dispose();
 
     dataFileListModel.clear();
-    if (dataFiles.size() > 0) {
-      ActionFactory.getInstance().getDataImportAction().importData(dataFiles);      
-    }
     
-    if (zipVideoFiles.size() > 0) {
-      ActionFactory.getInstance().getJPEGImportAction().importZipVideo(zipVideoFiles);
-    }
-
+    ActionFactory.getInstance().getDataImportAction().importData(dataFiles);
   }
   
   /**

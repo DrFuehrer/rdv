@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,7 +79,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
-import org.nees.buffalo.rdv.ui.ChannelListDataFlavor;
 
 /**
  * A Data Panel extension to display numeric data in a tabular form. Maximum and
@@ -637,9 +635,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 		try {
 			int dropAction = e.getDropAction();
 			if (dropAction == DnDConstants.ACTION_LINK) {
-        DataFlavor channelListDataFlavor = new ChannelListDataFlavor();
+				DataFlavor stringFlavor = DataFlavor.stringFlavor;
 				Transferable tr = e.getTransferable();
-				if (e.isDataFlavorSupported(channelListDataFlavor)) {
+				if (e.isDataFlavorSupported(stringFlavor)) {
 					e.acceptDrop(DnDConstants.ACTION_LINK);
 					e.dropComplete(true);
 
@@ -652,16 +650,22 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 																// component
 					final int tableNum = (int) (clickX * columnGroupCount / compWidth);
 
-					final List<String> channels = (List<String>)tr.getTransferData(channelListDataFlavor);
+					final String channels = (String) tr
+							.getTransferData(stringFlavor);
 
 					new Thread() {
 						public void run() {
-							for (String channel : channels) {
+							String delim = ",";
+							String[] tokens = channels.split(delim);
+							String channelName = "";
+							for (int i = 0; i < tokens.length; i++) {
+								channelName = tokens[i];
+
 								boolean status;
 								if (supportsMultipleChannels()) {
-									status = addChannel(channel, tableNum);
+									status = addChannel(channelName, tableNum);
 								} else {
-									status = setChannel(channel);
+									status = setChannel(channelName);
 								}
 
 								if (!status) {

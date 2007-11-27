@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +23,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL$
- * $Revision$
- * $Date$
- * $Author$
+ * $URL: https://svn.nees.org/svn/telepresence/RDV/trunk/src/org/nees/buffalo/rdv/ui/RBNBConnectionDialog.java $
+ * $Revision: 1602 $
+ * $Date: 2006-05-11 09:34:42 -0700 (Thu, 11 May 2006) $
+ * $Author: jphanley $
  */
 
 package org.nees.buffalo.rdv.ui;
@@ -55,7 +54,6 @@ import javax.swing.KeyStroke;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.AppProperties;
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.auth.GridAuthentication;
 
@@ -220,9 +218,7 @@ public class LoginDialog extends JDialog {
 		String username = userNameTextField.getText();
 		String password = new String(userPasswordField.getPassword());
     
-    String centralHostName = AppProperties.getProperty("central.hostname", "central.nees.org");
-		GridAuthentication authentication = new GridAuthentication(centralHostName);
-    
+		GridAuthentication authentication = new GridAuthentication();
 		if (authentication.login(username, password)) {
       AuthenticationManager.getInstance().setAuthentication(authentication);
       

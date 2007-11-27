@@ -3,8 +3,8 @@
  * Real-time Data Viewer
  * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL$
- * $Revision$
- * $Date$
- * $Author$
+ * $URL: https://jphanley@svn.nees.org/svn/telepresence/RDV/branches/marker/src/org/nees/buffalo/rdv/rbnb/MarkerDataListener.java $
+ * $Revision: 2983 $
+ * $Date: 2006-07-20 12:44:22 -0400 (Thu, 20 Jul 2006) $
+ * $Author: jphanley $
  */
 
 package org.nees.buffalo.rdv.rbnb;

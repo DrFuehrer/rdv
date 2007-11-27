@@ -52,9 +52,6 @@ import org.nees.buffalo.rdv.rbnb.RBNBException;
 import org.nees.buffalo.rdv.rbnb.RBNBSource;
 import org.nees.buffalo.rdv.ui.ProgressWindow;
 
-import java.net.URLDecoder;
-import java.io.UnsupportedEncodingException;
-
 /**
  * An action to import data files.
  * 
@@ -71,11 +68,6 @@ public class DataImportAction extends DataViewerAction {
   public DataImportAction() {
     super("Import data file",
           "Import local data to RBNB server");
-  }
-  
-  /** constructor with generic parameters */
-  public DataImportAction(String text, String desc) {
-    super(text, desc);
   }
   
   /**
@@ -295,7 +287,7 @@ public class DataImportAction extends DataViewerAction {
    */
   private static String getFileName(URL file) {
     String fileName = file.getPath();
-
+    
     // fix for annoying NEEScentral links
     if (fileName.endsWith("/content")) {
       fileName = fileName.substring(0, fileName.length()-8);
@@ -305,11 +297,6 @@ public class DataImportAction extends DataViewerAction {
     if (fileName.length() > lastPathIndex+1) {
       fileName = fileName.substring(lastPathIndex+1);
     }
-    
-    // fix for possible non-ascii characters encoded in file name
-    try {
-      fileName = URLDecoder.decode(fileName, "UTF-8");
-    } catch (UnsupportedEncodingException ue) {  }
     
     return fileName;    
   }

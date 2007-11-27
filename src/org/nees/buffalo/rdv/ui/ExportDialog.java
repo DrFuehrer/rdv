@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +31,8 @@
 
 package org.nees.buffalo.rdv.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -44,7 +41,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -97,11 +93,8 @@ public class ExportDialog extends JDialog implements ProgressListener {
   RBNBExport export;
   boolean exporting;
   
-  JButton startTimeButton;
-  JLabel durationLabel;
-  JButton endTimeButton;
-  
   TimeSlider timeSlider;
+  JLabel timeRangeLabel;
   
   JList numericChannelList;
   DefaultListModel numericChannelModel;
@@ -180,56 +173,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.insets = new java.awt.Insets(0,0,0,0);    
     container.add(headerLabel, c);
     
-    JPanel timeButtonPanel = new JPanel();
-    timeButtonPanel.setLayout(new BorderLayout());
-    
-    MouseListener hoverMouseListener = new MouseAdapter() {
-      public void mouseEntered(MouseEvent e) {
-        e.getComponent().setForeground(Color.red);
-      }
-      public void mouseExited(MouseEvent e) {
-        e.getComponent().setForeground(Color.blue);
-      }
-    };
-    
-    startTimeButton = new JButton();
-    startTimeButton.setBorder(null);
-    startTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    startTimeButton.setForeground(Color.blue);
-    startTimeButton.addMouseListener(hoverMouseListener);
-    startTimeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        double startTime = DateTimeDialog.showDialog(ExportDialog.this, 
-            timeSlider.getStart(),
-            timeSlider.getMinimum(), timeSlider.getEnd());
-        if (startTime >= 0) {
-          timeSlider.setStart(startTime);
-        }
-      }      
-    });
-    timeButtonPanel.add(startTimeButton, BorderLayout.WEST);
-    
-    durationLabel = new JLabel();
-    durationLabel.setHorizontalAlignment(JLabel.CENTER);
-    timeButtonPanel.add(durationLabel, BorderLayout.CENTER);
-    
-    endTimeButton = new JButton();
-    endTimeButton.setBorder(null);
-    endTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    endTimeButton.setForeground(Color.blue);
-    endTimeButton.addMouseListener(hoverMouseListener);
-    endTimeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        double endTime = DateTimeDialog.showDialog(ExportDialog.this,
-            timeSlider.getEnd(),
-            timeSlider.getStart(), timeSlider.getMaximum());
-        if (endTime >= 0) {
-          timeSlider.setEnd(endTime);
-        }
-      }      
-    });
-    timeButtonPanel.add(endTimeButton, BorderLayout.EAST);
-    
+    timeRangeLabel = new JLabel();
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 0;
     c.gridx = 0;
@@ -237,7 +181,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.gridwidth = GridBagConstraints.REMAINDER;
     c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new java.awt.Insets(10,10,10,10);
-    container.add(timeButtonPanel, c);    
+    container.add(timeRangeLabel, c);    
     
     timeSlider = new TimeSlider();
     timeSlider.setValueChangeable(false);
@@ -403,8 +347,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
   }
   
   private void disableUI() {
-    startTimeButton.setEnabled(false);
-    endTimeButton.setEnabled(false);
     numericChannelList.setEnabled(false);
     dataFileTextField.setEnabled(false);
     dataFileButton.setEnabled(false);
@@ -412,8 +354,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
   }
   
   private void enableUI() {
-    startTimeButton.setEnabled(true);
-    endTimeButton.setEnabled(true);
     numericChannelList.setEnabled(true);
     dataFileTextField.setEnabled(true);
     dataFileButton.setEnabled(true);
@@ -456,9 +396,10 @@ public class ExportDialog extends JDialog implements ProgressListener {
     double end = timeSlider.getEnd();
     double duration = end-start;
     
-    startTimeButton.setText(DataViewer.formatDate(start));
-    durationLabel.setText(DataViewer.formatSeconds(duration));
-    endTimeButton.setText(DataViewer.formatDate(end));
+    timeRangeLabel.setText("Export data from " + 
+        DataViewer.formatDate(start) + " to " +
+        DataViewer.formatDate(end)+
+        " (" + DataViewer.formatSeconds(duration) + ")");
   }
   
   private List<String> getSelectedChannels() {

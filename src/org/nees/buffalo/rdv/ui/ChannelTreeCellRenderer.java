@@ -1,7 +1,7 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
  * Copyright (c) 2005-2007 University at Buffalo
  * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center

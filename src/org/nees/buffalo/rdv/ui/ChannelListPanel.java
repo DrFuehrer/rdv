@@ -1,7 +1,7 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
  * Copyright (c) 2005-2007 University at Buffalo
  * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
@@ -36,6 +36,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.datatransfer.StringSelection;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
@@ -312,56 +313,8 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
 	 			}
 	 		}
     }
-    
-    if (newChannelTree == null)
-      return;
-    enableExportMenu(newChannelTree);
 	}
   
-  /**
-   * method to enable export menu as well as exportVideo or exportData menu(s)
-   * @param newChannelTree left ChannelTree of all channels
-   */
-  private void enableExportMenu(ChannelTree newChannelTree) {
-    
-    Iterator it = newChannelTree.iterator();
-    while (it.hasNext()) {
-      
-      if (frame.exportAction.isEnabled() && frame.exportDataAction.isEnabled()
-          && frame.exportVideoAction.isEnabled()) {
-        return;
-      }
-
-      ChannelTree.Node node = (ChannelTree.Node)it.next();
-      NodeTypeEnum type = node.getType();
-      if (type == ChannelTree.SOURCE) {
-        frame.exportAction.setEnabled(true);
-
-        List<ChannelTree.Node> channels = node.getChildren();
-        
-        if (!frame.exportDataAction.isEnabled()) {
-          for (ChannelTree.Node c : channels) {
-            if (c.getMime() == null || c.getMime().equals("application/octet-stream")) {
-              this.frame.exportDataAction.setEnabled(true);
-              break;
-            }
-          }
-        }
-        
-        if (!frame.exportVideoAction.isEnabled()) {
-          for (ChannelTree.Node c : channels) {
-            if (c.getMime() == null) { // find a test for video/jpeg mime types
-              this.frame.exportVideoAction.setEnabled(true);
-              break;
-            }
-          }
-        }
-
-      }
-    }
-    
-  }
-
   private class FilterPropertyChangeListener implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent pce) {
       if (!pce.getPropertyName().equals("filter")) {
@@ -382,8 +335,8 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     }    
   }
   
-  public List<String> getSelectedChannels() {
-    ArrayList<String> selectedChannels = new ArrayList<String>();
+  public List getSelectedChannels() {
+    ArrayList selectedChannels = new ArrayList();
     
     TreePath[] selectedPaths = tree.getSelectionPaths();
     if (selectedPaths != null) {
@@ -490,13 +443,21 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
   }
   
 	public Transferable createChannelsTransferable() {
-    List<String> channels = getSelectedChannels();
+    List channels = getSelectedChannels();
     
     if (channels.size() == 0) {
       return null;
     }
     
-    return new ChannelListTransferable(channels); 
+    String selectedChannels = "";
+    for (int i=0; i<channels.size(); i++) {
+      selectedChannels += channels.get(i);
+      if (i < channels.size()-1) {
+        selectedChannels += ",";
+      }
+    }
+
+    return new StringSelection(selectedChannels); 
   }
   
   private class ChannelTransferHandler extends TransferHandler {
