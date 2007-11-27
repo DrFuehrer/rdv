@@ -35,15 +35,6 @@
 			<mimeType>text/plain</mimeType>
 		</mimeTypes>
 	</extension>
-<!--	
-	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel</id>
-		<name>Spectrum Analyzer Data Panel</name>
-		<mimeTypes>
-			<mimeType>application/octet-stream</mimeType>
-		</mimeTypes>
-	</extension>
--->	
 	<!--extension>
 		<id>org.nees.buffalo.rdv.datapanel.AudioDataPanel</id>
 		<name>Audio Data Panel</name>
