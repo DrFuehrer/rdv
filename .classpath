@@ -16,8 +16,6 @@
 	<classpathentry kind="lib" path="lib/jaxb-api.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-impl.jar"/>
 	<classpathentry kind="lib" path="lib/jsr173_1.0_api.jar"/>
-	<classpathentry kind="lib" path="lib/jdom.jar"/>
-	<classpathentry kind="lib" path="lib/swixml.jar"/>
 	<classpathentry kind="lib" path="lib/rbnb.jar"/>
 	<classpathentry kind="lib" path="lib/jl1.0.jar"/>
 	<classpathentry kind="lib" path="lib/mp3spi1.9.4.jar"/>

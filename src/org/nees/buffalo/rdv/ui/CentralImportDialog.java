@@ -32,6 +32,10 @@
 
 package org.nees.buffalo.rdv.ui;
 
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -52,12 +56,16 @@ import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
@@ -81,7 +89,6 @@ import org.nees.data.ObjectFactory;
 import org.nees.data.Project;
 import org.nees.data.Repetition;
 import org.nees.data.Trial;
-import org.swixml.SwingEngine;
 
 import java.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
@@ -90,10 +97,7 @@ import java.io.UnsupportedEncodingException;
  * 
  * @author Jason P. Hanley
  */
-public class CentralImportDialog {
-  /** the dialog */
-  private JDialog dialog;
-  
+public class CentralImportDialog extends JDialog {
   /** the NEEScentral tree mode */
   private CentralTreeModel centralTreeModel;
   
@@ -119,6 +123,8 @@ public class CentralImportDialog {
    * Creates the NEEScentral import dialog.
    */
   public CentralImportDialog() {
+    super();
+    
     populatedTreePaths = new ArrayList<TreePath>();
     
     setupUI();
@@ -130,19 +136,87 @@ public class CentralImportDialog {
    * Setup the UI components.
    */
   private void setupUI() {
-    try {
-      new SwingEngine(this).render("ui/CentralImportDialog.xml");
-    } catch (Exception e) {
-      e.printStackTrace();
-      return;
-    }
+    setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+    setTitle("NEEScentral Import");
+    
+    JPanel container = new JPanel();
+    setContentPane(container);
+
+    container.setLayout(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+    c.weightx = 0;
+    c.weighty = 0;
+    c.gridwidth = 1;
+    c.gridheight = 1;
+    c.ipadx = 0;
+    c.ipady = 0;
+    c.anchor = GridBagConstraints.NORTHEAST;
+
+    JLabel headerLabel = new JLabel("Import data from NEEScentral into RDV.");
+    headerLabel.setBackground(Color.white);
+    headerLabel.setOpaque(true);
+    headerLabel.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createMatteBorder(0,0,1,0,Color.gray),
+        BorderFactory.createEmptyBorder(10,10,10,10)));    
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.gridx = 0;
+    c.gridy = 0;
+    c.insets = new java.awt.Insets(0,0,0,0);    
+    container.add(headerLabel, c);
     
     setupCentralTree();
-    setupDataFileList();
-    setupButtons();
     
-    dialog.setLocationByPlatform(true);
-    dialog.setVisible(true);    
+    JScrollPane centralTreeScrollPane = new JScrollPane(centralTree);
+    c.fill = GridBagConstraints.BOTH;
+    c.weightx = 1;
+    c.weighty = 1;
+    c.gridx = 0;
+    c.gridy = 1;
+    c.insets = new java.awt.Insets(10,10,10,10);
+    container.add(centralTreeScrollPane, c);
+    
+    JLabel dataFileListLabel = new JLabel("Files to import:");
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1;
+    c.weighty = 0;
+    c.gridx = 0;
+    c.gridy = 2;
+    c.insets = new java.awt.Insets(0,10,10,10);
+    container.add(dataFileListLabel, c);
+    
+    setupDataFileList();
+    
+    JScrollPane dataFileListScrollPane = new JScrollPane(dataFileList);
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.gridx = 0;
+    c.gridy = 3;
+    c.insets = new java.awt.Insets(0,10,10,10);
+    container.add(dataFileListScrollPane, c);    
+    
+    setupButtons();    
+    
+    JPanel panel = new JPanel();
+    panel.setLayout(new FlowLayout());
+    panel.add(importButton);
+    panel.add(cancelButton);
+    
+    c.fill = GridBagConstraints.NONE;
+    c.gridx = 0;
+    c.gridy = 4;
+    c.anchor = GridBagConstraints.LINE_END;
+    c.insets = new java.awt.Insets(0,0,10,5);
+    container.add(panel, c);
+    
+    pack();
+    if (getWidth() < 600) {
+      setSize(600, getHeight());
+    }
+
+    centralTree.requestFocusInWindow();
+    
+    setLocationByPlatform(true);
+    setVisible(true);    
   }
   
   /**
@@ -152,7 +226,12 @@ public class CentralImportDialog {
     Central central = new ObjectFactory().createCentral();
     
     centralTreeModel = new CentralTreeModel(central);
-    centralTree.setModel(centralTreeModel);
+    
+    centralTree = new JTree(centralTreeModel);
+    centralTree.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+    centralTree.setRootVisible(false);
+    centralTree.setShowsRootHandles(true);
+    centralTree.setVisibleRowCount(12);
     centralTree.setDragEnabled(true);
     centralTree.setTransferHandler(new TreeDataFileTransferHandler());    
     centralTree.setCellRenderer(new CentralTreeCellRenderer());
@@ -174,8 +253,10 @@ public class CentralImportDialog {
   /**
    * Setup the data file list UI component.
    */
-  private void setupDataFileList() {    
-    dataFileList.setModel(new DefaultListModel());
+  private void setupDataFileList() {
+    dataFileList = new JList(new DefaultListModel());
+    dataFileList.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+    dataFileList.setVisibleRowCount(10);
     dataFileList.setCellRenderer(new CentralDataFileListCellRenderer());
     
     dataFileList.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "deleteDataFile");
@@ -198,26 +279,20 @@ public class CentralImportDialog {
    * Setup the import and cancel buttons.
    */
   private void setupButtons() {
+    importButton = new JButton("Import");
+    importButton.setEnabled(false);
     importButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
         startImport();
       }
     });
     
+    cancelButton = new JButton("Canel");
     cancelButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
-        dialog.dispose();
+        dispose();
       }
     });
-  }
-  
-  /**
-   * Sets the visibility of the dialog.
-   * 
-   * @param visible  if true the dialog is visible, othwise it is not visible
-   */
-  public void setVisible(boolean visible) {
-    dialog.setVisible(visible);
   }
   
   /**
@@ -500,7 +575,7 @@ public class CentralImportDialog {
    * @param e  the exception to handle
    */
   private void handleCentralException(CentralException e) {
-    JOptionPane.showMessageDialog(dialog, e.getMessage(), "NEEScentral Error",
+    JOptionPane.showMessageDialog(this, e.getMessage(), "NEEScentral Error",
                                   JOptionPane.ERROR_MESSAGE);
   }
   
@@ -606,7 +681,7 @@ public class CentralImportDialog {
 
     }
     
-    dialog.dispose();
+    dispose();
 
     dataFileListModel.clear();
     if (dataFiles.size() > 0) {

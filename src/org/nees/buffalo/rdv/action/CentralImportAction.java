@@ -40,7 +40,6 @@ import javax.swing.JOptionPane;
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.ui.CentralImportDialog;
 import org.nees.buffalo.rdv.ui.LoginDialog;
-import org.swixml.SwingEngine;
 
 /**
  * An action to import data from NEEScentral into RDV.
@@ -62,14 +61,14 @@ public class CentralImportAction extends DataViewerAction {
    */
   public void actionPerformed(ActionEvent ae) {
     if (AuthenticationManager.getInstance().getAuthentication() == null) {
-      int ret = JOptionPane.showConfirmDialog(SwingEngine.getAppFrame(),
+      int ret = JOptionPane.showConfirmDialog(null,
         "To access protected files, you must be logged in to NEEScentral.\n" +
         "Do you want to login now?",
         "Login to NEEScentral?",
         JOptionPane.YES_NO_OPTION,
         JOptionPane.WARNING_MESSAGE);
       if (ret == JOptionPane.YES_OPTION) {
-        new LoginDialog((JFrame)SwingEngine.getAppFrame());
+        new LoginDialog(null);
       }
     }
     
