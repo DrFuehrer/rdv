@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,26 +32,21 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -70,28 +64,19 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.MenuEvent;
-import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.audio.AudioPlayer;
 import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
-import org.nees.buffalo.rdv.action.ActionFactory;
-import org.nees.buffalo.rdv.action.DataViewerAction;
-import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.ConnectionListener;
 import org.nees.buffalo.rdv.rbnb.MessageListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
-import org.nees.buffalo.rdv.rbnb.RBNBHelper;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
-import org.nees.buffalo.rdv.rbnb.TimeRange;
-import org.swixml.SwingEngine;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -124,8 +109,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private JSplitPane leftPanel;
 	private JPanel rightPanel;
 	private ControlPanel controlPanel;
-  private AudioPlayerPanel audioPlayerPanel;
-  private MarkerSubmitPanel markerSubmitPanel;
+	private StatusPanel statusPanel;
 	private DataPanelContainer dataPanelContainer;
  	private JSplitPane splitPane;
  	
@@ -139,19 +123,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action logoutAction;
   private Action loadAction;
   private Action saveAction;
-  private Action importAction;
-  protected Action exportAction; 
+ 	private Action importAction;
+  private Action exportAction;
  	private Action exitAction;
- 	protected Action exportVideoAction;
-  protected Action exportDataAction;
-  
+ 	
  	private Action controlAction;
- 	private DataViewerAction realTimeAction;
- 	private DataViewerAction playAction;
- 	private DataViewerAction pauseAction;
+ 	private Action realTimeAction;
+ 	private Action playAction;
+ 	private Action pauseAction;
  	private Action beginningAction;
  	private Action endAction;
-  private Action gotoTimeAction;
  	private Action updateChannelListAction;
  	private Action dropDataAction;
  	
@@ -159,32 +140,24 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private Action showChannelListAction;
   private Action showMetadataPanelAction;
  	private Action showControlPanelAction;
-  private Action showAudioPlayerPanelAction;
-  private Action showMarkerPanelAction;
+ 	private Action showStatusPanelAction;
  	private Action dataPanelAction;
  	private Action dataPanelHorizontalLayoutAction;
  	private Action dataPanelVerticalLayoutAction;
  	private Action showHiddenChannelsAction;
-  private Action hideEmptyTimeAction;
  	private Action fullScreenAction;
  	
  	private Action windowAction;
  	private Action closeAllDataPanelsAction;
-  
  	private Action helpAction;
-  private Action usersGuideAction;
-  private Action supportAction;
-  private Action releaseNotesAction;
  	private Action aboutAction;
   
   private JLabel throbber;
   private Icon throbberStop;
   private Icon throbberAnim;
   
-  private final Object loadingMonitor = new Object();
-  
-  /** the key mask used for menus shortucts */
-  private final int menuShortcutKeyMask;
+  private Action gotoTimeAction;
+  private JumpDateTimeDialog jumpDateTimeDialog;
  		
 	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager, boolean isApplet) {
 		super();
@@ -195,17 +168,12 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 		busyDialog = null;
 		loadingDialog = null;
-    
-    // set the menu shortcut key mask in a platform independent way
-    menuShortcutKeyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		
 		initFrame(isApplet);
 	}
 	
 	private void initFrame(boolean isApplet) {
 		frame = this;
-    
-    SwingEngine.setAppFrame(frame);
 
 		if (!isApplet) {
 			frame.addWindowListener(new WindowAdapter() {
@@ -217,7 +185,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
 			frame.getContentPane().setLayout(new BorderLayout());
 
-			frame.setBounds(0, 0, 900, 675);
+			frame.setBounds(0, 0, 800, 600);
 
 			frame.setIconImage(DataViewer.getImage("icons/RDV.gif"));
 
@@ -234,10 +202,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		initLeftPanel();
     
 		initRightPanel();
-		initControls();         
-		initDataPanelContainer();
-    initAudioPlayerPanel();
-    initMarkerSubmitPanel();    
+		initControls();    
+		initDataPanelContainer();		
+		initStatus();
     
 		initSplitPane();
     
@@ -246,8 +213,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		rbnb.addSubscriptionListener(controlPanel);
 		
 		rbnb.addTimeListener(controlPanel);
+		rbnb.addTimeListener(statusPanel);
 		
 		rbnb.addStateListener(channelListPanel);
+		rbnb.addStateListener(statusPanel);
 		rbnb.addStateListener(controlPanel);
     rbnb.addStateListener(this);
 
@@ -255,11 +224,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     rbnb.getMetadataManager().addMetadataListener(metadataPanel);
 		rbnb.getMetadataManager().addMetadataListener(controlPanel);
 		
-		rbnb.addPlaybackRateListener(controlPanel);
+		rbnb.addPlaybackRateListener(statusPanel);
 		
+  	rbnb.addTimeScaleListener(statusPanel);
+  	
   	rbnb.addMessageListener(this);
   	
-  	rbnb.addConnectionListener(this);
+  	rbnb.addConnectionListener(this);        
 
 		if (!isApplet) { 
       frame.setLocationByPlatform(true);
@@ -270,7 +241,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	private void initActions() {
  		fileAction = new DataViewerAction("File", "File Menu", KeyEvent.VK_F);
  		
- 		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, menuShortcutKeyMask|ActionEvent.SHIFT_MASK)) {
+ 		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				if (rbnbConnectionDialog == null) {
  					rbnbConnectionDialog = new RBNBConnectionDialog(frame, rbnb, dataPanelManager);
@@ -280,26 +251,26 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		};
  		
- 		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, menuShortcutKeyMask|ActionEvent.SHIFT_MASK)) {
+ 		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK|ActionEvent.SHIFT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();
  				rbnb.disconnect();
  			}			
  		};
 
- 		loginAction = new DataViewerAction("Login", "Login as a NEES user") {
+ 		loginAction = new DataViewerAction("Login NEES", "Login as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
  				if (loginDialog == null) {
- 					loginDialog = new LoginDialog(frame);
+ 					loginDialog = new LoginDialog(frame, dataPanelManager);
  				} else {
  					loginDialog.setVisible(true);
  				}			
  			}			
  		};
  		
- 		logoutAction = new DataViewerAction("Logout", "Logout as a NEES user") {
+ 		logoutAction = new DataViewerAction("Logout NEES", "Logout as a NEES user") {
  			public void actionPerformed(ActionEvent ae) {
-       AuthenticationManager.getInstance().setAuthentication(null);
+ 				dataPanelManager.setAuth(null);
  			}			
  		};
  		 		
@@ -311,13 +282,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         chooser.setApproveButtonToolTipText("Load selected file");
         int returnVal = chooser.showOpenDialog(frame);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
-          File configFile = chooser.getSelectedFile();
-          try {            
-            URL configURL = configFile.toURL();
-            dataViewer.getConfigurationManager().loadConfiguration(configURL);
-          } catch (MalformedURLException e) {
-            dataViewer.alertError("\"" + configFile + "\" is not a valid configuration file URL.");
-          }            
+          dataViewer.getConfigurationManager().loadConfiguration(chooser.getSelectedFile());
         }
       }     
     };
@@ -350,23 +315,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       }     
     };    
 
-    importAction = new DataViewerAction("Import", "Import Menu", KeyEvent.VK_I, "icons/import.gif");
-    
-    exportAction = new DataViewerAction("Export", "Export Menu", KeyEvent.VK_E, "icons/export.gif");
-
-    exportVideoAction = new DataViewerAction("Export video channels", "Export video on server to local computer") {
-      public void actionPerformed(ActionEvent ae) {
-        showExportVideoDialog();
-      }
-    };
- 
-    exportDataAction = new DataViewerAction("Export data channels", "Export data on server to local computer") {
+ 		importAction = new DataViewerAction("Import Data", "Import local data to RBNB server", KeyEvent.VK_I, "icons/import.gif") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				showImportDialog();
+ 			}			
+ 		};
+        
+    exportAction = new DataViewerAction("Export Data", "Export data on server to local computer", KeyEvent.VK_E, "icons/export.gif") {
       public void actionPerformed(ActionEvent ae) {
         showExportDialog();
       }
     };
-
- 		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X) {
+ 
+ 		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X, KeyStroke.getKeyStroke(KeyEvent.VK_F4, ActionEvent.ALT_MASK)) {
  			public void actionPerformed(ActionEvent ae) {
  				dataViewer.exit();
  			}			
@@ -374,43 +335,44 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		controlAction = new DataViewerAction("Control", "Control Menu", KeyEvent.VK_C);
  
- 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, menuShortcutKeyMask), "icons/rt.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+ 		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, ActionEvent.CTRL_MASK), "icons/rt.gif") {
+ 			public void actionPerformed(ActionEvent ae) {       
  				rbnb.monitor();
  			}			
  		};
  		
- 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, menuShortcutKeyMask), "icons/play.gif") {
+ 		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.play();
  			}			
  		};
  
- 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask), "icons/pause.gif") {
+ 		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK), "icons/play.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				rbnb.pause();
  			}			
  		};
  
- 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_B, menuShortcutKeyMask), "icons/begin.gif") {
+ 		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
 				controlPanel.setLocationBegin();
  			}			
  		};
  
- 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, menuShortcutKeyMask), "icons/end.gif") {
+ 		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK), "icons/end.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				controlPanel.setLocationEnd();
  			}			
  		};
 
- 		gotoTimeAction = new DataViewerAction("Go to time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask)) {
+ 		gotoTimeAction = new DataViewerAction("Go to Time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK), "icons/begin.gif") {
  			public void actionPerformed(ActionEvent ae) {
-        TimeRange timeRange = RBNBHelper.getChannelsTimeRange();
- 			  double time = DateTimeDialog.showDialog(frame, rbnb.getLocation(), timeRange.start, timeRange.end);
-        if (time >= 0) {
-          rbnb.setLocation(time);
-        }
+ 				
+// 				if (jumpDateTimeDialog == null) {
+ 					jumpDateTimeDialog = new JumpDateTimeDialog(frame, rbnb, dataPanelManager);
+// 				} else {
+// 					jumpDateTimeDialog.setVisible(true);
+// 				}	
  			}			
  		};
  
@@ -433,7 +395,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
         channelListPanel.setVisible(menuItem.isSelected());
-        layoutSplitPane();
         leftPanel.resetToPreferredSizes();
  			}			
  		};
@@ -442,7 +403,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       public void actionPerformed(ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
         metadataPanel.setVisible(menuItem.isSelected());
-        layoutSplitPane();
         leftPanel.resetToPreferredSizes();
       }     
     };    
@@ -453,23 +413,20 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  				controlPanel.setVisible(menuItem.isSelected());
  			}			
  		};
+ 
+ 		showStatusPanelAction = new DataViewerAction("Show Status Panel", "", KeyEvent.VK_S, "icons/info.gif") {
+ 			public void actionPerformed(ActionEvent ae) {
+ 				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
+ 				statusPanel.setVisible(menuItem.isSelected());
+ 			}			
+ 		};
 
-    showAudioPlayerPanelAction = new DataViewerAction ("Show Audio Player", "", KeyEvent.VK_A, "icons/audio.gif") {
-      public void actionPerformed (ActionEvent ae) {
-        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
-        audioPlayerPanel.setVisible(menuItem.isSelected());
-      }
-    };    
-    
-    showMarkerPanelAction = new DataViewerAction ("Show Marker Panel", "", KeyEvent.VK_M, "icons/info.gif") {
-      public void actionPerformed (ActionEvent ae) {
-        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
-        markerSubmitPanel.setVisible(menuItem.isSelected ());
-      }
-    };
-
+    // changed the name of this to "arrange" - more for case 4719
  		dataPanelAction = new DataViewerAction("Arrange", "Arrange Data Panel Orientation", KeyEvent.VK_D);
  		
+     /* Display the data panels horizontally.
+      * LJM exchanged HORIZONTAL and VERTICAL to invert semantics to apply to the
+      * windows theselves, rather than their arrangement for case 4719 */
 		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Data Panel Orientation", "", -1, "icons/vertical.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.VERTICAL_LAYOUT);
@@ -482,21 +439,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  			}			
  		}; 		
  		
- 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_H, menuShortcutKeyMask), "icons/hidden.gif") {
+ 		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H, "icons/hidden.gif") {
  			public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				boolean selected = menuItem.isSelected();
  				channelListPanel.showHiddenChannels(selected);
  			}			
  		};
-    
-    hideEmptyTimeAction = new DataViewerAction("Hide time with no data", "", KeyEvent.VK_D) {
-      public void actionPerformed(ActionEvent ae) {
-        JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
-        boolean selected = menuItem.isSelected();
-        controlPanel.hideEmptyTime(selected);
-      }     
-    };    
 
  		fullScreenAction = new DataViewerAction("Full Screen", "", KeyEvent.VK_F, KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)) {
  			public void actionPerformed(ActionEvent ae) {
@@ -523,34 +472,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
  		
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
-    
-    usersGuideAction = new DataViewerAction("RDV Help", "Open the RDV User's Guide", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0)) {
-      public void actionPerformed(ActionEvent ae) {
-        try {
-          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-17-users-guide.php");
-          DataViewer.browse(usersGuideURL);
-        } catch (Exception e) {}        
-      }
-    };
-    
-    supportAction = new DataViewerAction("RDV Support", "Get support from NEESit", KeyEvent.VK_S) {
-      public void actionPerformed(ActionEvent ae) {
-        try {
-          URL supportURL = new URL("http://it.nees.org/support/");
-          DataViewer.browse(supportURL);
-        } catch (Exception e) {}        
-      }
-    };    
-    
-    releaseNotesAction = new DataViewerAction("Release Notes", "Open the RDV Release Notes", KeyEvent.VK_R) {
-      public void actionPerformed(ActionEvent ae) {
-        try {
-          URL releaseNotesURL = new URL("http://it.nees.org/library/rdv/rdv-release-notes.php");
-          DataViewer.browse(releaseNotesURL);
-        } catch (Exception e) {}
-      }
-    };
-    
+ 
  		aboutAction = new DataViewerAction("About RDV", "", KeyEvent.VK_A) {
  			public void actionPerformed(ActionEvent ae) {
  				if (aboutDialog == null) {
@@ -564,8 +486,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  	}
  	
   private void initMenuBar() {
-    ActionFactory actionFactory = ActionFactory.getInstance();
-    
   	menuBar = new JMenuBar();
     menuBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.SINGLE);
   
@@ -586,20 +506,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		
  		menuItem = new JMenuItem(logoutAction);
  		fileMenu.add(menuItem);
-    
-    fileMenu.addMenuListener(new MenuListener() {
-      public void menuCanceled(MenuEvent arg0) {}
-      public void menuDeselected(MenuEvent arg0) {}
-      public void menuSelected(MenuEvent arg0) {
-        if (AuthenticationManager.getInstance().getAuthentication() == null) {
-          loginAction.setEnabled(true);
-          logoutAction.setEnabled(false);
-        } else {
-          loginAction.setEnabled(false);
-          logoutAction.setEnabled(true);
-        }
-      }      
-    });
  		
  		fileMenu.addSeparator();
     
@@ -610,44 +516,16 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     fileMenu.add(menuItem);
     
     fileMenu.addSeparator();
-    
-    JMenu importSubMenu = new JMenu(importAction);
  		
-    menuItem = new JMenuItem(actionFactory.getDataImportAction());
-    importSubMenu.add(menuItem);
-    
-    menuItem = new JMenuItem(actionFactory.getOpenSeesDataImportAction());
-    importSubMenu.add(menuItem);
-    
-    menuItem = new JMenuItem(actionFactory.getJPEGImportAction());
-    importSubMenu.add(menuItem);
-    
-    importSubMenu.addSeparator();
-    
-    menuItem = new JMenuItem(actionFactory.getCentralImportAction());
-    importSubMenu.add(menuItem);
-    
-    fileMenu.add(importSubMenu);
+    menuItem = new JMenuItem(importAction);
+ 		// LJM 060413 - this function disabled for the 1.3 release
+    // fileMenu.add(menuItem);
 
-    JMenu exportSubMenu = new JMenu(exportAction);
-    
-    menuItem = new JMenuItem(exportDataAction);
-    exportSubMenu.add(menuItem);
-    
-    menuItem = new JMenuItem(exportVideoAction);
-    exportSubMenu.add(menuItem);
-    
-    exportAction.setEnabled(false);
-    exportVideoAction.setEnabled(false);
-    exportDataAction.setEnabled(false);
-    
-    fileMenu.add(exportSubMenu);
+    menuItem = new JMenuItem(exportAction);
+    fileMenu.add(menuItem);
 
  		fileMenu.addSeparator();
  		
-    menuItem = new DataViewerCheckBoxMenuItem(actionFactory.getOfflineAction());
-    fileMenu.add(menuItem);    
-    
  		menuItem = new JMenuItem(exitAction);
   	fileMenu.add(menuItem);
   		
@@ -655,25 +533,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   		
  		JMenu controlMenu = new JMenu(controlAction);
  
- 		menuItem = new SelectedCheckBoxMenuItem(realTimeAction);
+ 		menuItem = new JMenuItem(realTimeAction);
  		controlMenu.add(menuItem);
  		
- 		menuItem = new SelectedCheckBoxMenuItem(playAction);
+ 		menuItem = new JMenuItem(playAction);
  		controlMenu.add(menuItem);
  		
- 		menuItem = new SelectedCheckBoxMenuItem(pauseAction);
+ 		menuItem = new JMenuItem(pauseAction);
  		controlMenu.add(menuItem);
-    
-    controlMenu.addMenuListener(new MenuListener() {
-      public void menuCanceled(MenuEvent arg0) {}
-      public void menuDeselected(MenuEvent arg0) {}
-      public void menuSelected(MenuEvent arg0) {
-        int state = rbnb.getState();
-        realTimeAction.setSelected(state == Player.STATE_MONITORING);
-        playAction.setSelected(state == Player.STATE_PLAYING);
-        pauseAction.setSelected(state == Player.STATE_STOPPED);
-      }      
-    });    
  		
  		controlMenu.addSeparator();
  
@@ -712,24 +579,15 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		menuItem = new JCheckBoxMenuItem(showControlPanelAction);
  		menuItem.setSelected(true);
  		viewMenu.add(menuItem);
-    
-    menuItem = new JCheckBoxMenuItem(showAudioPlayerPanelAction);
-    menuItem.setSelected(false);
-    viewMenu.add(menuItem);
  		
-    menuItem = new JCheckBoxMenuItem (showMarkerPanelAction);
-    menuItem.setSelected(true);
-    viewMenu.add(menuItem);
- 		
+ 		menuItem = new JCheckBoxMenuItem(showStatusPanelAction);
+ 		menuItem.setSelected(true);
+ 		viewMenu.add(menuItem);
  		viewMenu.addSeparator();
     
     menuItem = new JCheckBoxMenuItem(showHiddenChannelsAction);
  		menuItem.setSelected(false);
  		viewMenu.add(menuItem);
-    
-    menuItem = new JCheckBoxMenuItem(hideEmptyTimeAction);
-    menuItem.setSelected(false);
-    viewMenu.add(menuItem);    
 
  		viewMenu.addSeparator();
  		
@@ -783,23 +641,12 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
  		JMenu helpMenu = new JMenu(helpAction);
     
-    menuItem = new JMenuItem(usersGuideAction);
-    helpMenu.add(menuItem);
-    
-    menuItem = new JMenuItem(supportAction);
-    helpMenu.add(menuItem);    
-
-    menuItem = new JMenuItem(releaseNotesAction);
-    helpMenu.add(menuItem);
-    
-    helpMenu.addSeparator();
-
  		menuItem = new JMenuItem(aboutAction);
-  	helpMenu.add(menuItem);		
+  		helpMenu.add(menuItem);		
   		
-  	menuBar.add(helpMenu);
-
-    menuBar.add(Box.createHorizontalGlue());
+  		menuBar.add(helpMenu);
+      
+      menuBar.add(Box.createHorizontalGlue());
     throbberStop = DataViewer.getIcon("icons/throbber.png");
     throbberAnim = DataViewer.getIcon("icons/throbber_anim.gif");
     throbber = new JLabel(throbberStop);
@@ -842,7 +689,18 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 	private void initControls() {
 		controlPanel = new ControlPanel(rbnb);
-    frame.getContentPane().add(controlPanel, BorderLayout.NORTH);
+		c.fill = GridBagConstraints.HORIZONTAL;
+		c.weightx = 1;
+		c.weighty = 0;
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		c.gridheight = 1;
+		c.ipadx = 0;
+		c.ipady = 0;
+		c.insets = new java.awt.Insets(8,0,0,8);
+		c.anchor = GridBagConstraints.NORTHWEST;
+		rightPanel.add(controlPanel, c);
 		
 		log.info("Added control panel.");
 	}
@@ -859,50 +717,31 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets(8,0,8,6);
+		c.insets = new java.awt.Insets(8,0,8,8);
 		c.anchor = GridBagConstraints.NORTHWEST;
 		rightPanel.add(dataPanelContainer, c);
 		
 		log.info("Added data panel container.");
 	}
-  
-  private void initAudioPlayerPanel() {
-    audioPlayerPanel = new AudioPlayerPanel();
-    audioPlayerPanel.setVisible(false);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 0;
-    c.weighty = 0;
-    c.gridx = 0;
-    c.gridy = 2;
-    c.gridwidth = 2;
-    c.gridheight = 1;
-    c.ipadx = 0;
-    c.ipady = 0;
-    c.insets = new java.awt.Insets (0, 0, 8, 6);
-    c.anchor = GridBagConstraints.SOUTHWEST;        
-    rightPanel.add (audioPlayerPanel, c);
-    
-    log.info ("Added Audio Player Panel.");
-  }
-
-  private void initMarkerSubmitPanel() {
-	  markerSubmitPanel = new MarkerSubmitPanel(rbnb);
+   
+	private void initStatus() {
+		statusPanel = new StatusPanel();
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 0;
+		c.weightx = 1;
 		c.weighty = 0;
 		c.gridx = 0;
 		c.gridy = 3;
-		c.gridwidth = 2;
+		c.gridwidth = 1;
 		c.gridheight = 1;
 		c.ipadx = 0;
 		c.ipady = 0;
-		c.insets = new java.awt.Insets (0, 0, 8, 6);
-		c.anchor = GridBagConstraints.SOUTHWEST;				
-    rightPanel.add (markerSubmitPanel, c);
-    
-    log.info ("Added Marker Submission Panel.");
-  } 
-  
+		c.insets = new java.awt.Insets(0,0,8,8);
+		c.anchor = GridBagConstraints.NORTHWEST;
+		rightPanel.add(statusPanel, c);
+		
+		log.info("Added status panel.");		
+	}
+	
 	private void initSplitPane() {
     splitPane = Factory.createStrippedSplitPane(
                   JSplitPane.HORIZONTAL_SPLIT,
@@ -915,19 +754,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   
   public ControlPanel getControlPanel() {
     return controlPanel;
-  }
-  
-  /**
-   * Hide the left part of the main split pane if both it's components are
-   * visible. If either of them are visible, show it.
-   */
-  private void layoutSplitPane() {
-    boolean visible = channelListPanel.isVisible() || metadataPanel.isVisible();
-    
-    if (leftPanel.isVisible() != visible) {
-      leftPanel.setVisible(visible);
-      splitPane.resetToPreferredSizes();
-    }
   }
 	
  	private boolean enterFullScreenMode() {
@@ -992,20 +818,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	public void postStatus(String statusMessage) {
 		JOptionPane.showMessageDialog(this, statusMessage, "Status", JOptionPane.INFORMATION_MESSAGE);
 	}
-
-  public void showExportVideoDialog() {
-    List channels = channelListPanel.getSelectedChannels();
-    if (channels.size() == 0) {
-      JOptionPane.showMessageDialog(this, "No video channel(s) selected!", "video export", JOptionPane.ERROR_MESSAGE);
-      return;
-    }
-    showExportVideoDialog(channels);
+  
+  public void showImportDialog() {
+    showImportDialog(null);
   }
   
-  public void showExportVideoDialog(List channels) {
-    new ExportVideoDialog(frame, rbnb, channels);
+  public void showImportDialog(String sourceName) {
+    new ImportDialog(frame, rbnb, sourceName);
   }
-
   
   public void showExportDialog() {
     List channels = channelListPanel.getSelectedChannels();
@@ -1020,169 +840,102 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     new ExportDialog(frame, rbnb, channels);
   }
  	
- 	/**
-   * A check box menu item that uses the "selected" property from it's action.
-   */
-  class SelectedCheckBoxMenuItem extends JCheckBoxMenuItem {
-    /**
-     * Create a check box menu item from the action.
-     * 
-     * @param a  the action for this menu item
-     */
-    public SelectedCheckBoxMenuItem(Action a) {
-      super(a);
-    }
-    
-    /**
-     * Configure from the action properties. This looks for the selected
-     * property.
-     * 
-     * @param a  the action
-     */
-    protected void configurePropertiesFromAction(Action a) {
-      super.configurePropertiesFromAction(a);
-      
-      Boolean selected = (Boolean)a.getValue("selected");
-      if (selected != null && selected != isSelected()) {
-        setSelected(selected);
-      }      
-    }
-    
-    /**
-     * Create an action  property change listener. This listens for the 
-     * "selected" property.
-     * 
-     * @param a  the action to create the listener for
-     */
-    protected PropertyChangeListener createActionPropertyChangeListener(Action a) {
-      final PropertyChangeListener listener = super.createActionPropertyChangeListener(a);
-      
-      PropertyChangeListener myListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          listener.propertyChange(evt);
-          
-          if (evt.getPropertyName().equals("selected")) {
-            Boolean selected = (Boolean)evt.getNewValue();
-            if (selected == null) {
-              setSelected(false);
-            } else if (selected != isSelected()) {
-              setSelected(selected);
-            }
-          }
-        }
-      };
-      
-      return myListener;
-    }
-  }
+ 	class DataViewerAction extends AbstractAction {
+ 		boolean selected = false;
+ 		
+ 		public DataViewerAction(String text) {
+ 			this(text, null, -1, null, null);
+ 		}
+ 
+ 		public DataViewerAction(String text, String desc) {
+ 			this(text, desc, -1, null, null);
+ 		}
+ 		
+		public DataViewerAction(String text, int mnemonic) {
+ 			this(text, null, mnemonic, null, null);
+ 		}
+ 		
+ 		public DataViewerAction(String text, String desc, int mnemonic) {
+ 			this(text, desc, mnemonic, null, null);
+ 		}
+        
+    public DataViewerAction(String text, String desc, int mnemonic, String iconFileName) {
+      this(text, desc, mnemonic, null, iconFileName);
+    }      
+ 		
+ 		public DataViewerAction(String text, String desc, int mnemonic, KeyStroke accelerator) {
+ 			this(text, desc, mnemonic, accelerator, null);
+		}
+
+    public DataViewerAction(String text, String desc, int mnemonic, KeyStroke accelerator, String iconFileName) {
+ 	    super(text);
+ 	    putValue(SHORT_DESCRIPTION, desc);
+ 	    putValue(MNEMONIC_KEY, new Integer(mnemonic));
+ 	    putValue(ACCELERATOR_KEY, accelerator);
+ 	    putValue(SMALL_ICON, DataViewer.getIcon(iconFileName));
+ 	  }
+ 	    
+ 		public void actionPerformed(ActionEvent ae) {}
+ 		
+ 		public boolean isSelected() {
+ 			return selected;
+ 		}
+ 		
+ 		public void setSelected(boolean selected) {
+ 			this.selected = selected;
+ 		}
+ 	}
 
  	public void connecting() {
-   setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-   
-   if (busyDialog != null) {
-    busyDialog.close();
-    busyDialog = null;
-   }   
-    
- 	 busyDialog = new BusyDialog(this);
-   busyDialog.setCancelActionListener(new ActionListener() {
-     public void actionPerformed(ActionEvent arg0) {
-       rbnb.cancelConnect();
-     }
-   });
-   busyDialog.start();
-
-   startThrobber();
+ 		busyDialog = new BusyDialog(this);
+    busyDialog.setCancelActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        rbnb.cancelConnect();
+      }
+    });
+ 		busyDialog.start();
+    startThrobber();
 	}
 
 	public void connected() {
-    setCursor(null);
-    
-    if (busyDialog != null) {
-      busyDialog.close();
-      busyDialog = null;
-    }
-
+		busyDialog.close();
+		busyDialog = null;
     stopThrobber();
 	}
 
 	public void connectionFailed() {
-    setCursor(null);
-
-    if (busyDialog != null) {
-      busyDialog.close();
-      busyDialog = null;
-    }
-
+		busyDialog.close();
+		busyDialog = null;
     stopThrobber();
 	}
     
   public void postState(int newState, int oldState) {
     if (newState == Player.STATE_DISCONNECTED) {
-      setTitle("RDV");
-      
       controlAction.setEnabled(false);
       disconnectAction.setEnabled(false);
-      saveAction.setEnabled(false);
       importAction.setEnabled(false);
       exportAction.setEnabled(false);
-
-      controlPanel.setEnabled(false);
-      markerSubmitPanel.setEnabled(false);
-      
-      ActionFactory.getInstance().getOfflineAction().setSelected(false);
-    } else if (oldState == Player.STATE_DISCONNECTED) {
-      setTitle(rbnb.getServerName() + " - RDV");
-      
+    } else if (newState != Player.STATE_EXITING) {
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
-      
-      boolean offline = rbnb.getRBNBHostName().equals("localhost");
-      saveAction.setEnabled(!offline);
-      importAction.setEnabled(offline);
- 
-      controlPanel.setEnabled(true);
-      markerSubmitPanel.setEnabled(true);
+      importAction.setEnabled(true);
+      exportAction.setEnabled(true);
     }
-
+    
     if (newState == Player.STATE_LOADING || newState == Player.STATE_PLAYING || newState == Player.STATE_MONITORING) {
       startThrobber(); 
-    } else if (oldState == Player.STATE_LOADING || oldState == Player.STATE_PLAYING || oldState == Player.STATE_MONITORING){
+    } else {
       stopThrobber();
     }
-
+    
     if (newState == Player.STATE_LOADING) {
-      setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-      loadingDialog = new LoadingDialog(this);
-      
-      new Thread() {
-        public void run() {
-          synchronized (loadingMonitor) {
-            if (loadingDialog == null) {
-              return;
-            }
-            
-            try { loadingMonitor.wait(1000); } catch (InterruptedException e) {}
-
-            if (loadingDialog != null) {
-              loadingDialog.setVisible(true);
-              loadingDialog.start();
-            }
-          }
-        }
-      }.start();
-    } else if (oldState == Player.STATE_LOADING) {
-      setCursor(null);
-
-      synchronized (loadingMonitor) {
-        loadingMonitor.notify();
-
-        if (loadingDialog != null) {
-          loadingDialog.close();
-          loadingDialog = null;
-        }
-      }
+ 		loadingDialog = new LoadingDialog(this);
+ 		loadingDialog.start();
+    } else {
+    	if (loadingDialog != null) {
+    	  loadingDialog.close();
+    	  loadingDialog = null;
+    	}
     }
   }
   

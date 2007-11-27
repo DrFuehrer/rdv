@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +33,9 @@ package org.nees.buffalo.rdv;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +43,7 @@ import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -59,6 +57,7 @@ import org.nees.buffalo.rdv.ui.ControlPanel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * A class to manage the application configuration.
@@ -111,13 +110,6 @@ public class ConfigurationManager {
     Iterator it = dataPanels.iterator();
     while (it.hasNext()) {
       DataPanel dataPanel = (DataPanel)it.next();
-      Properties properties = dataPanel.getProperties();
-      
-      if (isPanelDetached(dataPanel, properties)) {
-        if (dataPanel.subscribedChannelCount() == 0)  // A detached panel with no channels subscribed, or a non-existing detached panel 
-          continue; // don't add to configuration
-      }
-      
       out.println("  <dataPanel id=\"" + dataPanel.getClass().getName() + "\">");
       
       if (dataPanel.subscribedChannelCount() > 0) {
@@ -130,7 +122,7 @@ public class ConfigurationManager {
         out.println("    </channels>");
       }
 
-
+      Properties properties = dataPanel.getProperties();
       if (properties.size() > 0) {
         out.println("    <properties>");
         for (Enumeration keys = properties.propertyNames(); keys.hasMoreElements() ;) {
@@ -149,52 +141,29 @@ public class ConfigurationManager {
   }
   
   /**
-   * Inspect if the given DataPanel is detached from the DataPanelContainer
-   * @param dataPanel to check
-   * @param properties properties for the DataPanel
-   * @return flag indicating detached
-   */
-  private boolean isPanelDetached(DataPanel dataPanel, Properties properties) {
-    if (properties.size() == 0) {
-      return false;
-    }
-    
-    String key, value;
-    for (Enumeration keys = properties.propertyNames(); keys.hasMoreElements() ;) {
-      key = (String)keys.nextElement();
-      if (key == "attached") {
-        value = properties.getProperty(key);
-        if (value == "false")
-          return true;          
-      }
-    }
-    
-    return false;
-  }
-
-  /**
-   * Load the configuration file from the specified URL and configure the
-   * application. This spawns a new thread to do this in the background.
+   * Load the configuration from the specified file and configure the
+   * application.
    * 
-   * @param configURL  the URL of the file to load the configuration from
+   * @param configFile  the file to load the configuration from
+   * @since             1.3
    */
-  public void loadConfiguration(final URL configURL) {
+  public void loadConfiguration(final File configFile) {
     new Thread() {
       public void run() {
-        loadConfigurationWorker(configURL);
+        loadConfigurationWorker(configFile);
       }
     }.start();
   }
-
-  /**
-   * Load the configuration file from the specified URL and configure the
-   * application.
-   * 
-   * @param configURL  the URL of the file to load the configuration from
-   */
-  private void loadConfigurationWorker(URL configURL) {
-    if (configURL == null) {
+  
+  private void loadConfigurationWorker(File configFile) {
+    if (configFile == null) {
       dataViewer.alertError("The configuration file does not exist.");
+      return;
+    } else if (!configFile.exists()) {
+      dataViewer.alertError("The configuration file \"" + configFile.getName() + "\" does not exist.");
+      return;
+    } else if (!configFile.isFile()) {
+      dataViewer.alertError("\"" + configFile.getName() + "\" is not a file.");
       return;
     }
     
@@ -210,17 +179,15 @@ public class ConfigurationManager {
     Document document;
     try {
       DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-      document = documentBuilder.parse(configURL.openStream());
-    } catch (FileNotFoundException e) {
-      dataViewer.alertError("The configuration file does not exist." +
-          System.getProperty("line.separator") +
-          configURL);
-      return;
+      document = documentBuilder.parse(configFile);
     } catch (IOException e) {
-      dataViewer.alertError("Error loading configuration file.");
+      e.printStackTrace();
       return;
-    } catch (Exception e) {
-      dataViewer.alertError("The configuration file is corrupt.");
+    } catch (ParserConfigurationException e) {
+      e.printStackTrace();
+      return;
+    } catch (SAXException e) {
+      e.printStackTrace();
       return;
     }
 
@@ -254,6 +221,7 @@ public class ConfigurationManager {
       rbnb.setTimeScale(timeScale);
       
       double playbackRate = Double.parseDouble(findChildNodeText(rbnbNodes, "playbackRate"));
+      controlPanel.setPlaybackRate(playbackRate);
       rbnb.setPlaybackRate(playbackRate);
       
       int state = RBNBController.getState(findChildNodeText(rbnbNodes, "state"));

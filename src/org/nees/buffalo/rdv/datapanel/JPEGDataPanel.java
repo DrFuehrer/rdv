@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,13 +84,8 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.DataPanelManager;
 import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.Extension;
-import org.nees.buffalo.rdv.auth.Authentication;
-import org.nees.buffalo.rdv.auth.AuthenticationEvent;
-import org.nees.buffalo.rdv.auth.AuthenticationListener;
-import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.w3c.dom.Document;
@@ -101,10 +95,11 @@ import org.xml.sax.SAXException;
 
 import com.rbnb.sapi.ChannelMap;
 
+import edu.ucsd.auth.GridAuth;
 /**
  * @author Jason P. Hanley
  */
-public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationListener {
+public class JPEGDataPanel extends AbstractDataPanel {
 	
 	static Log log = LogFactory.getLog(JPEGDataPanel.class.getName());
 
@@ -135,18 +130,6 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 
 		setDataComponent(panel);
 	}
-  
-  public void openPanel(final DataPanelManager dataPanelManager) {
-    super.openPanel(dataPanelManager);
-    
-    AuthenticationManager.getInstance().addAuthenticationListener(this);
-  }
-  
-  public void closePanel() {
-    super.closePanel();
-    
-    AuthenticationManager.getInstance().removeAuthenticationListener(this);
-  }
   
   private void initUI() {
     panel = new JPanel();
@@ -493,33 +476,23 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
     
     if (flexTPSStream.canIris()) {
       topControls.add(irisControls, BorderLayout.NORTH);
-    } else {
-      topControls.remove(irisControls);
     }
     
     if (flexTPSStream.canFocus()) {
       topControls.add(focusControls, BorderLayout.CENTER);
-    } else {
-      topControls.remove(focusControls);
     }
     
     if (flexTPSStream.canZoom()) {
       topControls.add(zoomControls, BorderLayout.SOUTH);  
-    } else {
-      topControls.remove(zoomControls);
     }
     
     if (flexTPSStream.canTilt() && flexTPSStream.canPan()) {
       panel.add(tiltControls, BorderLayout.EAST);
       panel.add(panControls, BorderLayout.SOUTH);
-    } else {
-      panel.remove(tiltControls);
-      panel.remove(panControls);      
     }
     
     panel.revalidate();
     
-    image.removeMouseListener(clickMouseListener);
     image.addMouseListener(clickMouseListener);
   }
   
@@ -843,21 +816,22 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
     String feed = channel.getMetadata("flexTPS_feed");
     String stream = channel.getMetadata("flexTPS_stream");
 
-    // If user successfully login, gaSession should be valid
-    Authentication auth = AuthenticationManager.getInstance().getAuthentication();
-    String gaSession = null;
-    if (auth != null) {
-      gaSession = auth.get("session");
-    }
+	// If user successfully login, gaSession should be valid
+    String gaSession = "";
+	GridAuth auth = dataPanelManager.getAuth();
+	if (auth != null)
+		gaSession = auth.get("session");
+	else
+		log.info("GridAuth is not initiated.");
     
     if (host != null && feed != null && stream != null) {
       flexTPSStream = new FlexTPSStream(host, feed, stream, gaSession);
       
       if (flexTPSStream.canDoRobotic()) {
+        //state = rbnbController.getState();
         setRoboticControls();
       } else {
         flexTPSStream = null;
-        removeRoboticControls();
       }
     }
   }
@@ -903,7 +877,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   
   void channelAdded(String channelName) {
     clearImage();
-    setupFlexTPSStream();
+    setupFlexTPSStream();    
   }
   
   void channelRemoved(String channelName) {
@@ -940,7 +914,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		}
 			
 		String channelName = (String)it.next();
-		
+
 		try {			
 			int channelIndex = channelMap.GetIndex(channelName);
 			
@@ -948,7 +922,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 			if (channelIndex == -1) {
 				return;
 			}
-	
+			
 			if (channelMap.GetType(channelIndex) != ChannelMap.TYPE_BYTEARRAY) {
 				log.error("Expected byte array for JPEG data in channel " + channelName + ".");
 				return;
@@ -969,7 +943,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 				//no data in this time for us to display
 				return;
 			}
-
+			
 			double imageTime = times[imageIndex];
 			if (imageTime == displayedImageTime) {
 				//we are already displaying this image
@@ -1009,6 +983,8 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		displayedImageTime = -1;
 	}
 
+	void clearData() {}
+  
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
     
@@ -1022,10 +998,6 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();
     }
-  }
-  
-  public void authenticationChanged(AuthenticationEvent event) {
-    setupFlexTPSStream();
   }  
 	
 	public String toString() {
@@ -1140,7 +1112,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 			
 		public void update(byte[] imageData) {
 			Image newImage = new ImageIcon(imageData).getImage();
-			showImage(newImage);
+			showImage(newImage);			
 		}
 		
 		public void update(String imageFileName) {

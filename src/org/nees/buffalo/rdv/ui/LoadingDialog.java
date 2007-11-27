@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +32,6 @@
 package org.nees.buffalo.rdv.ui;
 
 import java.awt.Container;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -113,25 +111,11 @@ public class LoadingDialog extends JDialog {
 		c.gridy = 1;
 		c.insets = new java.awt.Insets(0,5,5,5);
 		container.add(loadingProgressBar, c);
+    
+		pack();
+		centerOnOwner();
+		setVisible(true);
 	}
-  
-  /**
-   * Control the visibility of the dialog.
-   * 
-   * @param visible  if true make the dialog visible, if false make it invisible
-   */
-  public void setVisible(boolean visible) {
-    if (isVisible() == visible) {
-      return;
-    }
-    
-    if (visible) {
-      pack();
-      centerOnOwner();      
-    }
-    
-    super.setVisible(visible);
-  }
   
 	/**
 	 * Center the dialog box on the owner frame.
@@ -157,7 +141,6 @@ public class LoadingDialog extends JDialog {
 	 * @since  1.2
 	 */
 	public void start() {
-    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		loadingProgressBar.setIndeterminate(true);
 	}
 	
@@ -167,7 +150,6 @@ public class LoadingDialog extends JDialog {
 	 * @since  1.2
 	 */
 	public void stop() {
-    setCursor(null);
 		loadingProgressBar.setIndeterminate(false);
 	}
 	
@@ -178,9 +160,7 @@ public class LoadingDialog extends JDialog {
 	 */
 	public void close() {
 		setVisible(false);
-    
-    stop();
-    
+    stop();        
 		dispose();
 	}
 }

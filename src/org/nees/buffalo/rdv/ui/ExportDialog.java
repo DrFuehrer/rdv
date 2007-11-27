@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +31,8 @@
 
 package org.nees.buffalo.rdv.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -44,7 +41,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,13 +72,11 @@ import javax.swing.UIManager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.DataViewer;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.rbnb.RBNBExport;
 import org.nees.buffalo.rdv.rbnb.ProgressListener;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
-import org.nees.rbnb.marker.EventMarker;
 
 /**
  * @author  Jason P. Hanley
@@ -96,12 +90,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
   RBNBController rbnb;
   RBNBExport export;
   boolean exporting;
-  
-  JButton startTimeButton;
-  JLabel durationLabel;
-  JButton endTimeButton;
-  
-  TimeSlider timeSlider;
   
   JList numericChannelList;
   DefaultListModel numericChannelModel;
@@ -137,7 +125,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     initComponents();
   }
 
-  private void initComponents() {    
+  private void initComponents() {
     numericChannelModel = new DefaultListModel();
     
     for (int i=0; i<channels.size(); i++) {
@@ -165,7 +153,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.ipadx = 0;
     c.ipady = 0;
 
-    JLabel headerLabel = new JLabel("Select the time range and data channels to export.");
+    JLabel headerLabel = new JLabel("Select the data channels to export.");
     headerLabel.setBackground(Color.white);
     headerLabel.setOpaque(true);
     headerLabel.setBorder(BorderFactory.createCompoundBorder(
@@ -180,56 +168,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.insets = new java.awt.Insets(0,0,0,0);    
     container.add(headerLabel, c);
     
-    JPanel timeButtonPanel = new JPanel();
-    timeButtonPanel.setLayout(new BorderLayout());
-    
-    MouseListener hoverMouseListener = new MouseAdapter() {
-      public void mouseEntered(MouseEvent e) {
-        e.getComponent().setForeground(Color.red);
-      }
-      public void mouseExited(MouseEvent e) {
-        e.getComponent().setForeground(Color.blue);
-      }
-    };
-    
-    startTimeButton = new JButton();
-    startTimeButton.setBorder(null);
-    startTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    startTimeButton.setForeground(Color.blue);
-    startTimeButton.addMouseListener(hoverMouseListener);
-    startTimeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        double startTime = DateTimeDialog.showDialog(ExportDialog.this, 
-            timeSlider.getStart(),
-            timeSlider.getMinimum(), timeSlider.getEnd());
-        if (startTime >= 0) {
-          timeSlider.setStart(startTime);
-        }
-      }      
-    });
-    timeButtonPanel.add(startTimeButton, BorderLayout.WEST);
-    
-    durationLabel = new JLabel();
-    durationLabel.setHorizontalAlignment(JLabel.CENTER);
-    timeButtonPanel.add(durationLabel, BorderLayout.CENTER);
-    
-    endTimeButton = new JButton();
-    endTimeButton.setBorder(null);
-    endTimeButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    endTimeButton.setForeground(Color.blue);
-    endTimeButton.addMouseListener(hoverMouseListener);
-    endTimeButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        double endTime = DateTimeDialog.showDialog(ExportDialog.this,
-            timeSlider.getEnd(),
-            timeSlider.getStart(), timeSlider.getMaximum());
-        if (endTime >= 0) {
-          timeSlider.setEnd(endTime);
-        }
-      }      
-    });
-    timeButtonPanel.add(endTimeButton, BorderLayout.EAST);
-    
+    JLabel numericHeaderLabel = new JLabel("Numeric channels:");
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 0;
     c.gridx = 0;
@@ -237,43 +176,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.gridwidth = GridBagConstraints.REMAINDER;
     c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new java.awt.Insets(10,10,10,10);
-    container.add(timeButtonPanel, c);    
-    
-    timeSlider = new TimeSlider();
-    timeSlider.setValueChangeable(false);
-    timeSlider.setValueVisible(false);    
-    timeSlider.addTimeAdjustmentListener(new TimeAdjustmentListener() {
-      public void timeChanged(TimeEvent event) {}
-      public void rangeChanged(TimeEvent event) {
-        updateTimeRangeLabel();
-      }
-      public void boundsChanged(TimeEvent event) {}
-    });
-    updateTimeRangeLabel();
-    updateTimeBounds();
-    
-    List<EventMarker> markers = rbnb.getMarkerManager().getMarkers();
-    for (EventMarker marker : markers) {
-      timeSlider.addMarker(marker);
-    }
-
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 0;
-    c.gridx = 0;
-    c.gridy = 2;
-    c.gridwidth = GridBagConstraints.REMAINDER;
-    c.anchor = GridBagConstraints.NORTHEAST;
-    c.insets = new java.awt.Insets(0,10,10,10);
-    container.add(timeSlider, c);
-    
-    JLabel numericHeaderLabel = new JLabel("Data Channels:");
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 0;
-    c.gridx = 0;
-    c.gridy = 3;
-    c.gridwidth = GridBagConstraints.REMAINDER;
-    c.anchor = GridBagConstraints.NORTHEAST;
-    c.insets = new java.awt.Insets(0,10,10,10);
     container.add(numericHeaderLabel, c);    
     
     numericChannelList = new JList(numericChannelModel);
@@ -287,8 +189,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
         item.setSelected(!item.isSelected());
         Rectangle rect = numericChannelList.getCellBounds(index, index);
         numericChannelList.repaint(rect);
-        
-        updateTimeBounds();
       }
     });
     JScrollPane scrollPane = new JScrollPane(numericChannelList);
@@ -296,7 +196,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.weightx = 0;
     c.weighty = 1;
     c.gridx = 0;
-    c.gridy = 4;
+    c.gridy = 2;
     c.gridwidth = GridBagConstraints.REMAINDER;
     c.anchor = GridBagConstraints.NORTHEAST;
     c.insets = new java.awt.Insets(0,10,10,10);
@@ -306,7 +206,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.weightx = 0;
     c.weighty = 0;
     c.gridx = 0;
-    c.gridy = 5;
+    c.gridy = 6;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,10,10,5);
@@ -315,7 +215,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1;
     c.gridx = 1;
-    c.gridy = 5;
+    c.gridy = 6;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;    
     dataFileTextField = new JTextField(20);
@@ -339,7 +239,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0;
     c.gridx = 2;
-    c.gridy = 5;
+    c.gridy = 6;
     c.gridwidth = 1;
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,0,10,10);
@@ -351,7 +251,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 0.5;
     c.gridx = 0;
-    c.gridy = 6;
+    c.gridy = 7;
     c.gridwidth = GridBagConstraints.REMAINDER;;
     c.anchor = GridBagConstraints.CENTER;
     c.insets = new java.awt.Insets(0,10,10,10);
@@ -385,7 +285,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.5;
     c.gridx = 0;
-    c.gridy = 7;
+    c.gridy = 9;
     c.gridwidth = GridBagConstraints.REMAINDER;;
     c.anchor = GridBagConstraints.LINE_END;
     c.insets = new java.awt.Insets(0,0,10,5);
@@ -403,8 +303,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
   }
   
   private void disableUI() {
-    startTimeButton.setEnabled(false);
-    endTimeButton.setEnabled(false);
     numericChannelList.setEnabled(false);
     dataFileTextField.setEnabled(false);
     dataFileButton.setEnabled(false);
@@ -412,66 +310,11 @@ public class ExportDialog extends JDialog implements ProgressListener {
   }
   
   private void enableUI() {
-    startTimeButton.setEnabled(true);
-    endTimeButton.setEnabled(true);
     numericChannelList.setEnabled(true);
     dataFileTextField.setEnabled(true);
     dataFileButton.setEnabled(true);
     exportButton.setEnabled(true);    
-  }
-  
-  private void updateTimeBounds() {
-    List<String> selectedChannels = getSelectedChannels();
-    if (selectedChannels.size() == 0) {
-      return;
-    }
-    
-    double minimum = Double.MAX_VALUE;
-    double maximum = 0;
-    
-    for (String channelName : selectedChannels) {
-      Channel channel = rbnb.getChannel(channelName);
-      if (channel == null) {
-        continue;
-      }
-      
-      double channelStart = Double.parseDouble(channel.getMetadata("start"));
-      double channelDuration = Double.parseDouble(channel.getMetadata("duration"));
-      double channelEnd = channelStart+channelDuration;
-      
-      if (channelStart < minimum) {
-        minimum = channelStart;
-      }
-      
-      if (channelEnd > maximum) {
-        maximum = channelEnd;
-      }
-    }
-    
-    timeSlider.setValues(minimum, maximum);
-  }
-  
-  private void updateTimeRangeLabel() {
-    double start = timeSlider.getStart();
-    double end = timeSlider.getEnd();
-    double duration = end-start;
-    
-    startTimeButton.setText(DataViewer.formatDate(start));
-    durationLabel.setText(DataViewer.formatSeconds(duration));
-    endTimeButton.setText(DataViewer.formatDate(end));
-  }
-  
-  private List<String> getSelectedChannels() {
-    List<String> selectedChannels = new ArrayList<String>();
-    for (int i=0; i<numericChannelModel.size(); i++) {
-      ExportChannel channel = (ExportChannel)numericChannelModel.get(i);
-      if (channel.isSelected()) {
-        selectedChannels.add(channel.toString());
-      }
-    }
-    
-    return selectedChannels;
-  }
+  }  
   
   private void exportData() {
     File dataFile = new File(dataFileTextField.getText());
@@ -488,21 +331,19 @@ public class ExportDialog extends JDialog implements ProgressListener {
     
     disableUI();
     
-    List<String> selectedChannels = getSelectedChannels();
-    
-    double start = timeSlider.getStart();
-    double end = timeSlider.getEnd();
-    
-    if (start == end) {
-      JOptionPane.showMessageDialog(this,
-          "The start and end export time must not be the same.",
-          "Export Data Error",
-          JOptionPane.ERROR_MESSAGE);
-      return;
+    List selectedNumericChannels = new ArrayList();
+    for (int i=0; i<numericChannelModel.size(); i++) {
+      ExportChannel channel = (ExportChannel)numericChannelModel.get(i);
+      if (channel.isSelected()) {
+        selectedNumericChannels.add(channel.toString());
+      }
     }
     
+    double end = rbnb.getLocation();
+    double start = end - rbnb.getTimeScale();
+    
     exporting = true;
-    export.startExport(selectedChannels, dataFile,
+    export.startExport(selectedNumericChannels, dataFile,
         null,
         null,
         start, end,

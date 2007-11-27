@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +28,6 @@
  * $Date$
  * $Author$
  */
-
 package org.nees.buffalo.rdv.datapanel;
 
 import java.awt.Color;
@@ -64,6 +62,11 @@ public class RendererDataPanel extends AbstractDataPanel {
     renderer = new RendererComponent();
     
     setDataComponent(renderer);
+  }
+
+  void clearData() {
+    lastTime = -1;
+    renderer.clear();
   }
 
   public boolean supportsMultipleChannels() {

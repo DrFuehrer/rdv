@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,11 +121,11 @@ public class BusyDialog extends JDialog {
 		c.insets = new java.awt.Insets(0,5,5,5);
 		container.add(busyProgressBar, c);
     
-    /* cancelButton = new JButton("Cancel");
+    cancelButton = new JButton("Cancel");
     c.gridx = 1;
     c.weightx = 0;
     c.insets = new java.awt.Insets(0,5,5,5);
-    container.add(cancelButton, c); */    
+    container.add(cancelButton, c);    
 		
 		pack();
 		centerOnOwner();
@@ -140,7 +139,7 @@ public class BusyDialog extends JDialog {
    * @since     1.2
    */
   public void setCancelActionListener(ActionListener al) {
-    // cancelButton.addActionListener(al);
+    cancelButton.addActionListener(al);
   }
 	
 	/**

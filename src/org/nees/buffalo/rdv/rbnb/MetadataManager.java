@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,16 +31,12 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.DataViewer;
-import org.nees.rbnb.marker.EventMarker;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
@@ -62,19 +57,9 @@ public class MetadataManager {
   private RBNBController rbnbController;
 
   /**
-   * The name of the RBNB sink used to get metadata
-   */
-  private String rbnbSinkName = "RDVMetadata";
-
-  /**
    * Listeners for metadata updates.
    */
-  private ArrayList<MetadataListener> metadataListeners;
-  
-  /**
-   * Listeners for markers.
-   */
-  private ArrayList<DataListener> markerListeners;
+  private ArrayList metadataListeners;
   
   /**
    * Map of channel objects created from metadata.
@@ -105,27 +90,16 @@ public class MetadataManager {
    * The time to sleep between each metadata update.
    */
   private static final long updateRate = 10000;
-  
-  /**
-   * The timeout used when fetching data.
-   */
-  private static final long FETCH_TIMEOUT = 15000;
 
   /**
    * Create the class using the RBNBController for connection information.
    *  
    * @param rbnbController the RBNBController to use
-   */  
+   */
   public MetadataManager(RBNBController rbnbController) {
     this.rbnbController = rbnbController;
 
-    try {
-      InetAddress addr = InetAddress.getLocalHost();
-      String hostname = addr.getHostName();
-      rbnbSinkName += "@" + hostname;
-    } catch (UnknownHostException e) {}
-
-    metadataListeners =  new ArrayList<MetadataListener>();
+    metadataListeners =  new ArrayList();
     addMetadataListener(rbnbController);
         
     channels = new HashMap();
@@ -133,10 +107,8 @@ public class MetadataManager {
     ctree = null;
     
     update = false;
-    sleeping = new Boolean(false);
+    sleeping = false;
     updateThread = null;
-    
-    markerListeners = new ArrayList<DataListener>();
   }   
 
   /**
@@ -163,7 +135,7 @@ public class MetadataManager {
     
     final Sink metadataSink = new Sink();
     try {
-      metadataSink.OpenRBNBConnection(rbnbController.getRBNBConnectionString(), rbnbSinkName);
+      metadataSink.OpenRBNBConnection(rbnbController.getRBNBConnectionString(), "RDVMetadata");
     } catch (SAPIException e) {
       log.error("Failed to connect to RBNB server: " + e.getMessage());
       e.printStackTrace();
@@ -222,9 +194,7 @@ public class MetadataManager {
     }
     
     fireMetadataUpdated(null);
-    fireMarkersUpdated(null);
   }
-
   
   /**
    * Updates the metadata and posts it to listeners. It also notifies all
@@ -233,13 +203,13 @@ public class MetadataManager {
    * @param metadataSink the RBNB sink to use for the server connection
    */
   private synchronized void updateMetadata(Sink metadataSink) {
-    log.info("Updating channel listing at " + DataViewer.formatDate(System.currentTimeMillis ()));      
-
-    HashMap newChannels = new HashMap();
-
+    log.info("Updating channel listing.");    
+    
+    //create metadata channel tree
     try {
-      //create metadata channel tree
-      ctree = getChannelTree(metadataSink, newChannels); 
+      HashMap newChannels = new HashMap();
+      ctree = getChannelTree(metadataSink, newChannels);
+      channels = newChannels;
     } catch (SAPIException e) {
       log.error("Failed to update metadata: " + e.getMessage() + ".");
 
@@ -256,8 +226,6 @@ public class MetadataManager {
       
       return;
     }
-    
-    channels = newChannels;
     
     //notify metadata listeners
     fireMetadataUpdated(ctree);
@@ -291,8 +259,6 @@ public class MetadataManager {
    */
   private ChannelTree getChannelTree(Sink sink, String path, HashMap channels) throws SAPIException {
     ChannelTree ctree = ChannelTree.EMPTY_TREE;
-    
-    ChannelMap markerChannelMap = new ChannelMap();
 
     ChannelMap cmap = new ChannelMap();
     if (path != null) {
@@ -300,19 +266,11 @@ public class MetadataManager {
     }
     sink.RequestRegistration(cmap);
 
-    cmap = sink.Fetch(FETCH_TIMEOUT, cmap);
-    
-    if (cmap.GetIfFetchTimedOut()) {
-      log.error("Failed to get metadata.  Fetch timed out.");
-      return ctree;
-    }
-
+    cmap = sink.Fetch(-1, cmap);
     ctree = ChannelTree.createFromChannelMap(cmap);
     
     //store user metadata in channel objects
     String[] channelList = cmap.GetChannelList();
-    String mimeType;
-    log.info("Number of channels: " + channelList.length);
     for (int i=0; i<channelList.length; i++) {
       int channelIndex = cmap.GetIndex(channelList[i]);
       if (channelIndex != -1) {
@@ -320,40 +278,17 @@ public class MetadataManager {
         String userMetadata = cmap.GetUserInfo(channelIndex);
         Channel channel = new Channel(node, userMetadata);
         channels.put(channelList[i], channel);
-        
-        //look for marker channels
-        mimeType = node.getMime();
-        if (mimeType != null && mimeType.compareToIgnoreCase(EventMarker.MIME_TYPE) == 0) {
-          markerChannelMap.Add(node.getFullName());         
-        }
       }            
     }
-
+    
+    // look for child servers and get their channels
     Iterator it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
-      
-      // look for child servers or plugins and get their channels      
-      if ((node.getType() == ChannelTree.SERVER || node.getType() == ChannelTree.PLUGIN) &&
-        (path == null || !path.startsWith(node.getFullName()))) {
-
+      if (node.getType() == ChannelTree.SERVER &&
+         (path == null || !path.startsWith(node.getFullName()))) {
         ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels);
         ctree = childChannelTree.merge(ctree);
-      }
-    }
-    
-    if (markerChannelMap.NumberOfChannels() > 0) {
-      double markersDuration = System.currentTimeMillis()/1000d;
-
-      //request from start of marker channels to now
-      sink.Request(markerChannelMap, 0, markersDuration, "absolute");
-      
-      markerChannelMap = sink.Fetch(FETCH_TIMEOUT, markerChannelMap);
-      if (!markerChannelMap.GetIfFetchTimedOut()) { 
-        //notify marker listeners
-        fireMarkersUpdated(markerChannelMap);
-      } else {
-        log.error("Failed to get event markers. Fetched timed out.");
       }
     }
     
@@ -404,15 +339,6 @@ public class MetadataManager {
   public void addMetadataListener(MetadataListener listener) {
     metadataListeners.add(listener);
   }
-  
-  /**
-   * Add a listener for marker data.
-   * 
-   * @param listener  the marker listener to add
-   */
-  public void addMarkerListener(DataListener listener) {
-    markerListeners.add(listener);
-  }
 
   /**
    * Remove a listener for metadata updates.
@@ -422,15 +348,6 @@ public class MetadataManager {
   public void removeMetadataListener(MetadataListener listener) {
     metadataListeners.remove(listener);
   }
-  
-  /**
-   * Remove a listener for marker data.
-   * 
-   * @param listener  the marker listener to remove
-   */
-  public void removeMarkerListener(DataListener listener) {
-    markerListeners.remove(listener);
-  }
 
   /**
    * Post metadata updates to the subscribed listeners.
@@ -438,19 +355,10 @@ public class MetadataManager {
    * @param channelTree the new metadata channel tree
    */
   private void fireMetadataUpdated(ChannelTree channelTree) {
-    for (MetadataListener listener : metadataListeners) {
+    MetadataListener listener;
+    for (int i=0; i<metadataListeners.size(); i++) {
+      listener = (MetadataListener)metadataListeners.get(i);
       listener.channelTreeUpdated(channelTree);
-    }
-  }
-  
-  /**
-   * Post marker data to subscribed listeners.
-   * 
-   * @param cmap  the channel map containing the marker data
-   */
-  protected void fireMarkersUpdated(ChannelMap cmap) {
-    for (DataListener listener : markerListeners) {
-      listener.postData(cmap);
     }
   }
 }

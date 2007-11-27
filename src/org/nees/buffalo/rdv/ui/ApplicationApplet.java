@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,6 +61,7 @@ public class ApplicationApplet extends JApplet {
 
 		if (playbackRateString != null && !playbackRateString.equals("")) {
       double playbackRate = Double.parseDouble(playbackRateString);
+      controlPanel.setPlaybackRate(playbackRate);
       rbnbController.setPlaybackRate(playbackRate);
 		}
 
