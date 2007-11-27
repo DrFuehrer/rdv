@@ -91,7 +91,6 @@ import org.nees.buffalo.rdv.rbnb.RBNBHelper;
 import org.nees.buffalo.rdv.rbnb.RBNBUtilities;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.TimeRange;
-import org.swixml.SwingEngine;
 
 import com.jgoodies.looks.HeaderStyle;
 import com.jgoodies.looks.Options;
@@ -205,8 +204,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	private void initFrame(boolean isApplet) {
 		frame = this;
     
-    SwingEngine.setAppFrame(frame);
-
 		if (!isApplet) {
 			frame.addWindowListener(new WindowAdapter() {
 				public void windowClosing(WindowEvent e) {

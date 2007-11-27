@@ -42,8 +42,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 
-import org.swixml.SwingEngine;
-
 /**
  * A dialog to display the progress of a task.
  * 
@@ -68,7 +66,7 @@ public class ProgressWindow extends JDialog {
    * @param headerText  the text for the header
    */
   public ProgressWindow(String headerText) {
-    super(SwingEngine.getAppFrame());
+    super();
     
     initProgressWindow(headerText);
   }
