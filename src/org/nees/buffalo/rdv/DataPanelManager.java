@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +40,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.datapanel.DataPanel;
 import org.nees.buffalo.rdv.rbnb.Channel;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
@@ -68,6 +68,11 @@ public class DataPanelManager {
 	 */
 	static Log log = LogFactory.getLog(DataPanelManager.class.getName());
 
+	/**
+	 * The authentication manager for the data panels.
+	 */
+	private AuthenticationManager authenticationManager;
+	
 	/**
 	 * A reference to the RNBN controller for the data panels to use.
 	 * 
@@ -108,8 +113,9 @@ public class DataPanelManager {
 	 * @param rbnbController  the rbnb controller
 	 * @since                 1.2
 	 */
-	public DataPanelManager(RBNBController rbnbController) {
+	public DataPanelManager(RBNBController rbnbController, AuthenticationManager authenticationManager) {
 		this.rbnbController = rbnbController;
+    this.authenticationManager = authenticationManager;
 		dataPanelContainer = new DataPanelContainer();
 		
 		dataPanels = new ArrayList();
@@ -597,4 +603,13 @@ public class DataPanelManager {
   public List getDataPanels() {
     return dataPanels;
   }
+  
+  /**
+   * Get the authentication manager.
+   * 
+   * @return  the authentication manager
+   */
+  public AuthenticationManager getAuthenticationManager() {
+    return this.authenticationManager;
+  }  
 }

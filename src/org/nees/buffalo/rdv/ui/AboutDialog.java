@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,15 +93,14 @@ public class AboutDialog extends JDialog {
     aboutPanel.add(new JLabel("RDV - Realtime Data Viewer"));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("by Wei Deng, Jason P. Hanley, Paul Hubbard,"));
-    aboutPanel.add(new JLabel("Mari Masuda, John Michno, Lawrence J. Miller,"));
-    aboutPanel.add(new JLabel("Farooque Sayed, Moji Soltani, Lelli Van Den Einde,"));
-    aboutPanel.add(new JLabel("and Shannon Whitmore"));
+    aboutPanel.add(new JLabel("Mari Masuda, Lawrence J. Miller, Farooque Sayed,"));
+    aboutPanel.add(new JLabel("Moji Soltani, Shannon Whitmore"));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("Version " + Version.major + "." + Version.minor + "." + Version.release));
     aboutPanel.add(new JLabel("Build " + Version.build));
     aboutPanel.add(new JLabel(" "));
-    aboutPanel.add(new JLabel("Copyright \251 2005-2007 University at Buffalo"));
-    aboutPanel.add(new JLabel("Copyright \251 2005-2007 NEES Cyberinfrastructure Center"));
+    aboutPanel.add(new JLabel("Copyright \251 2005-2006 University at Buffalo"));
+    aboutPanel.add(new JLabel("Copyright \251 2005-2006 NEES Cyberinfrastructure Center"));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("This work is supported by the George E. Brown, Jr."));
     aboutPanel.add(new JLabel("Network for Earthquake Engineering Simulation (NEES)"));

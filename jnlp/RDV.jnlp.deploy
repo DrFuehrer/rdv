@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+"
-  codebase="http://nees.buffalo.edu/software/RDV"
+  codebase="PUT RDV URL HERE"
   href="RDV.jnlp">
 	<information>
 		<title>RDV</title>
 		<vendor>University at Buffalo</vendor>
 		<homepage href="http://nees.buffalo.edu/software/RDV/" />
 		<description>A tool to view synchronzied, streaming data from a RBNB server.</description>
-		<icon href="RDV.gif"/>
 		<offline-allowed/>
 	</information>
 	<security>

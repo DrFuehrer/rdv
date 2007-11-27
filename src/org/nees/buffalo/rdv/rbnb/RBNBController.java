@@ -3,8 +3,8 @@
  * Real-time Data Viewer
  * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,9 +59,6 @@ import com.rbnb.sapi.Sink;
 public class RBNBController implements Player, MetadataListener {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
-  
-  /** the single instance of this class */
-  protected static RBNBController instance;
 
 	private String rbnbSinkName = "RDV";
   
@@ -120,7 +117,7 @@ public class RBNBController implements Player, MetadataListener {
   
   private final long LOADING_TIMEOUT = 30000;
   
-	protected RBNBController() {
+	public RBNBController() {
     // get the system host name and append it to the sink name
      try {
         InetAddress addr = InetAddress.getLocalHost();
@@ -158,19 +155,6 @@ public class RBNBController implements Player, MetadataListener {
         
 		run();
 	}
-  
-  /**
-   * Get the single instance of this class.
-   * 
-   * @return  the instance of this class
-   */
-  public static RBNBController getInstance() {
-    if (instance == null) {
-      instance = new RBNBController();
-    }
-    
-    return instance;
-  }
 	
 	private void run() {
 		rbnbThread = new Thread(new Runnable() {
@@ -982,6 +966,17 @@ public class RBNBController implements Player, MetadataListener {
 		return lastTime;
 	}
 				
+	private static void printChannelMap(ChannelMap cmap) {
+		String[] channels = cmap.GetChannelList();
+		for (int i=0; i<channels.length; i++) {
+			log.debug("Channel " + channels[i] + ": " + DataViewer.formatDate(cmap.GetTimeStart(i)) + " (" + cmap.GetTimeDuration(i) + ").");
+			double[] times = cmap.GetTimes(i);
+			for (int j=0; j<times.length; j++) {
+				log.debug(" location = " + DataViewer.formatDate(times[j]) + ".");
+			}
+		}
+	}	
+	
 	
  	// Player Methods
 	
@@ -1156,33 +1151,6 @@ public class RBNBController implements Player, MetadataListener {
  	public String getRBNBConnectionString() {
  		return rbnbHostName + ":" + rbnbPortNumber;
  	}
-  
-  /**
-   * Gets the name of the server. If there is no active connection, null is
-   * returned.
-   * 
-   * @return  the name of the server, or null if there is no connection
-   */
-  public String getServerName() {
-    if (sink == null) {
-      return null;
-    }
-    
-    String serverName;
-    
-    try {
-      serverName = sink.GetServerName();
-      
-      // strip out the leading slash that is there for some reason
-      if (serverName.startsWith("/") && serverName.length() >= 2) {
-        serverName = serverName.substring(1);
-      }
-    } catch (IllegalStateException e) {
-      serverName = null;
-    }
-    
-    return serverName;
-  }
 
 	public boolean isConnected() {
 		return sink != null;	
@@ -1239,56 +1207,9 @@ public class RBNBController implements Player, MetadataListener {
     }
   }
 	
-  /**
-   * Disconnect from the RBNB server. This method will return immediately.
-   */
 	public void disconnect() {
-		disconnect(false);
+		setState(STATE_DISCONNECTED);
 	}
-  
-  /**
-   * Disconnect from the RBNB server. If block is set, this method will not
-   * return until the server has disconnected.
-   * 
-   * @param block  if true, wait for the server to disconnect
-   * @return       true if the server disconnected
-   */
-	public boolean disconnect(boolean block) {
-	  if (!isConnected()) {
-	    return true;
-	  }    
-   
-    if (block) {
-      final Thread object = Thread.currentThread();
-      StateListener listener = new StateListener() {
-        public void postState(int newState, int oldState) {
-          if (newState == STATE_DISCONNECTED) {
-            synchronized (object) {
-              object.notify();
-            }
-          }
-        }
-      };
-      addStateListener(listener);
-      
-      synchronized (object) {
-        setState(STATE_DISCONNECTED);
-        
-        try {
-          object.wait();
-        } catch (InterruptedException e) {
-          return false;
-        }
-      }
-      
-      removeStateListener(listener);
-      
-    } else {
-      setState(STATE_DISCONNECTED);
-    }
-
-    return true;
-	}  
 	
 	public void reconnect() {
     setState(STATE_DISCONNECTED);

@@ -3,8 +3,8 @@
  * Real-time Data Viewer
  * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,21 +47,9 @@ public class GridAuthentication implements Authentication {
    * Create an authentication object for GridAuth.
    */
   public GridAuthentication() {
-    this(null);
-  }
-
-  /**
-   * Create an authentication object for GridAuth. Using the specified GridAuth
-   * instance.
-   */
-  public GridAuthentication(String hostName) {
     super();
     
     gridAuth = new GridAuth();
-    
-    if (hostName != null) {
-      gridAuth.setServiceHandler("https://" + hostName + "/cgi-bin/handler.cgi");
-    }
   }
   
   /**

@@ -3,8 +3,8 @@
  * Real-time Data Viewer
  * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,8 +100,8 @@ import org.jfree.ui.RectangleEdge;
 import org.jfree.util.ShapeUtilities;
 import org.jfree.util.UnitType;
 import org.nees.buffalo.rdv.data.DataFileChannel;
+import org.nees.buffalo.rdv.data.DataFileListener;
 import org.nees.buffalo.rdv.data.DataFileReader;
-import org.nees.buffalo.rdv.data.DoubleDataSample;
 import org.nees.buffalo.rdv.rbnb.Channel;
 
 import com.rbnb.sapi.ChannelMap;
@@ -404,35 +404,33 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     if (xChannel.getUnit() != null) {
       xChannelName += " (" + xChannel.getUnit() + ")";
     }
-    int xChannelIndex = channels.indexOf(xChannel);
+    final int xChannelIndex = channels.indexOf(xChannel);
     
     String yChannelName = yChannel.getChannelName();
     if (yChannel.getUnit() != null) {
       yChannelName += " (" + yChannel.getUnit() + ")";
     }
-    int yChannelIndex = channels.indexOf(yChannel);
+    final int yChannelIndex = channels.indexOf(yChannel);
     
     String seriesName = xChannelName + " vs. " + yChannelName;
     
-    XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
+    final XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
     
-    try {
-      DoubleDataSample sample;
-      while ((sample = reader.readSample()) != null) {
-        double timestamp = sample.getTimestamp();
-        double[] values = sample.getValues();
-        
+    DataFileListener listener = new DataFileListener() {
+      public void postDataSamples(double timestamp, double[] values) {
         FixedMillisecond time = new FixedMillisecond((long)(timestamp*1000));
         XYTimeSeriesDataItem dataItem = new XYTimeSeriesDataItem(time);
-        
         if (values[xChannelIndex] != Double.NaN && values[yChannelIndex] != Double.NaN) {
           dataItem.setX(values[xChannelIndex]);
           dataItem.setY(values[yChannelIndex]);
         }
-        
         data.add(dataItem, false);
-      }
-    } catch (Exception e) {
+      }        
+    };
+    
+    try {
+      reader.readData(listener);
+    } catch (IOException e) {
       e.printStackTrace();
       return;
     }
@@ -690,8 +688,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     if (xyMode) {
       if (series == 0 && chans == 1) {
-        String channelDisplay = getChannelDisplay((String)channels.get(0));
-        domainAxis.setLabel(channelDisplay);
+        domainAxis.setLabel((String)channels.get(0));
         rangeAxis.setLabel(null);
       } else if (series == 1 && chans == 0) {
         XYTimeSeries xySeries = ((XYTimeSeriesCollection)dataCollection).getSeries(0); 
@@ -702,18 +699,15 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
           rangeAxis.setLabel(channelNames[1]);
         }
       } else if (series == 1 && chans == 2) {
-        String channelDisplay1 = getChannelDisplay((String)channels.get(0));
-        domainAxis.setLabel(channelDisplay1);
-        String channelDisplay2 = getChannelDisplay((String)channels.get(1));
-        rangeAxis.setLabel(channelDisplay2);
+        domainAxis.setLabel((String)channels.get(0));
+        rangeAxis.setLabel((String)channels.get(1));
       } else {
         domainAxis.setLabel(null);
         rangeAxis.setLabel(null);        
       }      
     } else {
       if (series == 1) {
-        String channelDisplay = getChannelDisplay((String)channels.get(0));
-        rangeAxis.setLabel(channelDisplay);
+        rangeAxis.setLabel((String)channels.get(0));
       } else {
         rangeAxis.setLabel(null);
       }

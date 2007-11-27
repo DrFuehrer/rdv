@@ -3,8 +3,8 @@
  * Real-time Data Viewer
  * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,11 @@ public class MarkerSubmitPanel extends JPanel {
   private RBNBController rbnbController;
   
   /**
+   * The authentication manager to get an authentication
+   */
+  private final AuthenticationManager authenticationManager;
+  
+  /**
    * The combo box to select the marker type
    */
   private JComboBox markerTypeComboBox;
@@ -96,10 +101,11 @@ public class MarkerSubmitPanel extends JPanel {
    * 
    * @param rbnbController  the rbnb controller to use for sending the marker
    */
-  public MarkerSubmitPanel(RBNBController rbnbController) {
+  public MarkerSubmitPanel(RBNBController rbnbController, AuthenticationManager authenticationManager) {
     super();
     
     this.rbnbController = rbnbController;
+    this.authenticationManager = authenticationManager;
     
     initPanel();
     
@@ -210,7 +216,7 @@ public class MarkerSubmitPanel extends JPanel {
     }
     marker.setProperty("timestamp", Double.toString(startTime));
     
-    Authentication authentication = AuthenticationManager.getInstance().getAuthentication();
+    Authentication authentication = authenticationManager.getAuthentication();
     if (authentication != null) {
       String username = authentication.get("username");
       if (username != null || username.length() > 0) {

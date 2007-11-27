@@ -3,8 +3,8 @@
  * Real-time Data Viewer
  * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,9 +41,6 @@ import java.util.List;
  * @author Jason P. Hanley
  */
 public class AuthenticationManager {
-  /** the instance of this class */
-  private static AuthenticationManager instance;
-  
   /** the authentication */
   private Authentication authentication;
   
@@ -53,21 +50,8 @@ public class AuthenticationManager {
   /**
    * Creates the authentication manager.
    */
-  protected AuthenticationManager() {
+  public AuthenticationManager() {
     listeners = new ArrayList<AuthenticationListener>();
-  }
-  
-  /**
-   * Returns the instance of the authentication manager.
-   * 
-   * @return  the authentication manager
-   */
-  public static AuthenticationManager getInstance() {
-    if (instance == null) {
-      instance = new AuthenticationManager();
-    }
-    
-    return instance;
   }
 
   /**

@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +40,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
@@ -58,8 +55,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.buffalo.rdv.action.ActionFactory;
-import org.nees.buffalo.rdv.rbnb.LocalServer;
+import org.nees.buffalo.rdv.auth.AuthenticationManager;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
 import org.nees.buffalo.rdv.ui.ApplicationFrame;
 import org.nees.buffalo.rdv.ui.ControlPanel;
@@ -75,6 +71,7 @@ public class DataViewer {
 	static Log log = LogFactory.getLog(DataViewer.class.getName());
 	
 	private final RBNBController rbnb;
+  private final AuthenticationManager authenticationManager;
 	private final DataPanelManager dataPanelManager;
 	private final ApplicationFrame applicationFrame;
   private final ConfigurationManager configurationManager;
@@ -83,28 +80,20 @@ public class DataViewer {
   private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm.ss.SSS a");
   private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm.ss.SSS a");
   private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss.SSS a");
-  
-  /** global cache for icons */
-  private static final Map<String, ImageIcon> iconCache = new ConcurrentHashMap<String, ImageIcon>();;
 	
 	public DataViewer(boolean isApplet) {
-		rbnb = RBNBController.getInstance();
-		dataPanelManager = new DataPanelManager(rbnb);
+		rbnb = new RBNBController();
+    authenticationManager = new AuthenticationManager();
+		dataPanelManager = new DataPanelManager(rbnb, authenticationManager);
     configurationManager = new ConfigurationManager(this);
 		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);
 	}
 
 	public void exit() {
 		applicationFrame.dispose();
-    
 		if (rbnb != null) {
 			rbnb.exit();
 		}
-    
-    try {
-      LocalServer.getInstance().stopServer();
-    } catch (Exception e) {}
-    
 		log.info("Exiting.");
 
 		System.exit(0);
@@ -114,6 +103,10 @@ public class DataViewer {
  		return rbnb;
  	}
 
+  public AuthenticationManager getAuthenticationManager() {
+    return authenticationManager;
+  }
+ 	
  	public DataPanelManager getDataPanelManager() {
  		return dataPanelManager;
  	}
@@ -253,34 +246,14 @@ public class DataViewer {
     }
   }
   
-  /**
-   * Loads the given file as an icon and returns it. Previously loaded icon's
-   * are cached, so subsequent calls to this method with the same icon file name
-   * will return the same icon.
-   * 
-   * @param iconFileName  the name of the icon file
-   * @return              the icon, or null if the icon doesn't exist
-   */
   public static ImageIcon getIcon(String iconFileName) {
-    if (iconFileName == null) {
-      return null;
+    ImageIcon icon = null;
+    if (iconFileName != null) {
+      URL iconURL = Thread.currentThread().getContextClassLoader().getResource(iconFileName);    
+      if (iconURL != null) {
+        icon = new ImageIcon(iconURL);
+      }
     }
-    
-    // see if the icon is in the cache
-    ImageIcon icon = iconCache.get(iconFileName);
-    if (icon != null) {
-      return icon;
-    }
-    
-    
-    URL iconURL = Thread.currentThread().getContextClassLoader().getResource(iconFileName);    
-    if (iconURL != null) {
-      icon = new ImageIcon(iconURL);
-      
-      // cache the icon for future requests
-      iconCache.put(iconFileName, icon);
-    }
-    
     return icon;
   }  
 
@@ -291,27 +264,34 @@ public class DataViewer {
   /**
    * Open the URL in an external browser. 
    * 
-   * @param url         the url to open
-   * @throws Exception  if there is an error opening the browser
+   * @param url  the url to open
+   * @return     true if the command executes successfully, false if there is
+   *             some error
    */
-  public static void browse(URL url) throws Exception {
-    String osName = System.getProperty("os.name");
-    if (osName.startsWith("Mac OS")) {
-      Class fileMgr = Class.forName("com.apple.eio.FileManager");
-      Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
-      openURL.invoke(null, new Object[] {url});
-    } else if (osName.startsWith("Windows")) {
-      Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
-    } else { //assume Unix or Linux
-      String[] browsers = { "sensible-browser", "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
-      String browser = null;
-      for (int count = 0; count < browsers.length && browser == null; count++)
-        if (Runtime.getRuntime().exec(new String[] {"which", browsers[count]}).waitFor() == 0)
-          browser = browsers[count];
-      if (browser == null)
-        throw new Exception("Could not find web browser");
-      else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
+  public static boolean browse(URL url) {
+    try { 
+      String osName = System.getProperty("os.name");
+      if (osName.startsWith("Mac OS")) {
+        Class fileMgr = Class.forName("com.apple.eio.FileManager");
+        Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
+        openURL.invoke(null, new Object[] {url});
+      } else if (osName.startsWith("Windows")) {
+        Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+      } else { //assume Unix or Linux
+        String[] browsers = { "sensible-browser", "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape" };
+        String browser = null;
+        for (int count = 0; count < browsers.length && browser == null; count++)
+          if (Runtime.getRuntime().exec(new String[] {"which", browsers[count]}).waitFor() == 0)
+            browser = browsers[count];
+        if (browser == null)
+          throw new Exception("Could not find web browser");
+        else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
+      }
+    } catch(Exception ex) {
+      return false;
     }
+    
+    return true;
   }
 
 	public static void main(String[] args) {
@@ -487,8 +467,6 @@ public class DataViewer {
   				rbnbController.monitor();
   			}
       }
-		} else {
-		  ActionFactory.getInstance().getOfflineAction().goOffline();
-    }
+		}
 	}
 }

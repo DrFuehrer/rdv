@@ -3,8 +3,8 @@
  * Real-time Data Viewer
  * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -137,7 +137,7 @@ public class MarkerManager implements DataListener {
    */
   public void putMarker(EventMarker eventMarker) throws Exception {    
     DataTurbine markerSource = new DataTurbine (rbnbSourceName);
-    markerSource.setServerName(rbnbController.getRBNBConnectionString());
+    markerSource.setServerName(rbnbController.getRBNBHostName());
     markerSource.open();
     markerSource.putMarker(eventMarker, rbnbChannel);
     markerSource.closeAndKeep();

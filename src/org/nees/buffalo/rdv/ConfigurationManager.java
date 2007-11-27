@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +45,7 @@ import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -59,6 +59,7 @@ import org.nees.buffalo.rdv.ui.ControlPanel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * A class to manage the application configuration.
@@ -111,13 +112,6 @@ public class ConfigurationManager {
     Iterator it = dataPanels.iterator();
     while (it.hasNext()) {
       DataPanel dataPanel = (DataPanel)it.next();
-      Properties properties = dataPanel.getProperties();
-      
-      if (isPanelDetached(dataPanel, properties)) {
-        if (dataPanel.subscribedChannelCount() == 0)  // A detached panel with no channels subscribed, or a non-existing detached panel 
-          continue; // don't add to configuration
-      }
-      
       out.println("  <dataPanel id=\"" + dataPanel.getClass().getName() + "\">");
       
       if (dataPanel.subscribedChannelCount() > 0) {
@@ -130,7 +124,7 @@ public class ConfigurationManager {
         out.println("    </channels>");
       }
 
-
+      Properties properties = dataPanel.getProperties();
       if (properties.size() > 0) {
         out.println("    <properties>");
         for (Enumeration keys = properties.propertyNames(); keys.hasMoreElements() ;) {
@@ -148,30 +142,6 @@ public class ConfigurationManager {
     out.close();
   }
   
-  /**
-   * Inspect if the given DataPanel is detached from the DataPanelContainer
-   * @param dataPanel to check
-   * @param properties properties for the DataPanel
-   * @return flag indicating detached
-   */
-  private boolean isPanelDetached(DataPanel dataPanel, Properties properties) {
-    if (properties.size() == 0) {
-      return false;
-    }
-    
-    String key, value;
-    for (Enumeration keys = properties.propertyNames(); keys.hasMoreElements() ;) {
-      key = (String)keys.nextElement();
-      if (key == "attached") {
-        value = properties.getProperty(key);
-        if (value == "false")
-          return true;          
-      }
-    }
-    
-    return false;
-  }
-
   /**
    * Load the configuration file from the specified URL and configure the
    * application. This spawns a new thread to do this in the background.

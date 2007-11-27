@@ -3,8 +3,8 @@
  * Real-time Data Viewer
  * http://it.nees.org/software/rdv/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005-2006 University at Buffalo
+ * Copyright (c) 2005-2006 NEES Cyberinfrastructure Center
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,46 +30,22 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.ui;
+package org.nees.buffalo.rdv.data;
 
-import javax.swing.JOptionPane;
+import java.util.EventListener;
 
 /**
- * A class to show popup messages in the UI.
+ * A listener for timestamped data. 
  * 
  * @author Jason P. Hanley
  */
-public class MessagePopup {
-  /** the single instance of this class */
-  protected static MessagePopup instance;
-  
-  protected MessagePopup() {
-    super();
-  }
+public interface DataFileListener extends EventListener {
   
   /**
-   * Get the single instance of this class.
+   * Post timestamped data samples.
    * 
-   * @return  the instance of this class
+   * @param timestamp  the timestamp of the data
+   * @param values     the data
    */
-  public static MessagePopup getInstance() {
-    if (instance == null) {
-      instance = new MessagePopup();
-    }
-    
-    return instance;
-  }
-  
-  /**
-   * Show an error in a popup window.
-   * 
-   * @param error  the error message
-   */
-  public void showError(String error) {
-    JOptionPane.showMessageDialog(
-        null,
-        error,
-        "Error",
-        JOptionPane.ERROR_MESSAGE);
-  }
+  public void postDataSamples(double timestamp, double[] values);
 }

@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +42,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SimpleTimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,7 +50,7 @@ import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.Sink;
 
 /**
- * A class to export numeric or video data from DataTurbine to disk.
+ * A class to export data from data turbine to disk.
  * 
  * @author  Jason P. Hanley
  * @since   1.3
@@ -63,7 +61,7 @@ public class RBNBExport {
    * 
    * @since  1.3
    */
-  static Log log = LogFactory.getLog(RBNBExport.class.getName());
+  static Log log = LogFactory.getLog(RBNBImport.class.getName());
   
   /**
    * The RBNB host name to connect too.
@@ -220,6 +218,7 @@ public class RBNBExport {
   
         // write channel names
         fileWriter.write("Time\t");
+        fileWriter.write("Timestamp\t");
         for (int i=0; i<numericChannels.size(); i++) {
           String channel = (String)numericChannels.get(i);
           String[] channelParts = channel.split("/");
@@ -235,6 +234,7 @@ public class RBNBExport {
         ChannelMap rmap = sink.Fetch(-1);
         
         fileWriter.write("Seconds\t");
+        fileWriter.write("ISO8601\t");
         for (int i=0; i<numericChannels.size(); i++) {
           String channel = (String)numericChannels.get(i);
           String unit = null;
@@ -326,6 +326,7 @@ public class RBNBExport {
           }
           
           fileWriter.write(Double.toString(t-dataStartTime) + "\t");
+          fileWriter.write(RBNBUtilities.secondsToISO8601(t) + "\t");
           for (int i=0; i<numericChannels.size(); i++) {
             String c = (String)numericChannels.get(i);
             if (c.equals(s.getChannel()) && t == s.getTime()) {
@@ -346,13 +347,9 @@ public class RBNBExport {
           }
         }
         
-        String videoChannel, fileName;
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH.mm.ss.SSS'Z'");
-        dateFormat.setTimeZone(new SimpleTimeZone(0, "UTC"));
-        
         for (int i=0; i<multimediaChannels.size(); i++) {
-          videoChannel = (String)multimediaChannels.get(i);
-          int index = dmap.GetIndex(videoChannel);
+          String channel = (String)multimediaChannels.get(i);
+          int index = dmap.GetIndex(channel);
           if (index != -1) {
             int type = dmap.GetType(index);
             if (type == ChannelMap.TYPE_BYTEARRAY) {
@@ -362,7 +359,7 @@ public class RBNBExport {
                 byte[] data = datas[j];
                 // write image file
                 try {
-                  fileName = videoChannel;
+                  String fileName = channel;
                   if (fileName.endsWith(".jpg")) {
                     fileName = fileName.substring(0, fileName.length()-4);
                   }
@@ -371,6 +368,8 @@ public class RBNBExport {
                   }
                   fileName = fileName.replace("/", "-");
                   
+                  SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH.mm.ss.SSS'Z'");
+                  //dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
                   String timeStamp = dateFormat.format(new Date((long)(times[j]*1000)));
                   
                   fileName += "_" + timeStamp + ".jpg";

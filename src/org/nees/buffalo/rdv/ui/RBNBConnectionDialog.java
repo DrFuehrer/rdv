@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +36,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -130,7 +127,7 @@ public class RBNBConnectionDialog extends JDialog {
     c.insets = new Insets(10,10,10,5);
     container.add(rbnbHostNameLabel, c);
 		
-		rbnbHostNameTextField = new JTextField(25);
+		rbnbHostNameTextField = new JTextField(rbnb.getRBNBHostName(), 25);
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
@@ -148,22 +145,13 @@ public class RBNBConnectionDialog extends JDialog {
     c.insets = new Insets(0,10,10,5);
     container.add(rbnbPortLabel, c);
 
-		rbnbPortTextField = new JTextField();
+		rbnbPortTextField = new JTextField(Integer.toString(rbnb.getRBNBPortNumber()));
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.weightx = 1;
 		c.gridx = 1;
 		c.gridy = 2;
 		c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new Insets(0,0,10,10);
-    rbnbPortTextField.addFocusListener(
-      new FocusListener() {
-        public void focusGained(FocusEvent focusEvent) {
-          rbnbPortTextField.setSelectionStart(0);
-          rbnbPortTextField.setSelectionEnd(rbnbPortTextField.getText().length());
-        }
-        public void focusLost(FocusEvent focusEvent){}     
-      }
-    );
     container.add(rbnbPortTextField, c);
 		
 		JPanel buttonPanel = new JPanel();
@@ -206,8 +194,6 @@ public class RBNBConnectionDialog extends JDialog {
 	
 	public void setVisible(boolean visible) {
 		if (visible) {
-      rbnbHostNameTextField.setText(rbnb.getRBNBHostName());
-      rbnbPortTextField.setText(Integer.toString(rbnb.getRBNBPortNumber()));
 			rbnbHostNameTextField.requestFocusInWindow();
 	 		rbnbHostNameTextField.setSelectionStart(0);
 	 		rbnbHostNameTextField.setSelectionEnd(rbnbHostNameTextField.getText().length());			

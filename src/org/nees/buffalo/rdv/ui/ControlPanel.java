@@ -1,10 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://nees.buffalo.edu/software/RDV/
  * 
- * Copyright (c) 2005-2007 University at Buffalo
- * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2005 University at Buffalo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,11 +66,10 @@ import org.nees.buffalo.rdv.rbnb.MetadataListener;
 import org.nees.buffalo.rdv.rbnb.PlaybackRateListener;
 import org.nees.buffalo.rdv.rbnb.Player;
 import org.nees.buffalo.rdv.rbnb.RBNBController;
-import org.nees.buffalo.rdv.rbnb.RBNBHelper;
 import org.nees.buffalo.rdv.rbnb.StateListener;
 import org.nees.buffalo.rdv.rbnb.SubscriptionListener;
 import org.nees.buffalo.rdv.rbnb.TimeListener;
-import org.nees.buffalo.rdv.rbnb.TimeRange;
+import org.nees.buffalo.rdv.ui.TimeSlider.TimeRange;
 import org.nees.rbnb.marker.EventMarker;
 
 import com.rbnb.sapi.ChannelTree;
@@ -263,11 +261,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     locationButton.setBorder(null);
     locationButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
-        TimeRange timeRange = RBNBHelper.getChannelsTimeRange();
-        double time = DateTimeDialog.showDialog(ControlPanel.this, rbnbController.getLocation(), timeRange.start, timeRange.end);
-        if (time >= 0) {
-          rbnbController.setLocation(time);
-        }
+        new JumpDateTimeDialog(rbnbController);
       }
     });
     firstRowPanel.add(locationButton, BorderLayout.EAST);
