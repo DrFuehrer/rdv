@@ -48,13 +48,6 @@
  		<id>org.nees.buffalo.rdv.datapanel.WebDataPanel</id>
  		<name>Web Data Panel</name>
  	</extension>
-	<!--extension>
-		<id>org.nees.buffalo.rdv.datapanel.RendererDataPanel</id>
-		<name>3D Renderer Data Panel</name>
-		<mimeTypes>
-			<mimeType>application/octet-stream</mimeType>
-		</mimeTypes>
-	</extension-->	
 	<!--
 	<extension>
 		<id>org.nees.buffalo.rdv.datapanel.HelloWorldDataPanel</id>
