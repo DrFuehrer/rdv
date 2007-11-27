@@ -1,5 +1,0 @@
-The logic to set the location should be in the controller except when
-the user requests a specific location via the slider bar.
-
-Make sure the data panels are obeyeing the time scale when it makes
-sense to do so.
