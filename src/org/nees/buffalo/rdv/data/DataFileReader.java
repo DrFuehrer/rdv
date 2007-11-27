@@ -48,8 +48,6 @@ import java.util.TimeZone;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
-import org.apache.tools.bzip2.CBZip2InputStream;
-
 /**
  * A class to read data from a data file.
  * 
@@ -283,11 +281,6 @@ public class DataFileReader {
       inputStream = zipInputStream;
     } else if (path.endsWith(".gz")) {
       inputStream = new GZIPInputStream(inputStream);
-    } else if (path.endsWith(".bz2")) {
-      // skip 'BZ' stream marker
-      inputStream.read();
-      inputStream.read();
-      inputStream = new CBZip2InputStream(inputStream);
     }
     
     return new BufferedReader(new InputStreamReader(inputStream));    
