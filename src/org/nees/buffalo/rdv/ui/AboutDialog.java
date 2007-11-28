@@ -222,7 +222,7 @@ public class AboutDialog extends JDialog {
     
     private void loadLicense(JTextArea textArea) {
       try {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(DataViewer.getResourceAsStream("LICENSE")));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(DataViewer.getResourceAsStream("LICENSE.txt")));
 
         String s = null;
         while ((s = reader.readLine()) != null) {
