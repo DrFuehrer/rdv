@@ -142,6 +142,15 @@
 			</fileset>
 			<fileset file="${build.bin}/${ant.project.name}.jar"/>
 		</zip>
+		
+		<tar destfile="${build.dist}/${ant.project.name}-${version}.tar.gz" compression="gzip">
+			<fileset dir=".">
+				<include name="README.txt"/>
+				<include name="LICENSE.txt"/>
+				<include name="NOTICE.txt"/>
+			</fileset>
+			<fileset file="${build.bin}/${ant.project.name}.jar"/>
+		</tar>
 	</target>
 	
 	<target name="dist-src" description="Build the source distribution">
@@ -157,11 +166,24 @@
 		</delete>
 		
 		<zip destfile="${build.dist}/${ant.project.name}-src-${version}.zip">
+			<zipfileset file="debian/rules" filemode="755" prefix="${ant.project.name}-${version}/debian"/>
 			<zipfileset dir="." prefix="${ant.project.name}-${version}">
+				<include name="**"/>
 				<exclude name="${build.dir}/**"/>
 				<exclude name="${lib.dir}/**"/>
+				<exclude name="debian/rules"/>
 			</zipfileset>
 		</zip>
+		
+		<tar destfile="${build.dist}/${ant.project.name}-src-${version}.tar.gz" compression="gzip">
+			<tarfileset file="debian/rules" filemode="755" prefix="${ant.project.name}-${version}/debian"/>
+			<tarfileset dir="." prefix="${ant.project.name}-${version}">
+				<include name="**"/>
+				<exclude name="${build.dir}/**"/>
+				<exclude name="${lib.dir}/**"/>
+				<exclude name="debian/rules"/>
+			</tarfileset>
+		</tar>
 	</target>
 
 	<target name="dist" depends="dist-bin,dist-src" description="Build the binary and source distributions"/>
