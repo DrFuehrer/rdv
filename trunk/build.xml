@@ -145,19 +145,20 @@
 	
 	<target name="dist-src" description="Build the source distribution">
 		<mkdir dir="${build.dist}"/>
+
+		<delete dir="debian/rdv"/>		
+		<delete>
+			<fileset dir="debian">
+				<include name="files"/>
+				<include name="*.debhelper"/>
+				<include name="stamp-ant-build"/>
+			</fileset>
+		</delete>
 		
 		<zip destfile="${build.dist}/${ant.project.name}-src-${version}.zip">
 			<zipfileset dir="." prefix="${ant.project.name}-${version}">
-				<include name="${config.dir}/**"/>
-				<include name="${docs.dir}/**"/>
-				<include name="${icons.dir}/**"/>
-				<include name="launch4j/**"/>
-				<include name="nsis/**"/>
-				<include name="${src.dir}/**/*.java"/>
-				<include name="build.xml"/>
-				<include name="README"/>
-				<include name="LICENSE"/>
-				<include name="version.properties"/>
+				<exclude name="${build.dir}/**"/>
+				<exclude name="${lib.dir}/**"/>
 			</zipfileset>
 		</zip>
 	</target>
@@ -184,6 +185,12 @@
 		<exec executable="makensis">
 			<arg value="/V3"/>
 			<arg value="nsis/rdv.nsi"/>
+		</exec>		
+	</target>
+	
+	<target name="deb" description="Build debian package">
+		<exec executable="dpkg-buildpackage">
+			<arg value="-rfakeroot"/>
 		</exec>		
 	</target>
 	
