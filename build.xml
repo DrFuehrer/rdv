@@ -91,12 +91,9 @@
 	
 	<target name="clean" description="Remove all generated files">
 		<delete dir="${build.dir}"/>
-		<delete dir="${src.data.dir}"/>
 	</target>
 
 	<target name="generate" description="Generate source files">
-		<mkdir dir="${src.data.dir}"/>
-		
 		<xjc schema="${schema.file}"
 			package="${schema.package}"
 			destdir="${src.dir}">
