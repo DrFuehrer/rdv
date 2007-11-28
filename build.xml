@@ -11,7 +11,6 @@
 			
 	<!-- source directory -->
 	<property name="src.dir" value="src"/>
-	<property name="src.data.dir" value="${src.dir}/org/nees/data"/>
 	
 	<!-- tests directory -->
 	<property name="tests.dir" value="tests"/>
@@ -37,10 +36,6 @@
 	<property name="build.dist" value="${build.dir}/dist"/>
 	<property name="build.exe" value="${build.dir}/exe"/>
 
-	<!-- XML schema information -->
-	<property name="schema.file" value="${doc.dir}/nees_central.xsd"/>
-	<property name="schema.package" value="org.nees.data"/>	
-	
 	<!-- environment access via env.* -->
 	<property environment="env"/>
 		
@@ -72,19 +67,6 @@
 		</fileset>
 	</path>
 	
-	<!-- JAXB task -->
-	<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
-	  <classpath>
-		<fileset dir="lib">
-			<include name="activation.jar"/>
-			<include name="jaxb-api.jar"/>
-			<include name="jaxb-impl.jar"/>
-			<include name="jaxb-xjc.jar"/>
-			<include name="jsr173-api.jar"/>
-		</fileset>
-	  </classpath>
-	</taskdef>
-
 	<target name="checkLaunch4j" unless="env.LAUNCH4J_HOME">
 		<fail message="LAUNCH4J_HOME must be defined in your environment."/>
 	</target>
@@ -93,17 +75,8 @@
 		<delete dir="${build.dir}"/>
 	</target>
 
-	<target name="generate" description="Generate source files">
-		<xjc schema="${schema.file}"
-			package="${schema.package}"
-			destdir="${src.dir}">
-			<depends file="${schema.file}"/>
-			<produces dir="${src.data.dir}"/>
-		</xjc>
-	</target>	
-	
 	<!-- Build target -->
-	<target name="compile" depends="generate" description="Build from source">
+	<target name="compile" description="Build from source">
 		<mkdir dir="${build.classes}"/>
 		
 		<javac srcdir="${src.dir}" 
@@ -170,7 +143,7 @@
 		</zip>
 	</target>
 	
-	<target name="src" depends="generate" description="Build the distribution zip file">
+	<target name="src" description="Build the distribution zip file">
 		<mkdir dir="${build.dist}"/>
 		
 		<zip destfile="${build.dist}/${ant.project.name}-src-${version}.zip">
