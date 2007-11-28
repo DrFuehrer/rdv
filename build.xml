@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="RDV" default="compile" basedir=".">
+<project name="rdv" default="compile" basedir=".">
 	
 	<!-- compile with debugging information -->
 	<property name="debug" value="off"/>
@@ -28,14 +28,12 @@
 	<!-- icons directory -->
 	<property name="icons.dir" value="icons"/>
 	
-	<!-- JNLP directory -->
-	<property name="jnlp.dir" value="jnlp"/>
-	
 	<!-- temporary build dir -->
 	<property name="build.dir" value="build"/>
 	<property name="build.classes" value="${build.dir}/classes"/>
 	<property name="build.tests" value="${build.dir}/tests"/>
 	<property name="build.lib" value="${build.dir}/lib"/>
+	<property name="build.bin" value="${build.dir}/bin"/>
 	<property name="build.dist" value="${build.dir}/dist"/>
 	<property name="build.exe" value="${build.dir}/exe"/>
 
@@ -46,24 +44,44 @@
 	<!-- environment access via env.* -->
 	<property environment="env"/>
 		
-	<!-- classpath -->
+	<!-- build classpath -->
 	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="commons-cli.jar"/>
+			<include name="commons-logging.jar"/>
+			<include name="jcommon.jar"/>
+			<include name="jfreechart.jar"/>
+			<include name="looks.jar"/>
+			<include name="rbnb.jar"/>
+			<include name="tritonus_share.jar"/>
+		</fileset>
+	</path>
+
+	<!-- runtime classpath -->
+	<path id="runtimeclasspath">
 		<pathelement location="${build.classes}"/>
 		<pathelement location="."/>
+		<path refid="classpath"/>
 		<fileset dir="${lib.dir}">
-			<include name="*.jar"/>
+			<include name="activation.jar"/>
+			<include name="jaxb-api.jar"/>
+			<include name="jaxb-impl.jar"/>	
+			<include name="jl.jar"/>
+			<include name="jsr173-api.jar"/>
+			<include name="mp3spi.jar"/>
 		</fileset>
 	</path>
 	
 	<!-- JAXB task -->
 	<taskdef name="xjc" classname="com.sun.tools.xjc.XJCTask">
 	  <classpath>
-	  	<fileset file="jaxb/jaxb-xjc.jar"/>
-	    <fileset dir="lib">
-	    	<include name="activation.jar"/>
-	      <include name="jaxb*.jar"/>
-	    	<include name="jsr173_1.0_api.jar"/>
-	    </fileset>
+		<fileset dir="lib">
+			<include name="activation.jar"/>
+			<include name="jaxb-api.jar"/>
+			<include name="jaxb-impl.jar"/>
+			<include name="jaxb-xjc.jar"/>
+			<include name="jsr173-api.jar"/>
+		</fileset>
 	  </classpath>
 	</taskdef>
 
@@ -95,60 +113,83 @@
 			destdir="${build.classes}"
 			classpathref="classpath"
 			debug="${debug}">
-	  </javac>
-		
-		<mkdir dir="${build.tests}"/>
-		
-		<javac srcdir="${tests.dir}" 
-			destdir="${build.tests}"
-			classpath="${build.classes}"
-			classpathref="classpath"
-			debug="${debug}">
-	  </javac>	  
+	  </javac>		
 	</target>
 		
-	<!-- Package standalone jar -->
+	<!-- Build jar -->
 	<target name="jar" depends="compile" description="Build jar">
 		<mkdir dir="${build.lib}"/>
 		
-		<jar destfile="${build.lib}/${ant.project.name}.jar" duplicate="preserve">
+		<jar destfile="${build.lib}/${ant.project.name}.jar">
 			<fileset dir="${build.classes}"/>
 			<fileset file="version.properties"/>
 			<fileset file="rdv.properties"/>
 			<fileset file="LICENSE"/>
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
-			<zipgroupfileset dir="${lib.dir}" excludes="log4j-1.2.13.jar,junit.jar"/>
+			<manifest>
+				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
+				<attribute name="Class-Path" value="activation.jar commons-cli.jar commons-logging.jar jaxb-api.jar jaxb-impl.jar jsr173-api.jar jcommon.jar jfreechart.jar jl.jar looks.jar mp3spi.jar rbnb.jar tritonus_share.jar"/>
+			</manifest>			
+		</jar>		
+	</target>
+	
+	<!-- Package standalone jar -->
+	<target name="bin" depends="jar" description="Build a standalone jar">
+		<mkdir dir="${build.bin}"/>
+		
+		<jar destfile="${build.bin}/${ant.project.name}.jar" duplicate="preserve">
+			<zipgroupfileset file="${build.lib}/${ant.project.name}.jar"/>
+			<zipgroupfileset dir="${lib.dir}">
+				<include name="activation.jar"/>		
+				<include name="commons-cli.jar"/>
+				<include name="commons-logging.jar"/>
+				<include name="jaxb-api.jar"/>
+				<include name="jaxb-impl.jar"/>
+				<include name="jsr173-api.jar"/>
+				<include name="jcommon.jar"/>
+				<include name="jfreechart.jar"/>
+				<include name="jl.jar"/>
+				<include name="looks.jar"/>
+				<include name="mp3spi.jar"/>
+				<include name="rbnb.jar"/>
+				<include name="tritonus_share.jar"/>			  
+			</zipgroupfileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
 			</manifest>		
-		</jar>
+		</jar>		
 	</target>
 	
-	<target name="sign" depends="jar" description="Sign the jar">
-		<input message="Please enter keystore password:" addproperty="keystorepass" />
-		<signjar jar="${build.lib}/${ant.project.name}.jar" alias="neesit" storepass="${keystorepass}"/>	
-	</target>
-	
-	<target name="dist" depends="sign" description="Build the distribution zip file">
+	<target name="dist" depends="bin" description="Build the distribution zip file">
 		<mkdir dir="${build.dist}"/>
 		
-		<copy file="${jnlp.dir}/README" todir="${build.dist}">
-			<filterset>
-				<filter token="DIST_NAME" value="${ant.project.name} ${version}"/>
-				<filter token="DIST_DIR" value="${ant.project.name}-${version}"/>
-				<filter token="DIST_FILE" value="${ant.project.name}-${version}.zip"/>
-			</filterset>
-		</copy>
-		
 		<zip destfile="${build.dist}/${ant.project.name}-${version}.zip">
-			<zipfileset file="${build.lib}/${ant.project.name}.jar" prefix="${ant.project.name}-${version}"/>
-			<zipfileset file="${build.dist}/README" prefix="${ant.project.name}-${version}"/>
-			<zipfileset file="LICENSE" prefix="${ant.project.name}-${version}"/>
-			<zipfileset dir="${jnlp.dir}" excludes="README" prefix="${ant.project.name}-${version}"/>
+			<fileset dir=".">
+				<include name="README"/>
+				<include name="LICENSE"/>
+			</fileset>
+			<fileset file="${build.bin}/${ant.project.name}.jar"/>
 		</zip>
+	</target>
+	
+	<target name="src" depends="generate" description="Build the distribution zip file">
+		<mkdir dir="${build.dist}"/>
 		
-		<delete file="${build.dist}/README"/>
+		<zip destfile="${build.dist}/${ant.project.name}-src-${version}.zip">
+			<zipfileset dir="." prefix="${ant.project.name}-${version}">
+				<include name="${config.dir}/**"/>
+				<include name="${docs.dir}/**"/>
+				<include name="${icons.dir}/**"/>
+				<include name="launch4j/**"/>
+				<include name="nsis/**"/>
+				<include name="${src.dir}/**/*.java"/>
+				<include name="build.xml"/>
+				<include name="README"/>
+				<include name="LICENSE"/>
+				<include name="version.properties"/>
+			</zipfileset>
+		</zip>
 	</target>
 	
 	<target name="exe" depends="checkLaunch4j,jar" description="Build windows executable">
@@ -181,24 +222,33 @@
 		</javadoc>
 	</target>
 	
-  <!-- Run unit tests -->
+	<!-- Run unit tests -->
 	<target name="test" depends="compile" description="Run unit tests">
+		<mkdir dir="${build.tests}"/>
+		
+		<javac srcdir="${tests.dir}" 
+			destdir="${build.tests}"
+			classpath="${build.classes}"
+			classpathref="classpath"
+			debug="${debug}">
+		</javac>	  
+	
 		<junit printsummary="true" haltonfailure="true">
 			<classpath>
 				<path refid="classpath"/>
 				<pathelement location="${build.classes}"/>
 				<pathelement location="${build.tests}"/>
-		  </classpath>
-	    <formatter type="plain"/>
+			</classpath>
+			<formatter type="plain"/>
 			<batchtest fork="true">
 				<fileset dir="${build.tests}" includes="**/*Test.class"/>
 			</batchtest>
-	  </junit>
-  </target>
+		</junit>
+	</target>
   
 	<!-- Run the RDV -->
 	<target name="run" depends="compile" description="Run application">
-		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+		<java classpathref="runtimeclasspath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>			
@@ -206,12 +256,9 @@
 	</target>
 
 	<target name="help" depends="compile" description="Show usage">
-		<java classpathref="classpath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+		<java classpathref="runtimeclasspath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
 			<arg line="--help"/>
 		</java>
 	</target>
-		
-	<!-- Catch-all target to aggregate everything -->
-	<target name="all" depends="clean,compile,test,jar,sign,dist" description="Clean, compile, test, jar, sign, and dist"/>
 	
 </project>
