@@ -94,7 +94,7 @@
 			<fileset dir="${build.classes}"/>
 			<fileset file="version.properties"/>
 			<fileset file="rdv.properties"/>
-			<fileset file="LICENSE"/>
+			<fileset file="LICENSE.txt"/>
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
 			<manifest>
@@ -136,8 +136,9 @@
 		
 		<zip destfile="${build.dist}/${ant.project.name}-${version}.zip">
 			<fileset dir=".">
-				<include name="README"/>
-				<include name="LICENSE"/>
+				<include name="README.txt"/>
+				<include name="LICENSE.txt"/>
+				<include name="NOTICE.txt"/>
 			</fileset>
 			<fileset file="${build.bin}/${ant.project.name}.jar"/>
 		</zip>
