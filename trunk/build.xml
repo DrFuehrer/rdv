@@ -131,7 +131,7 @@
 		</jar>		
 	</target>
 	
-	<target name="dist" depends="bin" description="Build the distribution zip file">
+	<target name="dist-bin" depends="bin" description="Build the binary distribution">
 		<mkdir dir="${build.dist}"/>
 		
 		<zip destfile="${build.dist}/${ant.project.name}-${version}.zip">
@@ -143,7 +143,7 @@
 		</zip>
 	</target>
 	
-	<target name="src" description="Build the distribution zip file">
+	<target name="dist-src" description="Build the source distribution">
 		<mkdir dir="${build.dist}"/>
 		
 		<zip destfile="${build.dist}/${ant.project.name}-src-${version}.zip">
@@ -161,6 +161,8 @@
 			</zipfileset>
 		</zip>
 	</target>
+
+	<target name="dist" depends="dist-bin,dist-src" description="Build the binary and source distributions"/>
 	
 	<target name="exe" depends="checkLaunch4j,jar" description="Build windows executable">
 		<mkdir dir="${build.exe}"/>
