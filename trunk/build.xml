@@ -123,14 +123,6 @@
 				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
 			</manifest>		
 		</jar>
-		
-		<!--taskdef resource="proguard/ant/task.properties"
-		         classpath="proguard/proguard.jar" />
-		<proguard configuration="proguard/RDV.pro">
-			<injar path="${build.lib}/${ant.project.name}.jar"/>
-			<outjar path="${build.lib}/${ant.project.name}p.jar"/>
-		</proguard>
-		<move file="${build.lib}/${ant.project.name}p.jar" tofile="${build.lib}/${ant.project.name}.jar"/ -->
 	</target>
 	
 	<target name="sign" depends="jar" description="Sign the jar">
