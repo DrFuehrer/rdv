@@ -81,7 +81,7 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
 	 * 
 	 * @since  1.1
 	 */
-	ArrayList dataPanels;
+	ArrayList<Component> dataPanels;
 	
 	/**
 	 * Display the data panels horizontally.
@@ -116,7 +116,7 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
    * 
    * @since  1.3
    */
-  private HashMap dragGestures;
+  private HashMap<Component,DragGestureRecognizer> dragGestures;
   
   /**
    * The position of components that were in this container.
@@ -138,8 +138,8 @@ public class DataPanelContainer extends JPanel implements DragGestureListener, D
     
     initLogo();
     
-		dataPanels = new ArrayList();
-    dragGestures =  new HashMap();
+    dataPanels = new ArrayList<Component>();
+    dragGestures =  new HashMap<Component,DragGestureRecognizer>();
 		
 		layout = HORIZONTAL_LAYOUT;
     
