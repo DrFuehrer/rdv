@@ -993,7 +993,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
 
   public void showExportVideoDialog() {
-    List channels = channelListPanel.getSelectedChannels();
+    List<String> channels = channelListPanel.getSelectedChannels();
     if (channels.size() == 0) {
       JOptionPane.showMessageDialog(this, "No video channel(s) selected!", "video export", JOptionPane.ERROR_MESSAGE);
       return;
@@ -1001,13 +1001,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     showExportVideoDialog(channels);
   }
   
-  public void showExportVideoDialog(List channels) {
+  public void showExportVideoDialog(List<String> channels) {
     new ExportVideoDialog(frame, rbnb, channels);
   }
 
   
   public void showExportDialog() {
-    List channels = channelListPanel.getSelectedChannels();
+    List<String> channels = channelListPanel.getSelectedChannels();
     if (channels.size() == 0) {
       channels = RBNBUtilities.getAllChannels(rbnb.getMetadataManager().getMetadataChannelTree(), channelListPanel.isShowingHiddenChannles());
     }
@@ -1015,7 +1015,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     showExportDialog(channels);
   }
   
-  public void showExportDialog(List channels) {
+  public void showExportDialog(List<String> channels) {
     new ExportDialog(frame, rbnb, channels);
   }
  	

@@ -36,16 +36,14 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SimpleTimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.rdv.util.ReadableNodeComparator;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
@@ -169,7 +167,7 @@ public final class RBNBUtilities {
    * @return       a sorted list of children of the root element
    * @since        1.3
    */
-  public static List getSortedChildren(ChannelTree ctree) {
+  public static List<ChannelTree.Node> getSortedChildren(ChannelTree ctree) {
     return getSortedChildren(ctree, true);
   }
   
@@ -182,7 +180,7 @@ public final class RBNBUtilities {
    * @return                    a sorted list of children of the root element
    * @since                     1.3
    */
-  public static List getSortedChildren(ChannelTree ctree, boolean showHiddenChildren) {
+  public static List<ChannelTree.Node> getSortedChildren(ChannelTree ctree, boolean showHiddenChildren) {
     return getSortedChildren(ctree.rootIterator(), showHiddenChildren);
   }
   
@@ -193,7 +191,7 @@ public final class RBNBUtilities {
    * @return      a sorted list of children
    * @since       1.3
    */
-  public static List getSortedChildren(ChannelTree.Node node) {
+  public static List<ChannelTree.Node> getSortedChildren(ChannelTree.Node node) {
     return getSortedChildren(node, true);
   }
   
@@ -206,12 +204,12 @@ public final class RBNBUtilities {
    * @return                    a sorted list of children
    * @since                     1.3
    */
-  public static List getSortedChildren(ChannelTree.Node node, boolean showHiddenChildren) {
+  public static List<ChannelTree.Node> getSortedChildren(ChannelTree.Node node, boolean showHiddenChildren) {
     return getSortedChildren(node.getChildren().iterator(), showHiddenChildren);
   }  
   
-  private static List getSortedChildren(Iterator it, boolean showHiddenChildren) {
-    List list = new ArrayList();
+  private static List<ChannelTree.Node> getSortedChildren(Iterator it, boolean showHiddenChildren) {
+    List<ChannelTree.Node> list = new ArrayList<ChannelTree.Node>();
 
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
@@ -225,54 +223,11 @@ public final class RBNBUtilities {
       }
     }
     
-    Collections.sort(list, new HumanComparator());
+    Collections.sort(list, new ReadableNodeComparator());
 
     return list;
   }
   
-  public static class HumanComparator implements Comparator {
-    private Pattern p;
-    
-    public HumanComparator() {
-      p = Pattern.compile("(\\D*)(\\d+)(\\D*)");  
-    }
-    
-    public int compare(Object o1, Object o2) {      
-      String s1;
-      if (o1 instanceof ChannelTree.Node) {
-        s1 = ((ChannelTree.Node)o1).getName();
-      } else {
-        s1 = (String)o1;
-      }
-      s1 = s1.toLowerCase();
-      
-      String s2;
-      if (o2 instanceof ChannelTree.Node) {
-        s2 = ((ChannelTree.Node)o2).getName();        
-      } else {
-        s2 = (String)o2;
-      }
-      s2 = s2.toLowerCase();
-      
-      if (s1.equals(s2)) {
-        return 0;  
-      }
-      
-      Matcher m1 = p.matcher(s1);
-      Matcher m2 = p.matcher(s2);
-      
-      if (m1.matches() && m2.matches() &&
-          m1.group(1).equals(m2.group(1)) &&
-          m1.group(3).equals(m2.group(3))) {
-        long l1 = Long.parseLong(m1.group(2));
-        long l2 = Long.parseLong(m2.group(2));
-        return l1<l2?-1:1;
-      } else {
-        return s1.compareTo(s2);
-      }
-    }    
-  }  
-
   /**
    * Make a guess at the mime type for a channel that has not specified one.
    * 
@@ -304,8 +259,8 @@ public final class RBNBUtilities {
    * @return        a list of channel names
    * @sicne         1.3
    */
-  public static List getAllChannels(ChannelTree ctree, boolean hidden) {
-    ArrayList channels = new ArrayList();
+  public static List<String> getAllChannels(ChannelTree ctree, boolean hidden) {
+    List<String> channels = new ArrayList<String>();
     Iterator it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
