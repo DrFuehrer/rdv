@@ -136,16 +136,6 @@ public class DateTimeDialog extends JDialog {
   }
   
   /**
-   * Creates a dialog to selected a date and time.
-   * 
-   * @param owner            the parent frame
-   * @param initialDateTime  the initial date and time to use
-   */
-  private DateTimeDialog(Frame owner, double initialDateTime) {
-    this(owner, initialDateTime, 0, Double.MAX_VALUE);
-  }
-  
-  /**
    * Creates a dialog to selected a date and time.  The selected time will be
    * bounded by the minimum and maximum times.
    * 
