@@ -909,7 +909,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 	} // postDataTabular ()
 
 	public List subscribedChannels() {
-		List allChannels = new ArrayList();
+		List<String> allChannels = new ArrayList<String>();
 
 		for (int i = 0; i < tableModels.size(); i++) {
 			DataTableModel tableModel = tableModels.get(i);
@@ -978,7 +978,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 		private String[] columnNames = { "Name", "Value", "Unit", "Min", "Max",
 				"Min Thresh", "Max Thresh" };
 
-		private ArrayList rows;
+		private ArrayList<DataRow> rows;
 
 		private boolean cleared;
 
@@ -993,7 +993,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 
 		public DataTableModel() {
 			super();
-			rows = new ArrayList();
+			rows = new ArrayList<DataRow>();
 			cleared = true;
 			maxMinVisible = false;
 			thresholdVisible = false;
