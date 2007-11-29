@@ -368,29 +368,6 @@ public class SimpleInternalFrame extends JPanel {
     // Helper Classes *******************************************************
 
     // A custom border for the raised header pseudo 3D effect.
-    private static class RaisedHeaderBorder extends AbstractBorder {
-
-        /** serialization version identifier */
-        private static final long serialVersionUID = 7023779946838587293L;
-        
-        private static final Insets INSETS = new Insets(1, 1, 1, 0);
-
-        public Insets getBorderInsets(Component c) { return INSETS; }
-
-        public void paintBorder(Component c, Graphics g,
-            int x, int y, int w, int h) {
-                
-            g.translate(x, y);
-            g.setColor(UIManager.getColor("controlLtHighlight"));
-            g.fillRect(0, 0,   w, 1);
-            g.fillRect(0, 1,   1, h-1);
-            g.setColor(UIManager.getColor("controlShadow"));
-            g.fillRect(0, h-1, w, 1);
-            g.translate(-x, -y);
-        }
-    }
-    
-    // A custom border for the raised header pseudo 3D effect.
     private static class BottomLineBorder extends AbstractBorder {
 
         /** serialization version identifier */
