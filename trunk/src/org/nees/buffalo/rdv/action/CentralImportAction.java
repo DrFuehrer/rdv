@@ -34,7 +34,6 @@ package org.nees.buffalo.rdv.action;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import org.nees.buffalo.rdv.auth.AuthenticationManager;
