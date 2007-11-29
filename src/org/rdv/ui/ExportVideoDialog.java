@@ -81,6 +81,7 @@ import org.rdv.rbnb.ProgressListener;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBExport;
 import org.rdv.rbnb.RBNBUtilities;
+import org.rdv.util.ReadableStringComparator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -116,9 +117,9 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   JButton exportButton;
   JButton cancelButton;
   
-  List channels;
+  List<String> channels;
   
-  public ExportVideoDialog(JFrame owner, RBNBController rbnb, List channels) {
+  public ExportVideoDialog(JFrame owner, RBNBController rbnb, List<String> channels) {
     
     super(owner);
     
@@ -127,7 +128,7 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     this.rbnb = rbnb;
 
     this.channels = channels;
-    Collections.sort(channels, new RBNBUtilities.HumanComparator());
+    Collections.sort(channels, new ReadableStringComparator());
     
     export = new RBNBExport(rbnb.getRBNBHostName(), rbnb.getRBNBPortNumber());
     exporting = false;
