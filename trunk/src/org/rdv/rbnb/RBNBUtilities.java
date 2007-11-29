@@ -325,8 +325,8 @@ public final class RBNBUtilities {
    * @return        a list of channel names
    * @since         1.3
    */
-  public static List getChildChannels(ChannelTree.Node source, boolean hidden) {
-    ArrayList channels = new ArrayList();
+  public static List<String> getChildChannels(ChannelTree.Node source, boolean hidden) {
+    ArrayList<String> channels = new ArrayList<String>();
     Iterator children = source.getChildren().iterator();
     while (children.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)children.next();
