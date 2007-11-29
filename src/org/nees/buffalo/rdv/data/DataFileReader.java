@@ -117,7 +117,7 @@ public class DataFileReader {
    * @throws IOException  if there is an error opening or reading the data file
    */
   public DataFileReader(File file) throws IOException {
-    this(file.toURL());
+    this(file.toURI().toURL());
   }
 
   /**

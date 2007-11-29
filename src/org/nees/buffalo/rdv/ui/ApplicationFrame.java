@@ -309,7 +309,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
         if(returnVal == JFileChooser.APPROVE_OPTION) {
           File configFile = chooser.getSelectedFile();
           try {            
-            URL configURL = configFile.toURL();
+            URL configURL = configFile.toURI().toURL();
             dataViewer.getConfigurationManager().loadConfiguration(configURL);
           } catch (MalformedURLException e) {
             dataViewer.alertError("\"" + configFile + "\" is not a valid configuration file URL.");
