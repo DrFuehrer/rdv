@@ -98,7 +98,7 @@ public class CentralTreeModel implements TreeModel {
    * @return      the children of the parent node
    */
   private List getChildren(Object node) {
-    ArrayList children = new ArrayList();
+    List<Object> children = new ArrayList<Object>();
     
     if (node instanceof Central) {
       Central central = (Central)node;
@@ -331,7 +331,7 @@ public class CentralTreeModel implements TreeModel {
    * @param dataFile  the data file to update
    */
   public void setDataFile(DataFile dataFile) {
-    List path = null;
+    List<Object> path = null;
     
     for (Project project : root.getProject()) {
       path = setDataFile(project.getDataFile(), dataFile);
@@ -397,21 +397,21 @@ public class CentralTreeModel implements TreeModel {
    * @param dataFile   the data file to search for
    * @return           the path to the data file, or null if it was not found
    */
-  private List setDataFile(List<DataFile> dataFiles, DataFile dataFile) {
+  private List<Object> setDataFile(List<DataFile> dataFiles, DataFile dataFile) {
     for (int i=0; i<dataFiles.size(); i++) {
       DataFile df = dataFiles.get(i);
       if (dataFile.getPath().equals(df.getPath()) &&
           dataFile.getName().equals(df.getName())) {
         dataFiles.set(i, dataFile);
 
-        List path = new ArrayList();
+        List<Object> path = new ArrayList<Object>();
         path.add(dataFile);
         return path;
       }
     }
     
     for (DataFile df : dataFiles) {
-      List path = setDataFile(df.getDataFile(), dataFile);
+      List<Object> path = setDataFile(df.getDataFile(), dataFile);
       if (path != null) {
         path.add(0, df);
         return path;
