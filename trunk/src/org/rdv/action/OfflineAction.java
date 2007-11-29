@@ -45,6 +45,10 @@ import org.rdv.ui.MessagePopup;
  * @author Jason P. Hanley
  */
 public class OfflineAction extends DataViewerAction {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 1846238760123044843L;
+
   public OfflineAction() {
     super(
         "Work offline",

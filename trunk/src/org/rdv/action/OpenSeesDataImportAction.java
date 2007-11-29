@@ -33,6 +33,9 @@ import javax.xml.transform.stream.StreamSource;
  */
 public class OpenSeesDataImportAction extends DataImportAction {
   
+  /** serialization version identifier */
+  private static final long serialVersionUID = -6446885350157840581L;
+
   String outputDataFileName = "data.dat";
   
   /** Reader for inpout file  */

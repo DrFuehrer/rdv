@@ -51,6 +51,10 @@ import org.rdv.DataViewer;
  * @author Jason P. Hanley
  */
 public class CentralTreeCellRenderer extends DefaultTreeCellRenderer {
+  
+  /** serialization version identifier */
+  private static final long serialVersionUID = 4022067915927862899L;
+
   public Component getTreeCellRendererComponent(JTree tree, Object node, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
     Component c = super.getTreeCellRendererComponent(tree, node, selected, expanded, leaf, row, hasFocus);
     

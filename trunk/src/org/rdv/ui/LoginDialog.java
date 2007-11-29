@@ -64,7 +64,10 @@ import org.rdv.auth.GridAuthentication;
  */
 public class LoginDialog extends JDialog {
 
- 	static Log log = LogFactory.getLog(LoginDialog.class.getName());
+  /** serialization version identifier */
+  private static final long serialVersionUID = 7914618740145224995L;
+
+	static Log log = LogFactory.getLog(LoginDialog.class.getName());
 	
 	JLabel headerLabel;
   

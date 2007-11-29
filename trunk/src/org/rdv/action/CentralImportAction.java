@@ -47,6 +47,10 @@ import org.rdv.ui.LoginDialog;
  *
  */
 public class CentralImportAction extends DataViewerAction {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 8163590098771042420L;
+
   /**
    * Creates the central import action.
    */

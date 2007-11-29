@@ -50,6 +50,10 @@ import javax.swing.JProgressBar;
  * @since   1.2
  */
 public class LoadingDialog extends JDialog {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 234013397052656084L;
+
 	/**
 	 * The owner of the dialog.
 	 * 

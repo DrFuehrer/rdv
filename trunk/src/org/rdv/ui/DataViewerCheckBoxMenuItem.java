@@ -36,6 +36,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 
 import org.rdv.action.DataViewerAction;
 
@@ -45,7 +46,11 @@ import org.rdv.action.DataViewerAction;
  * 
  * @author Jason P. Hanley
  */
-public class DataViewerCheckBoxMenuItem extends javax.swing.JCheckBoxMenuItem {
+public class DataViewerCheckBoxMenuItem extends JCheckBoxMenuItem {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 1237273770893644022L;
+
   /**
    * Creates the check box menu item from the given action.
    * 

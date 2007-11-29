@@ -89,6 +89,10 @@ import org.rdv.rbnb.RBNBUtilities;
  * @since   1.2
  */
 public class ExportDialog extends JDialog implements ProgressListener {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 6145144842086826860L;
+
   static Log log = LogFactory.getLog(ExportDialog.class.getName());
   
   ExportDialog dialog;
@@ -558,6 +562,9 @@ public class ExportDialog extends JDialog implements ProgressListener {
   
   class CheckListRenderer extends JCheckBox implements ListCellRenderer {
     
+    /** serialization version identifier */
+    private static final long serialVersionUID = 1325363168202615340L;
+
     public Component getListCellRendererComponent(JList list, Object value,
                                                   int index, boolean isSelected,
                                                   boolean hasFocus) {

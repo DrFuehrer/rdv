@@ -41,6 +41,10 @@ import java.util.List;
  * @author Jason P. Hanley
  */
 public class ChannelListDataFlavor extends DataFlavor {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -4345159524096213154L;
+
   /**
    * Creates the data flavor.
    */

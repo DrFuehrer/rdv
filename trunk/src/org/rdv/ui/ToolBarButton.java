@@ -41,6 +41,10 @@ import org.rdv.DataViewer;
  * @author Jason P. Hanley
  */
 public class ToolBarButton extends JButton {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 7779959799931515708L;
+
   public ToolBarButton(String iconFileName) {
     this(iconFileName, null);
   }

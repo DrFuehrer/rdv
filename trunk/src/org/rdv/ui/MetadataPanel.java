@@ -56,6 +56,9 @@ import com.rbnb.sapi.ChannelTree;
  */
 public class MetadataPanel extends JPanel implements MetadataListener, ChannelSelectionListener {
   
+  /** serialization version identifier */
+  private static final long serialVersionUID = 5913041782729190355L;
+
   static Log log = LogFactory.getLog(ChannelManager.class.getName());
   
   private RBNBController rbnb;

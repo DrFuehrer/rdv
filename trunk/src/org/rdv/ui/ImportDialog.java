@@ -64,6 +64,10 @@ import org.rdv.rbnb.RBNBImport;
  * @author Jason P. Hanley
  */
 public class ImportDialog extends JDialog implements ProgressListener {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -8951464342942699399L;
+
 	static Log log = LogFactory.getLog(ImportDialog.class.getName());
 	
 	JTextField sourceNameTextField;

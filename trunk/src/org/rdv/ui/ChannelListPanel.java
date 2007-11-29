@@ -100,6 +100,10 @@ import java.beans.PropertyChangeListener;
  * @author Jason P. Hanley
  */
 public class ChannelListPanel extends JPanel implements MetadataListener, StateListener {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -5091214984427475802L;
+
 	static Log log = LogFactory.getLog(ChannelListPanel.class.getName());
 
 	private DataPanelManager dataPanelManager;
@@ -500,6 +504,10 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
   }
   
   private class ChannelTransferHandler extends TransferHandler {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = 5965378439143524577L;
+
     public int getSourceActions(JComponent c) {
       return DnDConstants.ACTION_LINK;
     }

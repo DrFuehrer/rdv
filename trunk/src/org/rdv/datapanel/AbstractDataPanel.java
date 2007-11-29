@@ -962,6 +962,10 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	public void dragExit(DropTargetEvent e) {}
   
   class ChannelTitle extends JPanel {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = -7191565876111378704L;
+
     public ChannelTitle(String channelName) {
       this(channelName, channelName);
     }

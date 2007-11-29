@@ -66,6 +66,9 @@ import org.rdv.DataViewer;
  */
 public class DataPanelContainer extends JPanel implements DragGestureListener, DragSourceListener {
 
+  /** serialization version identifier */
+  private static final long serialVersionUID = -2496258563984574021L;
+
 	/**
 	 * The logger for this class.
 	 * 

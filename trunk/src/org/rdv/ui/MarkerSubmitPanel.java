@@ -60,6 +60,10 @@ import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
  * @author Jason P. Hanley
  */
 public class MarkerSubmitPanel extends JPanel {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 7833670559216668914L;
+
   /**
    * The rbnb controller to interface with the server
    */

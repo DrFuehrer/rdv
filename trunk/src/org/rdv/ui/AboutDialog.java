@@ -67,6 +67,9 @@ import org.rdv.Version;
  */
 public class AboutDialog extends JDialog {
   
+  /** serialization version identifier */
+  private static final long serialVersionUID = 2530934125867161659L;
+
   LicenseDialog licenseDialog;
 		
 	public AboutDialog(JFrame owner) {
@@ -160,6 +163,10 @@ public class AboutDialog extends JDialog {
   }
 
   class LicenseDialog extends JDialog {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = 7319178973244961918L;
+
     public LicenseDialog(JDialog owner) {
       super(owner);
       

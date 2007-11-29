@@ -64,6 +64,10 @@ import org.rdv.rbnb.TimeRange;
  * @author Jason P. Hanley
  */
 public class TimeSlider extends JComponent implements MouseListener, MouseMotionListener {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 2429052022677466231L;
+
   /** The logger for this class */
   protected static final Log log = LogFactory.getLog(TimeSlider.class.getName());
   

@@ -48,6 +48,10 @@ import javax.swing.JProgressBar;
  * @author Jason P. Hanley
  */
 public class ProgressWindow extends JDialog {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 2629422248834179713L;
+
   private JProgressBar progressBar;
   
   private JLabel statusLabel;

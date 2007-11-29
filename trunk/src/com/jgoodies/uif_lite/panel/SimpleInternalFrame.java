@@ -65,6 +65,9 @@ import com.jgoodies.looks.LookUtils;
 
 public class SimpleInternalFrame extends JPanel {
 
+    /** serialization version identifier */
+    private static final long serialVersionUID = -6122646076564590969L;
+    
     private JComponent    title;
     private GradientPanel gradientPanel;
     private JPanel        headerPanel;
@@ -367,6 +370,9 @@ public class SimpleInternalFrame extends JPanel {
     // A custom border for the raised header pseudo 3D effect.
     private static class RaisedHeaderBorder extends AbstractBorder {
 
+        /** serialization version identifier */
+        private static final long serialVersionUID = 7023779946838587293L;
+        
         private static final Insets INSETS = new Insets(1, 1, 1, 0);
 
         public Insets getBorderInsets(Component c) { return INSETS; }
@@ -387,6 +393,9 @@ public class SimpleInternalFrame extends JPanel {
     // A custom border for the raised header pseudo 3D effect.
     private static class BottomLineBorder extends AbstractBorder {
 
+        /** serialization version identifier */
+        private static final long serialVersionUID = 4096572266433568642L;
+
         private static final Insets INSETS = new Insets(0, 0, 1, 0);
 
         public Insets getBorderInsets(Component c) { return INSETS; }
@@ -402,6 +411,9 @@ public class SimpleInternalFrame extends JPanel {
     // A custom border that has a shadow on the right and lower sides.
     private static class ShadowBorder extends AbstractBorder {
 
+        /** serialization version identifier */
+        private static final long serialVersionUID = 1339921423969757031L;
+        
         private static final Insets INSETS = new Insets(1, 1, 3, 3);
 
         public Insets getBorderInsets(Component c) { return INSETS; }
@@ -448,6 +460,9 @@ public class SimpleInternalFrame extends JPanel {
     // A panel with a horizontal gradient background.
     private static class GradientPanel extends JPanel {
         
+        /** serialization version identifier */
+        private static final long serialVersionUID = 4814354062739580988L;
+
         private GradientPanel(LayoutManager lm, Color background) {
             super(lm);
             setBackground(background);

@@ -103,6 +103,9 @@ import com.jgoodies.uif_lite.component.Factory;
  * @since   1.2
  */
 public class ApplicationFrame extends JFrame implements MessageListener, ConnectionListener, StateListener {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = 1L;
 	
 	static Log log = LogFactory.getLog(ApplicationFrame.class.getName());
 	
@@ -1020,6 +1023,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
    * A check box menu item that uses the "selected" property from it's action.
    */
   class SelectedCheckBoxMenuItem extends JCheckBoxMenuItem {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = 831834301317733433L;
+
     /**
      * Create a check box menu item from the action.
      * 

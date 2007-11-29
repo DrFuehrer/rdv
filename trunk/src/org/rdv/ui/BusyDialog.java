@@ -51,6 +51,10 @@ import javax.swing.JProgressBar;
  * @since   1.2
  */
 public class BusyDialog extends JDialog {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 3682219369836028271L;
+
 	/**
 	 * The owner of the dialog.
 	 * 

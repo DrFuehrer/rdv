@@ -38,6 +38,10 @@ package org.nees.central;
  * @author Jason P. Hanley
  */
 public class CentralException extends Exception {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 3650125725823342231L;
+
   /**
    * Creates the exception with the given message.
    * 

@@ -51,8 +51,11 @@ import org.rdv.DataViewer;
  * <a href="http://forum.java.sun.com/thread.jspa?forumID=57&threadID=454021">
  * Java Technology Forums</a> in a post by colada.
  */
-public class ScrollablePopupMenu extends JPopupMenu
-{
+public class ScrollablePopupMenu extends JPopupMenu {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 2722054528031150421L;
+
     /** How fast the scrolling will happen. */
     private int scrollSpeed = 100;
     /** Handles the scrolling upwards. */
