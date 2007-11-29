@@ -124,7 +124,7 @@ public class DataImportAction extends DataViewerAction {
   public void importData(File dataFile, String sourceName) {
     URL dataFileURL = null;
     try {
-      dataFileURL = dataFile.toURL();
+      dataFileURL = dataFile.toURI().toURL();
     } catch (MalformedURLException e) {}
     
     importData(dataFileURL, sourceName);

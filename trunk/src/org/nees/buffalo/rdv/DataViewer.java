@@ -444,7 +444,7 @@ public class DataViewer {
         if (configFile.matches("^[a-zA-Z]+://.*")) {
           configURL = new URL(configFile);
         } else {
-          configURL = new File(configFile).toURL();
+          configURL = new File(configFile).toURI().toURL();
         }
         
         dataViewer.getConfigurationManager().loadConfiguration(configURL);
