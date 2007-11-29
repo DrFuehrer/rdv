@@ -1517,8 +1517,10 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
             (y1 < 0.0));
       }
 
-      updateCrosshairValues(crosshairState, x1, y1, transX1, transY1,
-          orientation);
+      int domainAxisIndex = plot.getDomainAxisIndex(domainAxis);
+      int rangeAxisIndex = plot.getRangeAxisIndex(rangeAxis);
+      updateCrosshairValues(crosshairState, x1, y1, domainAxisIndex,
+          rangeAxisIndex, transX1, transY1, orientation);
 
       // add an entity for the item...
       if (entities != null && bAddEntity) {
