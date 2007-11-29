@@ -165,14 +165,14 @@ public class CentralClient {
     }      
     
     // unmarshall web service response
-    JAXBElement<Central> centralElement;
+    JAXBElement centralElement;
     try {
-      centralElement = (JAXBElement<Central>)unmarshaller.unmarshal(source);
+      centralElement = (JAXBElement)unmarshaller.unmarshal(source);
     } catch (JAXBException e) {
       throw new CentralException("NEEScentral returned an invalid response", e);
     }
     
-    central = centralElement.getValue();
+    central = (Central)centralElement.getValue();
     
     return central;
   }
