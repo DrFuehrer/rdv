@@ -30,64 +30,47 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.action;
 
-import org.rdv.rbnb.LocalServer;
+import java.awt.event.ActionEvent;
 
-import junit.framework.TestCase;
+import javax.swing.JOptionPane;
+
+import org.rdv.auth.AuthenticationManager;
+import org.rdv.ui.CentralImportDialog;
+import org.rdv.ui.LoginDialog;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * An action to import data from NEEScentral into RDV.
  * 
  * @author Jason P. Hanley
+ *
  */
-public class LocalServerTest extends TestCase {
+public class CentralImportAction extends DataViewerAction {
   /**
-   * Test getting the singleton instace of this class.
+   * Creates the central import action.
    */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
+  public CentralImportAction() {
+    super("Import data from NEEScentral");
   }
-
+  
   /**
-   * Test starting the server.
+   * Displays the central import dialog. If the user is not logged in, it asks
+   * them if they would like to.
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
+  public void actionPerformed(ActionEvent ae) {
+    if (AuthenticationManager.getInstance().getAuthentication() == null) {
+      int ret = JOptionPane.showConfirmDialog(null,
+        "To access protected files, you must be logged in to NEEScentral.\n" +
+        "Do you want to login now?",
+        "Login to NEEScentral?",
+        JOptionPane.YES_NO_OPTION,
+        JOptionPane.WARNING_MESSAGE);
+      if (ret == JOptionPane.YES_OPTION) {
+        new LoginDialog(null);
+      }
+    }
     
-    server.startServer();
-    assertTrue(server.isServerRunning());
-  }
-
-  /**
-   * Test stopping the server.
-   */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+    new CentralImportDialog();
   }
 }

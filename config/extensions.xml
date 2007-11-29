@@ -1,6 +1,6 @@
 <extensions>
 	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.JPEGDataPanel</id>
+		<id>org.rdv.datapanel.JPEGDataPanel</id>
 		<name>Video/Photo Data Panel</name>
 		<mimeTypes>
 			<mimeType>image/jpeg</mimeType>
@@ -8,41 +8,35 @@
 		</mimeTypes>
 	</extension>
 	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.TimeSeriesDataPanel</id>
+		<id>org.rdv.datapanel.TimeSeriesDataPanel</id>
 		<name>Time Series Data Panel</name>
 		<mimeTypes>
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>
 	</extension>
 	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.XYDataPanel</id>
+		<id>org.rdv.datapanel.XYDataPanel</id>
 		<name>XY Data Panel</name>
 		<mimeTypes>
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>
 	</extension>	
 	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.DigitalTabularDataPanel</id>
+		<id>org.rdv.datapanel.DigitalTabularDataPanel</id>
 		<name>Tabular Data Panel</name>
 		<mimeTypes>
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>		
 	</extension>
 	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.StringDataPanel</id>
+		<id>org.rdv.datapanel.StringDataPanel</id>
 		<name>Text Data Panel</name>
 		<mimeTypes>
 			<mimeType>text/plain</mimeType>
 		</mimeTypes>
 	</extension>
  	<extension>
- 		<id>org.nees.buffalo.rdv.datapanel.WebDataPanel</id>
+ 		<id>org.rdv.datapanel.WebDataPanel</id>
  		<name>Web Data Panel</name>
  	</extension>
-	<!--
-	<extension>
-		<id>org.nees.buffalo.rdv.datapanel.HelloWorldDataPanel</id>
-		<name>Hello World Data Panel</name>
-	</extension>
-	-->
 </extensions>

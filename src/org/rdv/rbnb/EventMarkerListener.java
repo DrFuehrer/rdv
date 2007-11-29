@@ -30,64 +30,27 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.rbnb;
 
-import org.rdv.rbnb.LocalServer;
+import java.util.EventListener;
 
-import junit.framework.TestCase;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * A listener for receiving event markers.
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
+public interface EventMarkerListener extends EventListener{
+  
   /**
-   * Test getting the singleton instace of this class.
+   * Called when a new event marker is received. 
+   * 
+   * @param marker  the new event marker
    */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
-  }
-
+  public void eventMarkerAdded(EventMarker marker);
+  
   /**
-   * Test starting the server.
+   * Called when the all the event markers are removed.
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-  }
-
-  /**
-   * Test stopping the server.
-   */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
+  public void eventMarkersCleared();
 }

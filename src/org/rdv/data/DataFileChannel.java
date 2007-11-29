@@ -30,64 +30,77 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
-
-import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+package org.rdv.data;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * A channel and its metadata.
  * 
  * @author Jason P. Hanley
- */
-public class LocalServerTest extends TestCase {
+  */
+public class DataFileChannel {
+  /** The name of the channel */
+  private final String channelName;
+  
+  /** The unit of the channel */
+  private String unit;
+
   /**
-   * Test getting the singleton instace of this class.
+   * Create a channel.
+   * 
+   * @param channelName  the name of the channel
    */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
+  public DataFileChannel(String channelName) {
+    this(channelName, null);
   }
-
+  
   /**
-   * Test starting the server.
+   * Create a channel.
+   * 
+   * @param channelName  the name of the channel
+   * @param unit         the unit for the channel
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
+  public DataFileChannel(String channelName, String unit) {
+    if (channelName == null) {
+      throw new IllegalArgumentException("Null channel name argument.");
+    }
     
-    server.startServer();
-    assertTrue(server.isServerRunning());
+    this.channelName = channelName;
+    this.unit = unit;
   }
-
+  
   /**
-   * Test stopping the server.
+   * Get the name of the channel.
+   * 
+   * @return  the name of the channel
    */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+  public String getChannelName() {
+    return channelName;
   }
-
+  
   /**
-   * Test to see if the server is running.
+   * Get the unit for the channel.
+   * 
+   * @return  the unit for the channel, or null if no unit was set
    */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+  public String getUnit() {
+    return unit;
+  }
+  
+  /**
+   * Set the unit for the channel.
+   * 
+   * @param unit  the unit for the channel
+   */
+  public void setUnit(String unit) {
+    this.unit = unit;
+  }
+  
+  /**
+   * Return a string representation of this channel.
+   * 
+   * @return  the channel name
+   */
+  public String toString() {
+    return channelName;
   }
 }

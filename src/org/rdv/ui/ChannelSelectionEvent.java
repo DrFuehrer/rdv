@@ -30,64 +30,35 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
-
-import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+package org.rdv.ui;
 
 /**
- * Unit tests for the local RBNB server singleton class.
- * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
-  /**
-   * Test getting the singleton instace of this class.
-   */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
+public class ChannelSelectionEvent {
+  String channelName;
+  int children;
+  boolean root;
+  
+  public ChannelSelectionEvent(String channelName, int children) {
+    this(channelName, children, false);
   }
-
-  /**
-   * Test starting the server.
-   */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
+  
+  public ChannelSelectionEvent(String channelName, int children, boolean root) {
+    this.channelName = channelName;
+    this.children = children;
+    this.root = root;
   }
-
-  /**
-   * Test stopping the server.
-   */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+  
+  public String getChannelName() {
+    return channelName;
   }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+  
+  public int getChildren() {
+    return children;
+  }
+  
+  public boolean isRoot() {
+    return root;
   }
 }
