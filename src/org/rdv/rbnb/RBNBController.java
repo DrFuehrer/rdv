@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -86,13 +85,13 @@ public class RBNBController implements Player, MetadataListener {
   private MetadataManager metadataManager;
   private MarkerManager markerManager;
 	
-	private Vector timeListeners;
-	private Vector stateListeners;
-	private Vector subscriptionListeners;
-	private ArrayList playbackRateListeners;
-	private ArrayList timeScaleChangeListeners;
-	private ArrayList messageListeners;
-	private ArrayList connectionListeners;
+	private List<TimeListener> timeListeners;
+	private List<StateListener> stateListeners;
+	private List<SubscriptionListener> subscriptionListeners;
+	private List<PlaybackRateListener> playbackRateListeners;
+	private List<TimeScaleListener> timeScaleChangeListeners;
+	private List<MessageListener> messageListeners;
+	private List<ConnectionListener> connectionListeners;
 	
 	private ChannelMap preFetchChannelMap;
 	private Object preFetchLock = new Object();
@@ -111,8 +110,8 @@ public class RBNBController implements Player, MetadataListener {
 	private double updatePlaybackRate = -1;
   private Object updatePlaybackRateLock = new Object();
     
-  private ArrayList stateChangeRequests = new ArrayList();	
-	private ArrayList updateSubscriptionRequests = new ArrayList();
+  private List<Integer> stateChangeRequests = new ArrayList<Integer>();	
+  private List<SubscriptionRequest> updateSubscriptionRequests = new ArrayList<SubscriptionRequest>();
 
  	private boolean dropData;
 	
@@ -148,13 +147,13 @@ public class RBNBController implements Player, MetadataListener {
     metadataManager = new MetadataManager(this);
     markerManager = new MarkerManager(this);
 
-		timeListeners = new Vector();
-		stateListeners = new Vector();
-		subscriptionListeners = new Vector();
-		playbackRateListeners = new ArrayList();
-		timeScaleChangeListeners = new ArrayList();
-		messageListeners = new ArrayList();
-		connectionListeners = new ArrayList();
+    timeListeners = new ArrayList<TimeListener>();
+    stateListeners = new ArrayList<StateListener>();
+    subscriptionListeners = new ArrayList<SubscriptionListener>();
+    playbackRateListeners = new ArrayList<PlaybackRateListener>();
+    timeScaleChangeListeners = new ArrayList<TimeScaleListener>();
+    messageListeners = new ArrayList<MessageListener>();
+    connectionListeners = new ArrayList<ConnectionListener>();
         
 		run();
 	}
