@@ -34,7 +34,8 @@ package org.rdv.rbnb;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,27 +50,27 @@ public class ChannelManager {
 	
 	static Log log = LogFactory.getLog(ChannelManager.class.getName());
 	
-	private HashMap listenerChannelSubscriptions;
-	private HashMap channelSubscriptionCounts;
-	private ArrayList playerChannelListeners;
+	private Map<DataListener, List<String>> listenerChannelSubscriptions;
+	private Map<String, Integer> channelSubscriptionCounts;
+	private List<DataListener> playerChannelListeners;
 
 	public ChannelManager() {
-		listenerChannelSubscriptions = new HashMap();
-		channelSubscriptionCounts = new HashMap();
-		playerChannelListeners = new ArrayList();
+		listenerChannelSubscriptions = new HashMap<DataListener, List<String>>();
+		channelSubscriptionCounts = new HashMap<String, Integer>();
+		playerChannelListeners = new ArrayList<DataListener>();
 	}
 
 	public boolean subscribe(String channelName, DataListener listener) {
 		//add channel to channel list for listener
-		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
+		List<String> listenerChannelSubscription = listenerChannelSubscriptions.get(listener);
 		if (listenerChannelSubscription == null) {
-			listenerChannelSubscription = new ArrayList();
+			listenerChannelSubscription = new ArrayList<String>();
 			listenerChannelSubscriptions.put(listener, listenerChannelSubscription);
 		}
 		listenerChannelSubscription.add(channelName);
 		
 		//increment the count for this channel
-		Integer count = (Integer)channelSubscriptionCounts.get(channelName);
+		Integer count = channelSubscriptionCounts.get(channelName);
 		if (count == null) {
 			count = new Integer(1);
 		} else {
@@ -87,7 +88,7 @@ public class ChannelManager {
 	
 	public boolean unsubscribe(String channelName, DataListener listener) {
 		//remove channel from channel list for listener
-		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
+		List<String> listenerChannelSubscription = listenerChannelSubscriptions.get(listener);
     
     //see if this listener and channel are actually subscribed
 		if (listenerChannelSubscription == null || !listenerChannelSubscription.remove(channelName)) {
@@ -99,11 +100,11 @@ public class ChannelManager {
 		}
 		
 		//decrement the count for this channel
-		int count = ((Integer)channelSubscriptionCounts.get(channelName)).intValue();
+		int count = channelSubscriptionCounts.get(channelName);
 		if (count == 1) {
 			channelSubscriptionCounts.remove(channelName);
 		} else {
-			channelSubscriptionCounts.put(channelName, new Integer(--count));
+			channelSubscriptionCounts.put(channelName, --count);
 		}
 		
 		//remove the channel listener from the list
@@ -115,12 +116,12 @@ public class ChannelManager {
 	}
 	
 	private boolean isListenerSubscribedToAnyChannels(DataListener listener) {
-		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
+		List<String> listenerChannelSubscription = listenerChannelSubscriptions.get(listener);
 		return listenerChannelSubscription != null;
 	}
 		
 	public boolean isChannelSubscribed(String channelName) {
-		Integer count = (Integer)channelSubscriptionCounts.get(channelName);
+		Integer count = channelSubscriptionCounts.get(channelName);
 		return count != null;
 	}
 
@@ -134,7 +135,7 @@ public class ChannelManager {
   }
 	
 	public boolean isListenerSubscribedToChannel(String channelName, DataListener listener) {
-		ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
+		List<String> listenerChannelSubscription = listenerChannelSubscriptions.get(listener);
 		if (listenerChannelSubscription != null) {
 			return listenerChannelSubscription.contains(channelName);
 		} else {
@@ -156,14 +157,12 @@ public class ChannelManager {
       return false;
     }
     
-    Iterator i = listenerChannelSubscriptions.keySet().iterator();
-    while (i.hasNext()) {
-      DataListener listener = (DataListener)i.next();
+    for (DataListener listener : listenerChannelSubscriptions.keySet()) {
       if (listener instanceof DigitalTabularDataPanel) {
         continue;
       }      
       
-      ArrayList listenerChannelSubscription = (ArrayList)listenerChannelSubscriptions.get(listener);
+      List<String> listenerChannelSubscription = listenerChannelSubscriptions.get(listener);
       if (listenerChannelSubscription == null) {
         continue;
       } else if (listenerChannelSubscription.contains(channelName)) {
@@ -175,9 +174,7 @@ public class ChannelManager {
   }
 	
 	public void postData(ChannelMap channelMap) {
-		DataListener listener;
-		for (int i=0; i < playerChannelListeners.size(); i++) {
-			listener = (DataListener)playerChannelListeners.get(i);
+		for (DataListener listener : playerChannelListeners) {
 			try {
 				listener.postData(channelMap);
 			} catch (Exception e) {
@@ -186,4 +183,5 @@ public class ChannelManager {
 			}
 		}
 	}
+  
 }
