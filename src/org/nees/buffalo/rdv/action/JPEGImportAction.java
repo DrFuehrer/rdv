@@ -53,7 +53,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.InputStream;
