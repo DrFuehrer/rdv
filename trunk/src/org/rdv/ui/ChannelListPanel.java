@@ -110,7 +110,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
 	private RBNBController rbnb;
   private ApplicationFrame frame;
 	
-  private ArrayList channelSelectionListeners;
+  private List<ChannelSelectionListener> channelSelectionListeners;
   
   private JTextField filterTextField;
   private JButton clearFilterButton;
@@ -127,7 +127,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
 		this.rbnb = rbnb;
     this.frame = frame;
 		
-    channelSelectionListeners = new ArrayList();
+    channelSelectionListeners = new ArrayList<ChannelSelectionListener>();
 		
 		initPanel();
 	}
@@ -341,10 +341,11 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
       if (type == ChannelTree.SOURCE) {
         frame.exportAction.setEnabled(true);
 
-        List<ChannelTree.Node> channels = node.getChildren();
+        List channels = node.getChildren();
         
         if (!frame.exportDataAction.isEnabled()) {
-          for (ChannelTree.Node c : channels) {
+          for (int i=0; i<channels.size(); i++) {
+            ChannelTree.Node c = (ChannelTree.Node)channels.get(i);
             if (c.getMime() == null || c.getMime().equals("application/octet-stream")) {
               this.frame.exportDataAction.setEnabled(true);
               break;
@@ -353,7 +354,8 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
         }
         
         if (!frame.exportVideoAction.isEnabled()) {
-          for (ChannelTree.Node c : channels) {
+          for (int i=0; i<channels.size(); i++) {
+            ChannelTree.Node c = (ChannelTree.Node)channels.get(i);
             if (c.getMime() == null) { // find a test for video/jpeg mime types
               this.frame.exportVideoAction.setEnabled(true);
               break;
