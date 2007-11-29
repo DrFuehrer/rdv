@@ -742,7 +742,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     menuItem = new JMenuItem("Export channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        List selectedChannelsAsString = new ArrayList();
+        List<String> selectedChannelsAsString = new ArrayList<String>();
         for (ChannelTree.Node node : selectedChannels) {
           selectedChannelsAsString.add(node.getFullName());
         }
@@ -772,7 +772,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
   }
   
   private List getExtensionsForSource(ChannelTree.Node source) {
-    List extensions = new ArrayList();
+    List<Extension> extensions = new ArrayList<Extension>();
     
     List children = RBNBUtilities.getSortedChildren(source, treeModel.isHiddenChannelsVisible());
     Iterator it = children.iterator();
