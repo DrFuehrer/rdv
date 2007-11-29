@@ -32,6 +32,8 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
+import org.rdv.rbnb.Channel;
+
 import com.rbnb.api.Server;
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;

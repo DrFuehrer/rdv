@@ -36,7 +36,8 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.nees.rbnb.marker.EventMarker;
+import org.rdv.rbnb.DataTurbine;
+import org.rdv.rbnb.EventMarker;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.SAPIException;
@@ -46,7 +47,7 @@ import com.rbnb.sapi.Sink;
  * A unit test to validate the usage of the DataTurbine wrapper class.
  * 
  * @author Lawrence J. Miller
- * @see org.nees.rbnb.DataTurbine
+ * @see org.rdv.rbnb.DataTurbine
  */
 public class DataTurbineTest extends TestCase {
   

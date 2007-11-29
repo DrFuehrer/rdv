@@ -30,64 +30,34 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.ui;
 
-import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+import java.util.EventListener;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * A listener for time adjustment events.
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
+public interface TimeAdjustmentListener extends EventListener {
   /**
-   * Test getting the singleton instace of this class.
+   * Called when the time changes.
+   * 
+   * @param event  the time event
    */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
-  }
-
+  void timeChanged(TimeEvent event);
+  
   /**
-   * Test starting the server.
+   * Called when the time range changes.
+   * 
+   * @param event  the time event
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-  }
-
+  void rangeChanged(TimeEvent event);
+  
   /**
-   * Test stopping the server.
+   * Called when the time bounds change.
+   * 
+   * @param event  the time event
    */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
+  void boundsChanged(TimeEvent event);
 }

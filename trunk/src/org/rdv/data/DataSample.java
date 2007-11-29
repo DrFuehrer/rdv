@@ -30,64 +30,33 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
-
-import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+package org.rdv.data;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * A class to represent a data sample.
  * 
  * @author Jason P. Hanley
+ *
  */
-public class LocalServerTest extends TestCase {
-  /**
-   * Test getting the singleton instace of this class.
-   */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
-  }
+public abstract class DataSample {
+  /** the timestamp of the image */
+  private final double timestamp;
 
   /**
-   * Test starting the server.
+   * Creates a data sample with the specified timestamp.
+   * 
+   * @param timestamp  the timestamp for the data sample
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
+  public DataSample(double timestamp) {
+    this.timestamp = timestamp;
   }
-
+  
   /**
-   * Test stopping the server.
+   * Gets the timestamp for the data sample.
+   * 
+   * @return  the timestamp for the data sample
    */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
+  public double getTimestamp() {
+    return timestamp;
+  }  
 }

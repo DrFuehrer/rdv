@@ -30,64 +30,22 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.ui;
 
-import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+import java.awt.AWTEvent;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * An event emitted by objects that are time adjustable.
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
+public class TimeEvent extends AWTEvent {
   /**
-   * Test getting the singleton instace of this class.
+   * Constructs a TimeEvent object.
+   * 
+   * @param source  the source of the time event
    */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
-  }
-
-  /**
-   * Test starting the server.
-   */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-  }
-
-  /**
-   * Test stopping the server.
-   */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+  public TimeEvent(Object source) {
+    super(source, 0);
   }
 }

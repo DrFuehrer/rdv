@@ -30,64 +30,51 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.data;
 
-import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+import java.io.File;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * A class to represent a data file containing a JPEG image.
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
+public class JPEGFileDataSample extends DataSample{
+  /** the JPEG image */
+  private final byte[] data;
+  
+  /** the JPEG file */
+  private final File file;
+  
   /**
-   * Test getting the singleton instace of this class.
+   * Creates the object to represent this JPEG file data sample.
+   * 
+   * @param timestamp  the timestamp of the image
+   * @param data       the image data
+   * @param file       the file containing the image
    */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
+  public JPEGFileDataSample(double timestamp, byte[] data, File file) {
+    super(timestamp);
     
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
+    this.data = data;
+    this.file = file;
   }
 
   /**
-   * Test starting the server.
+   * Gets the image data as a byte array.
+   * 
+   * @return  the image
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
+  public byte[] getData() {
+    return data;
   }
-
+  
   /**
-   * Test stopping the server.
+   * Gets the file containing the image.
+   * 
+   * @return  the file containing the image
    */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+  public File getFile() {
+    return file;
   }
 }

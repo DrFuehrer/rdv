@@ -32,6 +32,9 @@
 
 package org.nees.buffalo.rdv.rbnb;
 
+import org.rdv.rbnb.ChannelManager;
+import org.rdv.rbnb.DataListener;
+
 import com.rbnb.sapi.ChannelMap;
 
 import junit.framework.TestCase;

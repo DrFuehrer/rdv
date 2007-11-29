@@ -30,64 +30,46 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.ui;
 
-import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+import javax.swing.JOptionPane;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * A class to show popup messages in the UI.
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
-  /**
-   * Test getting the singleton instace of this class.
-   */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
+public class MessagePopup {
+  /** the single instance of this class */
+  protected static MessagePopup instance;
+  
+  protected MessagePopup() {
+    super();
   }
-
+  
   /**
-   * Test starting the server.
+   * Get the single instance of this class.
+   * 
+   * @return  the instance of this class
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
+  public static MessagePopup getInstance() {
+    if (instance == null) {
+      instance = new MessagePopup();
+    }
     
-    server.startServer();
-    assertTrue(server.isServerRunning());
+    return instance;
   }
-
+  
   /**
-   * Test stopping the server.
+   * Show an error in a popup window.
+   * 
+   * @param error  the error message
    */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+  public void showError(String error) {
+    JOptionPane.showMessageDialog(
+        null,
+        error,
+        "Error",
+        JOptionPane.ERROR_MESSAGE);
   }
 }

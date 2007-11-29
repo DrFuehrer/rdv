@@ -30,64 +30,35 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
-
-import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+package org.rdv.data;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * A class to represent a data sample of floating points values (doubles).
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
+public class DoubleDataSample extends DataSample {
+  /** the data values */
+  private final double[] values;
+  
   /**
-   * Test getting the singleton instace of this class.
+   * Creates the data sample with the specified timestamp and values. 
+   * 
+   * @param timestamp  the timestamp for the data
+   * @param values     the data values
    */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
+  public DoubleDataSample(double timestamp, double[] values) {
+    super(timestamp);
     
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
+    this.values = values;
   }
-
+  
   /**
-   * Test starting the server.
+   * Gets the values for the data sample.
+   * 
+   * @return  the data values
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-  }
-
-  /**
-   * Test stopping the server.
-   */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+  public double[] getValues() {
+    return values;
   }
 }

@@ -30,64 +30,54 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.ui;
 
-import org.rdv.rbnb.LocalServer;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-import junit.framework.TestCase;
+import javax.swing.Action;
+
+import org.rdv.action.DataViewerAction;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * An extensions of JCheckBoxMenuItem to handle the "selected" property of the
+ * menu's action.
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
+public class DataViewerCheckBoxMenuItem extends javax.swing.JCheckBoxMenuItem {
   /**
-   * Test getting the singleton instace of this class.
+   * Creates the check box menu item from the given action.
+   * 
+   * @param action  the action for this menu item
    */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
+  public DataViewerCheckBoxMenuItem(DataViewerAction action) {
+    super(action);
     
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
+    setSelected(action.isSelected());
   }
 
   /**
-   * Test starting the server.
+   * Creates the property change listener for the action. This wraps the
+   * property change listener from the super class and additionally handles
+   * the "selected" property.
+   * 
+   * @param a  the action to listen for property changes
    */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
+  protected PropertyChangeListener createActionPropertyChangeListener(Action a) {
+    final PropertyChangeListener originalListener = super.createActionPropertyChangeListener(a);
     
-    server.startServer();
-    assertTrue(server.isServerRunning());
-  }
-
-  /**
-   * Test stopping the server.
-   */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
+    PropertyChangeListener wrapperListener = new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent pce) {
+        originalListener.propertyChange(pce);
+        
+        if (pce.getPropertyName().equals("selected")) {
+          Boolean selected = (Boolean)pce.getNewValue();
+          setSelected(selected);
+        }
+      }
+    };
     
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
+    return wrapperListener;
+  }  
 }

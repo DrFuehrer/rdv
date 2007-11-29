@@ -30,64 +30,71 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.action;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 import org.rdv.rbnb.LocalServer;
-
-import junit.framework.TestCase;
+import org.rdv.rbnb.RBNBController;
+import org.rdv.ui.MessagePopup;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * Action to control offline mode.
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
-  /**
-   * Test getting the singleton instace of this class.
-   */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
-    
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
-    
-    assertSame(instance1, instance2);
+public class OfflineAction extends DataViewerAction {
+  public OfflineAction() {
+    super(
+        "Work offline",
+        "View data locally",
+        KeyEvent.VK_W);
   }
-
+  
   /**
-   * Test starting the server.
+   * Respond to an event for this action. This will start or stop the local RBNB
+   * server.
    */
-  public void testStartServer() throws Exception {
+  public void actionPerformed(ActionEvent ae) {
+    if (isSelected()) {
+      stopOffline();
+    } else {
+      goOffline();
+    }
+  }
+  
+  /**
+   * Start the local server and connect to it.
+   */
+  public void goOffline() {
+    RBNBController rbnb = RBNBController.getInstance();
     LocalServer server = LocalServer.getInstance();
     
-    server.startServer();
-    assertTrue(server.isServerRunning());
+    rbnb.disconnect(true);
+    
+    try {
+      server.startServer();
+    } catch (Exception e) {
+      e.printStackTrace();
+      MessagePopup.getInstance().showError("Failed to start local data server for offline usage.");
+      return;
+    }
+    
+    rbnb.setRBNBHostName("localhost");
+    rbnb.setRBNBPortNumber(server.getPort());
+    rbnb.connect();    
+
+    setSelected(true);
   }
-
+  
   /**
-   * Test stopping the server.
+   * Disconnect from the local server.
    */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
+  public void stopOffline() {
+    RBNBController rbnb = RBNBController.getInstance();
+    rbnb.disconnect(true);
     
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+    setSelected(false);
   }
 }

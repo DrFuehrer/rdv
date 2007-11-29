@@ -30,64 +30,37 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.ui;
 
-import org.rdv.rbnb.LocalServer;
+import java.awt.Component;
 
-import junit.framework.TestCase;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+
+import org.nees.data.DataFile;
+import org.rdv.DataViewer;
 
 /**
- * Unit tests for the local RBNB server singleton class.
+ * A class to the render the cell for a list of data files.
  * 
  * @author Jason P. Hanley
  */
-public class LocalServerTest extends TestCase {
-  /**
-   * Test getting the singleton instace of this class.
-   */
-  public void testGetInstance() {
-    LocalServer instance1 = LocalServer.getInstance();
-    assertNotNull(instance1);
+public class CentralDataFileListCellRenderer extends DefaultListCellRenderer {
+  public Component getListCellRendererComponent(JList list, Object value,
+                                                int index, boolean isSelected,
+                                                boolean cellHasFocus) {
+    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
     
-    LocalServer instance2 = LocalServer.getInstance();
-    assertNotNull(instance2);
+    if (value instanceof DataFile) {
+      DataFile dataFile = (DataFile)value;
+      setText(dataFile.getPath() + "/" + dataFile.getName());
+      if (dataFile.isIsDirectory()) {
+        setIcon(DataViewer.getIcon("icons/folder.gif"));
+      } else {
+        setIcon(DataViewer.getIcon("icons/file.gif"));
+      }
+    }
     
-    assertSame(instance1, instance2);
-  }
-
-  /**
-   * Test starting the server.
-   */
-  public void testStartServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-  }
-
-  /**
-   * Test stopping the server.
-   */
-  public void testStopServer() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    
-    server.startServer();
-    
-    server.stopServer();
-    assertFalse(server.isServerRunning());
-  }
-
-  /**
-   * Test to see if the server is running.
-   */
-  public void testIsServerRunning() throws Exception {
-    LocalServer server = LocalServer.getInstance();
-    assertFalse(server.isServerRunning());
-    
-    server.startServer();
-    assertTrue(server.isServerRunning());
-
-    server.stopServer();
-    assertFalse(server.isServerRunning());
+    return this;
   }
 }

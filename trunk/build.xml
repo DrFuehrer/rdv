@@ -98,7 +98,7 @@
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
 			<manifest>
-				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
+				<attribute name="Main-Class" value="org.rdv.DataViewer"/>
 				<attribute name="Class-Path" value="activation.jar commons-cli.jar commons-logging.jar jaxb-api.jar jaxb-impl.jar jsr173-api.jar jcommon.jar jfreechart.jar jl.jar looks.jar mp3spi.jar rbnb.jar tritonus_share.jar"/>
 			</manifest>			
 		</jar>		
@@ -126,7 +126,7 @@
 				<include name="tritonus_share.jar"/>			  
 			</zipgroupfileset>
 			<manifest>
-				<attribute name="Main-Class" value="org.nees.buffalo.rdv.DataViewer"/>
+				<attribute name="Main-Class" value="org.rdv.DataViewer"/>
 			</manifest>		
 		</jar>		
 	</target>
@@ -250,7 +250,7 @@
   
 	<!-- Run the RDV -->
 	<target name="run" depends="compile" description="Run application">
-		<java classpathref="runtimeclasspath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+		<java classpathref="runtimeclasspath" classname="org.rdv.DataViewer" fork="true">
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>			
@@ -258,7 +258,7 @@
 	</target>
 
 	<target name="help" depends="compile" description="Show usage">
-		<java classpathref="runtimeclasspath" classname="org.nees.buffalo.rdv.DataViewer" fork="true">
+		<java classpathref="runtimeclasspath" classname="org.rdv.DataViewer" fork="true">
 			<arg line="--help"/>
 		</java>
 	</target>
