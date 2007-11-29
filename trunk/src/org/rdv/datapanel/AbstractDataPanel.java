@@ -137,21 +137,25 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	RBNBController rbnbController;
 	
 	/**
-	 * A list of subscribed channels.
-	 * 
-	 * @since  1.1
-	 */
-	List channels;
-	
-   /** A list of lower threshold values for channels.
-    *  @since 1.3
-    */
-   Hashtable lowerThresholds;
-   
-   /** A list of upper threshold values for channels.
-    *  @since 1.3
-    */
-   Hashtable upperThresholds;
+   * A list of subscribed channels.
+   * 
+   * @since 1.1
+   */
+  List<String> channels;
+
+  /**
+   * A list of lower threshold values for channels.
+   * 
+   * @since 1.3
+   */
+  Hashtable<String, String> lowerThresholds;
+
+  /**
+   * A list of upper threshold values for channels.
+   * 
+   * @since 1.3
+   */
+  Hashtable<String, String> upperThresholds;
 	
 	/**
 	 * The last posted time.
@@ -263,10 +267,10 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
      * allows the iterators used for posting of data to be inherintly thread
      * safe at the cost of the time taken to add/remove channels.
      */
-		channels = new CopyOnWriteArrayList();
-    
-      lowerThresholds = new Hashtable ();
-      upperThresholds = new Hashtable ();
+    channels = new CopyOnWriteArrayList<String>();
+
+    lowerThresholds = new Hashtable<String, String>();
+    upperThresholds = new Hashtable<String, String>();
 		
 		time = 0;
 		timeScale = 1;
