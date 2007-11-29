@@ -68,6 +68,10 @@ import java.text.SimpleDateFormat;
  * @author Jason P. Hanley
  */
 public class DateTimeDialog extends JDialog {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -1199147835851699381L;
+
   /** the initial date and time to display */
   private Date initialDate;
   

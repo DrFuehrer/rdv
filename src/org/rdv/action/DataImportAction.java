@@ -62,6 +62,10 @@ import java.io.UnsupportedEncodingException;
  *
  */
 public class DataImportAction extends DataViewerAction {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 4075250858285498451L;
+
   /** the window to show the progress of the import */
   private ProgressWindow progressWindow;
   

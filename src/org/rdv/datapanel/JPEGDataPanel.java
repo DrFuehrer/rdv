@@ -1033,6 +1033,10 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 	}
 	
 	class JPEGPanel extends JComponent {
+
+        /** serialization version identifier */
+        private static final long serialVersionUID = -1946331131688032990L;
+
 		private Image image;
 		private VolatileImage volatileImage;
 		
@@ -1238,6 +1242,10 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 	}
   
   class StrechIconButton extends JButton {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = -2127849845444210644L;
+
     public StrechIconButton(ImageIcon icon) {
       super(icon);
     }

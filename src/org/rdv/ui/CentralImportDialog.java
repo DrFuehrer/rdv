@@ -98,6 +98,10 @@ import java.io.UnsupportedEncodingException;
  * @author Jason P. Hanley
  */
 public class CentralImportDialog extends JDialog {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 1L;
+
   /** the NEEScentral tree mode */
   private CentralTreeModel centralTreeModel;
   
@@ -698,6 +702,10 @@ public class CentralImportDialog extends JDialog {
    * A transfer handler for the data file in the tree.
    */
   private class TreeDataFileTransferHandler extends TransferHandler {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = 462514764253133552L;
+
     /**
      * Gets the action, which is always LINK.
      */
@@ -851,6 +859,10 @@ public class CentralImportDialog extends JDialog {
    * The data flavor for a data file list.
    */
   private class DataFileListDataFlavor extends DataFlavor {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = -7858797133980656658L;
+
     public DataFileListDataFlavor() throws ClassNotFoundException {
       super(List.class, "List of data files");
     }

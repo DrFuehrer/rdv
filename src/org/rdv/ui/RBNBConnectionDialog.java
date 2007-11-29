@@ -64,6 +64,9 @@ import org.rdv.rbnb.RBNBController;
  */
 public class RBNBConnectionDialog extends JDialog {
 
+  /** serialization version identifier */
+  private static final long serialVersionUID = -6957067662109056521L;
+
  	static Log log = LogFactory.getLog(RBNBConnectionDialog.class.getName());
 	
 	RBNBController rbnb;

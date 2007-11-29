@@ -64,6 +64,10 @@ import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
  * @author Jason P. Hanley
  */
 public class AudioPlayerPanel extends JPanel {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -6314108138102440777L;
+
   /** the label for the panel title */
   private JLabel titleLabel;
   

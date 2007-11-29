@@ -87,6 +87,9 @@ import org.apache.commons.logging.LogFactory;
 
 public class ExportVideoDialog extends JDialog implements ProgressListener {
   
+  /** serialization version identifier */
+  private static final long serialVersionUID = -5129293655952117325L;
+
   static Log log = LogFactory.getLog(ExportVideoDialog.class.getName());
   
   ExportVideoDialog dialog;
@@ -611,6 +614,9 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   
   class CheckListRenderer extends JCheckBox implements ListCellRenderer {
     
+    /** serialization version identifier */
+    private static final long serialVersionUID = 215713751613298905L;
+
     public Component getListCellRendererComponent(JList list, Object value,
                                                   int index, boolean isSelected,
                                                   boolean hasFocus) {

@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.rbnb;
 
 import com.rbnb.sapi.SAPIException;
 
@@ -41,6 +41,10 @@ import com.rbnb.sapi.SAPIException;
  * @author Jason P. Hanley
  */
 public class RBNBException extends Exception {  
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 2399380604980041381L;
+
   /**
    * Constructs an RBNBException caused by a SAPIException.
    * 

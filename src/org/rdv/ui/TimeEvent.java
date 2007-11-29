@@ -40,6 +40,10 @@ import java.awt.AWTEvent;
  * @author Jason P. Hanley
  */
 public class TimeEvent extends AWTEvent {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -1705882505634651086L;
+
   /**
    * Constructs a TimeEvent object.
    * 

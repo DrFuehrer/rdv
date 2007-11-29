@@ -971,6 +971,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 
 	/** an inner class to implement the data model in this design pattern */
 	private class DataTableModel extends AbstractTableModel {
+	
+	    /** serialization version identifier */
+        private static final long serialVersionUID = 1706987603986659555L;
+	
 		private String[] columnNames = { "Name", "Value", "Unit", "Min", "Max",
 				"Min Thresh", "Max Thresh" };
 
@@ -1329,6 +1333,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 	} // inner class DataRow
 
 	private class DoubleTableCellRenderer extends DefaultTableCellRenderer {
+
+        /** serialization version identifier */
+        private static final long serialVersionUID = 1835123361189568703L;
+
 		private boolean showEngineeringFormat;
 
 		private DecimalFormat decimalFormatter;
@@ -1372,6 +1380,10 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 	 * outside or approaching the threshold intervals.
 	 */
 	private class DataTableCellRenderer extends DoubleTableCellRenderer {
+
+        /** serialization version identifier */
+        private static final long serialVersionUID = -2910432979644162805L;
+
 		public DataTableCellRenderer() {
 			super();
 		}

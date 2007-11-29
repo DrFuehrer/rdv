@@ -41,6 +41,10 @@ import org.rdv.rbnb.RBNBController;
  * @author jphanley, bkirschner
  */
 public class ApplicationApplet extends JApplet {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = 3893529815569317251L;
+
 	public static String CHANNEL_SPLIT_CHAR = "&";
 	protected DataViewer dataViewer;
 	

@@ -50,6 +50,9 @@ import java.util.InvalidPropertiesFormatException;
  */
 public class EventMarker extends Properties implements Comparable<EventMarker> {
 
+  /** serialization version identifier */
+  private static final long serialVersionUID = 3659100029067547637L;
+
   /**
    * The mime type to use for event markers
    */

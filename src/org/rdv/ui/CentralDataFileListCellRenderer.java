@@ -46,6 +46,10 @@ import org.rdv.DataViewer;
  * @author Jason P. Hanley
  */
 public class CentralDataFileListCellRenderer extends DefaultListCellRenderer {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = 6253722034400759792L;
+
   public Component getListCellRendererComponent(JList list, Object value,
                                                 int index, boolean isSelected,
                                                 boolean cellHasFocus) {

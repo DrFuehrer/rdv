@@ -84,6 +84,9 @@ import com.rbnb.sapi.ChannelTree;
  */
 public class ControlPanel extends JPanel implements TimeListener, StateListener, SubscriptionListener, MetadataListener, PlaybackRateListener, TimeAdjustmentListener, EventMarkerListener {
 
+  /** serialization version identifier */
+  private static final long serialVersionUID = 2727527118691092710L;
+
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
 	public RBNBController rbnbController;

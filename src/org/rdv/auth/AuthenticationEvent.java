@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.auth;
+package org.rdv.auth;
 
 import java.util.EventObject;
 
@@ -41,6 +41,10 @@ import java.util.EventObject;
  *
  */
 public class AuthenticationEvent extends EventObject {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -1045113985286303166L;
+
   /** the authentication */
   private final Authentication authentication;
   

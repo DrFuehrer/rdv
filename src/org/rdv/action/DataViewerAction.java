@@ -45,7 +45,11 @@ import org.rdv.DataViewer;
  * @author Jason P. Hanley
  */
 public class DataViewerAction extends AbstractAction {
-	boolean selected = false;
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -6534087923289956745L;
+
+  boolean selected = false;
   
 	public DataViewerAction(String text) {
 		this(text, null, -1, null, null);

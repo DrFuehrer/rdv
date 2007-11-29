@@ -814,6 +814,10 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * A channel title component for local channels.
    */
   class LocalChannelTitle extends ChannelTitle {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = -6278564478512657058L;
+
     /**
      * Create a local channel title.
      * 
@@ -1324,6 +1328,10 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * Optimized XY item renderer from JFreeChart forums.
    */
   public class FastXYItemRenderer extends StandardXYItemRenderer {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = 4976826552487720209L;
+
     /**
      * A counter to prevent unnecessary Graphics2D.draw() events in drawItem()
      */
@@ -1534,6 +1542,10 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * support fast loading of large amounts of data. 
    */
   public class FastTimeSeries extends TimeSeries {
+
+    /** serialization version identifier */
+    private static final long serialVersionUID = -8280730280322014742L;
+
     public FastTimeSeries(String name, Class timePeriodClass) {
       super(name, timePeriodClass);
     }

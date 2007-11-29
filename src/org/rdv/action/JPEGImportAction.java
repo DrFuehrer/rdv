@@ -67,6 +67,10 @@ import java.util.zip.ZipEntry;
  * @author Jason P. Hanley
  */
 public class JPEGImportAction extends DataViewerAction {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -278036295590043978L;
+
   /** the window to show the progress of the import */
   private ProgressWindow progressWindow;
   

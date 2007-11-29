@@ -48,6 +48,10 @@ import com.rbnb.sapi.ChannelTree;
  * @author Jason P. Hanley
  */
 public class ChannelTreeCellRenderer extends DefaultTreeCellRenderer {
+
+  /** serialization version identifier */
+  private static final long serialVersionUID = -8564821584949049965L;
+
   public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
     Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
     
