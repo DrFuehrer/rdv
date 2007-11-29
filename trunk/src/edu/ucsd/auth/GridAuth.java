@@ -241,7 +241,6 @@ public class GridAuth {
    */
   public boolean logout() {
     try {
-      boolean returnValue = false;
       String sessionid = (String)userMapHashTable.get("session");
       String session = URLEncoder.encode (sessionid, "UTF-8");
       URLConnection conn = serviceHost.openConnection ();
