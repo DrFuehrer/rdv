@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv;
+package org.rdv;
 
 import junit.framework.TestCase;
 

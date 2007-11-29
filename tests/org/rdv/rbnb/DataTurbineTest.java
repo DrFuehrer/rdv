@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.rbnb;
+package org.rdv.rbnb;
 
 import junit.framework.TestCase;
 
