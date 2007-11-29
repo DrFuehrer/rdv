@@ -268,7 +268,7 @@ public class RBNBExport {
         sink.Request(cmap, time, duration, "absolute");
         ChannelMap dmap = sink.Fetch(-1);
         
-        ArrayList samples = new ArrayList();
+        ArrayList<Sample> samples = new ArrayList<Sample>();
         for (int i=0; i<numericChannels.size(); i++) {
           String channel = (String)numericChannels.get(i);
           int index = dmap.GetIndex(channel);
@@ -458,10 +458,10 @@ public class RBNBExport {
     }
   }
   
-  class SampleTimeComparator implements Comparator {
-    public int compare(Object arg0, Object arg1) {
-      double t1 = ((Sample)arg0).getTime();
-      double t2 = ((Sample)arg1).getTime();
+  class SampleTimeComparator implements Comparator<Sample> {
+    public int compare(Sample arg0, Sample arg1) {
+      double t1 = arg0.getTime();
+      double t2 = arg1.getTime();
       if (t1 == t2) {
         return 0;
       } else if (t1 < t2) {
