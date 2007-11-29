@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.rbnb;
 
 import org.rdv.rbnb.ChannelManager;
 import org.rdv.rbnb.DataListener;
