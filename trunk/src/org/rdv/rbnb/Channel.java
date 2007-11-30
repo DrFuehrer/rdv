@@ -30,10 +30,11 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.rbnb;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import com.rbnb.sapi.ChannelTree;
@@ -46,107 +47,104 @@ import com.rbnb.sapi.ChannelTree;
  */
 public class Channel {
 
-	/**
-	 * The full name of the channel
-	 */
-	String name;
-	
-    HashMap metadata;
-	
-	/**
-	 * Construct a channel with a name and assigning the mime type and
-	 * unit as metadata.
-	 * 
-	 * @param node          The channel tree metadata node
-	 * @param userMetadata  The user metadata string (tab or comma delimited)
-	 * @since               1.3
-	 */
-	public Channel(ChannelTree.Node node, String userMetadata) {
-		this.name = node.getFullName();
-        
-        metadata = new HashMap();
-        
-        metadata.put("mime", node.getMime());
-        metadata.put("start", Double.toString(node.getStart()));
-        metadata.put("duration", Double.toString(node.getDuration()));
-        metadata.put("size", Integer.toString(node.getSize()));
-        
-        if (userMetadata.length() > 0) {
-          String[] userMetadataTokens = userMetadata.split("\t|,");
-          for (int j=0; j<userMetadataTokens.length; j++) {
-            String[] tokens = userMetadataTokens[j].split("=");
-            if (tokens.length == 2) {
-              metadata.put(tokens[0].trim(), tokens[1].trim());
-            }
-          }
-        }
+  /** the full name of the channel  */
+  private String name;
 
-	}
-	
-	/**
-	 * Get the short name of the channel.
-	 * 
-	 * This is the part after the final forward slash (/).
-	 * 
-	 * @return  the short name of the channel
-	 * @since   1.1
-	 */
-	public String getShortName() {
-		return name.substring(name.lastIndexOf("/")+1);
-	}
-	
-	/**
-	 * Get the full name of the channel.
-	 * 
-	 * @return  the full name of the channel.
-	 * @since   1.1
-	 */
-	public String getName() {
-		return name;
-	}
-	
-	/**
-	 * Get the parent of the channel.
-	 * 
-	 * This is the part before the final forward slash (/).
-	 * 
-	 * @return  the parent of the channel
-	 * @since   1.1
-	 */
-	public String getParent() {
-		return name.substring(0, name.lastIndexOf("/"));
-	}
-	
-    /**
-     * Return the metatadata string associated with the given key.
-     * 
-     * @param key  the key corresponding to the desired metadata string
-     * @return     the metadata string or null if the key was not found
-     * @since      1.3
-     */
-    public String getMetadata(String key) {
-      return (String)metadata.get(key);
-    }
-    
-    /**
-     * Return a string with the channel name and all metadata.
-     * 
-     * @return  a string representation of the channel and its metadata
-     */
-    public String toString() {
-      StringBuilder string = new StringBuilder(name);
-      if (metadata.size() > 0) {
-        string.append(": ");
-        Set keys = metadata.keySet();
-        Iterator it = keys.iterator();
-        while (it.hasNext()) {
-          String key = (String)it.next();
-          string.append(key + "=" + metadata.get(key));
-          if (it.hasNext()) {
-            string.append(", ");
-          }
+  private Map<String, String> metadata;
+
+  /**
+   * Construct a channel with a name and assigning the mime type and
+   * unit as metadata.
+   * 
+   * @param node          The channel tree metadata node
+   * @param userMetadata  The user metadata string (tab or comma delimited)
+   * @since               1.3
+   */
+  public Channel(ChannelTree.Node node, String userMetadata) {
+    this.name = node.getFullName();
+
+    metadata = new HashMap<String, String>();
+
+    metadata.put("mime", node.getMime());
+    metadata.put("start", Double.toString(node.getStart()));
+    metadata.put("duration", Double.toString(node.getDuration()));
+    metadata.put("size", Integer.toString(node.getSize()));
+
+    if (userMetadata.length() > 0) {
+      String[] userMetadataTokens = userMetadata.split("\t|,");
+      for (int j = 0; j < userMetadataTokens.length; j++) {
+        String[] tokens = userMetadataTokens[j].split("=");
+        if (tokens.length == 2) {
+          metadata.put(tokens[0].trim(), tokens[1].trim());
         }
       }
-      return string.toString();
     }
+  }
+
+  /**
+   * Get the short name of the channel.
+   * 
+   * This is the part after the final forward slash (/).
+   * 
+   * @return the short name of the channel
+   * @since 1.1
+   */
+  public String getShortName() {
+    return name.substring(name.lastIndexOf("/") + 1);
+  }
+
+  /**
+   * Get the full name of the channel.
+   * 
+   * @return  the full name of the channel.
+   * @since   1.1
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * Get the parent of the channel.
+   * 
+   * This is the part before the final forward slash (/).
+   * 
+   * @return  the parent of the channel
+   * @since   1.1
+   */
+  public String getParent() {
+    return name.substring(0, name.lastIndexOf("/"));
+  }
+
+  /**
+   * Return the metatadata string associated with the given key.
+   * 
+   * @param key  the key corresponding to the desired metadata string
+   * @return     the metadata string or null if the key was not found
+   * @since      1.3
+   */
+  public String getMetadata(String key) {
+    return (String) metadata.get(key);
+  }
+
+  /**
+   * Return a string with the channel name and all metadata.
+   * 
+   * @return  a string representation of the channel and its metadata
+   */
+  public String toString() {
+    StringBuilder string = new StringBuilder(name);
+    if (metadata.size() > 0) {
+      string.append(": ");
+      Set keys = metadata.keySet();
+      Iterator it = keys.iterator();
+      while (it.hasNext()) {
+        String key = (String) it.next();
+        string.append(key + "=" + metadata.get(key));
+        if (it.hasNext()) {
+          string.append(", ");
+        }
+      }
+    }
+    return string.toString();
+  }
 }
