@@ -1,5 +1,5 @@
 Source: rdv
-Section: contrib/science
+Section: science
 Priority: optional
 Maintainer: Jason P. Hanley <jason@paltasoftware.com>
 Build-Depends: debhelper (>= 5), cdbs
