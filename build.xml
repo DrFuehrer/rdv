@@ -80,6 +80,8 @@
 		<javac srcdir="${src.dir}" 
 			destdir="${build.classes}"
 			classpathref="classpath"
+			source="1.5"
+			target="1.5"
 			debug="${debug}">
 	  </javac>		
 	</target>
@@ -230,6 +232,8 @@
 			destdir="${build.tests}"
 			classpath="${build.classes}"
 			classpathref="classpath"
+			source="1.5"
+			target="1.5"
 			debug="${debug}">
 		</javac>	  
 	
