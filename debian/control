@@ -10,7 +10,7 @@ Standards-Version: 3.7.2
 
 Package: rdv
 Architecture: all
-Depends: java-virtual-machine, java5-runtime | sun-java5-jre | sun-java6-jre,
+Depends: java-virtual-machine, sun-java6-jre | sun-java5-jre | java5-runtime,
  libcommons-cli-java, libcommons-logging-java, libjcommon-java,
  libjfreechart-java, libjlayer-java, libjgoodies-looks-java, libmp3spi-java,
  librbnb-java, libtritonus-java
