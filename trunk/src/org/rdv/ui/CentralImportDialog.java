@@ -304,10 +304,19 @@ public class CentralImportDialog extends JDialog {
    * objects with projects.
    */
   private void spawnInitialPopulationThread() {
+    final JDialog dialog = this;
+    
     new Thread() {
       public void run() {
         try {
           setupCentralClient();
+        } catch (NoClassDefFoundError e) {
+          e.printStackTrace();
+          JOptionPane.showMessageDialog(dialog,
+              "NEEScentral import is disabled because it requires a library that is not installed.", "RDV Error", 
+              JOptionPane.ERROR_MESSAGE);
+          dialog.dispose();
+          return;
         } catch (CentralException e) {
           handleCentralException(e);
           return;
