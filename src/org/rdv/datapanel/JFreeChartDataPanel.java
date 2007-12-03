@@ -512,7 +512,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * 
    * @param channelName  the new channel
    */
-  void channelAdded(String channelName) {
+  protected void channelAdded(String channelName) {
     String channelDisplay = getChannelDisplay(channelName);
     String seriesName = null;
     Color color = null;
@@ -610,7 +610,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * 
    * @param  the name of the channel that was removed
    */
-  void channelRemoved(String channelName) {
+  protected void channelRemoved(String channelName) {
 		if (!xyMode) {
       String channelDisplay = getChannelDisplay(channelName);
       
