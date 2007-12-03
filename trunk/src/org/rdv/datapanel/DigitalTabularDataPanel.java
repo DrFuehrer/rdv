@@ -729,7 +729,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 		}
 	}
 
-	void channelAdded(String channelName) {
+	protected void channelAdded(String channelName) {
 		String labelText = channelName;
 
 		Channel channel = rbnbController.getChannel(channelName);
@@ -776,7 +776,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 				.toString(tableNumber));
 	}
 
-	void channelRemoved(String channelName) {
+	protected void channelRemoved(String channelName) {
 		int tableNumber = channelTableMap.get(channelName);
 		tableModels.get(tableNumber).deleteRow(channelName);
 		channelTableMap.remove(channelName);

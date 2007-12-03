@@ -134,14 +134,14 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since 1.2
 	 */
-	RBNBController rbnbController;
+	protected RBNBController rbnbController;
 	
 	/**
    * A list of subscribed channels.
    * 
    * @since 1.1
    */
-  List<String> channels;
+  protected List<String> channels;
 
   /**
    * A list of lower threshold values for channels.
@@ -162,7 +162,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since  1.1
 	 */
-	double time;
+	protected double time;
 	
 	/**
 	 * The last posted time scale.
@@ -237,7 +237,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
  	 * 
  	 * @since  1.1
  	 */
-	ChannelMap channelMap;
+	protected ChannelMap channelMap;
   
   /**
    * A description of the data panel.
@@ -395,7 +395,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
    * 
    * @param channelName  the name of the channel being added
    */
-  void channelAdded(String channelName) {}
+  protected void channelAdded(String channelName) {}
 	
 	public boolean removeChannel(String channelName) {		
 		if (!channels.contains(channelName)) {
@@ -420,7 +420,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
    * 
    * @param channelName  the name of the channel being removed
    */
-  void channelRemoved(String channelName) {}
+  protected void channelRemoved(String channelName) {}
 	
 	/**
 	 * Calls removeChannel for each subscribed channel.
@@ -443,7 +443,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @param dataComponent  the UI component
 	 * @since                1.1
 	 */
-	void setDataComponent(JComponent dataComponent) {
+	protected void setDataComponent(JComponent dataComponent) {
 		this.dataComponent = dataComponent;
 	}
 	

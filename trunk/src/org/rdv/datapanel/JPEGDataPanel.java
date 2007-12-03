@@ -901,12 +901,12 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 		return false;
 	}
   
-  void channelAdded(String channelName) {
+  protected void channelAdded(String channelName) {
     clearImage();
     setupFlexTPSStream();
   }
   
-  void channelRemoved(String channelName) {
+  protected void channelRemoved(String channelName) {
     clearImage();
     flexTPSStream = null;
     removeRoboticControls();
