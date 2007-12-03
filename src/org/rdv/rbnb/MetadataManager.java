@@ -37,6 +37,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +47,7 @@ import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
+import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 
 /**
  * A class to fetch metadata from the server and post it to listeners. Methods
@@ -78,7 +80,7 @@ public class MetadataManager {
   /**
    * Map of channel objects created from metadata.
    */
-  private HashMap channels;
+  private Map<String,Channel> channels;
   
   /**
    * Metadata channel tree.
@@ -127,12 +129,12 @@ public class MetadataManager {
     metadataListeners =  new ArrayList<MetadataListener>();
     addMetadataListener(rbnbController);
         
-    channels = new HashMap();
+    channels = new HashMap<String,Channel>();
 		
     ctree = null;
     
     update = false;
-    sleeping = new Boolean(false);
+    sleeping = false;
     updateThread = null;
     
     markerListeners = new ArrayList<DataListener>();
@@ -234,7 +236,7 @@ public class MetadataManager {
   private synchronized void updateMetadata(Sink metadataSink) {
     log.info("Updating channel listing at " + DataViewer.formatDate(System.currentTimeMillis ()));      
 
-    HashMap newChannels = new HashMap();
+    Map<String,Channel> newChannels = new HashMap<String,Channel>();
 
     try {
       //create metadata channel tree
@@ -274,7 +276,7 @@ public class MetadataManager {
    * @return the metadata channel tree
    * @throws SAPIException if a server error occurs
    */
-  private ChannelTree getChannelTree(Sink sink, HashMap channels) throws SAPIException {
+  private ChannelTree getChannelTree(Sink sink, Map<String,Channel> channels) throws SAPIException {
     return getChannelTree(sink, null, channels);
   }
 
@@ -288,15 +290,20 @@ public class MetadataManager {
    * @return the metadata channel tree for the given path
    * @throws SAPIException if a server error occurs
    */
-  private ChannelTree getChannelTree(Sink sink, String path, HashMap channels) throws SAPIException {
+  private ChannelTree getChannelTree(Sink sink, String path, Map<String,Channel> channels) throws SAPIException {
     ChannelTree ctree = ChannelTree.EMPTY_TREE;
     
     ChannelMap markerChannelMap = new ChannelMap();
 
     ChannelMap cmap = new ChannelMap();
-    if (path != null) {
+    
+    if (path == null) {
+      path = "";
+      cmap.Add("...");
+    } else {
       cmap.Add(path + "/...");
     }
+    
     sink.RequestRegistration(cmap);
 
     cmap = sink.Fetch(FETCH_TIMEOUT, cmap);
@@ -310,8 +317,6 @@ public class MetadataManager {
     
     //store user metadata in channel objects
     String[] channelList = cmap.GetChannelList();
-    String mimeType;
-    log.info("Number of channels: " + channelList.length);
     for (int i=0; i<channelList.length; i++) {
       int channelIndex = cmap.GetIndex(channelList[i]);
       if (channelIndex != -1) {
@@ -321,7 +326,7 @@ public class MetadataManager {
         channels.put(channelList[i], channel);
         
         //look for marker channels
-        mimeType = node.getMime();
+        String mimeType = node.getMime();
         if (mimeType != null && mimeType.compareToIgnoreCase(EventMarker.MIME_TYPE) == 0) {
           markerChannelMap.Add(node.getFullName());         
         }
@@ -331,11 +336,12 @@ public class MetadataManager {
     Iterator it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
+      NodeTypeEnum type = node.getType();
       
       // look for child servers or plugins and get their channels      
-      if ((node.getType() == ChannelTree.SERVER || node.getType() == ChannelTree.PLUGIN) &&
-        (path == null || !path.startsWith(node.getFullName()))) {
-
+      if ((type == ChannelTree.SERVER || type == ChannelTree.PLUGIN || type == ChannelTree.FOLDER) &&
+          node.getChildren().isEmpty() &&
+          !path.startsWith(node.getFullName())) {
         ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels);
         ctree = childChannelTree.merge(ctree);
       }
