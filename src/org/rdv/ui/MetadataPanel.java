@@ -120,25 +120,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
     } else {
       StringBuffer s = new StringBuffer();
       ChannelTree.Node node = ctree.findNode(channel);
-      if (node.getType() == ChannelTree.SOURCE) {
-        s.append("<strong>" + channel + "</strong><br>");        
-        s.append("<em>Data Source</em>");
-        
-        s.append("<p style=\"font-size: 10px\">" + children + " Channel");
-        if (children == 0 || children > 1) {
-          s.append("s");
-        }
-        s.append("</p>");
-      } else if (node.getType() == ChannelTree.SERVER) {
-        s.append("<strong>" + channel + "</strong><br>");        
-        s.append("<em>Child Server</em>");
-        
-        s.append("<p style=\"font-size: 10px\">" + children + " Source");
-        if (children == 0 || children > 1) {
-          s.append("s");
-        }
-        s.append("</p>");        
-      } else if (node.getType() == ChannelTree.CHANNEL) {
+      if (node.getType() == ChannelTree.CHANNEL) {
         String mime = RBNBUtilities.fixMime(node.getMime(), node.getFullName());
         double start = node.getStart();
         double duration = node.getDuration();
@@ -211,7 +193,19 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
           }
         }
         s.append("</p>");
+      } else {
+        s.append("<strong>" + channel + "</strong><br>");
+        if (node.getType() == ChannelTree.SERVER) {
+          s.append("<em>Child Server</em>");
+        } else if (node.getType() == ChannelTree.SOURCE) {
+          s.append("<em>Data Source</em>");
+        } else {
+          s.append("<em>" + node.getType() + "</em>");
+        }
+        
+        s.append("<p style=\"font-size: 10px\">" + children + " Children</p>");
       }
+
       infoTextArea.setText(s.toString());
     }
     
