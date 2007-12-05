@@ -47,6 +47,7 @@ import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
+import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 
 /**
  * A class to fetch metadata from the server and post it to listeners. Methods
@@ -295,9 +296,14 @@ public class MetadataManager {
     ChannelMap markerChannelMap = new ChannelMap();
 
     ChannelMap cmap = new ChannelMap();
-    if (path != null) {
+
+    if (path == null) {
+      path = "";
+      cmap.Add("...");
+    } else {
       cmap.Add(path + "/...");
     }
+    
     sink.RequestRegistration(cmap);
 
     cmap = sink.Fetch(FETCH_TIMEOUT, cmap);
@@ -332,11 +338,12 @@ public class MetadataManager {
     Iterator it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
+      NodeTypeEnum type = node.getType();
       
       // look for child servers or plugins and get their channels      
-      if ((node.getType() == ChannelTree.SERVER || node.getType() == ChannelTree.PLUGIN) &&
-        (path == null || !path.startsWith(node.getFullName()))) {
-
+      if ((type == ChannelTree.SERVER || type == ChannelTree.PLUGIN || type == ChannelTree.FOLDER) && 
+          node.getChildren().isEmpty() &&
+          !path.startsWith(node.getFullName())) {
         ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels);
         ctree = childChannelTree.merge(ctree);
       }
