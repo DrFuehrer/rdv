@@ -3,7 +3,9 @@
 		<id>org.rdv.datapanel.JPEGDataPanel</id>
 		<name>Video/Photo Data Panel</name>
 		<mimeTypes>
+			<mimeType>image/gif</mimeType>
 			<mimeType>image/jpeg</mimeType>
+			<mimeType>image/png</mimeType>
 			<mimeType>video/jpeg</mimeType>
 		</mimeTypes>
 	</extension>
