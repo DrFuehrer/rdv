@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Jason P. Hanley <jason@paltasoftware.com>
 Build-Depends: debhelper (>= 5), cdbs
 Build-Depends-Indep: sun-java6-jdk, ant, libcommons-cli-java, 
- libcommons-logging-java, libjcommon-java, libjfreechart-java,
+ libcommons-logging-java, libjcommon-java, libjfreechart-java >= 1.0.7,
  libjgoodies-looks-java, librbnb-java, libtritonus-java
 Standards-Version: 3.7.2
 
@@ -12,8 +12,8 @@ Package: rdv
 Architecture: all
 Depends: java-virtual-machine, sun-java6-jre | sun-java5-jre | java5-runtime,
  libcommons-cli-java, libcommons-logging-java, libjcommon-java,
- libjfreechart-java, libjlayer-java, libjgoodies-looks-java, libmp3spi-java,
- librbnb-java, libtritonus-java
+ libjfreechart-java >= 1.0.7, libjlayer-java, libjgoodies-looks-java,
+ libmp3spi-java, librbnb-java, libtritonus-java
 Description: A data viewer for streaming scientific and engineering data.
  Live and archived data can be viewed seamlessly within RDV with built-in
  support for many data types and viewers to visualize data in different ways.
