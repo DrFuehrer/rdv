@@ -1,0 +1,23 @@
+RDV
+Version #.#
+RELEASE DATE
+
+
+INTRODUCTION
+
+
+NEW FEATURES
+
+  - Added support for PNG and GIF images to the ImageViz visualization
+    extension.
+  - DialViz, a visualization extension to view a numeric data channel on a dial.
+
+
+BUG FIXES
+
+  - Children of shortcut servers aren't shown in channel list
+
+
+CHANGES
+
+  - All RDV class were moved to the "org.rdv" package.
