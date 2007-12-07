@@ -79,7 +79,6 @@ public class EngineeringFormat extends DecimalFormat {
     this.unit = unit;
   }
 
-
   @Override
   public StringBuffer format(double number, StringBuffer buffer, FieldPosition fieldPosition) {
     return appendUnit(super.format(number, buffer, fieldPosition));
