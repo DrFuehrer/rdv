@@ -21,3 +21,4 @@ BUG FIXES
 CHANGES
 
   - All RDV class were moved to the "org.rdv" package.
+  - Plots set to auto range, don't always include zero anymore.

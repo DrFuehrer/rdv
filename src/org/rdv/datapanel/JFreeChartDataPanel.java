@@ -234,7 +234,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 			dataCollection = new XYTimeSeriesCollection();
       
       NumberAxis domainAxis = new NumberAxis();
-      domainAxis.setAutoRangeIncludesZero(true);
+      domainAxis.setAutoRangeIncludesZero(false);
       domainAxis.addChangeListener(new AxisChangeListener() {
         public void axisChanged(AxisChangeEvent ace) {
           boundsChanged();
@@ -257,7 +257,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     }
     
     rangeAxis = new NumberAxis();
-    rangeAxis.setAutoRangeIncludesZero(true);    
+    rangeAxis.setAutoRangeIncludesZero(false);    
     rangeAxis.addChangeListener(new AxisChangeListener() {
       public void axisChanged(AxisChangeEvent ace) {
         boundsChanged();
