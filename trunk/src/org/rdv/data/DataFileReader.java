@@ -204,7 +204,7 @@ public class DataFileReader {
    *                      reached
    * @throws IOException  if there is an error reading the data file
    */
-  public DoubleDataSample readSample() throws IOException {
+  public NumericDataSample readSample() throws IOException {
     if (line == null) {
       return null;
     }
@@ -225,7 +225,7 @@ public class DataFileReader {
       }
 
       double timestamp;
-      double[] values = new double[channels.size()];
+      Number[] values = new Number[channels.size()];
       
       if (!hasTimeColumn) {
         timestamp = samples;
@@ -244,11 +244,11 @@ public class DataFileReader {
       }
         
       for (int i=firstDataIndex; i<tokens.length; i++) {
-        double value;
+        Number value;
         try {
           value = Double.parseDouble(tokens[i].trim());
         } catch (NumberFormatException e) {
-          value = Double.NaN;
+          value = null;
         }
 
         values[i-firstDataIndex] = value;
@@ -258,7 +258,7 @@ public class DataFileReader {
       
       line = reader.readLine();
       
-      return new DoubleDataSample(timestamp, values);
+      return new NumericDataSample(timestamp, values);
     } while ((line = reader.readLine()) != null);
     
     return null;
