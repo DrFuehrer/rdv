@@ -37,7 +37,7 @@ package org.rdv.data;
  * 
  * @author Jason P. Hanley
   */
-public class DataFileChannel {
+public class DataChannel {
   /** The name of the channel */
   private final String channelName;
   
@@ -49,7 +49,7 @@ public class DataFileChannel {
    * 
    * @param channelName  the name of the channel
    */
-  public DataFileChannel(String channelName) {
+  public DataChannel(String channelName) {
     this(channelName, null);
   }
   
@@ -59,7 +59,7 @@ public class DataFileChannel {
    * @param channelName  the name of the channel
    * @param unit         the unit for the channel
    */
-  public DataFileChannel(String channelName, String unit) {
+  public DataChannel(String channelName, String unit) {
     if (channelName == null) {
       throw new IllegalArgumentException("Null channel name argument.");
     }

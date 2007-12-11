@@ -37,7 +37,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.rdv.data.DataFileChannel;
+import org.rdv.data.DataChannel;
 import org.rdv.data.DataFileReader;
 import org.rdv.data.NumericDataSample;
 
@@ -164,7 +164,7 @@ public class RBNBImport {
       return;
     }
     
-    List<DataFileChannel> channels = reader.getChannels();
+    List<DataChannel> channels = reader.getChannels();
     cindex = new int[channels.size()];
 
     samples = Integer.parseInt(reader.getProperty("samples"));
@@ -175,7 +175,7 @@ public class RBNBImport {
     
     try {
   		for (int i=0; i<channels.size(); i++) {
-        DataFileChannel channel = channels.get(i);
+        DataChannel channel = channels.get(i);
         cindex[i] = cmap.Add(channel.getChannelName());
         
   			cmap.PutMime(cindex[i], "application/octet-stream");

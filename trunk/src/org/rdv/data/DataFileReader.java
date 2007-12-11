@@ -67,7 +67,7 @@ public class DataFileReader {
   private Map<String,String> properties;
   
   /** The channels in the data file */
-  private List<DataFileChannel> channels;
+  private List<DataChannel> channels;
   
   /** The delimiter for properties */
   private String propertyDelimiter = ":";
@@ -132,7 +132,7 @@ public class DataFileReader {
     reader = getReader();
     
     properties = new Hashtable<String,String>();
-    channels = new ArrayList<DataFileChannel>();
+    channels = new ArrayList<DataChannel>();
     
     hasTimeColumn = true;
     
@@ -192,7 +192,7 @@ public class DataFileReader {
    * 
    * @return  a list of channels
    */
-  public List<DataFileChannel> getChannels() {
+  public List<DataChannel> getChannels() {
     return channels;
   }
     
@@ -321,7 +321,7 @@ public class DataFileReader {
       if (channels.size() == 0 && (firstToken.compareToIgnoreCase("time") == 0 || isKey(firstToken, channelPropertyKeys))) {        
         // go over every channel name
         for (int i=1; i<tokens.length; i++) {
-          DataFileChannel channel = new DataFileChannel(stripString(tokens[i]));
+          DataChannel channel = new DataChannel(stripString(tokens[i]));
           channels.add(channel);
         }
         
@@ -347,7 +347,7 @@ public class DataFileReader {
           return;
         } else if (channels.size() > 0 && (firstToken.toLowerCase().startsWith("sec") || isKey(firstToken, unitPropertyKeys))) {
           for (int i=1; i<tokens.length; i++) {
-            DataFileChannel channel = channels.get(i-1);
+            DataChannel channel = channels.get(i-1);
             channel.setUnit(stripString(tokens[i]));
           }            
         }
@@ -403,7 +403,7 @@ public class DataFileReader {
     }
     
     for (int i=0; i<units.length; i++) {
-      DataFileChannel channel = channels.get(i);
+      DataChannel channel = channels.get(i);
       channel.setUnit(units[i]);
     }
   }
@@ -450,7 +450,7 @@ public class DataFileReader {
    */
   private void generateFakeChannels(int numberOfChannels) {
     for (int i=0; i<numberOfChannels; i++) {
-      DataFileChannel channel = new DataFileChannel(Integer.toString(i+1));
+      DataChannel channel = new DataChannel(Integer.toString(i+1));
       channels.add(channel);
     }
   }
