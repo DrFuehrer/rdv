@@ -39,7 +39,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rdv.data.DataFileChannel;
 import org.rdv.data.DataFileReader;
-import org.rdv.data.DoubleDataSample;
+import org.rdv.data.NumericDataSample;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.SAPIException;
@@ -195,7 +195,7 @@ public class RBNBImport {
 
     boolean error = false;
     try {
-      DoubleDataSample sample;
+      NumericDataSample sample;
       while ((sample = reader.readSample()) != null) {
         postDataSamples(sample.getTimestamp(), sample.getValues());
       }
@@ -229,15 +229,15 @@ public class RBNBImport {
    * @param values          the data values
    * @throws SAPIException  if there is an error communicating with the server
    */
-  public void postDataSamples(double timestamp, double[] values) throws SAPIException {
+  public void postDataSamples(double timestamp, Number[] values) throws SAPIException {
     cmap.PutTime(timestamp, 0);
     
     for (int i=0; i<values.length; i++) {
-      if (values[i] == Double.NaN) {
+      if (values[i] == null) {
         continue;
       }
       
-      double[] value = { values[i] };
+      double[] value = { values[i].doubleValue() };
       cmap.PutDataAsFloat64(cindex[i], value);
     }
     
