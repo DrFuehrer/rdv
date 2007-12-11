@@ -33,13 +33,13 @@
 package org.rdv.data;
 
 /**
- * A class to represent a data sample of floating points values (doubles).
+ * A class to represent a data sample of numeric values.
  * 
  * @author Jason P. Hanley
  */
-public class DoubleDataSample extends DataSample {
+public class NumericDataSample extends DataSample {
   /** the data values */
-  private final double[] values;
+  private final Number[] values;
   
   /**
    * Creates the data sample with the specified timestamp and values. 
@@ -47,7 +47,7 @@ public class DoubleDataSample extends DataSample {
    * @param timestamp  the timestamp for the data
    * @param values     the data values
    */
-  public DoubleDataSample(double timestamp, double[] values) {
+  public NumericDataSample(double timestamp, Number[] values) {
     super(timestamp);
     
     this.values = values;
@@ -58,7 +58,7 @@ public class DoubleDataSample extends DataSample {
    * 
    * @return  the data values
    */
-  public double[] getValues() {
+  public Number[] getValues() {
     return values;
   }
 }

@@ -101,7 +101,7 @@ import org.jfree.util.ShapeUtilities;
 import org.jfree.util.UnitType;
 import org.rdv.data.DataFileChannel;
 import org.rdv.data.DataFileReader;
-import org.rdv.data.DoubleDataSample;
+import org.rdv.data.NumericDataSample;
 import org.rdv.rbnb.Channel;
 
 import com.rbnb.sapi.ChannelMap;
@@ -417,15 +417,15 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     XYTimeSeries data = new XYTimeSeries(seriesName, FixedMillisecond.class);
     
     try {
-      DoubleDataSample sample;
+      NumericDataSample sample;
       while ((sample = reader.readSample()) != null) {
         double timestamp = sample.getTimestamp();
-        double[] values = sample.getValues();
+        Number[] values = sample.getValues();
         
         FixedMillisecond time = new FixedMillisecond((long)(timestamp*1000));
         XYTimeSeriesDataItem dataItem = new XYTimeSeriesDataItem(time);
         
-        if (values[xChannelIndex] != Double.NaN && values[yChannelIndex] != Double.NaN) {
+        if (values[xChannelIndex] != null && values[yChannelIndex] != null) {
           dataItem.setX(values[xChannelIndex]);
           dataItem.setY(values[yChannelIndex]);
         }

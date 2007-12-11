@@ -46,7 +46,7 @@ import javax.swing.JOptionPane;
 
 import org.rdv.data.DataFileChannel;
 import org.rdv.data.DataFileReader;
-import org.rdv.data.DoubleDataSample;
+import org.rdv.data.NumericDataSample;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBException;
 import org.rdv.rbnb.RBNBSource;
@@ -246,15 +246,15 @@ public class DataImportAction extends DataViewerAction {
 
       int currentSample = 0;
       
-      DoubleDataSample sample;
+      NumericDataSample sample;
       while ((sample = reader.readSample()) != null) {
         double timestamp = sample.getTimestamp();
-        double[] values = sample.getValues();
+        Number[] values = sample.getValues();
         for (int j=0; j<values.length; j++) {
-          if (values[j] == Double.NaN) {
+          if (values[j] == null) {
             continue;
           }
-          source.putData(channels.get(j).getChannelName(), timestamp, values[j]);
+          source.putData(channels.get(j).getChannelName(), timestamp, values[j].doubleValue());
         }
         
         currentSample++;
