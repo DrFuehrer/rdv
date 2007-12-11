@@ -99,7 +99,7 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.util.ShapeUtilities;
 import org.jfree.util.UnitType;
-import org.rdv.data.DataFileChannel;
+import org.rdv.data.DataChannel;
 import org.rdv.data.DataFileReader;
 import org.rdv.data.NumericDataSample;
 import org.rdv.rbnb.Channel;
@@ -357,7 +357,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       return;
     }
     
-    List<DataFileChannel> channels = reader.getChannels();
+    List<DataChannel> channels = reader.getChannels();
     if (channels.size() < 2) {
       JOptionPane.showMessageDialog(dataComponent,
           "There must be at least 2 channels in the data file",
@@ -366,14 +366,14 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       return;
     }
     
-    DataFileChannel xChannel;
-    DataFileChannel yChannel;
+    DataChannel xChannel;
+    DataChannel yChannel;
     
     if (channels.size() == 2) {
       xChannel = channels.get(0);
       yChannel = channels.get(1);
     } else {    
-      xChannel = (DataFileChannel)JOptionPane.showInputDialog(
+      xChannel = (DataChannel)JOptionPane.showInputDialog(
           dataComponent,
           "Select the x channel:",
           "Add local channel",
@@ -386,7 +386,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         return;
       }
       
-      yChannel = (DataFileChannel)JOptionPane.showInputDialog(
+      yChannel = (DataChannel)JOptionPane.showInputDialog(
           dataComponent,
           "Select the y channel:",
           "Add local channel",
