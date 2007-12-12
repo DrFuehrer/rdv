@@ -227,6 +227,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     tree.setBorder(new EmptyBorder(0, 5, 5, 5));
     
     JScrollPane treeView = new JScrollPane(tree);
+    treeView.setBorder(null);
     treeView.setViewportBorder(null);
     
     tree.setDragEnabled(true);
