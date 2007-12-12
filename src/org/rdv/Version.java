@@ -69,13 +69,6 @@ public final class Version {
 	public static int release;
 	
 	/**
-	 * The build string.
-	 *
-	 * @since  1.2
-	 */
-	public static String build;
-	
-	/**
 	 * This class can not be instantiated and it's constructor
 	 * always throws an exception.
 	 */
