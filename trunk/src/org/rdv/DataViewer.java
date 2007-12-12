@@ -64,9 +64,6 @@ import org.rdv.rbnb.RBNBController;
 import org.rdv.ui.ApplicationFrame;
 import org.rdv.ui.ControlPanel;
 
-import com.jgoodies.looks.LookUtils;
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
-
 /**
  * @author Jason P. Hanley
  */
@@ -324,12 +321,13 @@ public class DataViewer {
     //disable default drop target for swing components
     System.setProperty("suppressSwingDropSupport", "true");
         
-    //set L&F
-    UIManager.put("ClassLoader", LookUtils.class.getClassLoader());
+    // set L&F to system
     try {
-      UIManager.setLookAndFeel(new PlasticLookAndFeel());
-    } catch (Exception e) {}
-		
+      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+    } catch (Exception e) {
+      log.warn("Unable to set system L&F.");
+    }
+    
 		Options options = new Options();
 		Option hostNameOption = OptionBuilder.withArgName("host name")
 											 .hasArg()

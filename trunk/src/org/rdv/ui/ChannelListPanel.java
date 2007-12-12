@@ -84,7 +84,6 @@ import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBUtilities;
 import org.rdv.rbnb.StateListener;
 
-import com.jgoodies.looks.Options;
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
@@ -220,7 +219,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     tree = new JTree(treeModel);
     tree.setRootVisible(false);
     tree.setShowsRootHandles(true);
-    tree.putClientProperty(Options.TREE_LINE_STYLE_KEY, Options.TREE_LINE_STYLE_NONE_VALUE);
     tree.setExpandsSelectedPaths(true);
     tree.setCellRenderer(new ChannelTreeCellRenderer());
     tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);

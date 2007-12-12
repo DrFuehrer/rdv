@@ -35,8 +35,6 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 
-import com.jgoodies.looks.LookUtils;
-
 /** 
  * A <code>JPanel</code> subclass that has a drop shadow border and 
  * that provides a header with icon, title and tool bar.<p>
@@ -355,10 +353,6 @@ public class SimpleInternalFrame extends JPanel {
     public static Color getHeaderBackground() {
         Color c =
             UIManager.getColor("SimpleInternalFrame.activeTitleBackground");
-        if (c != null)
-            return c;
-        if (LookUtils.IS_LAF_WINDOWS_XP_ENABLED)
-            c = UIManager.getColor("InternalFrame.activeTitleGradient");
         return c != null
             ? c
             : UIManager.getColor("InternalFrame.activeTitleBackground");

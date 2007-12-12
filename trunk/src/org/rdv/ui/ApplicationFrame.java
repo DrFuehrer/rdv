@@ -90,8 +90,6 @@ import org.rdv.rbnb.RBNBHelper;
 import org.rdv.rbnb.StateListener;
 import org.rdv.rbnb.TimeRange;
 
-import com.jgoodies.looks.HeaderStyle;
-import com.jgoodies.looks.Options;
 import com.jgoodies.uif_lite.component.Factory;
 
 /**
@@ -558,7 +556,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     ActionFactory actionFactory = ActionFactory.getInstance();
     
   	menuBar = new JMenuBar();
-    menuBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.SINGLE);
   
   	JMenuItem menuItem;
   		
