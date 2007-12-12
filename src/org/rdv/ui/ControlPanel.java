@@ -48,6 +48,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -152,7 +153,6 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    * Setup the UI.
    */
 	private void initPanel() {
-    setBorder(null);
     setLayout(new BorderLayout());
     
 		GridBagConstraints c = new GridBagConstraints();
@@ -161,29 +161,19 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     container.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.lightGray));
     container.setLayout(new GridBagLayout());
     
-    JPanel firstRowPanel = new JPanel();
-    firstRowPanel.setBorder(null);
-    firstRowPanel.setMinimumSize(new Dimension(0, 16));
-    firstRowPanel.setLayout(new BorderLayout());
+    Box firstRowPanel = new Box(BoxLayout.LINE_AXIS);
     
-    JPanel controlsPanel = new JPanel();
-    controlsPanel.setBorder(null);
-    controlsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 4, 0));
-
     beginButton = new JButton("Beginning ", DataViewer.getIcon("icons/begin.gif"));
     beginButton.setToolTipText("Go to beginning of data");
-    beginButton.setBorder(null);
     beginButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         setLocationBegin();
       }
     });
-    controlsPanel.add(beginButton);    
+    firstRowPanel.add(beginButton);    
     
     monitorButton = new JButton("Real time ", DataViewer.getIcon("icons/rt.gif"));
-    monitorButton.setSelectedIcon(DataViewer.getIcon("icons/pause.gif"));
     monitorButton.setToolTipText("View live data");
-    monitorButton.setBorder(null);
     monitorButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (monitorButton.isSelected()) {
@@ -193,12 +183,10 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
         }
       }
     });
-    controlsPanel.add(monitorButton);
+    firstRowPanel.add(monitorButton);
     
     playButton = new JButton("Play    ", DataViewer.getIcon("icons/play.gif"));
-    playButton.setSelectedIcon(DataViewer.getIcon("icons/pause.gif"));
     playButton.setToolTipText("Play");
-    playButton.setBorder(null);
     playButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (playButton.isSelected()) {
@@ -208,22 +196,21 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
         }
       }
     });
-    controlsPanel.add(playButton);
+    firstRowPanel.add(playButton);
     
     endButton = new JButton("End ", DataViewer.getIcon("icons/end.gif"));
     endButton.setToolTipText("Go to end of data");
-    endButton.setBorder(null);
     endButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         setLocationEnd();
       }
     });
-    controlsPanel.add(endButton);    
+    firstRowPanel.add(endButton);    
     
-    controlsPanel.add(Box.createHorizontalStrut(8));
+    firstRowPanel.add(Box.createHorizontalStrut(8));
     
     playbackRateLabel = new JLabel("Playback rate: ");
-    controlsPanel.add(playbackRateLabel);
+    firstRowPanel.add(playbackRateLabel);
 
     SpinnerListModel playbackRateModel = new SpinnerListModel(playbackRates);
     playbackRateSpinner = new JSpinner(playbackRateModel);
@@ -231,23 +218,27 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     playbackRateEditor.getTextField().setEditable(false);
     playbackRateSpinner.setEditor(playbackRateEditor);
     playbackRateSpinner.setToolTipText("The rate at which to playback data");
-    playbackRateSpinner.setPreferredSize(new Dimension(64,16));
+    playbackRateSpinner.setPreferredSize(new Dimension(80, playbackRateSpinner.getPreferredSize().height));
+    playbackRateSpinner.setMinimumSize(playbackRateSpinner.getPreferredSize());
+    playbackRateSpinner.setMaximumSize(playbackRateSpinner.getPreferredSize());
     playbackRateSpinner.addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
         playbackRateChanged();
       }      
     });
-    controlsPanel.add(playbackRateSpinner);
+    firstRowPanel.add(playbackRateSpinner);
 
-    controlsPanel.add(Box.createHorizontalStrut(8));
+    firstRowPanel.add(Box.createHorizontalStrut(8));
     
     timeScaleLabel = new JLabel("Time scale: ");
-    controlsPanel.add(timeScaleLabel);
+    firstRowPanel.add(timeScaleLabel);
     
     timeScaleComboBox = new JComboBox();
     timeScaleComboBox.setEditable(true);
     timeScaleComboBox.setToolTipText("The amount of data to display");
-    timeScaleComboBox.setPreferredSize(new Dimension(64,16));
+    timeScaleComboBox.setPreferredSize(new Dimension(96, timeScaleComboBox.getPreferredSize().height));
+    timeScaleComboBox.setMinimumSize(timeScaleComboBox.getPreferredSize());
+    timeScaleComboBox.setMaximumSize(timeScaleComboBox.getPreferredSize());
     for (int i=0; i<timeScales.length; i++) {
       timeScaleComboBox.addItem(DataViewer.formatSeconds(timeScales[i]));
     }
@@ -257,13 +248,12 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
         timeScaleChange();
       }
     });
-    controlsPanel.add(timeScaleComboBox);
-    
-    firstRowPanel.add(controlsPanel, BorderLayout.CENTER);
+    firstRowPanel.add(timeScaleComboBox);
+
+    firstRowPanel.add(Box.createHorizontalGlue());
     
     locationButton = new JButton();
     locationButton.setToolTipText("The current time location");
-    locationButton.setBorder(null);
     locationButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
         TimeRange timeRange = RBNBHelper.getChannelsTimeRange();
@@ -273,7 +263,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
         }
       }
     });
-    firstRowPanel.add(locationButton, BorderLayout.EAST);
+    firstRowPanel.add(locationButton);
     
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1;
@@ -710,11 +700,13 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    */
 	public void postState(int newState, int oldState) {
     if (newState == Player.STATE_MONITORING) {
+      monitorButton.setIcon(DataViewer.getIcon("icons/pause.gif"));
       monitorButton.setText("Pause      ");
       monitorButton.setSelected(true);
       
       playbackRateSpinner.setEnabled(false);
     } else if (oldState == Player.STATE_MONITORING) {
+      monitorButton.setIcon(DataViewer.getIcon("icons/rt.gif"));
       monitorButton.setText("Real time ");
       monitorButton.setSelected(false);
       
@@ -722,9 +714,11 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     }
     
     if (newState == Player.STATE_PLAYING) {
+      playButton.setIcon(DataViewer.getIcon("icons/pause.gif"));
       playButton.setText("Pause ");
       playButton.setSelected(true);
     } else if (oldState == Player.STATE_PLAYING) {
+      playButton.setIcon(DataViewer.getIcon("icons/play.gif"));
       playButton.setText("Play    ");
       playButton.setSelected(false);
     }    
