@@ -90,6 +90,8 @@ import org.rdv.rbnb.RBNBHelper;
 import org.rdv.rbnb.StateListener;
 import org.rdv.rbnb.TimeRange;
 
+import com.jgoodies.uif_lite.component.Factory;
+
 /**
  * Main frame for the application
  * 
@@ -805,12 +807,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   }
   
   private void initLeftPanel() {
-    leftPanel = new JSplitPane(
+    leftPanel = Factory.createStrippedSplitPane(
         JSplitPane.VERTICAL_SPLIT,
-        true,
         channelListPanel,
-        metadataPanel);
-    leftPanel.setResizeWeight(0.65f);
+        metadataPanel,
+        0.65f);
     leftPanel.setContinuousLayout(true);
     leftPanel.setBorder(new EmptyBorder(8, 8, 8, 0));
     
@@ -887,12 +888,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   } 
   
 	private void initSplitPane() {
-    splitPane = new JSplitPane(
+    splitPane = Factory.createStrippedSplitPane(
                   JSplitPane.HORIZONTAL_SPLIT,
-                  true,
                   leftPanel,
-                  rightPanel);
-    splitPane.setResizeWeight(0.2f);
+                  rightPanel,
+                  0.2f);
 		splitPane.setContinuousLayout(true);
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 	}
