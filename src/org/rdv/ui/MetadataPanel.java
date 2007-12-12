@@ -33,6 +33,7 @@
 package org.rdv.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.JEditorPane;
@@ -63,7 +64,6 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
   
   private RBNBController rbnb;
   
-  //private ChannelMap cmap;
   private ChannelTree ctree;
   
   private String channel;
@@ -89,9 +89,10 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
     setPreferredSize(new Dimension(150, 150));
     
     infoTextArea = new JEditorPane();
+    infoTextArea.setBackground(Color.white);
     infoTextArea.setEditable(false);
     infoTextArea.setContentType("text/html");
-    infoTextArea.setBorder(new EmptyBorder(4, 4, 4, 4));
+    infoTextArea.setBorder(new EmptyBorder(5, 5, 5, 5));
     
     SimpleInternalFrame infoViewFrame = new SimpleInternalFrame(
         DataViewer.getIcon("icons/properties.gif"),
