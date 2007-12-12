@@ -134,7 +134,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
    * Create the main UI panel.
    */
 	private void initPanel() {
-    setBorder(null);
 		setLayout(new BorderLayout());
     setMinimumSize(new Dimension(130, 27));
 
@@ -163,20 +162,14 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
    */
   private JComponent createFilterPanel() {
     JPanel filterPanel = new JPanel();
-    filterPanel.setLayout(new BorderLayout());
+    filterPanel.setLayout(new BorderLayout(5, 5));
     filterPanel.setBackground(Color.white);
-    filterPanel.setBorder(BorderFactory.createCompoundBorder(
-        BorderFactory.createEmptyBorder(5, 5, 5, 5),
-        BorderFactory.createCompoundBorder(
-          BorderFactory.createLineBorder(Color.lightGray),
-          BorderFactory.createEmptyBorder(2, 5, 2, 5))));
+    filterPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
     
     JLabel filterIconLabel = new JLabel(DataViewer.getIcon("icons/filter.gif"));
-    filterIconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
     filterPanel.add(filterIconLabel, BorderLayout.WEST);
     
     filterTextField = new JTextField();
-    filterTextField.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
     filterTextField.setToolTipText("Enter text here to filter the channel list");
     filterTextField.getDocument().addDocumentListener(new DocumentListener() {
       public void changedUpdate(DocumentEvent e) {
@@ -210,8 +203,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     
     clearFilterButton = new JButton(cancelFilterAction);
     clearFilterButton.setVisible(false);
-    clearFilterButton.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
-    clearFilterButton.setOpaque(false);
     filterPanel.add(clearFilterButton, BorderLayout.EAST);
     
     return filterPanel;
@@ -238,7 +229,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     tree.setBorder(new EmptyBorder(0, 5, 5, 5));
     
     JScrollPane treeView = new JScrollPane(tree);
-    treeView.setBorder(null);
+    treeView.setViewportBorder(null);
     
     tree.setDragEnabled(true);
     tree.setTransferHandler(new ChannelTransferHandler());
