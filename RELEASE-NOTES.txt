@@ -8,14 +8,14 @@ INTRODUCTION
 
 NEW FEATURES
 
-  - Added support for PNG and GIF images to the ImageViz visualization
-    extension.
+  - Support for PNG and GIF images with the ImageViz visualization extension.
   - DialViz, a visualization extension to view a numeric data channel on a dial.
+  - Export of data to the MATLAB MAT-file format.
 
 
 BUG FIXES
 
-  - [1847872] Children of shortcut servers aren't shown in channel list
+  - [1847872] Children of shortcut servers aren't shown in channel list.
 
 
 CHANGES
