@@ -87,7 +87,6 @@ import org.rdv.rbnb.MessageListener;
 import org.rdv.rbnb.Player;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBHelper;
-import org.rdv.rbnb.RBNBUtilities;
 import org.rdv.rbnb.StateListener;
 import org.rdv.rbnb.TimeRange;
 
@@ -141,10 +140,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   private Action loadAction;
   private Action saveAction;
   private Action importAction;
-  protected Action exportAction; 
+  private Action exportAction; 
  	private Action exitAction;
- 	protected Action exportVideoAction;
-  protected Action exportDataAction;
+ 	private Action exportVideoAction;
   
  	private Action controlAction;
  	private DataViewerAction realTimeAction;
@@ -359,12 +357,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       }
     };
  
-    exportDataAction = new DataViewerAction("Export data channels", "Export data on server to local computer") {
-      public void actionPerformed(ActionEvent ae) {
-        showExportDialog();
-      }
-    };
-
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X) {
  			public void actionPerformed(ActionEvent ae) {
  				dataViewer.exit();
@@ -630,15 +622,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 
     JMenu exportSubMenu = new JMenu(exportAction);
     
-    menuItem = new JMenuItem(exportDataAction);
+    menuItem = new JMenuItem(actionFactory.getDataExportAction());
     exportSubMenu.add(menuItem);
     
     menuItem = new JMenuItem(exportVideoAction);
     exportSubMenu.add(menuItem);
-    
-    exportAction.setEnabled(false);
-    exportVideoAction.setEnabled(false);
-    exportDataAction.setEnabled(false);
     
     fileMenu.add(exportSubMenu);
 
@@ -809,7 +797,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
   			
 	private void initChannelListPanel() {
-		channelListPanel = new ChannelListPanel(dataPanelManager, rbnb, this);
+		channelListPanel = new ChannelListPanel(dataPanelManager, rbnb);
 		channelListPanel.setMinimumSize(new Dimension(0, 0));
 		
 		log.info("Created channel list panel.");
@@ -1005,20 +993,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     new ExportVideoDialog(frame, rbnb, channels);
   }
 
-  
-  public void showExportDialog() {
-    List<String> channels = channelListPanel.getSelectedChannels();
-    if (channels.size() == 0) {
-      channels = RBNBUtilities.getAllChannels(rbnb.getMetadataManager().getMetadataChannelTree(), channelListPanel.isShowingHiddenChannles());
-    }
-
-    showExportDialog(channels);
-  }
-  
-  public void showExportDialog(List<String> channels) {
-    new ExportDialog(frame, rbnb, channels);
-  }
- 	
  	/**
    * A check box menu item that uses the "selected" property from it's action.
    */
@@ -1143,6 +1117,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       boolean offline = rbnb.getRBNBHostName().equals("localhost");
       saveAction.setEnabled(!offline);
       importAction.setEnabled(offline);
+      exportAction.setEnabled(true);
  
       controlPanel.setEnabled(true);
       markerSubmitPanel.setEnabled(true);

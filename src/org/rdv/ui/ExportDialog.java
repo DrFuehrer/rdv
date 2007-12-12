@@ -58,6 +58,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -66,7 +67,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -79,9 +79,7 @@ import org.apache.commons.logging.LogFactory;
 import org.rdv.DataViewer;
 import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.EventMarker;
-import org.rdv.rbnb.ProgressListener;
 import org.rdv.rbnb.RBNBController;
-import org.rdv.rbnb.RBNBExport;
 import org.rdv.rbnb.RBNBUtilities;
 import org.rdv.util.ReadableStringComparator;
 
@@ -89,18 +87,12 @@ import org.rdv.util.ReadableStringComparator;
  * @author  Jason P. Hanley
  * @since   1.2
  */
-public class ExportDialog extends JDialog implements ProgressListener {
+public class ExportDialog extends JDialog {
 
   /** serialization version identifier */
   private static final long serialVersionUID = 6145144842086826860L;
 
   static Log log = LogFactory.getLog(ExportDialog.class.getName());
-  
-  ExportDialog dialog;
-  
-  RBNBController rbnb;
-  RBNBExport export;
-  boolean exporting;
   
   JButton startTimeButton;
   JLabel durationLabel;
@@ -109,50 +101,53 @@ public class ExportDialog extends JDialog implements ProgressListener {
   TimeSlider timeSlider;
   
   JList numericChannelList;
-  DefaultListModel numericChannelModel;
+  DefaultListModel channelModel;
   
   JTextField dataFileTextField;
   JFileChooser dataFileChooser;
-  JButton dataFileButton;  
+  JButton dataFileButton;
   
-  JProgressBar exportProgressBar;
+  private JComboBox fileFormatComboBox;
   
   JButton exportButton;
   JButton cancelButton;
   
-  List<String> channels;
-
-	public ExportDialog(JFrame owner, RBNBController rbnb, List<String> channels) {
-		super(owner);
+  private boolean canceled;
+  
+  public static ExportDialog showDialog(List<String> channels, List<String> fileFormats) {
+    ExportDialog dialog = new ExportDialog(channels, fileFormats);
+    dialog.setVisible(true);
     
-    this.dialog = this;
-    
-    this.rbnb = rbnb;
+    if (dialog.isCanceled()) {
+      return null;
+    } else {
+      return dialog;
+    }
+  }
 
-    this.channels = channels;
+	private ExportDialog(List<String> channels, List<String> fileFormats) {
+		super((JFrame)null, true);
+    
     Collections.sort(channels, new ReadableStringComparator());
-    
-    export = new RBNBExport(rbnb.getRBNBHostName(), rbnb.getRBNBPortNumber());
-    exporting = false;
     
     setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     
-    setTitle("Export data to disk");
+    setTitle("Export data to file");
     
-    initComponents();
+    initComponents(channels, fileFormats);
   }
 
-  private void initComponents() {    
-    numericChannelModel = new DefaultListModel();
+  private void initComponents(List<String> channels, List<String> fileFormats) {    
+    channelModel = new DefaultListModel();
     
     for (int i=0; i<channels.size(); i++) {
       String channelName = (String)channels.get(i);
-      Channel channel = rbnb.getChannel(channelName);
+      Channel channel = RBNBController.getInstance().getChannel(channelName);
 
       String mime = RBNBUtilities.fixMime(channel.getMetadata("mime"), channelName);
       
       if (mime.equals("application/octet-stream")) {
-        numericChannelModel.addElement(new ExportChannel(channelName));
+        channelModel.addElement(new ExportChannel(channelName));
       }
     }
     
@@ -257,7 +252,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     updateTimeRangeLabel();
     updateTimeBounds();
     
-    List<EventMarker> markers = rbnb.getMarkerManager().getMarkers();
+    List<EventMarker> markers = RBNBController.getInstance().getMarkerManager().getMarkers();
     for (EventMarker marker : markers) {
       timeSlider.addMarker(marker);
     }
@@ -281,7 +276,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.insets = new java.awt.Insets(0,10,10,10);
     container.add(numericHeaderLabel, c);    
     
-    numericChannelList = new JList(numericChannelModel);
+    numericChannelList = new JList(channelModel);
     numericChannelList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     numericChannelList.setCellRenderer(new CheckListRenderer());
     numericChannelList.setVisibleRowCount(10);
@@ -292,6 +287,8 @@ public class ExportDialog extends JDialog implements ProgressListener {
         item.setSelected(!item.isSelected());
         Rectangle rect = numericChannelList.getCellBounds(index, index);
         numericChannelList.repaint(rect);
+        
+        checkSelectedChannels();
         
         updateTimeBounds();
       }
@@ -335,7 +332,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     dataFileButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         dataFileChooser.setSelectedFile(new File(dataFileTextField.getText()));
-        int status = dataFileChooser.showDialog(dialog, "OK");
+        int status = dataFileChooser.showDialog(ExportDialog.this, "OK");
         if (status == JFileChooser.APPROVE_OPTION) {
           dataFileTextField.setText(dataFileChooser.getSelectedFile().getAbsolutePath());
         }
@@ -349,25 +346,37 @@ public class ExportDialog extends JDialog implements ProgressListener {
     c.anchor = GridBagConstraints.NORTHWEST;
     c.insets = new java.awt.Insets(0,0,10,10);
     container.add(dataFileButton, c);
-    
-    exportProgressBar = new JProgressBar(0, 100000);
-    exportProgressBar.setStringPainted(true);
-    exportProgressBar.setValue(0);
-    c.fill = GridBagConstraints.HORIZONTAL;
-    c.weightx = 0.5;
+
+    c.fill = GridBagConstraints.NONE;
+    c.weightx = 0;
     c.gridx = 0;
     c.gridy = 6;
-    c.gridwidth = GridBagConstraints.REMAINDER;;
-    c.anchor = GridBagConstraints.CENTER;
-    c.insets = new java.awt.Insets(0,10,10,10);
-    container.add(exportProgressBar, c);        
-       
+    c.gridwidth = 1;
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new java.awt.Insets(0,10,10,5);
+    container.add(new JLabel("File format: "), c);
+    
+    fileFormatComboBox = new JComboBox(fileFormats.toArray());
+    fileFormatComboBox.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        fileFormatUpdated();
+      }      
+    });
+    c.fill = GridBagConstraints.HORIZONTAL;
+    c.weightx = 1;
+    c.gridx = 1;
+    c.gridy = 6;
+    c.gridwidth = GridBagConstraints.REMAINDER;
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.insets = new java.awt.Insets(0,0,10,10);
+    container.add(fileFormatComboBox, c);
+    
     JPanel panel = new JPanel();
     panel.setLayout(new FlowLayout());
 
     Action exportAction = new AbstractAction() {
       public void actionPerformed(ActionEvent e) {
-        exportData();
+        ok();
       }      
     };
     exportAction.putValue(Action.NAME, "Export");
@@ -404,25 +413,6 @@ public class ExportDialog extends JDialog implements ProgressListener {
     dataFileTextField.requestFocusInWindow();
     
     setLocationByPlatform(true);
-    setVisible(true);
-  }
-  
-  private void disableUI() {
-    startTimeButton.setEnabled(false);
-    endTimeButton.setEnabled(false);
-    numericChannelList.setEnabled(false);
-    dataFileTextField.setEnabled(false);
-    dataFileButton.setEnabled(false);
-    exportButton.setEnabled(false);
-  }
-  
-  private void enableUI() {
-    startTimeButton.setEnabled(true);
-    endTimeButton.setEnabled(true);
-    numericChannelList.setEnabled(true);
-    dataFileTextField.setEnabled(true);
-    dataFileButton.setEnabled(true);
-    exportButton.setEnabled(true);    
   }
   
   private void updateTimeBounds() {
@@ -435,7 +425,7 @@ public class ExportDialog extends JDialog implements ProgressListener {
     double maximum = 0;
     
     for (String channelName : selectedChannels) {
-      Channel channel = rbnb.getChannel(channelName);
+      Channel channel = RBNBController.getInstance().getChannel(channelName);
       if (channel == null) {
         continue;
       }
@@ -466,10 +456,36 @@ public class ExportDialog extends JDialog implements ProgressListener {
     endTimeButton.setText(DataViewer.formatDate(end));
   }
   
-  private List<String> getSelectedChannels() {
+  private void checkSelectedChannels() {
+    exportButton.setEnabled(!getSelectedChannels().isEmpty());
+  }
+  
+  private void fileFormatUpdated() {
+    String fileName = dataFileTextField.getText();
+    if (fileName == null || fileName.isEmpty()) {
+      return;
+    }
+    
+    String fileNameWithoutExtension;
+    if (fileName.contains(".")) {
+      fileNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
+    } else {
+      fileNameWithoutExtension = fileName;
+    }
+    
+    if (fileFormatComboBox.getSelectedItem().equals("MATLAB")) {
+      fileName = fileNameWithoutExtension + ".mat";
+    } else {
+      fileName = fileNameWithoutExtension + ".dat";
+    }
+    
+    dataFileTextField.setText(fileName);
+  }
+  
+  public List<String> getSelectedChannels() {
     List<String> selectedChannels = new ArrayList<String>();
-    for (int i=0; i<numericChannelModel.size(); i++) {
-      ExportChannel channel = (ExportChannel)numericChannelModel.get(i);
+    for (int i=0; i<channelModel.size(); i++) {
+      ExportChannel channel = (ExportChannel)channelModel.get(i);
       if (channel.isSelected()) {
         selectedChannels.add(channel.toString());
       }
@@ -478,12 +494,32 @@ public class ExportDialog extends JDialog implements ProgressListener {
     return selectedChannels;
   }
   
-  private void exportData() {
-    File dataFile = new File(dataFileTextField.getText());
+  public double getStartTime() {
+    return timeSlider.getStart();
+  }
+  
+  public double getEndTime() {
+    return timeSlider.getEnd();
+  }
+  
+  public File getFile() {
+    return new File(dataFileTextField.getText());
+  }
+  
+  public String getFileFormat() {
+    return (String)fileFormatComboBox.getSelectedItem();
+  }
+  
+  public boolean isCanceled() {
+    return canceled;
+  }
+  
+  private void ok() {
+    File file = new File(dataFileTextField.getText());
     
-    if (dataFile.exists()) {
+    if (file.exists()) {
       int overwriteReturn = JOptionPane.showConfirmDialog(null,
-          dataFile.getName() + " already exists. Do you want to overwrite it?",
+          file.getName() + " already exists. Do you want to overwrite it?",
           "Overwrite file?",
           JOptionPane.YES_NO_OPTION);
       if (overwriteReturn == JOptionPane.NO_OPTION) {
@@ -491,53 +527,14 @@ public class ExportDialog extends JDialog implements ProgressListener {
       }      
     }
     
-    disableUI();
-    
-    List<String> selectedChannels = getSelectedChannels();
-    
-    double start = timeSlider.getStart();
-    double end = timeSlider.getEnd();
-    
-    if (start == end) {
-      JOptionPane.showMessageDialog(this,
-          "The start and end export time must not be the same.",
-          "Export Data Error",
-          JOptionPane.ERROR_MESSAGE);
-      return;
-    }
-    
-    exporting = true;
-    export.startExport(selectedChannels, dataFile,
-        null,
-        null,
-        start, end,
-        this);
+    dispose();
   }
   
   private void cancel() {
-    if (exporting) {
-     export.cancelExport();
-    } else {
-      dispose();
-    }
-  }
-  
-  public void postProgress(double progress) {
-    exportProgressBar.setValue((int)(progress*100000));   
-  }
-
-  public void postCompletion() {
-    exporting = false;
+    canceled = true;
+    
     dispose();
-    JOptionPane.showMessageDialog(this, "Export complete.", "Export complete", JOptionPane.INFORMATION_MESSAGE);
   }
-
-  public void postError(String errorMessage) {
-    exportProgressBar.setValue(0);
-    exporting = false;
-    enableUI();
-    JOptionPane.showMessageDialog(this, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
-  }  
   
   class ExportChannel {
     String channelName;

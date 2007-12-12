@@ -108,7 +108,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
 
 	private DataPanelManager dataPanelManager;
 	private RBNBController rbnb;
-  private ApplicationFrame frame;
 	
   private List<ChannelSelectionListener> channelSelectionListeners;
   
@@ -120,12 +119,11 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
   
   private JButton metadataUpdateButton;
   
-	public ChannelListPanel(DataPanelManager dataPanelManager, RBNBController rbnb, ApplicationFrame frame) {
+	public ChannelListPanel(DataPanelManager dataPanelManager, RBNBController rbnb) {
 		super();
 		
 		this.dataPanelManager = dataPanelManager;
 		this.rbnb = rbnb;
-    this.frame = frame;
 		
     channelSelectionListeners = new ArrayList<ChannelSelectionListener>();
 		
@@ -316,57 +314,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
 	 			}
 	 		}
     }
-    
-    if (newChannelTree == null)
-      return;
-    enableExportMenu(newChannelTree);
 	}
-  
-  /**
-   * method to enable export menu as well as exportVideo or exportData menu(s)
-   * @param newChannelTree left ChannelTree of all channels
-   */
-  private void enableExportMenu(ChannelTree newChannelTree) {
-    
-    Iterator it = newChannelTree.iterator();
-    while (it.hasNext()) {
-      
-      if (frame.exportAction.isEnabled() && frame.exportDataAction.isEnabled()
-          && frame.exportVideoAction.isEnabled()) {
-        return;
-      }
-
-      ChannelTree.Node node = (ChannelTree.Node)it.next();
-      NodeTypeEnum type = node.getType();
-      if (type == ChannelTree.SOURCE) {
-        frame.exportAction.setEnabled(true);
-
-        List channels = node.getChildren();
-        
-        if (!frame.exportDataAction.isEnabled()) {
-          for (int i=0; i<channels.size(); i++) {
-            ChannelTree.Node c = (ChannelTree.Node)channels.get(i);
-            if (c.getMime() == null || c.getMime().equals("application/octet-stream")) {
-              this.frame.exportDataAction.setEnabled(true);
-              break;
-            }
-          }
-        }
-        
-        if (!frame.exportVideoAction.isEnabled()) {
-          for (int i=0; i<channels.size(); i++) {
-            ChannelTree.Node c = (ChannelTree.Node)channels.get(i);
-            if (c.getMime() == null) { // find a test for video/jpeg mime types
-              this.frame.exportVideoAction.setEnabled(true);
-              break;
-            }
-          }
-        }
-
-      }
-    }
-    
-  }
 
   private class FilterPropertyChangeListener implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent pce) {
@@ -613,7 +561,9 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     menuItem = new JMenuItem("Export data...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        frame.showExportDialog(RBNBUtilities.getAllChannels(treeModel.getChannelTree(), treeModel.isHiddenChannelsVisible()));
+        ActionFactory.getInstance().getDataExportAction().exportData(
+            RBNBUtilities.getAllChannels(treeModel.getChannelTree(),
+                                         treeModel.isHiddenChannelsVisible()));
       }
     });
     popup.add(menuItem);
@@ -661,7 +611,9 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/export.gif"));
     menuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        frame.showExportDialog(RBNBUtilities.getChildChannels(source, treeModel.isHiddenChannelsVisible()));
+        ActionFactory.getInstance().getDataExportAction().exportData(
+            RBNBUtilities.getChildChannels(source,
+                                           treeModel.isHiddenChannelsVisible()));
       }
     });
     popup.add(menuItem);          
@@ -746,7 +698,8 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
         for (ChannelTree.Node node : selectedChannels) {
           selectedChannelsAsString.add(node.getFullName());
         }
-        frame.showExportDialog(selectedChannelsAsString);
+        ActionFactory.getInstance().getDataExportAction().exportData(
+            selectedChannelsAsString);
       }
     });
     popup.add(menuItem);
