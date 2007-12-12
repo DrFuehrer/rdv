@@ -102,7 +102,6 @@ public class AboutDialog extends JDialog {
     aboutPanel.add(new JLabel("and Shannon Whitmore"));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("Version " + Version.major + "." + Version.minor + "." + Version.release));
-    aboutPanel.add(new JLabel("Build " + Version.build));
     aboutPanel.add(new JLabel(" "));
     aboutPanel.add(new JLabel("Copyright \251 2005-2007 University at Buffalo"));
     aboutPanel.add(new JLabel("Copyright \251 2005-2007 NEES Cyberinfrastructure Center"));
