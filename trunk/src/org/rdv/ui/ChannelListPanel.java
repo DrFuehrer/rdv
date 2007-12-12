@@ -201,6 +201,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     filterTextField.getActionMap().put("cancelFilter", cancelFilterAction);    
     
     clearFilterButton = new JButton(cancelFilterAction);
+    clearFilterButton.setBorderPainted(false);
     clearFilterButton.setVisible(false);
     filterPanel.add(clearFilterButton, BorderLayout.EAST);
     
