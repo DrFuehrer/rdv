@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.action;
+package org.rdv.action;
 
 /**
  * A factory class to manage actions.
@@ -46,6 +46,9 @@ public class ActionFactory {
   
   /** the action to import JPEG files */
   private JPEGImportAction jpegImportAction;
+  
+  /** the action to export data file */
+  private DataExportAction dataExportAction;
 
   /** the action to control offline mode */
   private OfflineAction offlineAction;
@@ -99,6 +102,19 @@ public class ActionFactory {
     }
     
     return jpegImportAction;
+  }
+  
+  /**
+   * Gets the action for exporting data to a file.
+   * 
+   * @return  the data export action
+   */
+  public DataExportAction getDataExportAction() {
+    if (dataExportAction == null) {
+      dataExportAction = new DataExportAction();
+    }
+    
+    return dataExportAction;
   }
   
   /**
