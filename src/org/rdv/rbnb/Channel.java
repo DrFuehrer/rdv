@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.rdv.data.DataChannel;
+
 import com.rbnb.sapi.ChannelTree;
 
 /**
@@ -45,10 +47,7 @@ import com.rbnb.sapi.ChannelTree;
  * @author  Jason P. Hanley
  * @since   1.1
  */
-public class Channel {
-
-  /** the full name of the channel  */
-  private String name;
+public class Channel extends DataChannel {
 
   private Map<String, String> metadata;
 
@@ -61,7 +60,7 @@ public class Channel {
    * @since               1.3
    */
   public Channel(ChannelTree.Node node, String userMetadata) {
-    this.name = node.getFullName();
+    super(node.getFullName());
 
     metadata = new HashMap<String, String>();
 
@@ -90,17 +89,7 @@ public class Channel {
    * @since 1.1
    */
   public String getShortName() {
-    return name.substring(name.lastIndexOf("/") + 1);
-  }
-
-  /**
-   * Get the full name of the channel.
-   * 
-   * @return  the full name of the channel.
-   * @since   1.1
-   */
-  public String getName() {
-    return name;
+    return getName().substring(getName().lastIndexOf("/") + 1);
   }
 
   /**
@@ -112,7 +101,7 @@ public class Channel {
    * @since   1.1
    */
   public String getParent() {
-    return name.substring(0, name.lastIndexOf("/"));
+    return getName().substring(0, getName().lastIndexOf("/"));
   }
 
   /**
@@ -132,7 +121,7 @@ public class Channel {
    * @return  a string representation of the channel and its metadata
    */
   public String toString() {
-    StringBuilder string = new StringBuilder(name);
+    StringBuilder string = new StringBuilder(getName());
     if (metadata.size() > 0) {
       string.append(": ");
       Set keys = metadata.keySet();
@@ -147,4 +136,5 @@ public class Channel {
     }
     return string.toString();
   }
+  
 }

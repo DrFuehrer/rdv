@@ -239,7 +239,7 @@ public class DataImportAction extends DataViewerAction {
       
       List<DataChannel> channels = reader.getChannels();
       for (DataChannel channel : channels) {
-        source.addChannel(channel.getChannelName(),
+        source.addChannel(channel.getName(),
                           "application/octet-stream",
                           channel.getUnit());        
       }      
@@ -254,7 +254,7 @@ public class DataImportAction extends DataViewerAction {
           if (values[j] == null) {
             continue;
           }
-          source.putData(channels.get(j).getChannelName(), timestamp, values[j].doubleValue());
+          source.putData(channels.get(j).getName(), timestamp, values[j].doubleValue());
         }
         
         currentSample++;

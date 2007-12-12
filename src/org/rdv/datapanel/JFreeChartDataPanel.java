@@ -400,13 +400,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       }
     }
 
-    String xChannelName = xChannel.getChannelName();
+    String xChannelName = xChannel.getName();
     if (xChannel.getUnit() != null) {
       xChannelName += " (" + xChannel.getUnit() + ")";
     }
     int xChannelIndex = channels.indexOf(xChannel);
     
-    String yChannelName = yChannel.getChannelName();
+    String yChannelName = yChannel.getName();
     if (yChannel.getUnit() != null) {
       yChannelName += " (" + yChannel.getUnit() + ")";
     }

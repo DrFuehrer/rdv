@@ -39,7 +39,7 @@ package org.rdv.data;
   */
 public class DataChannel {
   /** The name of the channel */
-  private final String channelName;
+  private final String name;
   
   /** The unit of the channel */
   private String unit;
@@ -47,24 +47,24 @@ public class DataChannel {
   /**
    * Create a channel.
    * 
-   * @param channelName  the name of the channel
+   * @param name  the name of the channel
    */
-  public DataChannel(String channelName) {
-    this(channelName, null);
+  public DataChannel(String name) {
+    this(name, null);
   }
   
   /**
    * Create a channel.
    * 
-   * @param channelName  the name of the channel
+   * @param name  the name of the channel
    * @param unit         the unit for the channel
    */
-  public DataChannel(String channelName, String unit) {
-    if (channelName == null) {
+  public DataChannel(String name, String unit) {
+    if (name == null) {
       throw new IllegalArgumentException("Null channel name argument.");
     }
     
-    this.channelName = channelName;
+    this.name = name;
     this.unit = unit;
   }
   
@@ -73,8 +73,8 @@ public class DataChannel {
    * 
    * @return  the name of the channel
    */
-  public String getChannelName() {
-    return channelName;
+  public String getName() {
+    return name;
   }
   
   /**
@@ -101,6 +101,6 @@ public class DataChannel {
    * @return  the channel name
    */
   public String toString() {
-    return channelName;
+    return name;
   }
 }
