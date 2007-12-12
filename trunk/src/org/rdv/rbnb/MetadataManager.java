@@ -37,11 +37,13 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rdv.DataViewer;
+import org.rdv.data.DataChannel;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
@@ -398,9 +400,28 @@ public class MetadataManager {
       }
     }
     
-    return (Channel)channels.get(channelName);
+    return channels.get(channelName);
   }   
 
+  /**
+   * Returns a list of channel objects.
+   * 
+   * @param channelNames  the list of channels names to get
+   * @return              a list of channels
+   */
+  public List<DataChannel> getChannels(List<String> channelNames) {
+    List<DataChannel> channelsRequest = new ArrayList<DataChannel>();
+    
+    for (String channelName : channelNames) {
+      Channel channel = getChannel(channelName);
+      if (channel != null) {
+        channelsRequest.add(channel);
+      }
+    }
+    
+    return channelsRequest;
+  }
+  
   /**
    * Add a listener for metadata updates.
    * 

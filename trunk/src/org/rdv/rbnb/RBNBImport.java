@@ -176,7 +176,7 @@ public class RBNBImport {
     try {
   		for (int i=0; i<channels.size(); i++) {
         DataChannel channel = channels.get(i);
-        cindex[i] = cmap.Add(channel.getChannelName());
+        cindex[i] = cmap.Add(channel.getName());
         
   			cmap.PutMime(cindex[i], "application/octet-stream");
         
