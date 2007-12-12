@@ -37,6 +37,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -87,7 +89,7 @@ public class ProgressWindow extends JDialog {
     setTitle(headerText);
     
     JPanel container = new JPanel();
-    container.setLayout(new BorderLayout(5, 5));
+    container.setLayout(new BorderLayout());
     setContentPane(container);
     
     if (headerText != null) {
@@ -100,19 +102,24 @@ public class ProgressWindow extends JDialog {
       container.add(headerLabel, BorderLayout.NORTH);
     }
     
+    Box bodyPanel = new Box(BoxLayout.PAGE_AXIS);
+    bodyPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    
     progressBar = new JProgressBar(0, 1000);
-    progressBar.setBorder(BorderFactory.createCompoundBorder(
-      BorderFactory.createEmptyBorder(10, 10, 5, 10),
-      progressBar.getBorder()));
-    progressBar.setPreferredSize(new Dimension(400, 40));
+    progressBar.setAlignmentX(LEFT_ALIGNMENT);
+    progressBar.setPreferredSize(new Dimension(400, progressBar.getPreferredSize().height));
     progressBar.setStringPainted(true);
     progressBar.setValue(0);
-    container.add(progressBar, BorderLayout.CENTER);
+    bodyPanel.add(progressBar);
+    
+    bodyPanel.add(Box.createVerticalStrut(10));
     
     statusLabel = new JLabel(" ");
-    statusLabel.setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
-    container.add(statusLabel, BorderLayout.SOUTH);
-    
+    statusLabel.setAlignmentX(LEFT_ALIGNMENT);
+    bodyPanel.add(statusLabel);
+
+    container.add(bodyPanel, BorderLayout.CENTER);
+
     pack();
     setLocationByPlatform(true);
   }
