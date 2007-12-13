@@ -34,6 +34,8 @@ package org.rdv.ui;
 
 import java.awt.Component;
 
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
@@ -51,12 +53,32 @@ public class ChannelTreeCellRenderer extends DefaultTreeCellRenderer {
 
   /** serialization version identifier */
   private static final long serialVersionUID = -8564821584949049965L;
+  
+  private static final Icon SERVER_ICON = DataViewer.getIcon("icons/server.gif");
+  
+  private static final Icon FOLDER_OPEN_ICON = DataViewer.getIcon("icons/folder_open.gif");
+  
+  private static final Icon FOLDER_ICON = DataViewer.getIcon("icons/folder.gif");
+  
+  private static final Icon DATA_ICON = DataViewer.getIcon("icons/data.gif");
+  
+  private static final Icon JPEG_ICON = DataViewer.getIcon("icons/jpeg.gif");
+  
+  private static final Icon TEXT_ICON = DataViewer.getIcon("icons/text.gif");
+  
+  private static final Icon FILE_ICON = DataViewer.getIcon("icons/file.gif");
+  
+  public ChannelTreeCellRenderer() {
+    super();
+    
+    setBorder(BorderFactory.createEmptyBorder(1, 0, 1, 0));
+  }
 
   public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-    Component c = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+    super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
     
     if (value == tree.getModel().getRoot()) {
-      return c;
+      return this;
     }
     
     ChannelTree.Node node = (ChannelTree.Node)value;
@@ -66,27 +88,28 @@ public class ChannelTreeCellRenderer extends DefaultTreeCellRenderer {
     setText(node.getName());
     
     if (type == ChannelTree.SERVER) {
-      setIcon(DataViewer.getIcon("icons/server.gif"));
+      setIcon(SERVER_ICON);
     } else if (type == ChannelTree.FOLDER ||
                type == ChannelTree.SOURCE ||
                type == ChannelTree.PLUGIN) {
       if (expanded) {
-        setIcon(DataViewer.getIcon("icons/folder_open.gif"));
+        setIcon(FOLDER_OPEN_ICON);
       } else {
-        setIcon(DataViewer.getIcon("icons/folder.gif"));
+        setIcon(FOLDER_ICON);
       }
     } else if (type == ChannelTree.CHANNEL) {
       if (mime.equals("application/octet-stream")) {
-        setIcon(DataViewer.getIcon("icons/data.gif"));
+        setIcon(DATA_ICON);
       } else if (mime.equals("image/jpeg") || mime.equals("video/jpeg")) {
-        setIcon(DataViewer.getIcon("icons/jpeg.gif"));
+        setIcon(JPEG_ICON);
       } else if (mime.equals("text/plain")) {
-        setIcon(DataViewer.getIcon("icons/text.gif"));
+        setIcon(TEXT_ICON);
       } else {
-        setIcon(DataViewer.getIcon("icons/file.gif"));
+        setIcon(FILE_ICON);
       }
     }
 
-    return c;
+    return this;
   }
+  
 }
