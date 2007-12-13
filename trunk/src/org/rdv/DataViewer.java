@@ -310,6 +310,67 @@ public class DataViewer {
       else Runtime.getRuntime().exec(new String[] {browser, url.toString()});
     }
   }
+  
+  /**
+   * Creates the command line options.
+   * 
+   * @return  the command line options.
+   */
+  @SuppressWarnings("static-access")
+  private static Options createOptions() {
+    Options options = new Options();
+    
+    Option hostNameOption = OptionBuilder.withArgName("host name")
+                       .hasArg()
+                       .withDescription("The host name of the RBNB server")
+                       .withLongOpt("host")
+                       .create('h');
+    
+    Option portNumberOption = OptionBuilder.withArgName("port number")
+                         .hasArg()
+                         .withDescription("The port number of the RBNB server")
+                         .withLongOpt("port")
+                         .create('p');
+    
+    Option channelsOption = OptionBuilder.withArgName("channels")
+                       .hasArgs()
+                       .withDescription("Channels to subscribe to")
+                       .withLongOpt("channels")
+                       .create('c');
+    
+    Option playbackRateOption = OptionBuilder.withArgName("playback rate")
+                       .hasArg()
+                       .withDescription("The playback rate")
+                       .withLongOpt("playback-rate")
+                       .create('r');
+    
+    Option timeScaleOption = OptionBuilder.withArgName("time scale")
+                        .hasArg()
+                        .withDescription("The time scale in seconds")
+                        .withLongOpt("time-scale")
+                        .create('s');
+    
+    Option playOption = OptionBuilder.withDescription("Start playing back data") 
+                     .withLongOpt("play")
+                     .create();
+    
+    Option realTimeOption = OptionBuilder.withDescription("Start viewing data in real time") 
+                       .withLongOpt("real-time")
+                       .create();
+    
+    Option helpOption = new Option("?", "help", false, "Display usage");
+    
+    options.addOption(hostNameOption);
+    options.addOption(portNumberOption);
+    options.addOption(channelsOption);
+    options.addOption(playbackRateOption);
+    options.addOption(timeScaleOption);
+    options.addOption(playOption);
+    options.addOption(realTimeOption);      
+    options.addOption(helpOption);
+    
+    return options;
+  }
 
 	public static void main(String[] args) {
 		//enable dynamic layout during application resize
@@ -327,49 +388,9 @@ public class DataViewer {
     } catch (Exception e) {
       log.warn("Unable to set system L&F.");
     }
-    
-		Options options = new Options();
-		Option hostNameOption = OptionBuilder.withArgName("host name")
-											 .hasArg()
-											 .withDescription("The host name of the RBNB server")
-											 .withLongOpt("host")
-											 .create('h');
-		Option portNumberOption = OptionBuilder.withArgName("port number")
-											   .hasArg()
-											   .withDescription("The port number of the RBNB server")
-											   .withLongOpt("port")
-											   .create('p');
-		Option channelsOption = OptionBuilder.withArgName("channels")
-											 .hasArgs()
-											 .withDescription("Channels to subscribe to")
-											 .withLongOpt("channels")
-											 .create('c');
-		Option playbackRateOption = OptionBuilder.withArgName("playback rate")
-											 .hasArg()
-											 .withDescription("The playback rate")
-											 .withLongOpt("playback-rate")
-											 .create('r');
-		Option timeScaleOption = OptionBuilder.withArgName("time scale")
-											  .hasArg()
-											  .withDescription("The time scale in seconds")
-											  .withLongOpt("time-scale")
-											  .create('s');
-		Option playOption = OptionBuilder.withDescription("Start playing back data") 
-										 .withLongOpt("play")
-										 .create();
-		Option realTimeOption = OptionBuilder.withDescription("Start viewing data in real time") 
-		 									 .withLongOpt("real-time")
-											 .create();
-		Option helpOption = new Option("?", "help", false, "Display usage");
-		options.addOption(hostNameOption);
-		options.addOption(portNumberOption);
-		options.addOption(channelsOption);
-		options.addOption(playbackRateOption);
-		options.addOption(timeScaleOption);
-		options.addOption(playOption);
-		options.addOption(realTimeOption);			
-		options.addOption(helpOption);
 
+    Options options = createOptions();
+    
 		String configFile = null;
 		String hostName = null;
 		int portNumber = -1;
