@@ -35,6 +35,7 @@ package org.rdv;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -63,6 +64,7 @@ import org.rdv.rbnb.LocalServer;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.ui.ApplicationFrame;
 import org.rdv.ui.ControlPanel;
+import org.rdv.util.PortKnock;
 
 /**
  * @author Jason P. Hanley
@@ -358,6 +360,12 @@ public class DataViewer {
                        .withLongOpt("real-time")
                        .create();
     
+    Option portKnockOption = OptionBuilder.withArgName("ports")
+      .hasArgs()
+      .withDescription("A list of ports to port knock before connecting to the server")
+      .withLongOpt("knock")
+      .create('k');
+    
     Option helpOption = new Option("?", "help", false, "Display usage");
     
     options.addOption(hostNameOption);
@@ -367,6 +375,7 @@ public class DataViewer {
     options.addOption(timeScaleOption);
     options.addOption(playOption);
     options.addOption(realTimeOption);      
+    options.addOption(portKnockOption);
     options.addOption(helpOption);
     
     return options;
@@ -399,6 +408,7 @@ public class DataViewer {
 		double timeScale = -1;
 		boolean play = false;
 		boolean realTime = false;
+    int[] knockPorts = null;
 		
 		CommandLineParser parser = new PosixParser();
 		
@@ -446,8 +456,24 @@ public class DataViewer {
 	    	} else if (line.hasOption("real-time")) {
 	    		realTime = true;
 	    	}
+        
+        if (line.hasOption('k')) {
+          String[] knockPortStrings = line.getOptionValues('k');
+          knockPorts = new int[knockPortStrings.length];
+          try {
+            for (int i=0; i<knockPortStrings.length; i++) {
+              knockPorts[i] = Integer.parseInt(knockPortStrings[i]);
+              if (knockPorts[i] < 1 || knockPorts[i] > 65535) {
+                throw new NumberFormatException("Invalid port range: " + knockPorts[i]);
+              }
+            }
+          } catch (NumberFormatException e) {
+            System.err.println("Invalid port knocking option: " + e.getMessage() + ".");
+            return;
+          }
+        }
 		} catch( ParseException e) {
-			log.error("Command line arguments invalid: " + e.getMessage());
+			System.err.println("Command line arguments invalid: " + e.getMessage() + ".");
 			return;
 	    }
 		
@@ -487,6 +513,15 @@ public class DataViewer {
 		}
 		
 		if (hostName != null) {
+      if (knockPorts != null) {
+        try {
+          PortKnock.knock(hostName, knockPorts);
+        } catch (IOException e) {
+          log.warn("Error port knocking.");
+          e.printStackTrace();
+        }
+      }
+
 			rbnbController.setRBNBHostName(hostName);
 			
       if (rbnbController.connect(true)) {
