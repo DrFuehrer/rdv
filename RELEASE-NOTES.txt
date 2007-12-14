@@ -11,7 +11,7 @@ NEW FEATURES
   - Support for PNG and GIF images with the ImageViz visualization extension.
   - DialViz, a visualization extension to view a numeric data channel on a dial.
   - Export of data to the MATLAB MAT-file format.
-
+  - Support for port knocking authentication.
 
 BUG FIXES
 
