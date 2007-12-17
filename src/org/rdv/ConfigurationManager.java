@@ -55,7 +55,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rdv.datapanel.DataPanel;
 import org.rdv.rbnb.RBNBController;
-import org.rdv.ui.ControlPanel;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -200,7 +199,6 @@ public class ConfigurationManager {
     
     RBNBController rbnb = dataViewer.getRBNBController();
     DataPanelManager dataPanelManager = dataViewer.getDataPanelManager();
-    ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
     
     if (rbnb.getState() != RBNBController.STATE_DISCONNECTED) {
       rbnb.pause();
@@ -250,7 +248,6 @@ public class ConfigurationManager {
       }
       
       double timeScale = Double.parseDouble(findChildNodeText(rbnbNodes, "timeScale"));
-      controlPanel.setTimeScale(timeScale);
       rbnb.setTimeScale(timeScale);
       
       double playbackRate = Double.parseDouble(findChildNodeText(rbnbNodes, "playbackRate"));

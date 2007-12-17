@@ -73,6 +73,7 @@ import org.rdv.rbnb.StateListener;
 import org.rdv.rbnb.SubscriptionListener;
 import org.rdv.rbnb.TimeListener;
 import org.rdv.rbnb.TimeRange;
+import org.rdv.rbnb.TimeScaleListener;
 
 import com.rbnb.sapi.ChannelTree;
 
@@ -82,14 +83,14 @@ import com.rbnb.sapi.ChannelTree;
  * @author Jason P. Hanley
  * @author Lawrence J. Miller
  */
-public class ControlPanel extends JPanel implements TimeListener, StateListener, SubscriptionListener, MetadataListener, PlaybackRateListener, TimeAdjustmentListener, EventMarkerListener {
+public class ControlPanel extends JPanel implements TimeListener, StateListener, SubscriptionListener, MetadataListener, PlaybackRateListener, TimeScaleListener, TimeAdjustmentListener, EventMarkerListener {
 
   /** serialization version identifier */
   private static final long serialVersionUID = 2727527118691092710L;
 
 	static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
-	public RBNBController rbnbController;
+	private final RBNBController rbnbController;
   
   /** Indicate if we are hiding empty time regions */
   private boolean hideEmptyTime;
@@ -130,13 +131,11 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 
   /**
    * Construct a control panel to control data playback.
-   * 
-   * @param rbnbController  the controller for data playback
    */
-	public ControlPanel(RBNBController rbnbController) {
+	public ControlPanel() {
 		super();
 
-		this.rbnbController = rbnbController;
+		this.rbnbController = RBNBController.getInstance();
     
     hideEmptyTime = false;
 		
@@ -241,7 +240,6 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     for (int i=0; i<timeScales.length; i++) {
       timeScaleComboBox.addItem(DataViewer.formatSeconds(timeScales[i]));
     }
-    timeScaleComboBox.setSelectedIndex(getTimeScaleIndex(rbnbController.getTimeScale()));
     timeScaleComboBox.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         timeScaleChange();
@@ -478,15 +476,18 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 	}
   
   /**
-   * Set the displayed time scale in the UI.
+   * Called when the time scale changes. Sets the displayed time scale in the
+   * UI.
    * 
    * @param timeScale  the time scale
    */
-  public void setTimeScale(double timeScale) {
+  public void timeScaleChanged(double timeScale) {
     int index = Arrays.binarySearch(timeScales, timeScale);
     if (index >= 0) {
       timeScaleComboBox.setSelectedIndex(index);
-    }    
+    } else {
+      timeScaleComboBox.setSelectedItem(DataViewer.formatSeconds(timeScale));
+    }
   }
 
   /**
@@ -506,36 +507,6 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     rbnbController.setPlaybackRate(playbackRate);
   }
   
-  /**
-   * Returns the index for the given time scale from the array of predefined
-   * time scales.
-   * 
-   * @param timeScale  the time scale to find
-   * @return           the index of the time scale in the time scale array
-   */
-	private int getTimeScaleIndex(double timeScale) {
-		int index = -1;
-		if (timeScale < timeScales[0]) {
-			index = 0;
-		} else if (timeScale > timeScales[timeScales.length-1]) {
-			index = timeScales.length-1;
-		} else {	
-			for (int i=0; i<timeScales.length-1; i++) {
-				if (timeScale >= timeScales[i] && timeScale <= timeScales[i+1]) {
-					double down = timeScale - timeScales[i];
-					double up = timeScales[i+1] - timeScale;
-					if (up <= down) {
-						index = i+1;
-					} else {
-						index = i;
-					}
-				}
-			}
-		}
-
-		return index;
-	}
-
   /**
    * Called when the time scale changes in the UI. This sets the time scale in
    * the rbnb controller.
