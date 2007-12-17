@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.audio;
+package org.rdv.audio;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
