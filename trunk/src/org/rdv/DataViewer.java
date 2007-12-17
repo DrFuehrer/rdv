@@ -63,7 +63,6 @@ import org.rdv.action.ActionFactory;
 import org.rdv.rbnb.LocalServer;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.ui.ApplicationFrame;
-import org.rdv.ui.ControlPanel;
 import org.rdv.util.PortKnock;
 
 /**
@@ -480,8 +479,7 @@ public class DataViewer {
 		log.info("Starting data viewer in disconnected state.");
 		DataViewer dataViewer = new DataViewer(false);
 		
-    RBNBController rbnbController = dataViewer.getRBNBController();
-    ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
+    RBNBController rbnbController = RBNBController.getInstance();
 
     if (configFile != null) {
       URL configURL;      
@@ -504,7 +502,6 @@ public class DataViewer {
 		}
 		
 		if (timeScale != -1) {
-      controlPanel.setTimeScale(timeScale);
 			rbnbController.setTimeScale(timeScale);
 		}
 				

@@ -253,6 +253,8 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		rbnb.getMetadataManager().addMetadataListener(controlPanel);
 		
 		rbnb.addPlaybackRateListener(controlPanel);
+    
+    rbnb.addTimeScaleListener(controlPanel);
 		
   	rbnb.addMessageListener(this);
   	
@@ -827,7 +829,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 	}
 		
 	private void initControls() {
-		controlPanel = new ControlPanel(rbnb);
+		controlPanel = new ControlPanel();
     frame.getContentPane().add(controlPanel, BorderLayout.NORTH);
 		
 		log.info("Added control panel.");

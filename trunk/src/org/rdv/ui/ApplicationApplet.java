@@ -53,8 +53,7 @@ public class ApplicationApplet extends JApplet {
 
 		dataViewer = new DataViewer(true);
 
-		RBNBController rbnbController = dataViewer.getRBNBController();
-    ControlPanel controlPanel = dataViewer.getApplicationFrame().getControlPanel();
+		RBNBController rbnbController = RBNBController.getInstance();
 
 		String hostName = getParameter("host");
 		String portString = getParameter("port");
@@ -71,7 +70,6 @@ public class ApplicationApplet extends JApplet {
 
 		if (timeScaleString != null && !timeScaleString.equals("")) {
       double timeScale = Double.parseDouble(timeScaleString);
-			controlPanel.setTimeScale(timeScale);
       rbnbController.setTimeScale(timeScale);
     }
 
