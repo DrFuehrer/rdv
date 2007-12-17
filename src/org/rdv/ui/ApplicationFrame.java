@@ -901,10 +901,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
 	}
   
-  public ControlPanel getControlPanel() {
-    return controlPanel;
-  }
-  
   /**
    * Hide the left part of the main split pane if both it's components are
    * visible. If either of them are visible, show it.
