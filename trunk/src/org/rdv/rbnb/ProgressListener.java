@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.rbnb;
 
 /**
  * A listener interface for posting progress information about some process.

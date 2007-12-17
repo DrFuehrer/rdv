@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.windows;
+package org.rdv.windows;
 
 import java.io.BufferedReader;
 import java.io.IOException;

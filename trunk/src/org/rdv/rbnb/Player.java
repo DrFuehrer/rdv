@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.rbnb;
+package org.rdv.rbnb;
 
 /**
  * An interface to define a player which is capable of playback data from the 

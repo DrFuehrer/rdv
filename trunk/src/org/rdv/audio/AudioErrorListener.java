@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.audio;
+package org.rdv.audio;
 
 /**
  * A listener interface for the audio player.

@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.auth;
+package org.rdv.auth;
 
 import edu.ucsd.auth.GridAuth;
 

@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.nees.buffalo.rdv.auth;
+package org.rdv.auth;
 
 /**
  * An interface to manage an authentication.
