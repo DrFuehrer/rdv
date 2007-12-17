@@ -462,7 +462,7 @@ public class ExportDialog extends JDialog {
   
   private void fileFormatUpdated() {
     String fileName = dataFileTextField.getText();
-    if (fileName == null || fileName.isEmpty()) {
+    if (fileName == null || fileName.length() == 0) {
       return;
     }
     
