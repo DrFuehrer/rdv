@@ -63,8 +63,8 @@ import javax.swing.event.MouseInputAdapter;
 
 import org.rdv.DataPanelManager;
 import org.rdv.DataViewer;
-import org.rdv.audio.AudioPlayer;
-import org.rdv.video.VLCLauncher;
+import org.rdv.util.AudioPlayer;
+import org.rdv.util.VLCLauncher;
 
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.HyperlinkEvent;

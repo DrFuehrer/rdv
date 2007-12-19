@@ -30,11 +30,10 @@
  * $Author$
  */
 
-package org.rdv.video;
+package org.rdv.util;
 
 import java.io.IOException;
 
-import org.rdv.windows.Registry;
 
 /**
  * A class to launch an instance of VLC.
@@ -75,7 +74,7 @@ public class VLCLauncher {
     String osName = System.getProperty("os.name");
     if (osName.startsWith("Windows")) {
       try {
-        vlcPath = Registry.readString(VLC_REGISTRY_KEY);
+        vlcPath = WindowsRegistry.readString(VLC_REGISTRY_KEY);
       } catch (IOException e) {
         e.printStackTrace();
       }

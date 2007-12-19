@@ -53,8 +53,8 @@ import javax.swing.TransferHandler;
 import javax.swing.border.EmptyBorder;
 
 import org.rdv.DataViewer;
-import org.rdv.audio.AudioErrorListener;
-import org.rdv.audio.AudioPlayer;
+import org.rdv.util.AudioErrorListener;
+import org.rdv.util.AudioPlayer;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 
