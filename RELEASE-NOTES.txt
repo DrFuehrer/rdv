@@ -12,6 +12,9 @@ NEW FEATURES
   - DialViz, a visualization extension to view a numeric data channel on a dial.
   - Export of data to the MATLAB MAT-file format.
   - Support for port knocking authentication.
+  - Added support for panning and zooming to ImageViz. A clickable thumbnail
+  	image was also added and is displayed for navigation purposes when zoomed
+  	in.
 
 BUG FIXES
 

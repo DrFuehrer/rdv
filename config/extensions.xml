@@ -1,12 +1,11 @@
 <extensions>
 	<extension>
-		<id>org.rdv.datapanel.JPEGDataPanel</id>
+		<id>org.rdv.viz.image.ImageViz</id>
 		<name>Video/Photo Data Panel</name>
 		<mimeTypes>
 			<mimeType>image/gif</mimeType>
 			<mimeType>image/jpeg</mimeType>
 			<mimeType>image/png</mimeType>
-			<mimeType>video/jpeg</mimeType>
 		</mimeTypes>
 	</extension>
 	<extension>
