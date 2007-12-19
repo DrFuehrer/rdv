@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.rdv.audio;
+package org.rdv.util;
 
 /**
  * A listener interface for the audio player.

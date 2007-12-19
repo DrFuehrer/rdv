@@ -30,7 +30,7 @@
  * $Author$
  */
 
-package org.rdv.audio;
+package org.rdv.util;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

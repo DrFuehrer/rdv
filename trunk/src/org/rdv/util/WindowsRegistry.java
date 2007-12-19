@@ -24,13 +24,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL$
- * $Revision$
- * $Date$
- * $Author$
+ * $URL: https://rdv.svn.sourceforge.net/svnroot/rdv/trunk/src/org/rdv/windows/Registry.java $
+ * $Revision: 943 $
+ * $Date: 2007-12-17 13:42:15 -0500 (Mon, 17 Dec 2007) $
+ * $Author: jphanley $
  */
 
-package org.rdv.windows;
+package org.rdv.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,7 +42,7 @@ import java.io.InputStreamReader;
  * 
  * @author Jason P. Hanley
  */
-public class Registry {
+public class WindowsRegistry {
   /** the command line registry tool */
   private static final String REGISTRY_TOOL = "reg";
   
