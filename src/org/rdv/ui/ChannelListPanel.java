@@ -78,6 +78,7 @@ import org.rdv.DataPanelManager;
 import org.rdv.DataViewer;
 import org.rdv.Extension;
 import org.rdv.action.ActionFactory;
+import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.MetadataListener;
 import org.rdv.rbnb.Player;
 import org.rdv.rbnb.RBNBController;
@@ -616,15 +617,13 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     JPopupMenu popup = new JPopupMenu();
     JMenuItem menuItem;
 
-    // Below code added so that we call viewChannels() and pass a List of selected channels
     final List<ChannelTree.Node> selectedChannels = new ArrayList<ChannelTree.Node>();   
-    ChannelTree.Node selectedNode;
  
     TreePath[] selectedNodes = tree.getSelectionPaths();
     if (selectedNodes != null) {
       for (int i=0; i<selectedNodes.length; i++) {
         if (selectedNodes[i].getLastPathComponent() != treeModel.getRoot()) {
-          selectedNode = (ChannelTree.Node)selectedNodes[i].getLastPathComponent();
+          ChannelTree.Node selectedNode = (ChannelTree.Node)selectedNodes[i].getLastPathComponent();
           NodeTypeEnum type = selectedNode.getType();
           if (type == ChannelTree.CHANNEL) {
             selectedChannels.add(selectedNode);
@@ -632,9 +631,9 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
         }
       }
     }
-
         
     final String channelName = channel.getFullName();
+    final Channel channelMetadata = rbnb.getMetadataManager().getChannel(channelName);
 
     ArrayList extensions = dataPanelManager.getExtensions(channelName);
     final Extension defaultExtension = dataPanelManager.getDefaultExtension(channelName);
@@ -643,7 +642,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
       menuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ae) {
           viewChannels(selectedChannels, defaultExtension);
-//          viewChannel (channelName, defaultExtension);
         }                
       });            
       popup.add(menuItem);
@@ -657,8 +655,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
             menuItem = new JMenuItem("View with " + extension.getName());
             menuItem.addActionListener(new ActionListener() {
               public void actionPerformed(ActionEvent ae) {
-              
-//                viewChannel(channelName, extension);
                 viewChannels(selectedChannels, extension);
               }                
             });
@@ -680,21 +676,26 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
       popup.add(menuItem);
       popup.addSeparator();
     }
-    
-    String plural = selectedChannels.size()==1?"":"s";
-    menuItem = new JMenuItem("Export channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
-    menuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        List<String> selectedChannelsAsString = new ArrayList<String>();
-        for (ChannelTree.Node node : selectedChannels) {
-          selectedChannelsAsString.add(node.getFullName());
+
+    String mime = channelMetadata.getMetadata("mime");
+    if (mime.equals("application/octet-stream")) {
+      String plural = selectedChannels.size()==1?"":"s";
+      menuItem = new JMenuItem("Export channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
+      menuItem.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent arg0) {
+          List<String> selectedChannelsAsString = new ArrayList<String>();
+          for (ChannelTree.Node node : selectedChannels) {
+            selectedChannelsAsString.add(node.getFullName());
+          }
+          ActionFactory.getInstance().getDataExportAction().exportData(
+              selectedChannelsAsString);
         }
-        ActionFactory.getInstance().getDataExportAction().exportData(
-            selectedChannelsAsString);
-      }
-    });
-    popup.add(menuItem);
-    
+      });
+      popup.add(menuItem);
+    } else {
+      popup.remove(popup.getComponentCount()-1);
+    }
+  
     return popup;    
   }
   
