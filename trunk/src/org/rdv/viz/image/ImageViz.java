@@ -30,11 +30,10 @@
  * $Author$
  */
 
-package org.rdv.datapanel;
+package org.rdv.viz.image;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -46,42 +45,34 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.VolatileImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import javax.net.ssl.SSLHandshakeException;
+import java.io.InputStream;
+
+import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.filechooser.FileFilter;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,23 +83,22 @@ import org.rdv.auth.Authentication;
 import org.rdv.auth.AuthenticationEvent;
 import org.rdv.auth.AuthenticationListener;
 import org.rdv.auth.AuthenticationManager;
+import org.rdv.datapanel.AbstractDataPanel;
 import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.Player;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.rbnb.sapi.ChannelMap;
 
 /**
+ * A visualization extension for viewing images.
+ * 
  * @author Jason P. Hanley
  */
-public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationListener {
+public class ImageViz extends AbstractDataPanel implements AuthenticationListener {
 	
-	static Log log = LogFactory.getLog(JPEGDataPanel.class.getName());
+	static Log log = LogFactory.getLog(ImageViz.class.getName());
 
-	JPEGPanel image;
+  ImagePanel image;
 	JPanel panel;
   JPanel topControls;
   JPanel irisControls;
@@ -116,7 +106,8 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   JPanel zoomControls;
   JPanel tiltControls;
   JPanel panControls;
-  JCheckBoxMenuItem scaleMenuItem;
+  JCheckBoxMenuItem autoScaleMenuItem;
+  JCheckBoxMenuItem showNavigationMenuItem;
   JCheckBoxMenuItem hideRoboticControlsMenuItem;
   
   MouseInputAdapter clickMouseListener;
@@ -126,7 +117,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   
   FlexTPSStream flexTPSStream;
  	 	
-	public JPEGDataPanel() {
+	public ImageViz() {
 		super();
 		
 		displayedImageTime = -1;
@@ -168,12 +159,26 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   }
 			
 	private void initImage() {
-		image = new JPEGPanel();
+		image = new ImagePanel();
+    image.setBackground(Color.black);
+    image.addPropertyChangeListener(new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent pce) {
+        if (pce.getPropertyName().equals(ImagePanel.AUTO_SCALING_PROPERTY)) {
+          boolean autoScaling = (Boolean)pce.getNewValue();
+          autoScaleMenuItem.setSelected(autoScaling);
+          if (autoScaling) {
+            properties.remove("autoScale");
+          } else {
+            properties.setProperty("autoScale", "true");
+          }
+        }
+      }
+    });
     
     clickMouseListener = new MouseInputAdapter() {
       public void mouseClicked(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
-          Point imagePoint = image.componentPointToImagePoint(e.getPoint());
+          Point imagePoint = image.panelToScaledImagePoint(e.getPoint());
           if (imagePoint != null) {
             center(imagePoint);
           }
@@ -444,16 +449,42 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
       }
     });
     popupMenu.add(printImageMenuItem);
+    
+    popupMenu.addSeparator();
+    
+    final JMenuItem zoomInMenuItem = new JMenuItem("Zoom in");
+    zoomInMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        image.zoomIn();
+      }
+    });
+    popupMenu.add(zoomInMenuItem);
+    
+    final JMenuItem zoomOutMenuItem = new JMenuItem("Zoom out");
+    zoomOutMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        image.zoomOut();
+      }
+    });
+    popupMenu.add(zoomOutMenuItem);
 
     popupMenu.addSeparator();
 
-    scaleMenuItem = new  JCheckBoxMenuItem("Scale", true);
-    scaleMenuItem.addActionListener(new ActionListener() {
+    autoScaleMenuItem = new  JCheckBoxMenuItem("Auto scale", true);
+    autoScaleMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
-        setScaled(scaleMenuItem.isSelected());
+        setAutoScale(autoScaleMenuItem.isSelected());
       }      
     });
-    popupMenu.add(scaleMenuItem);
+    popupMenu.add(autoScaleMenuItem);
+    
+    showNavigationMenuItem = new JCheckBoxMenuItem("Show navigation", true);
+    showNavigationMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent arg0) {
+        setShowNavigation(showNavigationMenuItem.isSelected());
+      }
+    });
+    popupMenu.add(showNavigationMenuItem);
     
     hideRoboticControlsMenuItem = new JCheckBoxMenuItem("Disable robotic controls", false);
     hideRoboticControlsMenuItem.addActionListener(new ActionListener() {
@@ -469,6 +500,8 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
         saveImageMenuItem.setEnabled(enable);
         copyImageMenuItem.setEnabled(enable);
         printImageMenuItem.setEnabled(enable);
+        zoomInMenuItem.setEnabled(enable);
+        zoomOutMenuItem.setEnabled(enable);
         
         if (flexTPSStream != null) {
           popupMenu.add(hideRoboticControlsMenuItem);
@@ -711,10 +744,14 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
     }
   }
   
-  private void setScaled(boolean scale) {
-    image.setScaled(scale);
-    scaleMenuItem.setSelected(scale);
-    properties.setProperty("scale", Boolean.toString(scale));
+  private void setShowNavigation(boolean showNavigation) {
+    image.setNavigationImageEnabled(showNavigation);
+    showNavigationMenuItem.setSelected(showNavigation);
+    properties.setProperty("showNavigation", Boolean.toString(showNavigation));
+  }
+  
+  private void setAutoScale(boolean autoScale) {
+    image.setAutoScaling(autoScale);
   }
 
   private void panLeft() {
@@ -761,7 +798,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   
   private void center(Point p) {
     if (flexTPSStream != null) {
-      flexTPSStream.center(p, image.getDisplayedImageSize());
+      flexTPSStream.center(p, image.getScaledImageSize());
     }
   }
   
@@ -939,7 +976,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
 			return;
 		}
 			
-		String channelName = (String)it.next();
+		final String channelName = (String)it.next();
 		
 		try {			
 			int channelIndex = channelMap.GetIndex(channelName);
@@ -983,7 +1020,18 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
         displayedImageData = imageData[imageIndex];
         
 				//draw image on screen
- 				image.update(displayedImageData);
+        final InputStream in = new ByteArrayInputStream(displayedImageData);
+        
+        SwingUtilities.invokeAndWait(new Runnable() {
+          public void run() {
+            try {
+              image.setImage(ImageIO.read(in));
+            } catch (IOException e) {
+              log.error("Failed to decode image for " + channelName + ".");
+              e.printStackTrace();
+            }
+          }
+        });
  				
 				//update the image index currently displayed for this channel map
 				displayedImageTime = imageTime;
@@ -1005,7 +1053,7 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
   }
 	
 	private void clearImage() {
-		image.clear();
+		image.setImage(null);
 		displayedImageTime = -1;
 	}
 
@@ -1016,8 +1064,8 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
       return;
     }
     
-    if (key.equals("scale") && Boolean.parseBoolean(value) == false) {
-      setScaled(false);
+    if (key.equals("autoScale") && Boolean.parseBoolean(value) == false) {
+      setAutoScale(false);
     } else if (key.equals("hideRoboticControls") && Boolean.parseBoolean(value) == true) {
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();
@@ -1028,559 +1076,4 @@ public class JPEGDataPanel extends AbstractDataPanel implements AuthenticationLi
     setupFlexTPSStream();
   }  
 	
-	public String toString() {
-		return "JPEG Data Panel";
-	}
-	
-	class JPEGPanel extends JComponent {
-
-        /** serialization version identifier */
-        private static final long serialVersionUID = -1946331131688032990L;
-
-		private Image image;
-		private VolatileImage volatileImage;
-		
-		private boolean newFrame;
-
-    /**
-     * Controls scaling of the drawn image.
-     */
-    private boolean scale;
-
-    /**
-     * Controls the scaling of the drawn image by keep the ratio between the
-     * width and height the same.
-     */
-    private boolean keepAspectRatio;
-
-		public JPEGPanel() {
-			super();
-			
-			image = null;
-			volatileImage = null;
-
-			newFrame = false;
-
-      scale = true;
-      keepAspectRatio = true;
-		}
-		
-		private void createBackBuffer() {
-		    if (volatileImage != null) {
-				volatileImage.flush();
-				volatileImage = null;
-		    }
-			volatileImage = createVolatileImage(image.getWidth(null), image.getHeight(null));
-			
-			copyFrame();		
-		}
-		
-		private void copyFrame() {
-			Graphics2D gVolatile = (Graphics2D)volatileImage.getGraphics();
-			synchronized(this) {
-				gVolatile.drawImage(image, 0, 0, null);
-				newFrame = false;
-			}
-			gVolatile.dispose();
-		}
-
-		public final void paintComponent(Graphics g1) {
-			Graphics2D g = (Graphics2D)g1;
-			
-			if (image == null) {
-				g.setBackground(Color.BLACK);
-				g.clearRect(0, 0, getWidth(), getHeight());
-				return; 
-			}
-			
-			if (volatileImage == null || newFrame) {
-				createBackBuffer();
-			}
-			
-			do {
-				int valCode = volatileImage.validate(getGraphicsConfiguration());
-				
-				if (valCode == VolatileImage.IMAGE_RESTORED) {
-					copyFrame();
-				} else if (valCode == VolatileImage.IMAGE_INCOMPATIBLE) {
-					createBackBuffer();
-				}
-
-        // get component dimensions
-				int componentWidth = getWidth();
-				int componentHeight = getHeight();
-				
-				g.setBackground(Color.BLACK);
-				g.clearRect(0, 0, componentWidth, componentHeight);
-				
-        // get image dimensions
-				int imageWidth = volatileImage.getWidth();
-				int imageHeight = volatileImage.getHeight();
-
-        // get dimensions to draw image
-        int scaledWidth;
-        int scaledHeight;
-        if (scale) {
-          float widthScale = componentWidth/(float)imageWidth;
-          float heightScale = componentHeight/(float)imageHeight;
-  				if (keepAspectRatio && widthScale != heightScale) {
-  					widthScale = heightScale = Math.min(widthScale, heightScale);
-  				}
-          scaledWidth = (int)(imageWidth * widthScale);
-          scaledHeight = (int)(imageHeight * heightScale);
-        } else {
-          scaledWidth = imageWidth;
-          scaledHeight = imageHeight;
-        }
-
-        // calculate offsets to center image
-				int widthOffset = (componentWidth - scaledWidth)/2;
-				int heightOffset = (componentHeight - scaledHeight)/2;
-        
-        // draw image
-				g.drawImage(volatileImage, widthOffset, heightOffset, scaledWidth, scaledHeight, null);
-			} while (volatileImage.contentsLost());						
-		}
-			
-		public void update(byte[] imageData) {
-			Image newImage = new ImageIcon(imageData).getImage();
-			showImage(newImage);
-		}
-		
-		public void update(String imageFileName) {
-			Image newImage = new ImageIcon(imageFileName).getImage();
-			showImage(newImage);		
-		}
-		
-		public void clear() {
-			image = null;
-			repaint();
-		}
-    
-    public Image getImage() {
-      return image;
-    }
-    
-    /**
-     * If set the image will be scaled to the container. If not the image will
-     * be displayed in it's original size and may be clipped if too large.
-     * <p>
-     * The default is to scale the image.
-     * 
-     * @param scale if true, scale the image to the container
-     */
-    public void setScaled(boolean scale) {
-      if (this.scale != scale) {
-        this.scale = scale;
-        repaint();
-      }
-    }
-		
-		private void showImage(Image newImage) {
-			synchronized(this) {	
-				if (image != null) {
-					image.flush();
-					image = null;
-				}
-				image = newImage;
-				newFrame = true;
-			}
-
-			repaint();			
-		}
-		
-		public Dimension getPreferredSize() {
-			Dimension dimension;
-			if (image != null) {
-				dimension = new Dimension(image.getWidth(this), image.getHeight(this));
-			} else {
-				dimension = new Dimension(0, 0);
-			}
-					
-			return dimension;
-		}
-		
-		public Dimension getMinimumSize() {
-			return new Dimension(0,0);
-		}
-		
-		public Dimension getDisplayedImageSize() {
-      int imageWidth = image.getWidth(null);
-      int imageHeight = image.getHeight(null);
-
-      int scaledWidth;
-      int scaledHeight;
-      if (scale) {
-  
-  			float widthScale = getWidth()/(float)imageWidth;
-  			float heightScale = getHeight()/(float)imageHeight;
-  			if (keepAspectRatio && widthScale != heightScale) {
-  				widthScale = heightScale = Math.min(widthScale, heightScale);
-  			}
-  			scaledWidth = (int)(imageWidth * widthScale);
-  			scaledHeight = (int)(imageHeight * heightScale);
-      } else {
-        scaledWidth = imageWidth;
-        scaledHeight = imageHeight;
-      }
-
-			return new Dimension(scaledWidth, scaledHeight);
-		}
-    
-    public Point componentPointToImagePoint(Point p) {
-      Dimension c = getSize();
-      Dimension i = getDisplayedImageSize();
-      
-      Dimension o = new Dimension((c.width - i.width)/2, (c.height - i.height)/2);
-      
-      if (p.x < o.width || p.x > o.width + i.width || p.y < o.height || p.y > o.height + i.height) {
-        return null;        
-      } else {
-        return new Point(p.x-o.width, p.y-o.height);
-      }
-    }		
-	}
-  
-  class StrechIconButton extends JButton {
-
-    /** serialization version identifier */
-    private static final long serialVersionUID = -2127849845444210644L;
-
-    public StrechIconButton(ImageIcon icon) {
-      super(icon);
-    }
-    
-    protected void paintComponent(Graphics g) {
-      Image image = ((ImageIcon)getIcon()).getImage();
-      g.drawImage(image, 0, 0, getWidth(), getHeight(), null);
-    }
-  }
-  
-  class FlexTPSStream {
-    private String host;
-    private String feed;
-    private String stream;
-    
-    private boolean pan;
-    private boolean tilt;
-    private boolean zoom;
-    private boolean focus;
-    private boolean iris;
-    
-    private final String ROBOTIC_PAN_LEFT = "ctrl=rpan&amp;value=left";
-    private final String ROBOTIC_PAN_RIGHT = "ctrl=rpan&amp;value=right";
-    private final String ROBOTIC_TILT_UP = "ctrl=rtilt&amp;value=up";
-    private final String ROBOTIC_TILT_DOWN = "ctrl=rtilt&amp;value=down";
-    private final String ROBOTIC_HOME = "ctrl=home";
-    private final String ROBOTIC_ZOOM_IN = "ctrl=rzoom&amp;value=in";
-    private final String ROBOTIC_ZOOM_OUT = "ctrl=rzoom&amp;value=out";
-    private final String ROBOTIC_FOCUS_NEAR = "ctrl=rfocus&amp;value=near";
-    private final String ROBOTIC_FOCUS_FAR = "ctrl=rfocus&amp;value=far";
-    private final String ROBOTIC_FOCUS_AUTO = "ctrl=focus&amp;value=auto";    
-    private final String ROBOTIC_IRIS_CLOSE = "ctrl=riris&amp;value=close";
-    private final String ROBOTIC_IRIS_OPEN = "ctrl=riris&amp;value=open";
-    private final String ROBOTIC_IRIS_AUTO = "ctrl=iris&amp;value=auto";
-    private String gaSession;
-    
-    public FlexTPSStream(String host, String feed, String stream, String gaSession) {
-      this.host = host;
-      this.feed = feed;
-      this.stream = stream;
-      if ((gaSession == null) || (gaSession.length() == 0))
-    	  this.gaSession = "";
-      else
-    	  this.gaSession = "&amp;GAsession=" + gaSession;
-      
-      pan = tilt = zoom = focus = iris = false;
-      
-      loadStream();
-    }
-    
-    private String getBaseURL() {
-      return "https://" + host + "/feeds/" + feed + "/" + stream;
-    }
-    
-    private void loadStream() {
-      String streamURL = getBaseURL() + gaSession;
-      
-      Document document;
-      try {
-        DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-        document = documentBuilder.parse(streamURL);
-      } catch (SSLHandshakeException e) {
-    	  // SSL exception will happen if the flexTPS server 
-    	  // certificate is not recognized but this won't be problem
-    	  return;
-      } catch (IOException e) {
-        e.printStackTrace();
-        return;
-      } catch (ParserConfigurationException e) {
-        e.printStackTrace();
-        return;
-      } catch (SAXException e) {
-        e.printStackTrace();
-        return;
-      }
-
-      XPath xp = XPathFactory.newInstance().newXPath();
-      
-      
-      try {
-        Node roboticNode = (Node)xp.evaluate("/feeds/feed/stream/robotic", document, XPathConstants.NODE);
-        if (roboticNode == null) {
-          return;
-        }
-        NodeList roboticNodes = roboticNode.getChildNodes();
-        for (int i=0; i<roboticNodes.getLength(); i++) {
-          Node node = (Node)roboticNodes.item(i);
-          if (node.getNodeType() != Node.ELEMENT_NODE) {
-            continue;
-          }
-          
-          String control = node.getNodeName();
-          boolean enabled = node.getTextContent().equals("true");
-          
-          if (control.equals("zoom")) {
-            zoom = enabled;
-          } else if (control.equals("tilt")) {
-            tilt = enabled;
-          } else if (control.equals("focus")) {
-            focus = enabled;
-          } else if (control.equals("iris")) {
-            iris = enabled;
-          } else if (control.equals("pan")) {
-            pan = enabled;
-          }
-        }
-      } catch (XPathExpressionException e) {
-        e.printStackTrace();
-        return;
-      }
-    }
-    
-    private void executeRoboticCommand(String command) {
-      URL cameraURL = null;
-      try {
-        cameraURL = new URL(getBaseURL() + "/robotic/?" + command + gaSession);
-      } catch (MalformedURLException e) {
-        e.printStackTrace();
-        return;
-      }
-      
-      URLConnection cameraConnection = null;
-      try {
-        cameraConnection = cameraURL.openConnection();
-      } catch (SSLHandshakeException e) {
-    	  // SSL exception will happen if the flexTPS server 
-    	  // certificate is not recognized but this won't be problem
-    	  return;
-      } catch (IOException e) {
-        e.printStackTrace();
-        return;
-      }
-      
-      try {
-        cameraConnection.connect();
-      } catch (SSLHandshakeException e) {
-    	  // SSL exception will happen if the flexTPS server 
-    	  // certificate is not recognized but this won't be problem
-    	  return;
-      } catch (IOException e) {
-        e.printStackTrace();
-        return;
-      }
-      
-      try {
-        ((HttpURLConnection)cameraConnection).getResponseMessage();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }    
-    
-    public boolean canPan() {
-      return pan;
-    }
-    
-    public void panLeft() {
-      if (!pan) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_PAN_LEFT);
-    }
-    
-    public void panRight() {
-      if (!pan) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_PAN_RIGHT);
-    }
-    
-    public void pan(int p) {
-      if (!pan) {
-        return;
-      }
-      
-      String command = "ctrl=apan&amp;imagewidth=100&amp;value=" + p + ",0";
-      executeRoboticCommand(command);
-    }
-    
-    public boolean canTilt() {
-      return tilt;
-    }
-    
-    public void tiltUp() {
-      if (!tilt) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_TILT_UP);
-    }
-    
-    public void tiltDown() {
-      if (!tilt) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_TILT_DOWN);
-    }
-    
-    public void tilt(int t) {
-      if (!tilt) {
-        return;
-      }
-
-      String command = "ctrl=atilt&amp;imageheight=100&amp;value=0," + t;
-      executeRoboticCommand(command);
-    }
-    
-    public void goHome() {
-      if (!pan || !tilt) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_HOME);
-    }
-    
-    public void center(Point clickLocation, Dimension imageDimension) {
-      if (!pan || !tilt) {
-        return;
-      }
-      
-      String command = "ctrl=center&amp;imageheight=" + imageDimension.height +
-        "&amp;imagewidth=" + imageDimension.width +
-        "&amp;value=?" + clickLocation.x + "," + clickLocation.y;
-      executeRoboticCommand(command);
-    }
-    
-    public boolean canZoom() {
-      return zoom;
-    }
-    
-    public void zoomIn() {
-      if (!zoom) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_ZOOM_IN);
-    }
-    
-    public void zoomOut() {
-      if (!zoom) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_ZOOM_OUT);
-    }
-    
-    public void zoom(int z) {
-      if (!zoom) {
-        return;
-      }
-      
-      String command = "ctrl=azoom&amp;imagewidth=100&amp;value=" + z + ",0";
-      executeRoboticCommand(command);
-    }
-
-    public boolean canFocus() {
-      return focus;
-    }
-    
-    public void focusNear() {
-      if (!focus) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_FOCUS_NEAR);
-    }
-    
-    public void focusFar() {
-      if (!focus) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_FOCUS_FAR);
-    }
-    
-    public void focus(int f) {
-      if (!focus) {
-        return;
-      }
-
-      String command = "ctrl=afocus&amp;imagewidth=100&amp;value=" + f + ",0";
-      executeRoboticCommand(command);      
-    }
-    
-    public void focusAuto() {
-      if (!focus) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_FOCUS_AUTO);
-    }
-    
-    public boolean canIris() {
-      return iris;
-    }
-    
-    public void irisClose() {
-      if (!iris) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_IRIS_CLOSE);
-    }
-    
-    public void irisOpen() {
-      if (!iris) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_IRIS_OPEN);
-    }
-    
-    public void iris(int i) {
-      if (!iris) {
-        return;
-      }
-
-      String command = "ctrl=airis&amp;imagewidth=100&amp;value=" + i + ",0";
-      executeRoboticCommand(command);
-
-    }
-    
-    public void irisAuto() {
-      if (!iris) {
-        return;
-      }
-      
-      executeRoboticCommand(ROBOTIC_IRIS_AUTO);
-    }
-    
-    public boolean canDoRobotic() {
-      return (pan == true || tilt == true || zoom == true ||
-          focus == true || iris == true);
-    }
-  }
 }
