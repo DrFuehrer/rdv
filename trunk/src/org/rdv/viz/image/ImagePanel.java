@@ -38,15 +38,21 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 /**
@@ -91,10 +97,13 @@ public class ImagePanel extends JPanel {
   private boolean autoScaling = true;
 
   /** the factor for incremental zooming */
-  private double zoomFactor = 1.5;
+  private final double zoomFactor = 1.5;
 
   /** the origin for the image in the panel */
   private Point origin = new Point();
+  
+  /** the increment for scrolling */
+  private final int scrollIncrement = 10;
 
   /** the current mouse position */
   private Point mousePosition;
@@ -109,6 +118,8 @@ public class ImagePanel extends JPanel {
    * Creates an image panel with auto zooming and the navigation image enabled.
    */
   public ImagePanel() {
+    setFocusable(true);
+    
     addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
         if (image != null) {
@@ -130,6 +141,8 @@ public class ImagePanel extends JPanel {
 
     addMouseListener(new MouseAdapter() {
       public void mousePressed(MouseEvent e) {
+        requestFocusInWindow();
+        
         Point p = e.getPoint();
         if (image != null && SwingUtilities.isLeftMouseButton(e)) {
           draggingInNavigationImage = isInNavigationImage(p);
@@ -160,6 +173,8 @@ public class ImagePanel extends JPanel {
 
     addMouseWheelListener(new MouseWheelListener() {
       public void mouseWheelMoved(MouseWheelEvent e) {
+        requestFocusInWindow();
+        
         if (image == null) {
           return;
         }
@@ -181,6 +196,8 @@ public class ImagePanel extends JPanel {
         }
       }
     });
+    
+    initKeyBindings();
   }
 
   /**
@@ -192,6 +209,71 @@ public class ImagePanel extends JPanel {
   public ImagePanel(BufferedImage image) {
     this();
     setImage(image);
+  }
+
+  /**
+   * Initialize the key bindings for scrolling and zooming.
+   */
+  private void initKeyBindings() {
+    Action scrollUpAction = new AbstractAction() {
+      private static final long serialVersionUID = -6846248967445268823L;
+
+      public void actionPerformed(ActionEvent ae) {
+        scrollUp();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "scrollUp");
+    getActionMap().put("scrollUp", scrollUpAction);    
+
+    Action scrollLeftAction = new AbstractAction() {
+      private static final long serialVersionUID = -6846248967445268823L;
+
+      public void actionPerformed(ActionEvent ae) {
+        scrollLeft();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "scrollLeft");
+    getActionMap().put("scrollLeft", scrollLeftAction);    
+
+    Action scrollDownAction = new AbstractAction() {
+      private static final long serialVersionUID = -3188971384048244029L;
+
+      public void actionPerformed(ActionEvent ae) {
+        scrollDown();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "scrollDown");
+    getActionMap().put("scrollDown", scrollDownAction);
+
+    Action scrollRightAction = new AbstractAction() {
+      private static final long serialVersionUID = 1967647647910668664L;
+
+      public void actionPerformed(ActionEvent ae) {
+        scrollRight();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "scrollRight");
+    getActionMap().put("scrollRight", scrollRightAction);    
+
+    Action zoomInAction = new AbstractAction() {
+      private static final long serialVersionUID = -1076232416523241048L;
+
+      public void actionPerformed(ActionEvent arg0) {
+        zoomIn();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke('+'), "zoomIn");
+    getActionMap().put("zoomIn", zoomInAction);
+    
+    Action zoomOutAction = new AbstractAction() {
+      private static final long serialVersionUID = -3188971384048244029L;
+
+      public void actionPerformed(ActionEvent arg0) {
+        zoomOut();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke('-'), "zoomOut");
+    getActionMap().put("zoomOut", zoomOutAction);    
   }
 
   /**
@@ -534,6 +616,22 @@ public class ImagePanel extends JPanel {
     boundImageOrigin();
 
     repaint();
+  }
+  
+  public void scrollUp() {
+    setImageOrigin(origin.x, origin.y + scrollIncrement);
+  }
+  
+  public void scrollLeft() {
+    setImageOrigin(origin.x + scrollIncrement, origin.y);
+  }
+  
+  public void scrollDown() {
+    setImageOrigin(origin.x, origin.y - scrollIncrement);
+  }
+  
+  public void scrollRight() {
+    setImageOrigin(origin.x - scrollIncrement, origin.y);
   }
 
   /**
