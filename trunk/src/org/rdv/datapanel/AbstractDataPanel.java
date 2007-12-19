@@ -120,7 +120,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since  1.2
 	 */
-	DataPanelManager dataPanelManager;
+	protected DataPanelManager dataPanelManager;
 	
 	/**
 	 * The data panel container for docking in the UI.
@@ -169,14 +169,14 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since  1.1
 	 */
-	double timeScale;
+	protected double timeScale;
   
   /**
    * The last posted state.
    * 
    * @since  1.3
    */
-  double state;
+  protected double state;
 
 	/**
 	 * The UI component with toolbar.
@@ -254,7 +254,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
   /**
    * Properties list for data panel.
    */
-  Properties properties;
+  protected Properties properties;
 
 	/**
 	 * Initialize the list of channels and units. Set parameters to defaults.
@@ -1005,7 +1005,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
    * 
    * @since  1.3
    */
-  class ImageSelection implements Transferable {
+  public class ImageSelection implements Transferable {
     /**
      * The image to transfer.
      */
