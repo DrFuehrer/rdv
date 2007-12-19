@@ -64,7 +64,12 @@ public class Channel extends DataChannel {
 
     metadata = new HashMap<String, String>();
 
-    metadata.put("mime", node.getMime());
+    String mime = node.getMime();
+    if (mime == null) {
+      mime = "application/octet-stream";
+    }
+    metadata.put("mime", mime);
+    
     metadata.put("start", Double.toString(node.getStart()));
     metadata.put("duration", Double.toString(node.getDuration()));
     metadata.put("size", Integer.toString(node.getSize()));
