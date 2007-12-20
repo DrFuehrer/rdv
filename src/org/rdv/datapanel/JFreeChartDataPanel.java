@@ -1614,6 +1614,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
      * @param period  the time period to add (<code>null</code> not permitted).
      * @param value  the new value.
      */
+    @SuppressWarnings("unchecked")
     public void add(RegularTimePeriod period, double value) {
       TimeSeriesDataItem item = new TimeSeriesDataItem(period, value);
       int count = getItemCount();
@@ -1689,6 +1690,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
      * @return   an integer indicating the order of this data item relative to
      *           the other
      */
+    @SuppressWarnings("unchecked")
     public int compareTo(XYTimeSeriesDataItem d) {
       return period.compareTo(d.getPeriod());
     }
@@ -1871,6 +1873,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
      * @param item    the data item to add
      * @param notify  if true notify series change listeners
      */
+    @SuppressWarnings("unchecked")
     public void add(XYTimeSeriesDataItem item, boolean notify) {
       if (item == null) {
         throw new IllegalArgumentException("Null 'item' argument.");

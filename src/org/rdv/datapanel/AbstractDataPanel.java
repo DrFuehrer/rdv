@@ -430,9 +430,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 *
 	 */
 	void removeAllChannels() {
-		Iterator i = channels.iterator();
+		Iterator<String> i = channels.iterator();
 		while (i.hasNext()) {
-			removeChannel((String)i.next());
+			removeChannel(i.next());
 		}
 	}
 		
@@ -460,7 +460,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     }
 
     String titleString = "";
-		Iterator i = channels.iterator();
+		Iterator<String> i = channels.iterator();
 		while (i.hasNext()) {
 			titleString += i.next();
 			if (i.hasNext()) {
@@ -534,9 +534,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     if (channels.size() > 0) {
       popupMenu.addSeparator();
       
-      Iterator i = channels.iterator();
+      Iterator<String> i = channels.iterator();
       while (i.hasNext()) {
-        final String channelName = (String)i.next();
+        final String channelName = i.next();
         
         JMenuItem unsubscribeChannelMenuItem = new JMenuItem("Unsubscribe from " + channelName);
         unsubscribeChannelMenuItem.addActionListener(new ActionListener() {
@@ -581,9 +581,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     channelBar.setOpaque(false);
     channelBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
     
-    Iterator i = channels.iterator();
+    Iterator<String> i = channels.iterator();
     while (i.hasNext()) {
-      String channelName = (String)i.next();
+      String channelName = i.next();
       
       if (showChannelsInTitle) {
         channelBar.add(new ChannelTitle(channelName));
@@ -650,9 +650,9 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * @since  1.1
 	 */
 	void togglePause() {
-		Iterator i = channels.iterator();
+		Iterator<String> i = channels.iterator();
 		while (i.hasNext()) {
-			String channelName = (String)i.next();
+			String channelName = i.next();
 			
 			if (paused) {
 				rbnbController.subscribe(channelName, this);
@@ -684,7 +684,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     return channels.size();
   }
   
-  public List subscribedChannels() {
+  public List<String> subscribedChannels() {
     return channels;
   }
   
@@ -934,11 +934,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
           e.acceptDrop(DnDConstants.ACTION_LINK);
           e.dropComplete(true);
 
-  				final List<String> channels = (List<String>)tr.getTransferData(channelListDataFlavor);
+  				final List channels = (List)tr.getTransferData(channelListDataFlavor);
           
           new Thread() {
             public void run() {
-              for (String channel : channels) {
+              for (int i=0; i<channels.size(); i++) {
+                String channel = (String)channels.get(i);
                 boolean status;
                 if (supportsMultipleChannels()) {
                   status = addChannel(channel);

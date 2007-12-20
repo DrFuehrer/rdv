@@ -270,7 +270,7 @@ public class CentralClient {
           trial.setId(trialId);
         }
         
-        trial.setName(new JAXBElement(new QName("uri","local"), String.class, "Trial-" + (i+1)));
+        trial.setName(new JAXBElement<String>(new QName("uri","local"), String.class, "Trial-" + (i+1)));
       }      
       
       fixDataFiles(experiment.getDataFile(), new String[] { "Experiment-", "Simulation-" });
@@ -324,7 +324,7 @@ public class CentralClient {
           repetition.setId(repetitionId);
         }
         
-        repetition.setName(new JAXBElement(new QName("uri","local"), String.class, "Rep-" + (i+1)));
+        repetition.setName(new JAXBElement<String>(new QName("uri","local"), String.class, "Rep-" + (i+1)));
       }
       
       fixDataFiles(trial.getDataFile(), new String[] { "Trial-", "Run-" });
