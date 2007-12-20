@@ -39,7 +39,7 @@ public class GridAuth {
   
   /** A Hashtable that stores user-related values received from the service
   * handler. */
-  protected Hashtable userMapHashTable;
+  protected Hashtable<String, String> userMapHashTable;
 
   /** The URL for auth service handling. */
   protected URL serviceHost;
@@ -56,7 +56,7 @@ public class GridAuth {
   public GridAuth() {
     try {
 
-      userMapHashTable = new Hashtable ();
+      userMapHashTable = new Hashtable<String, String> ();
       serviceHost = new URL ("http://www.gridauth.com/handler.cgi");
       
       // Create a trust manager that does not validate certificate chains
