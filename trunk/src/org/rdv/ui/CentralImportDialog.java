@@ -758,6 +758,7 @@ public class CentralImportDialog extends JDialog {
      * 
      * @param dtde  the event for the drop target
      */
+    @SuppressWarnings("unchecked")
     public void drop(DropTargetDropEvent dtde) {
       if (dtde.getDropAction() != DnDConstants.ACTION_LINK) {
         dtde.rejectDrop();

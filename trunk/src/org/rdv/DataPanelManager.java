@@ -88,12 +88,12 @@ public class DataPanelManager {
 	 * 
 	 * @since  1.2
 	 */
-	private ArrayList dataPanels;
+	private ArrayList<DataPanel> dataPanels;
 	
 	/**
 	 * A list of registered extensions
 	 */
-	private ArrayList extensions;
+	private ArrayList<Extension> extensions;
 	
 	/**
 	 * The name of the extensions configuration file
@@ -112,8 +112,8 @@ public class DataPanelManager {
 		this.rbnbController = rbnbController;
 		dataPanelContainer = new DataPanelContainer();
 		
-		dataPanels = new ArrayList();
-		extensions = new ArrayList();
+		dataPanels = new ArrayList<DataPanel>();
+		extensions = new ArrayList<Extension>();
 		
 		loadExtenionManifest();
 	}
@@ -133,7 +133,7 @@ public class DataPanelManager {
 				Node extensionNode = extensionNodes.item(i);
 				String extensionID = null;
 				String extensionName = null;
-				ArrayList mimeTypes = new ArrayList();
+				ArrayList<String> mimeTypes = new ArrayList<String>();
 				NodeList parameters = extensionNode.getChildNodes();
 				for (int j=0; j<parameters.getLength(); j++) {
 					Node parameterNode = parameters.item(j);
@@ -220,7 +220,7 @@ public class DataPanelManager {
     }
     mime = RBNBUtilities.fixMime(mime, channelName);
     
-    ArrayList usefulExtensions = new ArrayList();
+    ArrayList<Extension> usefulExtensions = new ArrayList<Extension>();
     for (int i=0; i<extensions.size(); i++) {
       Extension extension = (Extension)extensions.get(i);
       ArrayList mimeTypes = extension.getMimeTypes();

@@ -72,7 +72,7 @@ public class ScrollablePopupMenu extends JPopupMenu {
     /** Button to scroll menu downwards. */
     private JMenuItem downButton;
     /** Container to hold submenus. */
-    private Vector subMenus = new Vector(  );
+    private List<Component> subMenus = new ArrayList<Component>();
     /** Height of the screen. */
     private double screenHeight;
     /** Height of the menu. */

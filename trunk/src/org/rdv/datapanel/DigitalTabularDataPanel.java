@@ -652,11 +652,12 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 																// component
 					final int tableNum = (int) (clickX * columnGroupCount / compWidth);
 
-					final List<String> channels = (List<String>)tr.getTransferData(channelListDataFlavor);
+					final List channels = (List)tr.getTransferData(channelListDataFlavor);
 
 					new Thread() {
 						public void run() {
-							for (String channel : channels) {
+							for (int i=0; i<channels.size(); i++) {
+                String channel = (String)channels.get(i);
 								boolean status;
 								if (supportsMultipleChannels()) {
 									status = addChannel(channel, tableNum);
@@ -908,7 +909,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 		} // for
 	} // postDataTabular ()
 
-	public List subscribedChannels() {
+	public List<String> subscribedChannels() {
 		List<String> allChannels = new ArrayList<String>();
 
 		for (int i = 0; i < tableModels.size(); i++) {
