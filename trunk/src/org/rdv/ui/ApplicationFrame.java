@@ -270,7 +270,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		fileAction = new DataViewerAction("File", "File Menu", KeyEvent.VK_F);
  		
  		connectAction = new DataViewerAction("Connect", "Connect to RBNB server", KeyEvent.VK_C, KeyStroke.getKeyStroke(KeyEvent.VK_C, menuShortcutKeyMask|ActionEvent.SHIFT_MASK)) {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 5038790506859429244L;
+
+      public void actionPerformed(ActionEvent ae) {
  				if (rbnbConnectionDialog == null) {
  					rbnbConnectionDialog = new RBNBConnectionDialog(frame, rbnb, dataPanelManager);
  				} else {
@@ -280,14 +283,20 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
  		
  		disconnectAction = new DataViewerAction("Disconnect", "Disconnect from RBNB server", KeyEvent.VK_D, KeyStroke.getKeyStroke(KeyEvent.VK_D, menuShortcutKeyMask|ActionEvent.SHIFT_MASK)) {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -1871076535376405181L;
+
+      public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();
  				rbnb.disconnect();
  			}			
  		};
 
  		loginAction = new DataViewerAction("Login", "Login as a NEES user") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 6105503896620555072L;
+
+      public void actionPerformed(ActionEvent ae) {
  				if (loginDialog == null) {
  					loginDialog = new LoginDialog(frame);
  				} else {
@@ -297,12 +306,18 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
  		
  		logoutAction = new DataViewerAction("Logout", "Logout as a NEES user") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -2517567766044673777L;
+
+      public void actionPerformed(ActionEvent ae) {
        AuthenticationManager.getInstance().setAuthentication(null);
  			}			
  		};
  		 		
     loadAction = new DataViewerAction("Load Setup", "Load data viewer setup from file") {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 7197815395398039821L;
+
       public void actionPerformed(ActionEvent ae) {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new RDVFileFilter());
@@ -322,6 +337,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };
 
     saveAction = new DataViewerAction("Save Setup", "Save data viewer setup to file") {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -8259994975940624038L;
+
       public void actionPerformed(ActionEvent ae) {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new RDVFileFilter());
@@ -354,13 +372,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     exportAction = new DataViewerAction("Export", "Export Menu", KeyEvent.VK_E, "icons/export.gif");
 
     exportVideoAction = new DataViewerAction("Export video channels", "Export video on server to local computer") {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -6420430928972633313L;
+
       public void actionPerformed(ActionEvent ae) {
         showExportVideoDialog();
       }
     };
  
  		exitAction = new DataViewerAction("Exit", "Exit RDV", KeyEvent.VK_X) {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 3137490972014710133L;
+
+      public void actionPerformed(ActionEvent ae) {
  				dataViewer.exit();
  			}			
  		};
@@ -368,37 +392,55 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		controlAction = new DataViewerAction("Control", "Control Menu", KeyEvent.VK_C);
  
  		realTimeAction = new DataViewerAction("Real Time", "View data in real time", KeyEvent.VK_R, KeyStroke.getKeyStroke(KeyEvent.VK_R, menuShortcutKeyMask), "icons/rt.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -7564783609370910512L;
+
+      public void actionPerformed(ActionEvent ae) {
  				rbnb.monitor();
  			}			
  		};
  		
  		playAction = new DataViewerAction("Play", "Playback data", KeyEvent.VK_P, KeyStroke.getKeyStroke(KeyEvent.VK_P, menuShortcutKeyMask), "icons/play.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 5974457444931142938L;
+
+      public void actionPerformed(ActionEvent ae) {
  				rbnb.play();
  			}			
  		};
  
  		pauseAction = new DataViewerAction("Pause", "Pause data display", KeyEvent.VK_A, KeyStroke.getKeyStroke(KeyEvent.VK_S, menuShortcutKeyMask), "icons/pause.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -5297742186923194460L;
+
+      public void actionPerformed(ActionEvent ae) {
  				rbnb.pause();
  			}			
  		};
  
  		beginningAction = new DataViewerAction("Go to beginning", "Move the location to the start of the data", KeyEvent.VK_B, KeyStroke.getKeyStroke(KeyEvent.VK_B, menuShortcutKeyMask), "icons/begin.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 9171304956895497898L;
+
+      public void actionPerformed(ActionEvent ae) {
 				controlPanel.setLocationBegin();
  			}			
  		};
  
  		endAction = new DataViewerAction("Go to end", "Move the location to the end of the data", KeyEvent.VK_E, KeyStroke.getKeyStroke(KeyEvent.VK_E, menuShortcutKeyMask), "icons/end.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 1798579248452726211L;
+
+      public void actionPerformed(ActionEvent ae) {
  				controlPanel.setLocationEnd();
  			}			
  		};
 
  		gotoTimeAction = new DataViewerAction("Go to time", "Move the location to specific date time of the data", KeyEvent.VK_T, KeyStroke.getKeyStroke(KeyEvent.VK_T, menuShortcutKeyMask)) {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -6411442297488926326L;
+
+      public void actionPerformed(ActionEvent ae) {
         TimeRange timeRange = RBNBHelper.getChannelsTimeRange();
  			  double time = DateTimeDialog.showDialog(frame, rbnb.getLocation(), timeRange.start, timeRange.end);
         if (time >= 0) {
@@ -408,13 +450,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
  
  		updateChannelListAction = new DataViewerAction("Update Channel List", "Update the channel list", KeyEvent.VK_U, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), "icons/refresh.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -170096772973697277L;
+
+      public void actionPerformed(ActionEvent ae) {
  				rbnb.updateMetadata();
  			}			
  		};
  
  		dropDataAction = new DataViewerAction("Drop Data", "Drop data if plaback can't keep up with data rate", KeyEvent.VK_D, "icons/drop_data.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 7079791364881120134L;
+
+      public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				rbnb.dropData(menuItem.isSelected());		
  			}			
@@ -423,7 +471,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		viewAction = new DataViewerAction("View", "View Menu", KeyEvent.VK_V);
 
  		showChannelListAction = new DataViewerAction("Show Channels", "", KeyEvent.VK_L, "icons/channels.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 4982129759386009112L;
+
+      public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
         channelListPanel.setVisible(menuItem.isSelected());
         layoutSplitPane();
@@ -432,6 +483,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
     
     showMetadataPanelAction = new DataViewerAction("Show Properties", "", KeyEvent.VK_P, "icons/properties.gif") {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 430106771704397810L;
+
       public void actionPerformed(ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
         metadataPanel.setVisible(menuItem.isSelected());
@@ -441,13 +495,19 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };    
  
  		showControlPanelAction = new DataViewerAction("Show Control Panel", "", KeyEvent.VK_C, "icons/control.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 6401715717710735485L;
+
+      public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				controlPanel.setVisible(menuItem.isSelected());
  			}			
  		};
 
     showAudioPlayerPanelAction = new DataViewerAction ("Show Audio Player", "", KeyEvent.VK_A, "icons/audio.gif") {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -4248275698973916287L;
+
       public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
         audioPlayerPanel.setVisible(menuItem.isSelected());
@@ -455,6 +515,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };    
     
     showMarkerPanelAction = new DataViewerAction ("Show Marker Panel", "", KeyEvent.VK_M, "icons/info.gif") {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -5253555511660929640L;
+
       public void actionPerformed (ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource ();        
         markerSubmitPanel.setVisible(menuItem.isSelected ());
@@ -464,19 +527,28 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		dataPanelAction = new DataViewerAction("Arrange", "Arrange Data Panel Orientation", KeyEvent.VK_D);
  		
 		dataPanelHorizontalLayoutAction = new DataViewerAction("Horizontal Data Panel Orientation", "", -1, "icons/vertical.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 3356151813557187908L;
+
+      public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.VERTICAL_LAYOUT);
  			}			
  		}; 		
  		
 		dataPanelVerticalLayoutAction = new DataViewerAction("Vertical Data Panel Orientation", "", -1, "icons/horizontal.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -4629920180285927138L;
+
+      public void actionPerformed(ActionEvent ae) {
  				dataPanelContainer.setLayout(DataPanelContainer.HORIZONTAL_LAYOUT);
  			}			
  		}; 		
  		
  		showHiddenChannelsAction = new DataViewerAction("Show Hidden Channels", "", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_H, menuShortcutKeyMask), "icons/hidden.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -2723464261568074033L;
+
+      public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  				boolean selected = menuItem.isSelected();
  				channelListPanel.showHiddenChannels(selected);
@@ -484,6 +556,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		};
     
     hideEmptyTimeAction = new DataViewerAction("Hide time with no data", "", KeyEvent.VK_D) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -3123608144249355642L;
+
       public void actionPerformed(ActionEvent ae) {
         JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
         boolean selected = menuItem.isSelected();
@@ -492,7 +567,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };    
 
  		fullScreenAction = new DataViewerAction("Full Screen", "", KeyEvent.VK_F, KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0)) {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -6882310862616235602L;
+
+      public void actionPerformed(ActionEvent ae) {
  				JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)ae.getSource();
  		        if (menuItem.isSelected()) {
  		        	if (enterFullScreenMode()) {
@@ -510,7 +588,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		windowAction = new DataViewerAction("Window", "Window Menu", KeyEvent.VK_W);
  		
  		closeAllDataPanelsAction = new DataViewerAction("Close all data panels", "", KeyEvent.VK_C, "icons/closeall.gif") {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -8104876009869238037L;
+
+      public void actionPerformed(ActionEvent ae) {
  				dataPanelManager.closeAllDataPanels();				
  			}			
  		};
@@ -518,6 +599,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		helpAction = new DataViewerAction("Help", "Help Menu", KeyEvent.VK_H);
     
     usersGuideAction = new DataViewerAction("RDV Help", "Open the RDV User's Guide", KeyEvent.VK_H, KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0)) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -2837190869008153291L;
+
       public void actionPerformed(ActionEvent ae) {
         try {
           URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-17-users-guide.php");
@@ -527,6 +611,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };
     
     supportAction = new DataViewerAction("RDV Support", "Get support from NEESit", KeyEvent.VK_S) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -6855670513381679226L;
+
       public void actionPerformed(ActionEvent ae) {
         try {
           URL supportURL = new URL("http://it.nees.org/support/");
@@ -536,6 +623,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };    
     
     releaseNotesAction = new DataViewerAction("Release Notes", "Open the RDV Release Notes", KeyEvent.VK_R) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 7223639998298692494L;
+
       public void actionPerformed(ActionEvent ae) {
         try {
           URL releaseNotesURL = new URL("http://it.nees.org/library/rdv/rdv-release-notes.php");
@@ -545,7 +635,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     };
     
  		aboutAction = new DataViewerAction("About RDV", "", KeyEvent.VK_A) {
- 			public void actionPerformed(ActionEvent ae) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 3978467903181198979L;
+
+      public void actionPerformed(ActionEvent ae) {
  				if (aboutDialog == null) {
  					aboutDialog = new AboutDialog(frame);
  				} else {
@@ -733,7 +826,10 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
  		for (int i=0; i<extensions.size(); i++) {
  			final Extension extension = (Extension)extensions.get(i);
 	 		Action action = new DataViewerAction("Add " + extension.getName(), "", KeyEvent.VK_J) {
-	 			public void actionPerformed(ActionEvent ae) {
+        /** serialization version identifier */
+        private static final long serialVersionUID = 36998228704476723L;
+
+        public void actionPerformed(ActionEvent ae) {
 	 				try {
 						dataPanelManager.createDataPanel(extension);
 					} catch (Exception e) {

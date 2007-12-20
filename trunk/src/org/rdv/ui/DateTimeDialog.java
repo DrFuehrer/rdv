@@ -245,6 +245,9 @@ public class DateTimeDialog extends JDialog {
 		JPanel buttonPanel = new JPanel();
     
     Action jumpLocationAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 1398856128357575502L;
+
       public void actionPerformed(ActionEvent e) {
         ok();
       }      
@@ -256,6 +259,9 @@ public class DateTimeDialog extends JDialog {
 		buttonPanel.add(jumpButton);
 		
     Action cancelAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 6192889121557974782L;
+
       public void actionPerformed(ActionEvent e) {
         cancel();
       }      

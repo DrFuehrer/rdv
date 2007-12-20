@@ -170,6 +170,9 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		panel.setLayout(new FlowLayout());
     
     Action importAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -4719316285523193555L;
+
       public void actionPerformed(ActionEvent e) {
         importData();
       }      
@@ -182,6 +185,9 @@ public class ImportDialog extends JDialog implements ProgressListener {
 		panel.add(importButton);
     
     Action cancelAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 7909429022904810958L;
+
       public void actionPerformed(ActionEvent e) {
         cancel();
       }      

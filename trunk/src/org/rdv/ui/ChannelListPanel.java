@@ -181,6 +181,9 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     filterPanel.add(filterTextField, BorderLayout.CENTER);
     
     Action focusFilterAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -2443410059209958411L;
+
       public void actionPerformed(ActionEvent e) {
         filterTextField.requestFocusInWindow();
         filterTextField.selectAll();
@@ -192,6 +195,9 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     filterTextField.getActionMap().put("focusFilter", focusFilterAction);
     
     Action cancelFilterAction = new AbstractAction(null, DataViewer.getIcon("icons/cancel.gif")) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 8913797349366699615L;
+
       public void actionPerformed(ActionEvent e) {
         treeModel.setFilter(null);
       }
