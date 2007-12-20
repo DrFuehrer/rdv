@@ -39,6 +39,9 @@ import org.jfree.chart.plot.dial.StandardDialScale;
  */
 public class BoundedDialScale extends StandardDialScale {
 
+  /** serialization version identifier */
+  private static final long serialVersionUID = 5868085626313728992L;
+
   @Override
   public double valueToAngle(double value) {
     if (value < getLowerBound()) {
