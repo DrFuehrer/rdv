@@ -59,7 +59,7 @@ public class StringDataPanel extends AbstractDataPanel {
   StringBuffer messageBuffer;
   
   String[] AVAILABLE_COLORS = {"blue", "green", "maroon", "purple", "red", "olive"};
-  Hashtable colors;
+  Hashtable<String, String> colors;
 	
 	double lastTimeDisplayed;
 	
@@ -69,7 +69,7 @@ public class StringDataPanel extends AbstractDataPanel {
 		lastTimeDisplayed = -1;
     messageBuffer = new StringBuffer();
     
-    colors = new Hashtable();
+    colors = new Hashtable<String, String>();
 				
 		initPanel();
 		setDataComponent(panel);
@@ -149,7 +149,7 @@ public class StringDataPanel extends AbstractDataPanel {
     }
 
     String shortChannelName = channelName.substring(channelName.lastIndexOf('/')+1);
-    String channelColor = (String)colors.get(channelName);
+    String channelColor = colors.get(channelName);
 		String[] data = channelMap.GetDataAsString(channelIndex);
 		double[] times = channelMap.GetTimes(channelIndex);
 
