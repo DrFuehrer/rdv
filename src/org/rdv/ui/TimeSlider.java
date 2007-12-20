@@ -165,9 +165,13 @@ public class TimeSlider extends JComponent implements MouseListener, MouseMotion
     addMouseListener(this);
 
     valueButton = new JButton(DataViewer.getIcon("icons/time.gif")) {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 8729851598067678522L;
+      
       public JToolTip createToolTip() {
         return TimeSlider.this.createToolTip();
       }
+      
       public String getToolTipText(MouseEvent me) {
         return TimeSlider.this.getToolTipText(me);
       }

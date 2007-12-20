@@ -119,6 +119,9 @@ public class AboutDialog extends JDialog {
     container.add(logoLabel, BorderLayout.WEST);
 
     Action disposeAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -6076510093659918139L;
+
       public void actionPerformed(ActionEvent arg0) {
         dispose();
       }
@@ -182,6 +185,9 @@ public class AboutDialog extends JDialog {
       ActionMap actionMap = container.getActionMap();
 
       Action disposeAction = new AbstractAction() {
+        /** serialization version identifier */
+        private static final long serialVersionUID = 5818337446139393403L;
+
         public void actionPerformed(ActionEvent arg0) {
           dispose();
         }

@@ -375,6 +375,9 @@ public class ExportDialog extends JDialog {
     panel.setLayout(new FlowLayout());
 
     Action exportAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -5356258138620428023L;
+
       public void actionPerformed(ActionEvent e) {
         ok();
       }      
@@ -386,6 +389,9 @@ public class ExportDialog extends JDialog {
     panel.add(exportButton);
     
     Action cancelAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -5868609501314154642L;
+
       public void actionPerformed(ActionEvent e) {
         cancel();
       }      

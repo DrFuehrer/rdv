@@ -369,6 +369,9 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     panel.setLayout(new FlowLayout());
 
     Action exportAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 1547500154252213911L;
+
       public void actionPerformed(ActionEvent e) {
         exportVideo();
       }      
@@ -380,6 +383,9 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     panel.add(exportButton);
     
     Action cancelAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -7440298547807878651L;
+
       public void actionPerformed(ActionEvent e) {
         cancel();
       }      

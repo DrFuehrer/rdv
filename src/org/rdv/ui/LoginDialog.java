@@ -169,6 +169,9 @@ public class LoginDialog extends JDialog {
 		JPanel buttonPanel = new JPanel();
     
     Action loginAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -5591044023056646223L;
+
       public void actionPerformed(ActionEvent e) {
         login();
       }      
@@ -180,6 +183,9 @@ public class LoginDialog extends JDialog {
 		buttonPanel.add(loginButton);
 		
     Action cancelAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 6237115705468556255L;
+
       public void actionPerformed(ActionEvent e) {
         cancel();
       }      

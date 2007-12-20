@@ -172,6 +172,9 @@ public class RBNBConnectionDialog extends JDialog {
 		JPanel buttonPanel = new JPanel();
     
     Action connectAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = 5814028508027064335L;
+
       public void actionPerformed(ActionEvent e) {
         connect();
       }      
@@ -183,6 +186,9 @@ public class RBNBConnectionDialog extends JDialog {
 		buttonPanel.add(connectButton);
 		
     Action cancelAction = new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -679192362775669088L;
+
       public void actionPerformed(ActionEvent e) {
         cancel();
       }      

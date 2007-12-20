@@ -265,6 +265,9 @@ public class CentralImportDialog extends JDialog {
     
     dataFileList.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "deleteDataFile");
     dataFileList.getActionMap().put("deleteDataFile", new AbstractAction() {
+      /** serialization version identifier */
+      private static final long serialVersionUID = -1011648597152960900L;
+
       public void actionPerformed(ActionEvent ae) {
         deleteSelectedDataFiles();
       }
