@@ -256,6 +256,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
    */
   private JToolBar createToolBar() {
     JToolBar channelToolBar = new JToolBar();
+    channelToolBar.setFloatable(false);
 
     JButton button = new ToolBarButton(
         "icons/expandall.gif",

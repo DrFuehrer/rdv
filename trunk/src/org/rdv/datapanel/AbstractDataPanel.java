@@ -305,6 +305,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
   
   JToolBar createToolBar() {
     JToolBar toolBar = new JToolBar();
+    toolBar.setFloatable(false);
     
     final DataPanel dataPanel = this;
     
