@@ -10,5 +10,7 @@
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/rbnb.jar"/>
 	<classpathentry kind="lib" path="lib/tritonus_share.jar"/>
+	<classpathentry kind="lib" path="lib/appframework.jar"/>
+	<classpathentry kind="lib" path="lib/swing-worker.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

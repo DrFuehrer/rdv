@@ -33,12 +33,8 @@
 package org.rdv;
 
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,37 +42,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.rdv.action.ActionFactory;
-import org.rdv.rbnb.LocalServer;
-import org.rdv.rbnb.RBNBController;
-import org.rdv.ui.ApplicationFrame;
-import org.rdv.util.PortKnock;
+import org.jdesktop.application.Application;
 
 /**
  * @author Jason P. Hanley
  */
 public class DataViewer {
 	
-	static Log log = LogFactory.getLog(DataViewer.class.getName());
-	
-	private final RBNBController rbnb;
-	private final DataPanelManager dataPanelManager;
-	private final ApplicationFrame applicationFrame;
-  private final ConfigurationManager configurationManager;
-
 	private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS z");
   private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm.ss.SSS a");
   private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm.ss.SSS a");
@@ -85,44 +60,13 @@ public class DataViewer {
   /** global cache for icons */
   private static final Map<String, ImageIcon> iconCache = new ConcurrentHashMap<String, ImageIcon>();;
 	
-	public DataViewer(boolean isApplet) {
-		rbnb = RBNBController.getInstance();
-		dataPanelManager = new DataPanelManager(rbnb);
-    configurationManager = new ConfigurationManager(this);
-		applicationFrame = new ApplicationFrame(this, rbnb, dataPanelManager, isApplet);
-	}
-
-	public void exit() {
-		applicationFrame.dispose();
-    
-		if (rbnb != null) {
-			rbnb.exit();
-		}
-    
-    try {
-      LocalServer.getInstance().stopServer();
-    } catch (Exception e) {}
-    
-		log.info("Exiting.");
-
-		System.exit(0);
-	}
- 	
- 	public RBNBController getRBNBController() {
- 		return rbnb;
- 	}
-
- 	public DataPanelManager getDataPanelManager() {
- 		return dataPanelManager;
- 	}
-  
-  public ConfigurationManager getConfigurationManager() {
-    return configurationManager;
+  /**
+   * This class can not be instantiated and it's constructor always throws an
+   * exception.
+   */
+	private DataViewer() {
+    throw new UnsupportedOperationException("This class can not be instantiated.");
   }
- 	
- 	public ApplicationFrame getApplicationFrame() {
- 		return applicationFrame;
- 	}
 
 	public static String formatDate(double date) {
 		return ISO_DATE_FORMAT.format(new Date(((long)(date*1000))));
@@ -282,8 +226,9 @@ public class DataViewer {
     return icon;
   }  
 
-  public void alertError(String errorMessage) {
-    JOptionPane.showMessageDialog(applicationFrame, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
+  public static void alertError(String errorMessage) {
+    JFrame frame = Application.getInstance(RDV.class).getMainFrame();
+    JOptionPane.showMessageDialog(frame, errorMessage, "Error", JOptionPane.ERROR_MESSAGE);
   }
   
   /**
@@ -312,234 +257,4 @@ public class DataViewer {
     }
   }
   
-  /**
-   * Creates the command line options.
-   * 
-   * @return  the command line options.
-   */
-  @SuppressWarnings("static-access")
-  private static Options createOptions() {
-    Options options = new Options();
-    
-    Option hostNameOption = OptionBuilder.withArgName("host name")
-                       .hasArg()
-                       .withDescription("The host name of the RBNB server")
-                       .withLongOpt("host")
-                       .create('h');
-    
-    Option portNumberOption = OptionBuilder.withArgName("port number")
-                         .hasArg()
-                         .withDescription("The port number of the RBNB server")
-                         .withLongOpt("port")
-                         .create('p');
-    
-    Option channelsOption = OptionBuilder.withArgName("channels")
-                       .hasArgs()
-                       .withDescription("Channels to subscribe to")
-                       .withLongOpt("channels")
-                       .create('c');
-    
-    Option playbackRateOption = OptionBuilder.withArgName("playback rate")
-                       .hasArg()
-                       .withDescription("The playback rate")
-                       .withLongOpt("playback-rate")
-                       .create('r');
-    
-    Option timeScaleOption = OptionBuilder.withArgName("time scale")
-                        .hasArg()
-                        .withDescription("The time scale in seconds")
-                        .withLongOpt("time-scale")
-                        .create('s');
-    
-    Option playOption = OptionBuilder.withDescription("Start playing back data") 
-                     .withLongOpt("play")
-                     .create();
-    
-    Option realTimeOption = OptionBuilder.withDescription("Start viewing data in real time") 
-                       .withLongOpt("real-time")
-                       .create();
-    
-    Option portKnockOption = OptionBuilder.withArgName("ports")
-      .hasArgs()
-      .withDescription("A list of ports to port knock before connecting to the server")
-      .withLongOpt("knock")
-      .create('k');
-    
-    Option helpOption = new Option("?", "help", false, "Display usage");
-    
-    options.addOption(hostNameOption);
-    options.addOption(portNumberOption);
-    options.addOption(channelsOption);
-    options.addOption(playbackRateOption);
-    options.addOption(timeScaleOption);
-    options.addOption(playOption);
-    options.addOption(realTimeOption);      
-    options.addOption(portKnockOption);
-    options.addOption(helpOption);
-    
-    return options;
-  }
-
-	public static void main(String[] args) {
-		//enable dynamic layout during application resize
-		Toolkit toolkit = Toolkit.getDefaultToolkit();
-		if (!toolkit.isDynamicLayoutActive()) {
-			toolkit.setDynamicLayout(true);
-		}
-    
-    //disable default drop target for swing components
-    System.setProperty("suppressSwingDropSupport", "true");
-        
-    // set L&F to system
-    try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (Exception e) {
-      log.warn("Unable to set system L&F.");
-    }
-
-    Options options = createOptions();
-    
-		String configFile = null;
-		String hostName = null;
-		int portNumber = -1;
-		String[] channels = null;
-		double playbackRate = -1;
-		double timeScale = -1;
-		boolean play = false;
-		boolean realTime = false;
-    int[] knockPorts = null;
-		
-		CommandLineParser parser = new PosixParser();
-		
-		try {
-	    	CommandLine line = parser.parse(options, args);
-	    	
-	    	if (line.hasOption('?')) {
-	    		HelpFormatter formatter = new HelpFormatter();
-	    		formatter.printHelp("DataViewer", options, true);
-	    		return;
-	    	}
-
-		String[] leftOverOptions = line.getArgs();
-		if (leftOverOptions != null && leftOverOptions.length > 0) {
-			configFile = leftOverOptions[0];
-		}
-
-	    	if (line.hasOption('h')) {
-	    		hostName = line.getOptionValue('h');
-	    		log.info("Set host name to " + hostName + ".");
-	    	}
-	    	
-	    	if (line.hasOption('p')) {
-	    		String value = line.getOptionValue('p');
-	    		portNumber = Integer.parseInt(value);
-	    		log.info("Set port number to " + portNumber + ".");
-	    	}
-	    	
-	    	if (line.hasOption('c')) {
-	    		channels = line.getOptionValues('c');
-	    	}
-	    	
-	    	if (line.hasOption('r')) {
-	    		String value = line.getOptionValue('r');
-	    		playbackRate = Double.parseDouble(value);
-	    	}
-	    	
-	    	if (line.hasOption('s')) {
-	    		String value = line.getOptionValue('s');
-	    		timeScale = Double.parseDouble(value);
-	    	}
-	    	
-	    	if (line.hasOption("play")) {
-	    		play = true;
-	    	} else if (line.hasOption("real-time")) {
-	    		realTime = true;
-	    	}
-        
-        if (line.hasOption('k')) {
-          String[] knockPortStrings = line.getOptionValues('k');
-          knockPorts = new int[knockPortStrings.length];
-          try {
-            for (int i=0; i<knockPortStrings.length; i++) {
-              knockPorts[i] = Integer.parseInt(knockPortStrings[i]);
-              if (knockPorts[i] < 1 || knockPorts[i] > 65535) {
-                throw new NumberFormatException("Invalid port range: " + knockPorts[i]);
-              }
-            }
-          } catch (NumberFormatException e) {
-            System.err.println("Invalid port knocking option: " + e.getMessage() + ".");
-            return;
-          }
-        }
-		} catch( ParseException e) {
-			System.err.println("Command line arguments invalid: " + e.getMessage() + ".");
-			return;
-	    }
-		
-		log.info("Starting data viewer in disconnected state.");
-		DataViewer dataViewer = new DataViewer(false);
-		
-    RBNBController rbnbController = RBNBController.getInstance();
-
-    if (configFile != null) {
-      URL configURL;      
-      try {
-        if (configFile.matches("^[a-zA-Z]+://.*")) {
-          configURL = new URL(configFile);
-        } else {
-          configURL = new File(configFile).toURI().toURL();
-        }
-        
-        dataViewer.getConfigurationManager().loadConfiguration(configURL);
-        return;
-      } catch (MalformedURLException e) {
-        dataViewer.alertError("\"" + configFile + "\" is not a valid configuration file URL.");
-      }
-    }
-    
-		if (playbackRate != -1) {
-			rbnbController.setPlaybackRate(playbackRate);
-		}
-		
-		if (timeScale != -1) {
-			rbnbController.setTimeScale(timeScale);
-		}
-				
-		if (portNumber != -1) {
-			rbnbController.setRBNBPortNumber(portNumber);
-		}
-		
-		if (hostName != null) {
-      if (knockPorts != null) {
-        try {
-          PortKnock.knock(hostName, knockPorts);
-        } catch (IOException e) {
-          log.warn("Error port knocking.");
-          e.printStackTrace();
-        }
-      }
-
-			rbnbController.setRBNBHostName(hostName);
-			
-      if (rbnbController.connect(true)) {
-  			if (channels != null) {
-  				for (int i=0; i<channels.length; i++) {
-  					String channel = channels[i];
-  					log.info("Viewing channel " + channel + ".");
-  					dataViewer.getDataPanelManager().viewChannel(channel);
-  				}
-  			}
-  			
-  			if (play) {
-  				log.info("Starting data playback.");
-  				rbnbController.play();
-  			} else if (realTime) {
-  				log.info("Viewing data in real time.");
-  				rbnbController.monitor();
-  			}
-      }
-		} else {
-		  ActionFactory.getInstance().getOfflineAction().goOffline();
-    }
-	}
 }

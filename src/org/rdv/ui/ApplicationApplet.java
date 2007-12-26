@@ -34,6 +34,7 @@ package org.rdv.ui;
 
 import javax.swing.JApplet;
 
+import org.rdv.DataPanelManager;
 import org.rdv.DataViewer;
 import org.rdv.rbnb.RBNBController;
 
@@ -50,8 +51,6 @@ public class ApplicationApplet extends JApplet {
 	
 	public void init() {
 		System.setProperty("sun.java2d.ddscale","true");	
-
-		dataViewer = new DataViewer(true);
 
 		RBNBController rbnbController = RBNBController.getInstance();
 
@@ -93,7 +92,7 @@ public class ApplicationApplet extends JApplet {
   					org.rdv.rbnb.Channel channelTest = rbnbController.getChannel(channel);
   					if ( channelTest == null )
   						System.out.println("No such channel: " + channel );
-  					dataViewer.getDataPanelManager().viewChannel(channel);
+  					DataPanelManager.getInstance().viewChannel(channel);
   				}
   			}
   
@@ -107,7 +106,7 @@ public class ApplicationApplet extends JApplet {
       }
 		}
 
-		this.setContentPane(dataViewer.getApplicationFrame().getContentPane());
+		//this.setContentPane(dataViewer.getApplicationFrame().getContentPane());
 	}
 	
 	public void start() {
@@ -119,6 +118,6 @@ public class ApplicationApplet extends JApplet {
 	}
 
 	public void destroy() {
-		dataViewer.exit();
+		//dataViewer.exit();
 	}
 }

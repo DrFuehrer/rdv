@@ -43,8 +43,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -76,9 +74,12 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jdesktop.application.Application;
+import org.rdv.ConfigurationManager;
 import org.rdv.DataPanelManager;
 import org.rdv.DataViewer;
 import org.rdv.Extension;
+import org.rdv.RDV;
 import org.rdv.action.ActionFactory;
 import org.rdv.action.DataViewerAction;
 import org.rdv.auth.AuthenticationManager;
@@ -99,14 +100,13 @@ import com.jgoodies.uif_lite.component.Factory;
  * @author  Lawrence J. Miller
  * @since   1.2
  */
-public class ApplicationFrame extends JFrame implements MessageListener, ConnectionListener, StateListener {
+public class ApplicationFrame extends JPanel implements MessageListener, ConnectionListener, StateListener {
 
-    /** serialization version identifier */
-    private static final long serialVersionUID = 1L;
+  /** serialization version identifier */
+  private static final long serialVersionUID = -4692978463068122918L;
 	
 	static Log log = LogFactory.getLog(ApplicationFrame.class.getName());
 	
-	private DataViewer dataViewer;
 	private RBNBController rbnb;
 	private DataPanelManager dataPanelManager;
 	
@@ -183,12 +183,11 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   /** the key mask used for menus shortucts */
   private final int menuShortcutKeyMask;
  		
-	public ApplicationFrame(DataViewer dataViewer, RBNBController rbnb, DataPanelManager dataPanelManager, boolean isApplet) {
+	public ApplicationFrame() {
 		super();
 		
-		this.dataViewer = dataViewer;
-		this.rbnb = rbnb;
-		this.dataPanelManager = dataPanelManager;
+		this.rbnb = RBNBController.getInstance();
+		this.dataPanelManager = DataPanelManager.getInstance();
 		
 		busyDialog = null;
 		loadingDialog = null;
@@ -196,30 +195,13 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     // set the menu shortcut key mask in a platform independent way
     menuShortcutKeyMask = Toolkit.getDefaultToolkit().getMenuShortcutKeyMask();
 		
-		initFrame(isApplet);
+		initFrame();
 	}
 	
-	private void initFrame(boolean isApplet) {
-		frame = this;
+	private void initFrame() {
+		frame = Application.getInstance(RDV.class).getMainFrame();
     
-		if (!isApplet) {
-			frame.addWindowListener(new WindowAdapter() {
-				public void windowClosing(WindowEvent e) {
-					dataViewer.exit();
-				}
-			});
-			frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-			frame.getContentPane().setLayout(new BorderLayout());
-
-			frame.setBounds(0, 0, 950, 675);
-      
-      frame.setLocationByPlatform(true);
-
-			frame.setIconImage(DataViewer.getImage("icons/RDV.gif"));
-
-			frame.setTitle("RDV");
-		}
+    setLayout(new BorderLayout());
 
 		c = new GridBagConstraints();
 
@@ -259,11 +241,6 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
   	rbnb.addMessageListener(this);
   	
   	rbnb.addConnectionListener(this);
-
-		if (!isApplet) { 
-      frame.setLocationByPlatform(true);
-			frame.setVisible(true);
-		}
 	}
   	
  	private void initActions() {
@@ -328,9 +305,9 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
           File configFile = chooser.getSelectedFile();
           try {            
             URL configURL = configFile.toURI().toURL();
-            dataViewer.getConfigurationManager().loadConfiguration(configURL);
+            ConfigurationManager.loadConfiguration(configURL);
           } catch (MalformedURLException e) {
-            dataViewer.alertError("\"" + configFile + "\" is not a valid configuration file URL.");
+            DataViewer.alertError("\"" + configFile + "\" is not a valid configuration file URL.");
           }            
         }
       }     
@@ -362,7 +339,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
             }
           }
 
-          dataViewer.getConfigurationManager().saveConfiguration(file);
+          ConfigurationManager.saveConfiguration(file);
         }     
       }     
     };    
@@ -385,7 +362,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       private static final long serialVersionUID = 3137490972014710133L;
 
       public void actionPerformed(ActionEvent ae) {
- 				dataViewer.exit();
+ 				Application.getInstance().exit(ae);
  			}			
  		};
  		
@@ -926,7 +903,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		
 	private void initControls() {
 		controlPanel = new ControlPanel();
-    frame.getContentPane().add(controlPanel, BorderLayout.NORTH);
+    add(controlPanel, BorderLayout.NORTH);
 		
 		log.info("Added control panel.");
 	}
@@ -994,7 +971,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
                   rightPanel,
                   0.2f);
 		splitPane.setContinuousLayout(true);
-		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
+		add(splitPane, BorderLayout.CENTER);
 	}
   
   /**
@@ -1018,22 +995,22 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 			if (device.isFullScreenSupported() && device.getFullScreenWindow() == null) {
 				log.info("Switching to full screen mode.");
 		
-				setVisible(false);
+				frame.setVisible(false);
 		
 				try {
-					device.setFullScreenWindow(this);
+					device.setFullScreenWindow(frame);
 				} catch (InternalError e) {
 					log.error("Failed to switch to full screen exclusive mode.");
 					e.printStackTrace();
 					
-					setVisible(true);
+					frame.setVisible(true);
 					return false;
 				}
 		
-				dispose();
-				setUndecorated(true);
-				setVisible(true);
-				requestFocus();
+				frame.dispose();
+				frame.setUndecorated(true);
+				frame.setVisible(true);
+				frame.requestFocusInWindow();
 				
 				return true;
 			}
@@ -1051,14 +1028,14 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
 		GraphicsDevice[] devices = ge.getScreenDevices();
 		for (int i=0; i<devices.length; i++) {
 			GraphicsDevice device = devices[i];
-			if (device.isFullScreenSupported() && device.getFullScreenWindow() == this) {
+			if (device.isFullScreenSupported() && device.getFullScreenWindow() == frame) {
 				log.info("Leaving full screen mode.");
 	
-				setVisible(false);
+				frame.setVisible(false);
 				device.setFullScreenWindow(null);
-				dispose();
-				setUndecorated(false);
-				setVisible(true);
+				frame.dispose();
+				frame.setUndecorated(false);
+				frame.setVisible(true);
 				
 				break;
 			}
@@ -1154,7 +1131,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     busyDialog = null;
    }   
     
- 	 busyDialog = new BusyDialog(this);
+ 	 busyDialog = new BusyDialog(frame);
    busyDialog.setCancelActionListener(new ActionListener() {
      public void actionPerformed(ActionEvent arg0) {
        rbnb.cancelConnect();
@@ -1189,7 +1166,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     
   public void postState(int newState, int oldState) {
     if (newState == Player.STATE_DISCONNECTED) {
-      setTitle("RDV");
+      frame.setTitle("RDV");
       
       controlAction.setEnabled(false);
       disconnectAction.setEnabled(false);
@@ -1202,7 +1179,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
       
       ActionFactory.getInstance().getOfflineAction().setSelected(false);
     } else if (oldState == Player.STATE_DISCONNECTED) {
-      setTitle(rbnb.getServerName() + " - RDV");
+      frame.setTitle(rbnb.getServerName() + " - RDV");
       
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
@@ -1225,7 +1202,7 @@ public class ApplicationFrame extends JFrame implements MessageListener, Connect
     if (newState == Player.STATE_LOADING) {
       setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-      loadingDialog = new LoadingDialog(this);
+      loadingDialog = new LoadingDialog(frame);
       
       new Thread() {
         public void run() {

@@ -290,7 +290,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	public void openPanel(final DataPanelManager dataPanelManager) {
 		this.dataPanelManager = dataPanelManager;
 		this.dataPanelContainer = dataPanelManager.getDataPanelContainer();
-		this.rbnbController = dataPanelManager.getRBNBController();    
+		this.rbnbController = RBNBController.getInstance(); 
         
     component = new SimpleInternalFrame(getTitleComponent(), createToolBar(), dataComponent);
 		

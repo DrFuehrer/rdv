@@ -68,13 +68,9 @@ public class DataPanelManager {
 	 */
 	static Log log = LogFactory.getLog(DataPanelManager.class.getName());
 
-	/**
-	 * A reference to the RNBN controller for the data panels to use.
-	 * 
-	 * @since  1.2
-	 */
-	private RBNBController rbnbController;
-	
+  /** the single instance of this class */
+  private static DataPanelManager instance;
+  
 	/**
 	 * A reference to the data panel container for the data panels
 	 * to add their ui component too.
@@ -99,17 +95,27 @@ public class DataPanelManager {
 	 * The name of the extensions configuration file
 	 */
 	private static String extensionsConfigFileName = "config/extensions.xml";
-	
+
+  /**
+   * Gets the single instance of this class.
+   * 
+   * @return  the single instance of this class
+   */
+  public static DataPanelManager getInstance() {
+    if (instance == null) {
+      instance = new DataPanelManager();
+    }
+    
+    return instance;
+  }
+  
 	/** 
 	 * The constructor for the data panel manager. This initializes the
 	 * data panel container and the list of registered data panels.
 	 * 
-	 * 
-	 * @param rbnbController  the rbnb controller
 	 * @since                 1.2
 	 */
-	public DataPanelManager(RBNBController rbnbController) {
-		this.rbnbController = rbnbController;
+	private DataPanelManager() {
 		dataPanelContainer = new DataPanelContainer();
 		
 		dataPanels = new ArrayList<DataPanel>();
@@ -212,7 +218,7 @@ public class DataPanelManager {
    * @since              1.3
    */
   public ArrayList getExtensions(String channelName) {
-    Channel channel = rbnbController.getChannel(channelName);
+    Channel channel = RBNBController.getInstance().getChannel(channelName);
     
     String mime = null;
     if (channel != null) {
@@ -243,7 +249,7 @@ public class DataPanelManager {
    * @since              1.3
    */
   public Extension getDefaultExtension(String channelName) {
-    Channel channel = rbnbController.getChannel(channelName);
+    Channel channel = RBNBController.getInstance().getChannel(channelName);
     String mime = null;
     if (channel != null) {
       mime = channel.getMetadata("mime");
@@ -253,16 +259,6 @@ public class DataPanelManager {
 
     return findExtension(mime);
   }
-	
-	/**
-	 * Returns the RBNB controller.
-	 * 
-	 * @return  the rbnb controller
-	 * @since   1.2
-	 */
-	public RBNBController getRBNBController() {
-		return rbnbController;
-	}
 	
 	/**
 	 * Returns the data panel container where data panels can
@@ -472,7 +468,7 @@ public class DataPanelManager {
    */
   public boolean isSourceSubscribed(String sourceName) {
     boolean subscribed = false;
-    ChannelTree ctree = rbnbController.getMetadataManager().getMetadataChannelTree();
+    ChannelTree ctree = RBNBController.getInstance().getMetadataManager().getMetadataChannelTree();
     ChannelTree.Node source = ctree.findNode(sourceName);
     if (source != null) {
       Iterator i = source.getChildren().iterator();
@@ -525,7 +521,7 @@ public class DataPanelManager {
    * @since               1.3
    */
   public void unsubscribeSource(String sourceName, boolean closeIfEmpty) {
-    ChannelTree ctree = rbnbController.getMetadataManager().getMetadataChannelTree();
+    ChannelTree ctree = RBNBController.getInstance().getMetadataManager().getMetadataChannelTree();
     ChannelTree.Node source = ctree.findNode(sourceName);
     if (source != null) {
       Iterator i = source.getChildren().iterator();
