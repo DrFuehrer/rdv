@@ -24,6 +24,9 @@
 	<!-- icons directory -->
 	<property name="icons.dir" value="icons"/>
 	
+	<!-- resources directory -->
+	<property name="resources.dir" value="resources"/>
+	
 	<!-- temporary build dir -->
 	<property name="build.dir" value="build"/>
 	<property name="build.classes" value="${build.dir}/classes"/>
@@ -33,6 +36,8 @@
 	<property name="build.dist" value="${build.dir}/dist"/>
 	<property name="build.exe" value="${build.dir}/exe"/>
 	<property name="build.api" value="${build.dir}/api"/>
+	
+	<property name="main.class" value="org.rdv.RDV"/>
 
 	<!-- environment access via env.* -->
 	<property environment="env"/>
@@ -40,12 +45,14 @@
 	<!-- build classpath -->
 	<path id="classpath">
 		<fileset dir="${lib.dir}">
+			<include name="appframework.jar"/>
 			<include name="commons-cli.jar"/>
 			<include name="commons-logging.jar"/>
 			<include name="jcommon.jar"/>
 			<include name="jfreechart.jar"/>
 			<include name="looks.jar"/>
 			<include name="rbnb.jar"/>
+			<include name="swing-worker.jar"/>
 			<include name="tritonus_share.jar"/>
 		</fileset>
 	</path>
@@ -54,6 +61,7 @@
 	<path id="runtimeclasspath">
 		<pathelement location="${build.classes}"/>
 		<pathelement location="."/>
+		<pathelement location="${resources.dir}"/>
 		<path refid="classpath"/>
 		<fileset dir="${lib.dir}">
 			<include name="jaxb-api.jar"/>
@@ -96,9 +104,10 @@
 			<fileset file="LICENSE.txt"/>
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
 			<zipfileset dir="${icons.dir}" prefix="${icons.dir}"/>
+			<zipfileset dir="${resources.dir}"/>
 			<manifest>
-				<attribute name="Main-Class" value="org.rdv.DataViewer"/>
-				<attribute name="Class-Path" value="commons-cli.jar commons-logging.jar jaxb-api.jar jaxb-impl.jar jsr173-api.jar jcommon.jar jfreechart.jar jl.jar looks.jar mp3spi.jar rbnb.jar tritonus_share.jar"/>
+				<attribute name="Main-Class" value="${main.class}"/>
+				<attribute name="Class-Path" value="appframework.jar commons-cli.jar commons-logging.jar jaxb-api.jar jaxb-impl.jar jsr173-api.jar jcommon.jar jfreechart.jar jl.jar looks.jar mp3spi.jar rbnb.jar swing-worker.jar tritonus_share.jar"/>
 			</manifest>			
 		</jar>		
 	</target>
@@ -110,6 +119,7 @@
 		<jar destfile="${build.bin}/${ant.project.name}.jar" duplicate="preserve">
 			<zipgroupfileset file="${build.lib}/${ant.project.name}.jar"/>
 			<zipgroupfileset dir="${lib.dir}">
+				<include name="appframework.jar"/>
 				<include name="commons-cli.jar"/>
 				<include name="commons-logging.jar"/>
 				<include name="jaxb-api.jar"/>
@@ -121,10 +131,11 @@
 				<include name="looks.jar"/>
 				<include name="mp3spi.jar"/>
 				<include name="rbnb.jar"/>
+				<include name="swing-worker.jar"/>
 				<include name="tritonus_share.jar"/>			  
 			</zipgroupfileset>
 			<manifest>
-				<attribute name="Main-Class" value="org.rdv.DataViewer"/>
+				<attribute name="Main-Class" value="${main.class}"/>
 			</manifest>		
 		</jar>		
 	</target>
@@ -250,7 +261,7 @@
   
 	<!-- Run the RDV -->
 	<target name="run" depends="compile" description="Run application">
-		<java classpathref="runtimeclasspath" classname="org.rdv.DataViewer" fork="true">
+		<java classpathref="runtimeclasspath" classname="${main.class}" fork="true">
  			<jvmarg value="-Xms64M"/>
  			<jvmarg value="-Xmx256M"/>
 			<jvmarg value="-Dsun.java2d.ddscale=true"/>			
@@ -258,7 +269,7 @@
 	</target>
 
 	<target name="help" depends="compile" description="Show usage">
-		<java classpathref="runtimeclasspath" classname="org.rdv.DataViewer" fork="true">
+		<java classpathref="runtimeclasspath" classname="${main.class}" fork="true">
 			<arg line="--help"/>
 		</java>
 	</target>

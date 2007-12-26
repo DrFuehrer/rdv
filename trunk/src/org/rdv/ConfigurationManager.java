@@ -73,11 +73,12 @@ public class ConfigurationManager {
    */
   static Log log = LogFactory.getLog(ConfigurationManager.class.getName());
   
-  
-  DataViewer dataViewer;
-  
-  public ConfigurationManager(DataViewer dataViewer) {
-    this.dataViewer = dataViewer;
+  /**
+   * This class can not be instantiated and it's constructor always throws an
+   * exception.
+   */
+  private ConfigurationManager() {
+    throw new UnsupportedOperationException("This class can not be instantiated.");
   }
 
   /**
@@ -86,7 +87,7 @@ public class ConfigurationManager {
    * @param configFile  the file to save the configuration to
    * @since             1.3
    */
-  public void saveConfiguration(File configFile) {
+  public static void saveConfiguration(File configFile) {
     PrintWriter out;
     try {
       out = new PrintWriter(new BufferedWriter(new FileWriter(configFile)));
@@ -97,7 +98,7 @@ public class ConfigurationManager {
     out.println("<?xml version=\"1.0\"?>");
     out.println("<rdv>");
     
-    RBNBController rbnb = dataViewer.getRBNBController();
+    RBNBController rbnb = RBNBController.getInstance();
     out.println("  <rbnb>");
     out.println("    <host>" + rbnb.getRBNBHostName() + "</host>");
     out.println("    <port>" + rbnb.getRBNBPortNumber() + "</port>");
@@ -106,7 +107,7 @@ public class ConfigurationManager {
     out.println("    <playbackRate>" + rbnb.getPlaybackRate() + "</playbackRate>");
     out.println("  </rbnb>");
     
-    List dataPanels = dataViewer.getDataPanelManager().getDataPanels();
+    List dataPanels = DataPanelManager.getInstance().getDataPanels();
     Iterator it = dataPanels.iterator();
     while (it.hasNext()) {
       DataPanel dataPanel = (DataPanel)it.next();
@@ -153,7 +154,7 @@ public class ConfigurationManager {
    * @param properties properties for the DataPanel
    * @return flag indicating detached
    */
-  private boolean isPanelDetached(DataPanel dataPanel, Properties properties) {
+  private static boolean isPanelDetached(DataPanel dataPanel, Properties properties) {
     if (properties.size() == 0) {
       return false;
     }
@@ -177,7 +178,7 @@ public class ConfigurationManager {
    * 
    * @param configURL  the URL of the file to load the configuration from
    */
-  public void loadConfiguration(final URL configURL) {
+  public static void loadConfiguration(final URL configURL) {
     new Thread() {
       public void run() {
         loadConfigurationWorker(configURL);
@@ -191,14 +192,14 @@ public class ConfigurationManager {
    * 
    * @param configURL  the URL of the file to load the configuration from
    */
-  private void loadConfigurationWorker(URL configURL) {
+  private static void loadConfigurationWorker(URL configURL) {
     if (configURL == null) {
-      dataViewer.alertError("The configuration file does not exist.");
+      DataViewer.alertError("The configuration file does not exist.");
       return;
     }
     
-    RBNBController rbnb = dataViewer.getRBNBController();
-    DataPanelManager dataPanelManager = dataViewer.getDataPanelManager();
+    RBNBController rbnb = RBNBController.getInstance();
+    DataPanelManager dataPanelManager = DataPanelManager.getInstance();
     
     if (rbnb.getState() != RBNBController.STATE_DISCONNECTED) {
       rbnb.pause();
@@ -210,15 +211,15 @@ public class ConfigurationManager {
       DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
       document = documentBuilder.parse(configURL.openStream());
     } catch (FileNotFoundException e) {
-      dataViewer.alertError("The configuration file does not exist." +
+      DataViewer.alertError("The configuration file does not exist." +
           System.getProperty("line.separator") +
           configURL);
       return;
     } catch (IOException e) {
-      dataViewer.alertError("Error loading configuration file.");
+      DataViewer.alertError("Error loading configuration file.");
       return;
     } catch (Exception e) {
-      dataViewer.alertError("The configuration file is corrupt.");
+      DataViewer.alertError("The configuration file is corrupt.");
       return;
     }
 
