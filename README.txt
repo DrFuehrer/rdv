@@ -1,1 +1,0 @@
-See http://paltasoftware.com/rdv/ for information on RDV.

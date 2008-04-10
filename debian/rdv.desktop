@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=RDV
-Comment=Real-time Data Viewer
-Exec=rdv %u
-Icon=rdv
-MimeType=application/x-rdv;
-Terminal=false
-Type=Application
-Categories=Education;Science;DataVisualization;NumericalAnalysis;Engineering

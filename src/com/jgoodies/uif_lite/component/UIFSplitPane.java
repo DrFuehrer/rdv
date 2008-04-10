@@ -54,9 +54,6 @@ import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 public final class UIFSplitPane extends JSplitPane {
     
-    /** serialization version identifier */
-    private static final long serialVersionUID = -7098718826113323984L;
-
     /**
      * Holds the name of the bound property that tries to show or hide
      * the split pane's divider border.
