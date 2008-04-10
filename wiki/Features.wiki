@@ -1,1 +1,21 @@
 #labels Featured
+RDV is a visualization environment for scientific and engineering data. Below are a few of it's key features.
+
+ * Support Local or Remote Data Sources
+ * Synchronized data
+ * Plotting and Charting
+ * Video and Image Viewing
+ * Event Markers
+ * Extensions
+
+If you want to do something RDV can't do, use the feature request tracker to view current feature requests or to request a new feature.
+
+= Local or Remote Data Sources =
+
+= Plotting and Charting =
+
+= Video and Image Viewing =
+
+= Event Markers =
+
+= Extensions =
