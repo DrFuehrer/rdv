@@ -8,4 +8,4 @@ The [http://groups.google.com/group/rdv-users rdv-users] mailing list is for dis
 
 = Bugs =
 
-If you have found a bug, please report it using the [http://code.google.com/p/rdv/issues/list bug tracker]. Before you report a bug, browse through the list of current bugs and see if it has already been reported. If it has not, submit a [http://code.google.com/p/rdv/issues/entry new bug] and give a detailed description of the problem. One of the developers will take a look at it and get back to you.
+If you have found a bug, please report it using the bug tracker. Before you report a bug, browse through the [http://code.google.com/p/rdv/issues/list?q=label%3AType-Defect&can=2 list of current bugs] and see if it has already been reported. If it has not, submit a [http://code.google.com/p/rdv/issues/entry new bug] and give a detailed description of the problem. One of the developers will take a look at it and get back to you.
