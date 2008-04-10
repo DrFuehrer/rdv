@@ -1,0 +1,8 @@
+= 1.7 =
+
+New features include:
+ * Export video as a series of time stamped JPEG files
+ * Play MP3 audio from a streaming server
+
+Bug fixes include:
+ * Fix a bug when saving closed floating windows in configuration
