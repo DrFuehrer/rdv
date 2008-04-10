@@ -3,7 +3,7 @@ RDV is a visualization environment for scientific and engineering data. Below ar
 
  * [#Local_or_Remote_Data_Sources Support for local or remote data sources]
  * [#Synchronized_Data Synchronized data]
- * [#Data_Visualization Data Visualization]
+ * [#Data_Visualization Data visualization]
  * [#Event_Markers Event markers]
  * [#Extensions Extensions]
 
