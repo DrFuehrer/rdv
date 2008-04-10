@@ -1,0 +1,14 @@
+ * SourceForge.net
+ * CIA.vc
+
+= Code =
+
+= Issue Trackers =
+Bugs
+Feature Requests
+
+= Mailing List =
+rdv-developers
+
+= API Documentation =
+Java API Documentation
