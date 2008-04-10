@@ -1,5 +1,5 @@
 #labels Featured
-RDV is a visualization environment for scientific and engineering data. Below are a few of it's key features.
+RDV is a visualization environment for scientific and engineering data. Here are a few of it's key features.
 
  * [#Local_or_Remote_Data_Sources Support for local or remote data sources]
  * [#Synchronized_Data Synchronized data]
