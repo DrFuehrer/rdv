@@ -1,4 +1,4 @@
-= 1.7 =
+= RDV 1.7 =
 
 New features include:
  * Export video as a series of time stamped JPEG files
