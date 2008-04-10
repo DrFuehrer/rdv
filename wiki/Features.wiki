@@ -1,14 +1,14 @@
 #labels Featured
 RDV is a visualization environment for scientific and engineering data. Below are a few of it's key features.
 
- * [#Local_or_Remote_Data_Sources Support Local or Remote Data Sources]
- * [#Synchronized_Data Synchronized Data]
- * [#Plotting_and_Charting Plotting and Charting]
- * [#Video_and_Image_Viewing Video and Image Viewing]
- * [#Event_Markers Event Markers]
+ * [#Local_or_Remote_Data_Sources Support for local or remote data sources]
+ * [#Synchronized_Data Synchronized data]
+ * [#Plotting_and_Charting Plotting and charting]
+ * [#Video_and_Image_Viewing Video and image viewing]
+ * [#Event_Markers Event markers]
  * [#Extensions Extensions]
 
-If you want to do something RDV can't do, use the feature request tracker to view current feature requests or to request a new feature.
+If you want to do something RDV can't do, use the [http://code.google.com/p/rdv/issues/list feature request tracker] to view current feature requests or to request a [http://code.google.com/p/rdv/issues/entry new feature].
 
 = Local or Remote Data Sources =
 
