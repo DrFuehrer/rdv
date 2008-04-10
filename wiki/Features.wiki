@@ -25,6 +25,8 @@ Numeric data can also be displayed in a table with the ability to set thresholds
 
 Images and video can be viewed within RDV with the ability to zoom in and out.
 
+http://rdv.googlecode.com/svn/wiki/rdv-screenshot-plot.png http://rdv.googlecode.com/svn/wiki/rdv-screenshot-image.png
+
 == Event Markers ==
 
 Event markers are used to mark a time where something interesting has happened. Event markers are flexible and can contain a label and a description to classify the event. And when used on a remote data source, all other uses connected to that data source will see your event, so they can be used in a collaborative way.
