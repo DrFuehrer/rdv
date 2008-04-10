@@ -1,6 +1,6 @@
 = Mailing List =
- * [http://groups.google.com/group/rdv-developers rdv-developers]
- * [http://groups.google.com/group/rdv-commits rdv-commits]
+ * [http://groups.google.com/group/rdv-developers RDV developers]
+ * [http://groups.google.com/group/rdv-commits  RDV commits]
 
 = API Documentation =
 Java API Documentation
