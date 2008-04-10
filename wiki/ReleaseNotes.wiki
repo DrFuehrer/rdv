@@ -1,7 +1,7 @@
 = RDV 1.8 =
 
 New features include:
-    * Import OpenSees XML data files into RDV.
+    * Import !OpenSees XML data files into RDV.
     * Import video into RDV from files residing on a local machine or in NEEScentral that have been stored in a zip file.
 
 Bug fixes include:
