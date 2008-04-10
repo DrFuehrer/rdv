@@ -35,6 +35,8 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
 
+import com.jgoodies.looks.LookUtils;
+
 /** 
  * A <code>JPanel</code> subclass that has a drop shadow border and 
  * that provides a header with icon, title and tool bar.<p>
@@ -63,9 +65,6 @@ import javax.swing.border.AbstractBorder;
 
 public class SimpleInternalFrame extends JPanel {
 
-    /** serialization version identifier */
-    private static final long serialVersionUID = -6122646076564590969L;
-    
     private JComponent    title;
     private GradientPanel gradientPanel;
     private JPanel        headerPanel;
@@ -353,6 +352,10 @@ public class SimpleInternalFrame extends JPanel {
     public static Color getHeaderBackground() {
         Color c =
             UIManager.getColor("SimpleInternalFrame.activeTitleBackground");
+        if (c != null)
+            return c;
+        if (LookUtils.IS_LAF_WINDOWS_XP_ENABLED)
+            c = UIManager.getColor("InternalFrame.activeTitleGradient");
         return c != null
             ? c
             : UIManager.getColor("InternalFrame.activeTitleBackground");
@@ -362,10 +365,27 @@ public class SimpleInternalFrame extends JPanel {
     // Helper Classes *******************************************************
 
     // A custom border for the raised header pseudo 3D effect.
-    private static class BottomLineBorder extends AbstractBorder {
+    private static class RaisedHeaderBorder extends AbstractBorder {
 
-        /** serialization version identifier */
-        private static final long serialVersionUID = 4096572266433568642L;
+        private static final Insets INSETS = new Insets(1, 1, 1, 0);
+
+        public Insets getBorderInsets(Component c) { return INSETS; }
+
+        public void paintBorder(Component c, Graphics g,
+            int x, int y, int w, int h) {
+                
+            g.translate(x, y);
+            g.setColor(UIManager.getColor("controlLtHighlight"));
+            g.fillRect(0, 0,   w, 1);
+            g.fillRect(0, 1,   1, h-1);
+            g.setColor(UIManager.getColor("controlShadow"));
+            g.fillRect(0, h-1, w, 1);
+            g.translate(-x, -y);
+        }
+    }
+    
+    // A custom border for the raised header pseudo 3D effect.
+    private static class BottomLineBorder extends AbstractBorder {
 
         private static final Insets INSETS = new Insets(0, 0, 1, 0);
 
@@ -382,9 +402,6 @@ public class SimpleInternalFrame extends JPanel {
     // A custom border that has a shadow on the right and lower sides.
     private static class ShadowBorder extends AbstractBorder {
 
-        /** serialization version identifier */
-        private static final long serialVersionUID = 1339921423969757031L;
-        
         private static final Insets INSETS = new Insets(1, 1, 3, 3);
 
         public Insets getBorderInsets(Component c) { return INSETS; }
@@ -431,9 +448,6 @@ public class SimpleInternalFrame extends JPanel {
     // A panel with a horizontal gradient background.
     private static class GradientPanel extends JPanel {
         
-        /** serialization version identifier */
-        private static final long serialVersionUID = 4814354062739580988L;
-
         private GradientPanel(LayoutManager lm, Color background) {
             super(lm);
             setBackground(background);

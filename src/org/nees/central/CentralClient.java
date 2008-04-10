@@ -165,14 +165,14 @@ public class CentralClient {
     }      
     
     // unmarshall web service response
-    JAXBElement centralElement;
+    JAXBElement<Central> centralElement;
     try {
-      centralElement = (JAXBElement)unmarshaller.unmarshal(source);
+      centralElement = (JAXBElement<Central>)unmarshaller.unmarshal(source);
     } catch (JAXBException e) {
       throw new CentralException("NEEScentral returned an invalid response", e);
     }
     
-    central = (Central)centralElement.getValue();
+    central = centralElement.getValue();
     
     return central;
   }
@@ -270,7 +270,7 @@ public class CentralClient {
           trial.setId(trialId);
         }
         
-        trial.setName(new JAXBElement<String>(new QName("uri","local"), String.class, "Trial-" + (i+1)));
+        trial.setName(new JAXBElement(new QName("uri","local"), String.class, "Trial-" + (i+1)));
       }      
       
       fixDataFiles(experiment.getDataFile(), new String[] { "Experiment-", "Simulation-" });
@@ -324,7 +324,7 @@ public class CentralClient {
           repetition.setId(repetitionId);
         }
         
-        repetition.setName(new JAXBElement<String>(new QName("uri","local"), String.class, "Rep-" + (i+1)));
+        repetition.setName(new JAXBElement(new QName("uri","local"), String.class, "Rep-" + (i+1)));
       }
       
       fixDataFiles(trial.getDataFile(), new String[] { "Trial-", "Run-" });
