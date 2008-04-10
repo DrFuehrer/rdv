@@ -1,3 +1,5 @@
+#summary Notes on RDV releases
+
 = RDV 1.8 =
 
 New features include:
