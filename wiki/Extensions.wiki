@@ -1,1 +1,1 @@
-#summary Extensions extend the capabilities of RDV.
+#summary Use extensions to extend the capabilities of RDV.
