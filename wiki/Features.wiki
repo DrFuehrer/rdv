@@ -19,9 +19,11 @@ RDV takes data from many different sources (that may be sampled at different rat
 
 == Data Visualization ==
 
- * Numeric data can be view in a timeseries plot or in an XY plot. The plots can view multiple channels at once and are fully configurable. The axes support auto scaling, zooming in or out, and can be set manually. Additional settings such as title, colors, and fonts can be configured.
- * Numeric data can also be displayed in a table with the ability to set thresholds and monitor minimum and maximum values.
- * Images and video can be viewed within RDV with the ability to zoom in and out.
+Numeric data can be view in a timeseries plot or in an XY plot. The plots can view multiple channels at once and are fully configurable. The axes support auto scaling, zooming in or out, and can be set manually. Additional settings such as title, colors, and fonts can be configured.
+
+Numeric data can also be displayed in a table with the ability to set thresholds and monitor minimum and maximum values.
+
+Images and video can be viewed within RDV with the ability to zoom in and out.
 
 == Event Markers ==
 
