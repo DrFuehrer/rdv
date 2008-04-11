@@ -1,4 +1,4 @@
-#summary Notes on RDV releases
+#summary Notes on new features, bug fixed, and changes in RDV releases
 
 = RDV 1.8 =
 
