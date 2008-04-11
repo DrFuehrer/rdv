@@ -1,7 +1,4 @@
 #labels Featured
-= Mailing List =
+== Mailing Lists ==
  * [http://groups.google.com/group/rdv-developers RDV developers]
  * [http://groups.google.com/group/rdv-commits  RDV commits]
-
-= API Documentation =
-Java API Documentation
