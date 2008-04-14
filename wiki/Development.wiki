@@ -1,4 +1,6 @@
 #labels Featured
 == Mailing Lists ==
  * [http://groups.google.com/group/rdv-developers RDV developers]
- * [http://groups.google.com/group/rdv-commits  RDV commits]
+ * [http://groups.google.com/group/rdv-commits RDV commits]
+
+== [Extensions] ==
