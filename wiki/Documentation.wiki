@@ -1,2 +1,4 @@
 #labels Featured
 == [http://it.nees.org/library/telepresence/rdv-users-guide.php RDV User's Guide] ==
+
+== [ReleaseNotes Release Notes] ==
