@@ -1,11 +1,11 @@
 #labels Featured
-== Mailing List ==
+== [http://groups.google.com/group/rdv-users Mailing List] ==
 
 The [http://groups.google.com/group/rdv-users RDV users] mailing list is for discussion of issues related to the usage of RDV. Anything related to RDV is appropriate with topics including help on the usage of a feature, bugs, and new features you would like to see. To start a discussion, send an email to [mailto:rdv-users@googlegroups.com rdv-users@googlegroups.com]. If you interested in what others are discussing you may subscribe to the list or view the archives using the links below.
 
     * [http://groups.google.com/group/rdv-users List archvies]
     * [http://groups.google.com/group/rdv-users/subscribe Subscribe or unsubscribe]
 
-== Bugs ==
+== [http://code.google.com/p/rdv/issues/list?q=label%3AType-Defect&can=2 Bugs] ==
 
 If you have found a bug, please report it using the bug tracker. Before you report a bug, browse through the [http://code.google.com/p/rdv/issues/list?q=label%3AType-Defect&can=2 list of current bugs] and see if it has already been reported. If it has not, submit a [http://code.google.com/p/rdv/issues/entry new bug] and give a detailed description of the problem. One of the developers will take a look at it and get back to you.
