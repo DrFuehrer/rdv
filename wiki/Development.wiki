@@ -4,3 +4,4 @@
  * [http://groups.google.com/group/rdv-commits RDV commits]
 
 == [Extensions] ==
+Use extensions to add new functionality to RDV.
