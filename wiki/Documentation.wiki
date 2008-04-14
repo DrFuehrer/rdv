@@ -1,4 +1,6 @@
 #labels Featured
 == [http://it.nees.org/library/telepresence/rdv-users-guide.php User's Guide] ==
+Information about the features and functionality of RDV.
 
 == [ReleaseNotes Release Notes] ==
+Notes on new features, bugs fixed, and changes in RDV releases.
