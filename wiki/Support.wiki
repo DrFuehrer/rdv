@@ -1,4 +1,8 @@
 #labels Featured
+== [FAQ Frequently Asked Questions] ==
+
+Browse these frequently asked questions other users of RDV have already asked.
+
 == [http://groups.google.com/group/rdv-users Mailing List] ==
 
 The [http://groups.google.com/group/rdv-users RDV users] mailing list is for discussion of issues related to the usage of RDV. Anything related to RDV is appropriate with topics including help on the usage of a feature, bugs, and new features you would like to see. To start a discussion, send an email to [mailto:rdv-users@googlegroups.com rdv-users@googlegroups.com]. If you are interested in what others are discussing you may subscribe to the list or view the archives using the links below.
