@@ -6,4 +6,4 @@ Information about the features and functionality of RDV.
 Notes on new features, bugs fixed, and changes in RDV releases.
 
 == [Tutorials] ==
-Guides for using specific features of RDV.
+Guides for using features of RDV.
