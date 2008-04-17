@@ -4,3 +4,6 @@ Information about the features and functionality of RDV.
 
 == [ReleaseNotes Release Notes] ==
 Notes on new features, bugs fixed, and changes in RDV releases.
+
+== [Tutorials] ==
+Guides for using specific features of RDV.
