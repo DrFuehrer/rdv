@@ -1,1 +1,3 @@
+#summary Guides for using features of RDV
+
 [http://www.vimeo.com/902512 Dial Data Panel]
