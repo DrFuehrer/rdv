@@ -46,6 +46,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
@@ -1331,6 +1332,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 
     /** serialization version identifier */
     private static final long serialVersionUID = 4976826552487720209L;
+    
+    /** the size of the cursor */
+    private static final int CURSOR_SIZE = 10;
 
     /**
      * A counter to prevent unnecessary Graphics2D.draw() events in drawItem()
@@ -1475,6 +1479,14 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
                 previousDrawnItem++;
                 bAddEntity = false;
               }
+            }
+            
+            // add a cursor to indicate the position of the last data item
+            if (xyMode && item == dataset.getItemCount(series) - 1) {
+              Line2D cursorX = new Line2D.Double(transX1 - CURSOR_SIZE, transY1, transX1 + CURSOR_SIZE, transY1);
+              g2.draw(cursorX);       
+              Line2D cursorY = new Line2D.Double(transX1, transY1 - CURSOR_SIZE, transX1, transY1 + CURSOR_SIZE); 
+              g2.draw(cursorY);
             }
           }
         }
