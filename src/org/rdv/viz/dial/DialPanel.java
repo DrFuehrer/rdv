@@ -86,8 +86,11 @@ public class DialPanel extends JPanel {
   /** the scale for the dial */
   private StandardDialScale dialScale;
   
-  /** the formatter for the dial value  indicator */
+  /** the formatter for the dial ticks */
   private EngineeringFormat engineeringFormat;
+  
+  /** the formatter for the dial value indicator */
+  private EngineeringFormat engineeringFormatWithUnit;
   
   /** the text field for the lower bound of the dial */
   private JTextField lowerBoundTextField;
@@ -183,12 +186,13 @@ public class DialPanel extends JPanel {
     plot.setDialFrame(new StandardDialFrame());
 
     engineeringFormat = new EngineeringFormat();
+    engineeringFormatWithUnit = new EngineeringFormat();
     
     dialValueIndicator = new DialValueIndicator();
     dialValueIndicator.setOutlinePaint(Color.black);
     dialValueIndicator.setRadius(0.7);
     dialValueIndicator.setVisible(false);
-    dialValueIndicator.setNumberFormat(engineeringFormat);
+    dialValueIndicator.setNumberFormat(engineeringFormatWithUnit);
     plot.addLayer(dialValueIndicator);
 
     dialTextAnnotation = new DialTextAnnotation("");
@@ -260,7 +264,7 @@ public class DialPanel extends JPanel {
           }
         } else if (pce.getPropertyName().equals("unit")) {
           String unit = (String)pce.getNewValue();
-          engineeringFormat.setUnit(unit);
+          engineeringFormatWithUnit.setUnit(unit);
         } else if (pce.getPropertyName().equals("range")) {
           updateRange();
         } else if (pce.getPropertyName().equals("warningThreshold") ||
