@@ -32,6 +32,7 @@
 
 package org.rdv.datapanel;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -267,7 +268,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     StandardXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
         toolTipGenerator);
-    renderer.setDefaultEntityRadius(6);    
+    renderer.setDefaultEntityRadius(6);
+    renderer.setBaseStroke(new BasicStroke(0.5f));
     
     xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
     
