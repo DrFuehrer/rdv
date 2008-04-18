@@ -266,10 +266,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       }        
     });    
     
-    StandardXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
+    FastXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
         toolTipGenerator);
     renderer.setBaseCreateEntities(false);
     renderer.setBaseStroke(new BasicStroke(0.5f));
+    if (xyMode) {
+      renderer.setCursorVisible(true);
+    }
     
     xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
     
@@ -1330,13 +1333,16 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
   /**
    * Optimized XY item renderer from JFreeChart forums.
    */
-  public class FastXYItemRenderer extends StandardXYItemRenderer {
+  public static class FastXYItemRenderer extends StandardXYItemRenderer {
 
     /** serialization version identifier */
     private static final long serialVersionUID = 4976826552487720209L;
+
+    /** a flag to control whether the cursor visibility */
+    private boolean cursorVisible;
     
     /** the size of the cursor */
-    private static final int CURSOR_SIZE = 10;
+    private static final int DEFAULT_CURSOR_SIZE = 10;
 
     /**
      * A counter to prevent unnecessary Graphics2D.draw() events in drawItem()
@@ -1344,21 +1350,46 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     private int previousDrawnItem = 1;
 
     public FastXYItemRenderer() {
-      super();
+      this(LINES, null);
     }
     
     public FastXYItemRenderer(int type) {
-      super(type);
+      this(type, null);
     }    
     
     public FastXYItemRenderer(int type, XYToolTipGenerator toolTipGenerator) {
-      super(type, toolTipGenerator);
+      this(type, toolTipGenerator, null);
     }
    
     public FastXYItemRenderer(int type, XYToolTipGenerator toolTipGenerator, XYURLGenerator urlGenerator) {
         super(type, toolTipGenerator, urlGenerator);
+        
+        this.cursorVisible = false;
+    }
+
+    /**
+     * Gets the cursor visibility flag. This defaults to false.
+     * 
+     * @return  true if the cursor is visible, false otherwise
+     */
+    public boolean getCursorVisible() {
+      return this.cursorVisible;
     }
     
+    /**
+     * Sets the cursor visibility flag. If set, a cursor will be drawn to
+     * indicate the position of the last data item in each series.
+     * 
+     * @param cursorVisible  the flag to control cursor visibility
+     */
+    public void setCursorVisible(boolean cursorVisible) {
+      if (this.cursorVisible != cursorVisible) {
+        this.cursorVisible = cursorVisible;
+        fireChangeEvent();
+      }
+    }
+    
+    @Override
     public void drawItem(Graphics2D g2, XYItemRendererState state,
         Rectangle2D dataArea, PlotRenderingInfo info, XYPlot plot,
         ValueAxis domainAxis, ValueAxis rangeAxis, XYDataset dataset,
@@ -1495,10 +1526,10 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       }
       
       // add a cursor to indicate the position of the last data item
-      if (xyMode && item == dataset.getItemCount(series) - 1) {
-        Line2D cursorX = new Line2D.Double(transX1 - CURSOR_SIZE, transY1, transX1 + CURSOR_SIZE, transY1);
+      if (getCursorVisible() && item == dataset.getItemCount(series) - 1) {
+        Line2D cursorX = new Line2D.Double(transX1 - DEFAULT_CURSOR_SIZE, transY1, transX1 + DEFAULT_CURSOR_SIZE, transY1);
         g2.draw(cursorX);       
-        Line2D cursorY = new Line2D.Double(transX1, transY1 - CURSOR_SIZE, transX1, transY1 + CURSOR_SIZE); 
+        Line2D cursorY = new Line2D.Double(transX1, transY1 - DEFAULT_CURSOR_SIZE, transX1, transY1 + DEFAULT_CURSOR_SIZE); 
         g2.draw(cursorY);
       }
       
