@@ -268,7 +268,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     StandardXYItemRenderer renderer = new FastXYItemRenderer(StandardXYItemRenderer.LINES,
         toolTipGenerator);
-    renderer.setDefaultEntityRadius(6);
+    renderer.setBaseCreateEntities(false);
     renderer.setBaseStroke(new BasicStroke(0.5f));
     
     xyPlot = new XYPlot(dataCollection, domainAxis, rangeAxis, renderer);
@@ -1364,11 +1364,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         ValueAxis domainAxis, ValueAxis rangeAxis, XYDataset dataset,
         int series, int item, CrosshairState crosshairState, int pass) {
 
-      if (!getItemVisible(series, item)) {
-        return;
-      }
+      boolean itemVisible = getItemVisible(series, item);
+      
       // setup for collecting optional entity info...
-      boolean bAddEntity = false;
       Shape entityArea = null;
       EntityCollection entities = null;
       if (info != null) {
@@ -1385,7 +1383,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       double x1 = dataset.getXValue(series, item);
       double y1 = dataset.getYValue(series, item);
       if (Double.isNaN(x1) || Double.isNaN(y1)) {
-        return;
+        itemVisible = false;
       }
 
       RectangleEdge xAxisLocation = plot.getDomainAxisEdge();
@@ -1395,18 +1393,20 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 
       if (getPlotLines()) {
         if (item == 0) {
-          if (getDrawSeriesLineAsPath()) {
-            State s = (State) state;
-            s.seriesPath.reset();
-            s.setLastPointGood(false);
-          }
           previousDrawnItem = 1;
         }
 
         if (getDrawSeriesLineAsPath()) {
           State s = (State) state;
+          if (s.getSeriesIndex() != series) {
+            // we are starting a new series path
+            s.seriesPath.reset();
+            s.setLastPointGood(false);
+            s.setSeriesIndex(series);
+          }
+
           // update path to reflect latest point
-          if (!Double.isNaN(transX1) && !Double.isNaN(transY1)) {
+          if (itemVisible && !Double.isNaN(transX1) && !Double.isNaN(transY1)) {
             float x = (float) transX1;
             float y = (float) transY1;
             if (orientation == PlotOrientation.HORIZONTAL) {
@@ -1424,14 +1424,16 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
             s.setLastPointGood(false);
           }
           if (item == dataset.getItemCount(series) - 1) {
-            // draw path
-            g2.setStroke(getSeriesStroke(series));
-            g2.setPaint(getSeriesPaint(series));
-            g2.draw(s.seriesPath);
+            if (s.getSeriesIndex() == series) {
+              // draw path
+              g2.setStroke(lookupSeriesStroke(series));
+              g2.setPaint(lookupSeriesPaint(series));
+              g2.draw(s.seriesPath);
+            }
           }
         }
 
-        else if (item != 0) {
+        else if (item != 0 && itemVisible) {
           // get the previous data point...
           double x0 = dataset.getXValue(series, item - previousDrawnItem);
           double y0 = dataset.getYValue(series, item - previousDrawnItem);
@@ -1479,21 +1481,27 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
               } else {
                 // Increase counter for the previous drawn item.
                 previousDrawnItem++;
-                bAddEntity = false;
               }
-            }
-            
-            // add a cursor to indicate the position of the last data item
-            if (xyMode && item == dataset.getItemCount(series) - 1) {
-              Line2D cursorX = new Line2D.Double(transX1 - CURSOR_SIZE, transY1, transX1 + CURSOR_SIZE, transY1);
-              g2.draw(cursorX);       
-              Line2D cursorY = new Line2D.Double(transX1, transY1 - CURSOR_SIZE, transX1, transY1 + CURSOR_SIZE); 
-              g2.draw(cursorY);
             }
           }
         }
       }
 
+      // we needed to get this far even for invisible items, to ensure that
+      // seriesPath updates happened, but now there is nothing more we need
+      // to do for non-visible items...
+      if (!itemVisible) {
+        return;
+      }
+      
+      // add a cursor to indicate the position of the last data item
+      if (xyMode && item == dataset.getItemCount(series) - 1) {
+        Line2D cursorX = new Line2D.Double(transX1 - CURSOR_SIZE, transY1, transX1 + CURSOR_SIZE, transY1);
+        g2.draw(cursorX);       
+        Line2D cursorY = new Line2D.Double(transX1, transY1 - CURSOR_SIZE, transX1, transY1 + CURSOR_SIZE); 
+        g2.draw(cursorY);
+      }
+      
       if (getBaseShapesVisible()) {
 
         Shape shape = getItemShape(series, item);
@@ -1503,7 +1511,6 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
           shape = ShapeUtilities.createTranslatedShape(shape, transX1, transY1);
         }
         if (shape.intersects(dataArea)) {
-          bAddEntity = true;
           if (getItemShapeFilled(series, item)) {
             g2.fill(shape);
           } else {
@@ -1527,14 +1534,15 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 
       }
 
+      double xx = transX1;
+      double yy = transY1;
+      if (orientation == PlotOrientation.HORIZONTAL) {
+        xx = transY1;
+        yy = transX1;
+      }
+
       // draw the item label if there is one...
       if (isItemLabelVisible(series, item)) {
-        double xx = transX1;
-        double yy = transY1;
-        if (orientation == PlotOrientation.HORIZONTAL) {
-          xx = transY1;
-          yy = transX1;
-        }
         drawItemLabel(g2, orientation, dataset, series, item, xx, yy,
             (y1 < 0.0));
       }
@@ -1545,8 +1553,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
           rangeAxisIndex, transX1, transY1, orientation);
 
       // add an entity for the item...
-      if (entities != null && bAddEntity) {
-        addEntity(entities, entityArea, dataset, series, item, transX1, transY1);
+      if (entities != null && dataArea.contains(xx, yy)) {
+        addEntity(entities, entityArea, dataset, series, item, xx, yy);
       }
     }
   }
