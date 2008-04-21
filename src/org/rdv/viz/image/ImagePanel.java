@@ -554,12 +554,10 @@ public class ImagePanel extends JPanel {
     
     // limit the scale so image is not smaller than the panel
     double autoScale = getAutoScale();
-    if (newScale < autoScale) {
+    if (newScale <= autoScale) {
       newScale = autoScale;
       
       setCursor(Cursor.getDefaultCursor());
-      
-      autoCenter();
     } else {
       setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
