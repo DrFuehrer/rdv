@@ -126,8 +126,14 @@ public class ImagePanel extends JPanel {
           if (isAutoScaling()) {
             autoScale();
           } else {
-            // call this so the origins are revalidated
-            setImageOrigin(origin.x, origin.y);
+            double autoScale = getAutoScale();
+            if (scale < autoScale) {
+              // limit the scale so image is not smaller than the panel
+              setScale(autoScale);
+            } else {              
+              // call this so the origins are revalidated
+              setImageOrigin(origin.x, origin.y);
+            }
           }
 
           if (isNavigationImageEnabled()) {
@@ -507,6 +513,8 @@ public class ImagePanel extends JPanel {
   private void setScale(double scale, Point scaleCenter) {
     setAutoScaling(false);
 
+    // get the image coordinates for the scaling center and bound them to the
+    // image dimensions
     Coords imageP = panelToImageCoords(scaleCenter);
     if (imageP.x < 0.0) {
       imageP.x = 0.0;
@@ -519,6 +527,13 @@ public class ImagePanel extends JPanel {
     }
     if (imageP.y >= image.getHeight()) {
       imageP.y = image.getHeight() - 1.0;
+    }
+    
+    // limit the scale so image is not smaller than the panel
+    double autoScale = getAutoScale();
+    if (scale < autoScale) {
+      scale = autoScale;
+      autoCenter();
     }
 
     Coords correctedP = imageToPanelCoords(imageP);
@@ -570,15 +585,34 @@ public class ImagePanel extends JPanel {
   }
   
   /**
+   * Gets the scale factor that would be used to scale the image with the
+   * current panel size. Auto scaling doesn't need to be enabled for this method
+   * to return a correct value.
+   * 
+   * @return  the current auto scale factor
+   */
+  private double getAutoScale() {
+    double xScale = (double) getWidth() / image.getWidth();
+    double yScale = (double) getHeight() / image.getHeight();
+    double autoScale = Math.min(xScale, yScale);
+    return autoScale;
+  }
+  
+  /**
    * Automatically scales the image to maximize its dimensions in the panel. The
    * image is also centered in the panel.
    */
   private void autoScale() {
     // scale the image to the panel
-    double xScale = (double) getWidth() / image.getWidth();
-    double yScale = (double) getHeight() / image.getHeight();
-    scale = Math.min(xScale, yScale);
-
+    scale = getAutoScale();
+    
+    autoCenter();
+  }
+  
+  /**
+   * Centers the image in the panel.
+   */
+  private void autoCenter() {
     // centers the image in the panel
     origin.x = (int) (getWidth() - getScaledImageWidth()) / 2;
     origin.y = (int) (getHeight() - getScaledImageHeight()) / 2;
