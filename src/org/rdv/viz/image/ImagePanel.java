@@ -32,6 +32,7 @@
 package org.rdv.viz.image;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -497,20 +498,20 @@ public class ImagePanel extends JPanel {
   /**
    * Sets the zoom level used to display the image.
    * 
-   * @param scale  the zoom level used to display this panel's image
+   * @param newScale  the zoom level used to display this panel's image
    */
-  public void setScale(double scale) {
+  public void setScale(double newScale) {
     Point scaleCenter = new Point(getWidth() / 2, getHeight() / 2);
-    setScale(scale, scaleCenter);
+    setScale(newScale, scaleCenter);
   }
 
   /**
    * Sets the zoom level used to display the image, and the zooming center,
    * around which zooming is done.
    * 
-   * @param scale  the zoom level used to display this panel's image
+   * @param newScale  the zoom level used to display this panel's image
    */
-  private void setScale(double scale, Point scaleCenter) {
+  private void setScale(double newScale, Point scaleCenter) {
     setAutoScaling(false);
 
     // get the image coordinates for the scaling center and bound them to the
@@ -531,14 +532,19 @@ public class ImagePanel extends JPanel {
     
     // limit the scale so image is not smaller than the panel
     double autoScale = getAutoScale();
-    if (scale < autoScale) {
-      scale = autoScale;
+    if (newScale < autoScale) {
+      newScale = autoScale;
+      
+      setCursor(Cursor.getDefaultCursor());
+      
       autoCenter();
+    } else {
+      setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     Coords correctedP = imageToPanelCoords(imageP);
     double oldScale = this.scale;
-    this.scale = scale;
+    scale = newScale;
     Coords panelP = imageToPanelCoords(imageP);
 
     origin.x += (correctedP.getIntX() - (int) panelP.x);
@@ -546,7 +552,7 @@ public class ImagePanel extends JPanel {
 
     boundImageOrigin();
 
-    firePropertyChange(SCALE_PROPERTY, oldScale, scale);
+    firePropertyChange(SCALE_PROPERTY, oldScale, newScale);
 
     repaint();
   }
@@ -605,6 +611,8 @@ public class ImagePanel extends JPanel {
   private void autoScale() {
     // scale the image to the panel
     scale = getAutoScale();
+    
+    setCursor(Cursor.getDefaultCursor());
     
     autoCenter();
   }
