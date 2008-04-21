@@ -188,7 +188,17 @@ public class ImagePanel extends JPanel {
 
         Point p = e.getPoint();
         boolean zoomIn = (e.getWheelRotation() < 0);
-        if (isInImage(p)) {
+        if (isInNavigationImage(p)) {
+          centerImageFromNavigationPoint(p);
+          
+          p = navigationToPanelPoint(p);
+          
+          if (zoomIn) {
+            zoomIn(p);
+          } else {
+            zoomOut(p);
+          }          
+        } else if (isInImage(p)) {
           if (zoomIn) {
             zoomIn(p);
           } else {
@@ -365,6 +375,18 @@ public class ImagePanel extends JPanel {
   private Point navigationToScaledImagePoint(Point p) {
     int x = p.x * getScaledImageWidth() / getNavigationImageWidth();
     int y = p.y * getScaledImageHeight() / getNavigationImageHeight();
+    return new Point(x, y);
+  }
+  
+  /**
+   * Converts the navigation image point into a panel point.
+   * 
+   * @param p  the navigation image point
+   * @return   the panel point
+   */
+  private Point navigationToPanelPoint(Point p) {
+    int x = origin.x + (p.x * getScaledImageWidth() / getNavigationImageWidth());
+    int y = origin.y + (p.y * getScaledImageHeight() / getNavigationImageHeight());
     return new Point(x, y);
   }
   
