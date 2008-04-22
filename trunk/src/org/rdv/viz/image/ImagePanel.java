@@ -84,6 +84,9 @@ public class ImagePanel extends JPanel {
 
   /** the scale threshold for the high quality rendering mode */
   private static final double HIGH_QUALITY_RENDERING_SCALE_THRESHOLD = 1.0;
+  
+  /** the maximum scale */
+  private static final double MAXIMUM_SCALE = 64;
 
   /** the image */
   private BufferedImage image;
@@ -550,6 +553,11 @@ public class ImagePanel extends JPanel {
     }
     if (imageP.y >= image.getHeight()) {
       imageP.y = image.getHeight() - 1.0;
+    }
+
+    // limit the maximum scale
+    if (newScale > MAXIMUM_SCALE) {
+      newScale = MAXIMUM_SCALE;
     }
     
     // limit the scale so image is not smaller than the panel
