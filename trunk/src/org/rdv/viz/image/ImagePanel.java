@@ -42,6 +42,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -245,6 +246,16 @@ public class ImagePanel extends JPanel {
     getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "scrollUp");
     getActionMap().put("scrollUp", scrollUpAction);    
 
+    Action scrollUpFastAction = new AbstractAction() {
+      private static final long serialVersionUID = -6846248967445268823L;
+
+      public void actionPerformed(ActionEvent ae) {
+        scrollUpFast();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK), "scrollUpFast");
+    getActionMap().put("scrollUpFast", scrollUpFastAction);  
+    
     Action scrollLeftAction = new AbstractAction() {
       private static final long serialVersionUID = -6846248967445268823L;
 
@@ -254,6 +265,16 @@ public class ImagePanel extends JPanel {
     };
     getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "scrollLeft");
     getActionMap().put("scrollLeft", scrollLeftAction);    
+
+    Action scrollLeftFastAction = new AbstractAction() {
+      private static final long serialVersionUID = 1967647647910668664L;
+
+      public void actionPerformed(ActionEvent ae) {
+        scrollLeftFast();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_DOWN_MASK), "scrollLeftFast");
+    getActionMap().put("scrollLeftFast", scrollLeftFastAction);    
 
     Action scrollDownAction = new AbstractAction() {
       private static final long serialVersionUID = -3188971384048244029L;
@@ -265,6 +286,16 @@ public class ImagePanel extends JPanel {
     getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "scrollDown");
     getActionMap().put("scrollDown", scrollDownAction);
 
+    Action scrollDownFastAction = new AbstractAction() {
+      private static final long serialVersionUID = -1564989825983447908L;
+
+      public void actionPerformed(ActionEvent ae) {
+        scrollDownFast();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK), "scrollDownFast");
+    getActionMap().put("scrollDownFast", scrollDownFastAction);
+
     Action scrollRightAction = new AbstractAction() {
       private static final long serialVersionUID = 1967647647910668664L;
 
@@ -274,6 +305,16 @@ public class ImagePanel extends JPanel {
     };
     getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "scrollRight");
     getActionMap().put("scrollRight", scrollRightAction);    
+
+    Action scrollRightFastAction = new AbstractAction() {
+      private static final long serialVersionUID = -8409319976290989171L;
+
+      public void actionPerformed(ActionEvent ae) {
+        scrollRightFast();
+      }
+    };
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_DOWN_MASK), "scrollRightFast");
+    getActionMap().put("scrollRightFast", scrollRightFastAction);    
 
     Action zoomInAction = new AbstractAction() {
       private static final long serialVersionUID = -1076232416523241048L;
@@ -692,16 +733,32 @@ public class ImagePanel extends JPanel {
     setImageOrigin(origin.x, origin.y + scrollIncrement);
   }
   
+  public void scrollUpFast() {
+    setImageOrigin(origin.x, origin.y + (10 * scrollIncrement));
+  }
+  
   public void scrollLeft() {
     setImageOrigin(origin.x + scrollIncrement, origin.y);
   }
-  
+
+  public void scrollLeftFast() {
+    setImageOrigin(origin.x + (10 * scrollIncrement), origin.y);
+  }
+
   public void scrollDown() {
     setImageOrigin(origin.x, origin.y - scrollIncrement);
   }
   
+  public void scrollDownFast() {
+    setImageOrigin(origin.x, origin.y - (10 * scrollIncrement));
+  }
+
   public void scrollRight() {
     setImageOrigin(origin.x - scrollIncrement, origin.y);
+  }
+
+  public void scrollRightFast() {
+    setImageOrigin(origin.x - (10 * scrollIncrement), origin.y);
   }
 
   /**
