@@ -75,6 +75,8 @@ import javax.swing.filechooser.FileFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdesktop.application.Application;
+import org.jdesktop.application.ApplicationContext;
+import org.jdesktop.application.ResourceMap;
 import org.rdv.ConfigurationManager;
 import org.rdv.DataPanelManager;
 import org.rdv.DataViewer;
@@ -616,17 +618,19 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
       private static final long serialVersionUID = 3978467903181198979L;
 
       public void actionPerformed(ActionEvent ae) {
- 				if (aboutDialog == null) {
- 					aboutDialog = new AboutDialog(frame);
- 				} else {
- 					aboutDialog.setVisible(true);
- 				}				
- 			}			
- 		};
+        showAboutDialog();
+      }			
+    };
  
- 	}
+  }
  	
   private void initMenuBar() {
+    Application application = RDV.getInstance();
+    ApplicationContext context = application.getContext();
+    ResourceMap resourceMap = context.getResourceMap();
+    String platform = resourceMap.getString("platform");
+    boolean isMac = (platform != null  && platform.equals("osx"));
+    
     ActionFactory actionFactory = ActionFactory.getInstance();
     
   	menuBar = new JMenuBar();
@@ -706,9 +710,11 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
     menuItem = new DataViewerCheckBoxMenuItem(actionFactory.getOfflineAction());
     fileMenu.add(menuItem);    
     
- 		menuItem = new JMenuItem(exitAction);
-  	fileMenu.add(menuItem);
-  		
+    if (!isMac) {
+      menuItem = new JMenuItem(exitAction);
+      fileMenu.add(menuItem);
+    }
+    
   	menuBar.add(fileMenu);
   		
  		JMenu controlMenu = new JMenu(controlAction);
@@ -853,11 +859,13 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
     menuItem = new JMenuItem(releaseNotesAction);
     helpMenu.add(menuItem);
     
-    helpMenu.addSeparator();
-
- 		menuItem = new JMenuItem(aboutAction);
-  	helpMenu.add(menuItem);		
-  		
+    if (!isMac) {
+      helpMenu.addSeparator();
+      
+      menuItem = new JMenuItem(aboutAction);
+      helpMenu.add(menuItem);
+    }
+    
   	menuBar.add(helpMenu);
 
     menuBar.add(Box.createHorizontalGlue());
@@ -866,6 +874,10 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
     throbber = new JLabel(throbberStop);
     throbber.setBorder(new EmptyBorder(0,0,0,4));
     menuBar.add(throbber, BorderLayout.EAST);
+    
+    if (isMac) {
+      registerMacOSXEvents();
+    }
 		
 		frame.setJMenuBar(menuBar);
 	}
@@ -974,6 +986,23 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
 		add(splitPane, BorderLayout.CENTER);
 	}
   
+	/**
+	 * Register event handlers for Mac OS X specific menu items.
+	 */
+  private void registerMacOSXEvents() {
+    try {
+      Application rdv = RDV.getInstance();
+      OSXAdapter.setQuitHandler(rdv, Application.class.getDeclaredMethod("exit", (Class[])null));
+      OSXAdapter.setAboutHandler(this, getClass().getDeclaredMethod("showAboutDialog", (Class[])null));
+    } catch (Exception e) {
+      log.warn("Unable to register Mac OS X events.");
+      e.printStackTrace();
+      return;
+    }
+    
+    log.info("Registered Mac OS X events.");
+  }
+  
   /**
    * Hide the left part of the main split pane if both it's components are
    * visible. If either of them are visible, show it.
@@ -1049,6 +1078,17 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
 	public void postStatus(String statusMessage) {
 		JOptionPane.showMessageDialog(this, statusMessage, "Status", JOptionPane.INFORMATION_MESSAGE);
 	}
+	
+  /**
+   * Displays the about dialog
+   */
+  public void showAboutDialog() {
+    if (aboutDialog == null) {
+      aboutDialog = new AboutDialog(frame);
+    } else {
+      aboutDialog.setVisible(true);
+    }
+  }
 
   public void showExportVideoDialog() {
     List<String> channels = channelListPanel.getSelectedChannels();

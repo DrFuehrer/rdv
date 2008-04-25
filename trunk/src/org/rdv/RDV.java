@@ -363,6 +363,17 @@ public class RDV extends SingleFrameApplication {
     
     return true;
   }
+  
+  /**
+   * Set properties to make the application integrate better with the Mac UI.
+   */
+  public static void setupForMac() {
+    // when on mac, use the mac menu bar
+    System.setProperty("apple.laf.useScreenMenuBar", "true");
+    
+    // set the application name for mac
+    System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RDV");    
+  }
 
   /**
    * The main method for the application.
@@ -370,6 +381,8 @@ public class RDV extends SingleFrameApplication {
    * @param args  the command line arguments
    */
   public static void main(String[] args) {
+    setupForMac();
+    
     if (!parseArgs(args, false)) {
       return;
     }
