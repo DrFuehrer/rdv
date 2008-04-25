@@ -48,8 +48,10 @@
 			<include name="appframework.jar"/>
 			<include name="commons-cli.jar"/>
 			<include name="commons-logging.jar"/>
+			<include name="jaxb-api.jar"/>
 			<include name="jcommon.jar"/>
 			<include name="jfreechart.jar"/>
+			<include name="jsr173-api.jar"/>
 			<include name="looks.jar"/>
 			<include name="rbnb.jar"/>
 			<include name="swing-worker.jar"/>
@@ -64,10 +66,8 @@
 		<pathelement location="${resources.dir}"/>
 		<path refid="classpath"/>
 		<fileset dir="${lib.dir}">
-			<include name="jaxb-api.jar"/>
 			<include name="jaxb-impl.jar"/>	
 			<include name="jl.jar"/>
-			<include name="jsr173-api.jar"/>
 			<include name="mp3spi.jar"/>
 		</fileset>
 	</path>
