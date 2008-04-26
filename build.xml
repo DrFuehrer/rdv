@@ -2,6 +2,9 @@
 
 <project name="rdv" default="compile" basedir=".">
 	
+	<property name="application.name" value="RDV"/>
+	<property name="application.id" value="rdv"/>
+	
 	<!-- compile with debugging information -->
 	<property name="debug" value="off"/>
 	
@@ -35,6 +38,7 @@
 	<property name="build.bin" value="${build.dir}/bin"/>
 	<property name="build.dist" value="${build.dir}/dist"/>
 	<property name="build.exe" value="${build.dir}/exe"/>
+	<property name="build.mac" value="${build.dir}/mac"/>
 	<property name="build.api" value="${build.dir}/api"/>
 	
 	<property name="main.class" value="org.rdv.RDV"/>
@@ -224,6 +228,54 @@
 		<exec executable="dpkg-buildpackage">
 			<arg value="-rfakeroot"/>
 		</exec>		
+	</target>
+	
+	<target name="mac" depends="bin" description="Build a mac application bundle">
+		<mkdir dir="${build.mac}"/>
+
+		<property name="apple.appstub" location="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
+
+		<property name="application.dmg" location="${build.mac}/${application.name}-${version}.dmg"/>
+		<property name="application.dir" location="${build.mac}/${application.name}.app"/>
+		<property name="application.contents" location="${application.dir}/Contents"/>
+		<property name="application.macos" location="${application.contents}/MacOS"/>
+		<property name="application.macos.stub" location="${application.macos}/${ant.project.name}"/>
+		<property name="application.resources" location="${application.contents}/Resources"/>
+		<property name="application.resources.java" location="${application.resources}/Java"/>
+		
+		<mkdir dir="${application.macos}"/>
+		<mkdir dir="${application.resources.java}"/>
+
+		<!-- copy jars -->
+		<copy file="${build.bin}/${application.id}.jar" toDir="${application.resources.java}" />
+		
+		<!-- copy application stub -->
+		<copy file="${apple.appstub}" toFile="${application.macos}/${application.id}"/>
+		<!-- fix stub permissions -->
+		<exec executable="/bin/chmod">
+			<arg line="755 '${application.macos.stub}'"/>
+		</exec>
+		
+		<!-- copy and configure Info.plist -->
+		<copy file="mac/Info.plist" toFile="${application.contents}/Info.plist">
+			<filterset>
+				<filter token="APPLICATIONNAME" value="${application.name}"/>
+				<filter token="APPLICATIONID" value="${application.id}"/>
+				<filter token="VERSION" value="${version}"/>
+				<filter token="MAINCLASS" value="${main.class}"/>
+			</filterset>
+		</copy>
+		
+		<!-- copy the icon -->
+		<!-- <copy file="mac/rdv.icns" toFile="${application.resources}/${application.id}.icns"/> -->
+
+		<!-- create disk image -->
+		<exec executable="/usr/bin/hdiutil">
+			<arg line="create -srcfolder ${build.mac} -volname ${application.name} -ov ${application.dmg}"/>
+		</exec>
+		<exec executable="/usr/bin/hdiutil">
+			<arg line="internet-enable -yes ${application.dmg}"/>
+		</exec>
 	</target>
 	
 	<target name="api" description="Build documentation">
