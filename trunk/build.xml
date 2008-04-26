@@ -231,8 +231,6 @@
 	</target>
 	
 	<target name="mac" depends="bin" description="Build a mac application bundle">
-		<mkdir dir="${build.mac}"/>
-
 		<property name="apple.appstub" location="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
 
 		<property name="application.dmg" location="${build.mac}/${application.name}-${version}.dmg"/>
@@ -257,7 +255,7 @@
 		</exec>
 		
 		<!-- copy and configure Info.plist -->
-		<copy file="mac/Info.plist" toFile="${application.contents}/Info.plist">
+		<copy file="mac/Info.plist" toDir="${application.contents}">
 			<filterset>
 				<filter token="APPLICATIONNAME" value="${application.name}"/>
 				<filter token="APPLICATIONID" value="${application.id}"/>
@@ -266,8 +264,8 @@
 			</filterset>
 		</copy>
 		
-		<!-- copy the icon -->
-		<!-- <copy file="mac/rdv.icns" toFile="${application.resources}/${application.id}.icns"/> -->
+		<copy file="mac/PkgInfo" toDir="${application.contents}"/>
+		<copy file="mac/rdv.icns" toFile="${application.resources}/${application.id}.icns"/>
 
 		<!-- create disk image -->
 		<exec executable="/usr/bin/hdiutil">
