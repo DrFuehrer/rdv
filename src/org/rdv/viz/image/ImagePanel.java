@@ -600,10 +600,13 @@ public class ImagePanel extends JPanel {
    * @param repaint      if true, call repaint
    */  
   private void setScale(double newScale, Point scaleCenter, boolean repaint) {
-    setAutoScaling(false);
+    setAutoScaling(false, false);
+    
+    double oldScale = scale;
     
     if (image == null) {
       scale = newScale;
+      firePropertyChange(SCALE_PROPERTY, oldScale, newScale);
       return;
     }
 
@@ -642,7 +645,6 @@ public class ImagePanel extends JPanel {
     }
 
     Coords correctedP = imageToPanelCoords(imageP);
-    double oldScale = this.scale;
     scale = newScale;
     Coords panelP = imageToPanelCoords(imageP);
 
@@ -675,6 +677,16 @@ public class ImagePanel extends JPanel {
    * @param autoScaling  true to enabled auto scaling, false to disable it
    */
   public void setAutoScaling(boolean autoScaling) {
+    setAutoScaling(autoScaling, true);
+  }
+
+  /**
+   * Enables or disables auto scaling.
+   * 
+   * @param autoScaling  true to enabled auto scaling, false to disable it
+   * @param repaint      if true, call repaint
+   */
+  private void setAutoScaling(boolean autoScaling, boolean repaint) {
     if (this.autoScaling == autoScaling) {
       return;
     }
@@ -684,7 +696,7 @@ public class ImagePanel extends JPanel {
 
     firePropertyChange(AUTO_SCALING_PROPERTY, oldAutoScaling, autoScaling);
 
-    if (autoScaling && image != null) {
+    if (autoScaling && image != null && repaint) {
       autoScale();
 
       repaint();
@@ -710,8 +722,14 @@ public class ImagePanel extends JPanel {
    * image is also centered in the panel.
    */
   private void autoScale() {
+    double oldScale = scale;
+    
     // scale the image to the panel
     scale = getAutoScale();
+    
+    if (scale != oldScale) {
+      firePropertyChange(SCALE_PROPERTY, oldScale, scale);
+    }
     
     setCursor(Cursor.getDefaultCursor());
     
@@ -752,7 +770,7 @@ public class ImagePanel extends JPanel {
    * @param origin  the value of a new image origin
    */
   public void setImageOrigin(Point origin) {
-    setAutoScaling(false);
+    setAutoScaling(false, false);
 
     this.origin = origin;
     
