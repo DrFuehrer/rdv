@@ -328,7 +328,7 @@ public class MetadataManager {
         channels.put(channelList[i], channel);
         
         //look for marker channels
-        String mimeType = node.getMime();
+        String mimeType = channel.getMetadata("mime");
         if (mimeType != null && mimeType.compareToIgnoreCase(EventMarker.MIME_TYPE) == 0) {
           markerChannelMap.Add(node.getFullName());         
         }

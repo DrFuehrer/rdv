@@ -918,11 +918,6 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     }
     
 		String mimeType = channel.getMetadata("mime");
-    
-    //make broken apps work
-    if (mimeType == null && channelName.endsWith(".jpg")) {
-      return true;
-    }
         
 		Extension extension = dataPanelManager.getExtension(this.getClass());
 		if (extension != null) {

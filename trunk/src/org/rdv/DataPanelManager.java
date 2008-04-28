@@ -224,7 +224,6 @@ public class DataPanelManager {
     if (channel != null) {
       mime = channel.getMetadata("mime");
     }
-    mime = RBNBUtilities.fixMime(mime, channelName);
     
     ArrayList<Extension> usefulExtensions = new ArrayList<Extension>();
     for (int i=0; i<extensions.size(); i++) {
@@ -254,8 +253,6 @@ public class DataPanelManager {
     if (channel != null) {
       mime = channel.getMetadata("mime");
     }
-
-    mime = RBNBUtilities.fixMime(mime, channelName);
 
     return findExtension(mime);
   }
