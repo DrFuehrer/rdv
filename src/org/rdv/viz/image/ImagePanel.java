@@ -131,14 +131,7 @@ public class ImagePanel extends JPanel {
           if (isAutoScaling()) {
             autoScale();
           } else {
-            double autoScale = getAutoScale();
-            if (scale < autoScale) {
-              // limit the scale so image is not smaller than the panel
-              setScale(autoScale);
-            } else {              
-              // call this so the origins are revalidated
-              setImageOrigin(origin.x, origin.y);
-            }
+            setScale(scale);
           }
 
           if (isNavigationImageEnabled()) {
@@ -601,11 +594,14 @@ public class ImagePanel extends JPanel {
       newScale = MAXIMUM_SCALE;
     }
     
-    // limit the scale so image is not smaller than the panel
+    // limit the scale so image is not too small
     double autoScale = getAutoScale();
+    double minimumScale = Math.min(autoScale, 1);
+    if (newScale <= minimumScale) {
+      newScale = minimumScale;
+    }
+
     if (newScale <= autoScale) {
-      newScale = autoScale;
-      
       setCursor(Cursor.getDefaultCursor());
     } else {
       setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
