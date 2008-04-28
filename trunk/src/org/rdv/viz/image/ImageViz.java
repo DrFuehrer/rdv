@@ -1057,6 +1057,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 	
 	private void clearImage() {
 		image.setImage(null);
+		displayedImageData = null;
 		displayedImageTime = -1;
 	}
 
