@@ -144,7 +144,7 @@ public class ExportDialog extends JDialog {
       String channelName = (String)channels.get(i);
       Channel channel = RBNBController.getInstance().getChannel(channelName);
 
-      String mime = RBNBUtilities.fixMime(channel.getMetadata("mime"), channelName);
+      String mime = channel.getMetadata("mime");
       
       if (mime.equals("application/octet-stream")) {
         channelModel.addElement(new ExportChannel(channelName));

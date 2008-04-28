@@ -229,29 +229,6 @@ public final class RBNBUtilities {
   }
   
   /**
-   * Make a guess at the mime type for a channel that has not specified one.
-   * 
-   * @param mime         the original mime type
-   * @param channelName  the name of the channel
-   * @return             the (possibly) modified mime type
-   * @since              1.3
-   */
-  public static String fixMime(String mime, String channelName) {
-    if (mime != null) {
-      return mime;
-    }
-    
-    if (channelName.endsWith(".jpg")) {
-      mime = "image/jpeg";
-    } else if (channelName.startsWith("_Log")) {
-      mime = "text/plain";
-    } else {
-      mime = "application/octet-stream";
-    }
-    return mime;
-  }
-  
-  /**
    * Returns a list of all the names of the channels in the channel tree.
    * 
    * @param ctree   the channel tree
