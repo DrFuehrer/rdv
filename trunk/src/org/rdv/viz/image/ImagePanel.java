@@ -131,7 +131,7 @@ public class ImagePanel extends JPanel {
           if (isAutoScaling()) {
             autoScale();
           } else {
-            setScale(scale);
+            setScale(scale, false);
           }
 
           if (isNavigationImageEnabled()) {
@@ -353,8 +353,14 @@ public class ImagePanel extends JPanel {
     firePropertyChange(IMAGE_CHANGED_PROPERTY, oldImage, image);
 
     if (image != null) {
-      if (isAutoScaling()) {
-        autoScale();
+      if (oldImage == null ||
+          oldImage.getWidth() != image.getWidth() ||
+          oldImage.getHeight() != image.getHeight()) {
+        if (isAutoScaling()) {
+          autoScale();
+        } else {
+          setScale(scale, false);
+        }
       }
 
       if (isNavigationImageEnabled()) {
@@ -560,17 +566,40 @@ public class ImagePanel extends JPanel {
    * @param newScale  the zoom level used to display this panel's image
    */
   public void setScale(double newScale) {
+    setScale(newScale, true);
+  }
+  
+  /**
+   * Sets the zoom level used to display the image.
+   * 
+   * @param newScale  the zoom level used to display this panel's image
+   * @param repaint   if true, call repaint
+   */
+  private void setScale(double newScale, boolean repaint) {
     Point scaleCenter = new Point(getWidth() / 2, getHeight() / 2);
-    setScale(newScale, scaleCenter);
+    setScale(newScale, scaleCenter, repaint);
   }
 
   /**
    * Sets the zoom level used to display the image, and the zooming center,
    * around which zooming is done.
    * 
-   * @param newScale  the zoom level used to display this panel's image
+   * @param newScale     the zoom level used to display this panel's image
+   * @param scaleCenter  the point to scale with respect to
    */
   private void setScale(double newScale, Point scaleCenter) {
+    setScale(newScale, scaleCenter, true);
+  }
+  
+  /**
+   * Sets the zoom level used to display the image, and the zooming center,
+   * around which zooming is done.
+   * 
+   * @param newScale     the zoom level used to display this panel's image
+   * @param scaleCenter  the point to scale with respect to
+   * @param repaint      if true, call repaint
+   */  
+  private void setScale(double newScale, Point scaleCenter, boolean repaint) {
     setAutoScaling(false);
 
     // get the image coordinates for the scaling center and bound them to the
@@ -619,7 +648,9 @@ public class ImagePanel extends JPanel {
 
     firePropertyChange(SCALE_PROPERTY, oldScale, newScale);
 
-    repaint();
+    if (repaint) {
+      repaint();
+    }
   }
 
   /**
