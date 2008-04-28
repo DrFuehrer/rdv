@@ -107,7 +107,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   JPanel tiltControls;
   JPanel panControls;
   JCheckBoxMenuItem autoScaleMenuItem;
-  JCheckBoxMenuItem showNavigationMenuItem;
+  JCheckBoxMenuItem showNavigationImageMenuItem;
   JCheckBoxMenuItem hideRoboticControlsMenuItem;
   
   MouseInputAdapter clickMouseListener;
@@ -172,6 +172,14 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
           }
         } else if (propertyName.equals(ImagePanel.SCALE_PROPERTY) && !image.isAutoScaling()) {
           properties.setProperty("scale", pce.getNewValue().toString());
+        } else if (propertyName.equals(ImagePanel.NAVIGATION_IMAGE_ENABLED)) {
+          boolean showNavigationImage = (Boolean)pce.getNewValue();
+          showNavigationImageMenuItem.setSelected(showNavigationImage);
+          if (showNavigationImage) {
+            properties.remove("showNavigationImage");
+          } else {
+            properties.setProperty("showNavigationImage", "false");
+          }
         }
       }
     });
@@ -487,13 +495,13 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     });
     popupMenu.add(resetScaleMenuItem);
     
-    showNavigationMenuItem = new JCheckBoxMenuItem("Show navigation", true);
-    showNavigationMenuItem.addActionListener(new ActionListener() {
+    showNavigationImageMenuItem = new JCheckBoxMenuItem("Show navigation image", true);
+    showNavigationImageMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        setShowNavigation(showNavigationMenuItem.isSelected());
+        setShowNavigationImage(showNavigationImageMenuItem.isSelected());
       }
     });
-    popupMenu.add(showNavigationMenuItem);
+    popupMenu.add(showNavigationImageMenuItem);
     
     hideRoboticControlsMenuItem = new JCheckBoxMenuItem("Disable robotic controls", false);
     hideRoboticControlsMenuItem.addActionListener(new ActionListener() {
@@ -753,10 +761,8 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     }
   }
   
-  private void setShowNavigation(boolean showNavigation) {
+  private void setShowNavigationImage(boolean showNavigation) {
     image.setNavigationImageEnabled(showNavigation);
-    showNavigationMenuItem.setSelected(showNavigation);
-    properties.setProperty("showNavigation", Boolean.toString(showNavigation));
   }
   
   private void setAutoScale(boolean autoScale) {
@@ -1076,6 +1082,8 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       } catch (NumberFormatException e) {
         log.warn("Unable to set scale: " + value + ".");
       }
+    } else if (key.equals("showNavigationImage") && !Boolean.parseBoolean(value)) {
+      image.setNavigationImageEnabled(false);
     } else if (key.equals("hideRoboticControls") && Boolean.parseBoolean(value) == true) {
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();

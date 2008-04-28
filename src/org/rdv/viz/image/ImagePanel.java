@@ -79,6 +79,9 @@ public class ImagePanel extends JPanel {
 
   /** the image property */
   public static final String IMAGE_CHANGED_PROPERTY = "image";
+  
+  /** the navigation image enabled property */
+  public static final String NAVIGATION_IMAGE_ENABLED = "navigationImageEnabled";
 
   /** the scaling factor for the navigation image, relative to the panel width */
   private static final double NAV_IMAGE_FACTOR = 0.15;
@@ -493,10 +496,16 @@ public class ImagePanel extends JPanel {
   /**
    * Enables or disables navigation with the navigation image.
    * 
-   * @param enabled  true to enable the navigation image, false to disable it
+   * @param navigationImageEnabled  true to enable the navigation image, false to disable it
    */
-  public void setNavigationImageEnabled(boolean enabled) {
-    navigationImageEnabled = enabled;
+  public void setNavigationImageEnabled(boolean navigationImageEnabled) {
+    if (this.navigationImageEnabled == navigationImageEnabled) {
+      return;
+    }
+    
+    this.navigationImageEnabled = navigationImageEnabled;
+    
+    firePropertyChange(NAVIGATION_IMAGE_ENABLED, !navigationImageEnabled, navigationImageEnabled);
 
     if (navigationImageEnabled && image != null) {
       createNavigationImage();
