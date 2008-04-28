@@ -66,7 +66,14 @@ public class Channel extends DataChannel {
 
     String mime = node.getMime();
     if (mime == null) {
-      mime = "application/octet-stream";
+      String channelName = getName();
+      if (channelName.endsWith(".jpg")) {
+        mime = "image/jpeg";
+      } else if (channelName.startsWith("_Log")) {
+        mime = "text/plain";
+      } else {
+        mime = "application/octet-stream";
+      }
     }
     metadata.put("mime", mime);
     
