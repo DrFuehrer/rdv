@@ -163,14 +163,15 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     image.setBackground(Color.black);
     image.addPropertyChangeListener(new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent pce) {
-        if (pce.getPropertyName().equals(ImagePanel.AUTO_SCALING_PROPERTY)) {
+        String propertyName = pce.getPropertyName();
+        if (propertyName.equals(ImagePanel.AUTO_SCALING_PROPERTY)) {
           boolean autoScaling = (Boolean)pce.getNewValue();
           autoScaleMenuItem.setSelected(autoScaling);
           if (autoScaling) {
-            properties.remove("autoScale");
-          } else {
-            properties.setProperty("autoScale", "true");
+            properties.remove("scale");
           }
+        } else if (propertyName.equals(ImagePanel.SCALE_PROPERTY) && !image.isAutoScaling()) {
+          properties.setProperty("scale", pce.getNewValue().toString());
         }
       }
     });
@@ -1068,8 +1069,13 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       return;
     }
     
-    if (key.equals("autoScale") && Boolean.parseBoolean(value) == false) {
-      setAutoScale(false);
+    if (key.equals("scale")) {
+      try {
+        double scale = Double.parseDouble(value);
+        image.setScale(scale);
+      } catch (NumberFormatException e) {
+        log.warn("Unable to set scale: " + value + ".");
+      }
     } else if (key.equals("hideRoboticControls") && Boolean.parseBoolean(value) == true) {
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();
