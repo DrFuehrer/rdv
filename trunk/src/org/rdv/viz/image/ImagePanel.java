@@ -601,6 +601,11 @@ public class ImagePanel extends JPanel {
    */  
   private void setScale(double newScale, Point scaleCenter, boolean repaint) {
     setAutoScaling(false);
+    
+    if (image == null) {
+      scale = newScale;
+      return;
+    }
 
     // get the image coordinates for the scaling center and bound them to the
     // image dimensions
