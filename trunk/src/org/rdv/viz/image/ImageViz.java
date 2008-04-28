@@ -478,6 +478,14 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     });
     popupMenu.add(autoScaleMenuItem);
     
+    JMenuItem resetScaleMenuItem = new JMenuItem("Reset scale");
+    resetScaleMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        image.setScale(1);
+      }
+    });
+    popupMenu.add(resetScaleMenuItem);
+    
     showNavigationMenuItem = new JCheckBoxMenuItem("Show navigation", true);
     showNavigationMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
