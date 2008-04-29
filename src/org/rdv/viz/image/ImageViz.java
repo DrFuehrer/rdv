@@ -172,7 +172,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
           }
         } else if (propertyName.equals(ImagePanel.SCALE_PROPERTY) && !image.isAutoScaling()) {
           properties.setProperty("scale", pce.getNewValue().toString());
-        } else if (propertyName.equals(ImagePanel.NAVIGATION_IMAGE_ENABLED)) {
+        } else if (propertyName.equals(ImagePanel.NAVIGATION_IMAGE_ENABLED_PROPERTY)) {
           boolean showNavigationImage = (Boolean)pce.getNewValue();
           showNavigationImageMenuItem.setSelected(showNavigationImage);
           if (showNavigationImage) {
