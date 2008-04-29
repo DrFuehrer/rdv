@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL
+ * $URL$
  * $Revision$
  * $Date$
  * $Author$
@@ -178,7 +178,14 @@ public class ImagePanel extends JPanel {
           if (isInNavigationImage(p)) {
             p = navigationToPanelPoint(p);
           } else {
+            // save the point in scaled image coordinates, since the panel point
+            // will be wrong after we center the image on the panel point
+            Point scaledImagePoint = panelToScaledImagePoint(p);
+            
             centerImageFromPanelPoint(p);
+            
+            // convert back to panel coordinates
+            p = scaledImageToPanelPoint(scaledImagePoint);
           }
           
           if (e.isShiftDown()) {
@@ -495,6 +502,18 @@ public class ImagePanel extends JPanel {
     int x = (int) ((p.x - origin.x) / scale);
     int y = (int) ((p.y - origin.y) / scale);
     return new Point(x, y);
+  }
+  
+  /**
+   * Converts the scaled image point to a panel point.
+   * 
+   * @param p  the scaled image point
+   * @return   the panel point
+   */
+  private Point scaledImageToPanelPoint(Point p) {
+    int x = (int) ((p.x * scale) + origin.x);
+    int y = (int) ((p.y * scale) + origin.y);
+    return new Point(x ,y);
   }
 
   /**
