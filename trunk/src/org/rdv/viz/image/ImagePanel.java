@@ -131,12 +131,15 @@ public class ImagePanel extends JPanel {
     addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
         if (image != null) {
+          // reset the scale and recompute the origins when the panel is resized
           if (isAutoScaling()) {
             autoScale();
           } else {
             setScale(scale, false);
           }
 
+          // recreated the navigation image because its size is relative to the
+          // panel size
           if (isNavigationImageEnabled()) {
             createNavigationImage();
           }
@@ -147,11 +150,36 @@ public class ImagePanel extends JPanel {
     });
 
     addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (image == null) {
+          return;
+        }
+        
+        // center and zoom in on a double click
+        if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+          Point p = e.getPoint();
+          
+          if (isInNavigationImage(p)) {
+            p = navigationToPanelPoint(p);
+          } else {
+            centerImageFromPanelPoint(p);
+          }
+          
+          if (e.isShiftDown()) {
+            zoomOut(p);
+          } else {
+            zoomIn(p);
+          }
+        }
+      }
+
+      @Override
       public void mousePressed(MouseEvent e) {
         requestFocusInWindow();
         
-        Point p = e.getPoint();
         if (image != null && SwingUtilities.isLeftMouseButton(e)) {
+          Point p = e.getPoint();
           draggingInNavigationImage = isInNavigationImage(p);
           if (draggingInNavigationImage) {
             centerImageFromNavigationPoint(p);
@@ -162,6 +190,7 @@ public class ImagePanel extends JPanel {
 
     addMouseMotionListener(new MouseMotionListener() {
       public void mouseDragged(MouseEvent e) {
+        // pan the image by dragging with the mouse
         if (image != null && SwingUtilities.isLeftMouseButton(e)) {
           Point p = e.getPoint();
           if (draggingInNavigationImage) {
@@ -174,10 +203,12 @@ public class ImagePanel extends JPanel {
       }
 
       public void mouseMoved(MouseEvent e) {
+        // track the mouse position for dragging
         mousePosition = e.getPoint();
       }
     });
 
+    // zoom in and out with the mouse wheel
     addMouseWheelListener(new MouseWheelListener() {
       public void mouseWheelMoved(MouseWheelEvent e) {
         requestFocusInWindow();
@@ -187,29 +218,18 @@ public class ImagePanel extends JPanel {
         }
 
         Point p = e.getPoint();
-        boolean zoomIn = (e.getWheelRotation() < 0);
+        
         if (isInNavigationImage(p)) {
           centerImageFromNavigationPoint(p);
-          
           p = navigationToPanelPoint(p);
-          
-          if (zoomIn) {
-            zoomIn(p);
-          } else {
-            zoomOut(p);
-          }          
-        } else if (isInImage(p)) {
-          if (zoomIn) {
-            zoomIn(p);
-          } else {
-            zoomOut(p);
-          }
+        }
+        
+        boolean zoomIn = (e.getWheelRotation() < 0);
+        
+        if (zoomIn) {
+          zoomIn(p);
         } else {
-          if (zoomIn) {
-            zoomIn();
-          } else {
-            zoomOut();
-          }
+          zoomOut(p);
         }
       }
     });
@@ -320,6 +340,7 @@ public class ImagePanel extends JPanel {
       }
     };
     getInputMap().put(KeyStroke.getKeyStroke('+'), "zoomIn");
+    getInputMap().put(KeyStroke.getKeyStroke('='), "zoomIn");
     getActionMap().put("zoomIn", zoomInAction);
     
     Action zoomOutAction = new AbstractAction() {
@@ -449,28 +470,16 @@ public class ImagePanel extends JPanel {
   }
 
   /**
-   * Indicates whether a given point in the panel falls within the image
-   * boundaries.
-   * 
-   * @param p  the point in the panel
-   * @return   true if the point is in the image, false otherwise
-   */
-  private boolean isInImage(Point p) {
-    Coords coords = panelToImageCoords(p);
-    int x = coords.getIntX();
-    int y = coords.getIntY();
-    return (x >= 0 && x < image.getWidth() && y >= 0 && y < image.getHeight());
-  }
-
-  /**
    * Indicates whether a given point in the panel falls within the navigation
-   * image boundaries.
+   * image boundaries. This will return false if the navigation image is
+   * disabled or not visible.
    * 
    * @param p  the point in the panel
    * @return   true if the point is in the navigation image, false otherwise
    */
   private boolean isInNavigationImage(Point p) {
-    return (isNavigationImageEnabled() && p.x < getNavigationImageWidth() && p.y < getNavigationImageHeight());
+    return (isNavigationImageEnabled() && !scaledImageFitsInPanel() &&
+        p.x < getNavigationImageWidth() && p.y < getNavigationImageHeight());
   }
 
   /**
@@ -849,16 +858,28 @@ public class ImagePanel extends JPanel {
       origin.y = (int) (getHeight() - getScaledImageHeight()) / 2;
     }
   }
+  
+  /**
+   * Centers the image on the point specified in panel coordinates.
+   * 
+   * @param panelPoint  the point in the panel
+   */
+  private void centerImageFromPanelPoint(Point panelPoint) {
+    int newOriginX = (origin.x - panelPoint.x) + Math.round(getWidth() / 2f);
+    int newOriginY = (origin.y - panelPoint.y) + Math.round(getHeight() / 2f);
+    
+    setImageOrigin(newOriginX, newOriginY);
+  }
 
   /**
    * Centers the image using the point from the navigation image.
    * 
-   * @param p  the point in the navigation image
+   * @param navigationPoint  the point in the navigation image
    */
-  private void centerImageFromNavigationPoint(Point p) {
-    Point scrImagePoint = navigationToScaledImagePoint(p);
-    int newOriginX = -(scrImagePoint.x - getWidth() / 2);
-    int newOriginY = -(scrImagePoint.y - getHeight() / 2);
+  private void centerImageFromNavigationPoint(Point navigationPoint) {
+    Point scaledImagePoint = navigationToScaledImagePoint(navigationPoint);
+    int newOriginX = -(scaledImagePoint.x - getWidth() / 2);
+    int newOriginY = -(scaledImagePoint.y - getHeight() / 2);
 
     setImageOrigin(newOriginX, newOriginY);
   }
