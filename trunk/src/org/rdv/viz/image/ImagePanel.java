@@ -78,10 +78,13 @@ public class ImagePanel extends JPanel {
   public static final String AUTO_SCALING_PROPERTY = "autoScaling";
 
   /** the image property */
-  public static final String IMAGE_CHANGED_PROPERTY = "image";
+  public static final String IMAGE_PROPERTY = "image";
   
   /** the navigation image enabled property */
-  public static final String NAVIGATION_IMAGE_ENABLED = "navigationImageEnabled";
+  public static final String NAVIGATION_IMAGE_ENABLED_PROPERTY = "navigationImageEnabled";
+  
+  /** the high quality rendering enabled property */
+  public static final String HIGH_QUALITY_RENDERING_ENABLED_PROPERTY = "highQualityRenderingEnabled";
 
   /** the scaling factor for the navigation image, relative to the panel width */
   private static final float NAVIGATION_IMAGE_FACTOR = 0.15f;
@@ -97,7 +100,16 @@ public class ImagePanel extends JPanel {
   
   /** the maximum scale */
   private static final double MAXIMUM_SCALE = 64;
+  
+  /** the number of increments to use for smooth scaling */
+  private static final int SMOOTH_SCALE_INCREMENTS = 10;
 
+  /** the number of increments per page for scrolling */
+  private final static int SCROLL_INCREMENTS_PER_PAGE = 10;
+  
+  /** the number of increments to use for smooth scrolling */
+  private final static int SMOOTH_SCROLL_INCREMENTS = 10;
+  
   /** the image */
   private BufferedImage image;
 
@@ -110,15 +122,9 @@ public class ImagePanel extends JPanel {
   /** a flag for auto scaling */
   private boolean autoScaling = true;
 
-  /** the factor for incremental zooming */
-  private final double zoomFactor = 1.5;
-
   /** the origin for the image in the panel */
   private Point origin = new Point();
   
-  /** the increment for scrolling */
-  private final int scrollIncrement = 10;
-
   /** the current mouse position */
   private Point mousePosition;
   
@@ -127,7 +133,10 @@ public class ImagePanel extends JPanel {
 
   /** a flag for the navigation image */
   private boolean navigationImageEnabled = true;
-
+  
+  /** a flag for the high quality rendering */
+  private boolean highQualityRenderingEnabled = true;
+  
   /**
    * Creates an image panel with auto zooming and the navigation image enabled.
    */
@@ -268,15 +277,15 @@ public class ImagePanel extends JPanel {
     getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), "scrollUp");
     getActionMap().put("scrollUp", scrollUpAction);    
 
-    Action scrollUpFastAction = new AbstractAction() {
+    Action pageUpAction = new AbstractAction() {
       private static final long serialVersionUID = -6846248967445268823L;
 
       public void actionPerformed(ActionEvent ae) {
-        scrollUpFast();
+        pageUp();
       }
     };
-    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK), "scrollUpFast");
-    getActionMap().put("scrollUpFast", scrollUpFastAction);  
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.SHIFT_DOWN_MASK), "pageUp");
+    getActionMap().put("pageUp", pageUpAction);  
     
     Action scrollLeftAction = new AbstractAction() {
       private static final long serialVersionUID = -6846248967445268823L;
@@ -288,15 +297,15 @@ public class ImagePanel extends JPanel {
     getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "scrollLeft");
     getActionMap().put("scrollLeft", scrollLeftAction);    
 
-    Action scrollLeftFastAction = new AbstractAction() {
+    Action pageLeftAction = new AbstractAction() {
       private static final long serialVersionUID = 1967647647910668664L;
 
       public void actionPerformed(ActionEvent ae) {
-        scrollLeftFast();
+        pageLeft();
       }
     };
-    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_DOWN_MASK), "scrollLeftFast");
-    getActionMap().put("scrollLeftFast", scrollLeftFastAction);    
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_DOWN_MASK), "pageLeft");
+    getActionMap().put("pageLeft", pageLeftAction);    
 
     Action scrollDownAction = new AbstractAction() {
       private static final long serialVersionUID = -3188971384048244029L;
@@ -308,15 +317,15 @@ public class ImagePanel extends JPanel {
     getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), "scrollDown");
     getActionMap().put("scrollDown", scrollDownAction);
 
-    Action scrollDownFastAction = new AbstractAction() {
+    Action pageDownAction = new AbstractAction() {
       private static final long serialVersionUID = -1564989825983447908L;
 
       public void actionPerformed(ActionEvent ae) {
-        scrollDownFast();
+        pageDown();
       }
     };
-    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK), "scrollDownFast");
-    getActionMap().put("scrollDownFast", scrollDownFastAction);
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.SHIFT_DOWN_MASK), "pageDown");
+    getActionMap().put("pageDown", pageDownAction);
 
     Action scrollRightAction = new AbstractAction() {
       private static final long serialVersionUID = 1967647647910668664L;
@@ -328,15 +337,15 @@ public class ImagePanel extends JPanel {
     getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "scrollRight");
     getActionMap().put("scrollRight", scrollRightAction);    
 
-    Action scrollRightFastAction = new AbstractAction() {
+    Action pageRightAction = new AbstractAction() {
       private static final long serialVersionUID = -8409319976290989171L;
 
       public void actionPerformed(ActionEvent ae) {
-        scrollRightFast();
+        pageRight();
       }
     };
-    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_DOWN_MASK), "scrollRightFast");
-    getActionMap().put("scrollRightFast", scrollRightFastAction);    
+    getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_DOWN_MASK), "pageRight");
+    getActionMap().put("pageRight", pageRightAction);    
 
     Action zoomInAction = new AbstractAction() {
       private static final long serialVersionUID = -1076232416523241048L;
@@ -380,7 +389,7 @@ public class ImagePanel extends JPanel {
     BufferedImage oldImage = this.image;
     this.image = image;
 
-    firePropertyChange(IMAGE_CHANGED_PROPERTY, oldImage, image);
+    firePropertyChange(IMAGE_PROPERTY, oldImage, image);
 
     if (image != null) {
       if (oldImage == null ||
@@ -533,7 +542,7 @@ public class ImagePanel extends JPanel {
     
     this.navigationImageEnabled = navigationImageEnabled;
     
-    firePropertyChange(NAVIGATION_IMAGE_ENABLED, !navigationImageEnabled, navigationImageEnabled);
+    firePropertyChange(NAVIGATION_IMAGE_ENABLED_PROPERTY, !navigationImageEnabled, navigationImageEnabled);
 
     if (navigationImageEnabled && image != null) {
       createNavigationImage();
@@ -545,22 +554,10 @@ public class ImagePanel extends JPanel {
   }
   
   /**
-   * Gets the zoom factor. This controls home much an incremental zoom in or out
-   * will change the current scale. When the image is zoomed in, the scale is
-   * multiplied by the zoom factor, while when the image is zoomed out, the
-   * scale is divided by the zoom factor.
-   * 
-   * @return  the zoom factor
-   */
-  public double getZooomFactor() {
-    return zoomFactor;
-  }
-
-  /**
    * Zooms in by the zoom factor, on the center of the image.
    */
   public void zoomIn() {
-    setScale(getScale() * zoomFactor);
+    zoomIn(null);
   }
 
   /**
@@ -569,14 +566,21 @@ public class ImagePanel extends JPanel {
    * @param zoomCenter  the center of the zoom
    */
   private void zoomIn(Point zoomCenter) {
-    setScale(getScale() * zoomFactor, zoomCenter);
+    if (zoomCenter == null) {
+      zoomCenter = getPanelCenter();
+    }
+    
+    int power = floorlog2(scale);
+    double newScale = Math.pow(2, power+1);
+    
+    smoothScale(newScale, zoomCenter);
   }
 
   /**
    * Zooms out by the zoom factor, on the center of the image.
    */
   public void zoomOut() {
-    setScale(getScale() / zoomFactor);
+    zoomOut(null);
   }
 
   /**
@@ -585,7 +589,32 @@ public class ImagePanel extends JPanel {
    * @param zoomCenter  the center of the zoom
    */
   private void zoomOut(Point zoomCenter) {
-    setScale(getScale() / zoomFactor, zoomCenter);
+    if (zoomCenter == null) {
+      zoomCenter = getPanelCenter();
+    }
+    
+    int power = floorlog2(scale);
+    double newScale = Math.pow(2, power-1);
+
+    smoothScale(newScale, zoomCenter);
+  }
+  
+  /**
+   * Gets the point at the center of the panel.
+   * @return
+   */
+  private Point getPanelCenter() {
+    return new Point(getWidth() / 2, getHeight() / 2);
+  }
+  
+  /**
+   * Computes the floor of log base 2 of a.
+   * 
+   * @param a  the value
+   * @return   the floor of log base 2 of a
+   */
+  private static int floorlog2(double a) {
+    return (int) Math.floor(Math.log(a)/Math.log(2));
   }
 
   /**
@@ -617,17 +646,6 @@ public class ImagePanel extends JPanel {
     setScale(newScale, scaleCenter, repaint);
   }
 
-  /**
-   * Sets the zoom level used to display the image, and the zooming center,
-   * around which zooming is done.
-   * 
-   * @param newScale     the zoom level used to display this panel's image
-   * @param scaleCenter  the point to scale with respect to
-   */
-  private void setScale(double newScale, Point scaleCenter) {
-    setScale(newScale, scaleCenter, true);
-  }
-  
   /**
    * Sets the zoom level used to display the image, and the zooming center,
    * around which zooming is done.
@@ -694,6 +712,48 @@ public class ImagePanel extends JPanel {
 
     if (repaint) {
       repaint();
+    }
+  }
+  
+  /**
+   * Gets the minimum allowable scale value.
+   * 
+   * @return  the minimum scale
+   */
+  private double getMinimumScale() {
+    double autoScale = getAutoScale();
+    return Math.min(autoScale, 1);
+  }
+  
+  /**
+   * Sets the scale value in a smooth way by doing it in several smaller steps.
+   * This has the appearances of smoothly zooming in or out.
+   * 
+   * @param newScale     the zoom level used to display this panel's image
+   * @param scaleCenter  the point to scale with respect to
+   */
+  private void smoothScale(double newScale, Point scaleCenter) {
+    double minimumScale = getMinimumScale();
+    if (newScale > MAXIMUM_SCALE) {
+      newScale = MAXIMUM_SCALE;
+    } else if (newScale < minimumScale) {
+      newScale = minimumScale;
+    }
+    
+    if (newScale == scale) {
+      return;
+    }
+    
+    double oldScale = getScale();
+    double scaleIncrement = (newScale - oldScale) / SMOOTH_SCALE_INCREMENTS;
+    
+    setHighQualityRenderingEnabled(false);
+    
+    for (int i=1; i<=SMOOTH_SCALE_INCREMENTS; i++) {
+      double s = oldScale + (i * scaleIncrement);
+      setScale(s, scaleCenter, false);
+      if (i == SMOOTH_SCALE_INCREMENTS) setHighQualityRenderingEnabled(true);
+      paintImmediately(getBounds());
     }
   }
 
@@ -798,54 +858,89 @@ public class ImagePanel extends JPanel {
    * @param y  the y coordinate of the new image origin
    */
   public void setImageOrigin(int x, int y) {
-    setImageOrigin(new Point(x, y));
+    setImageOrigin(x, y, true);
   }
 
   /**
-   * Sets the image origin in the panel.
+   * Sets the image origin in the panel. Optionally calls repaint.
    * 
-   * @param origin  the value of a new image origin
+   * @param x        the x coordinate of the new image origin
+   * @param y        the y coordinate of the new image origin
+   * @param repaint  if true, call repaint
    */
-  public void setImageOrigin(Point origin) {
+  private void setImageOrigin(int x, int y, boolean repaint) {
     setAutoScaling(false, false);
+    
+    Point origin = new Point(x, y);
 
+    if (this.origin.equals(origin)) {
+      return;
+    }
+    
     this.origin = origin;
     
     boundImageOrigin();
 
-    repaint();
+    if (repaint) {
+      repaint();
+    }
   }
   
   public void scrollUp() {
-    setImageOrigin(origin.x, origin.y + scrollIncrement);
+    smoothScroll(origin.x, origin.y + (getHeight() / SCROLL_INCREMENTS_PER_PAGE));
   }
   
-  public void scrollUpFast() {
-    setImageOrigin(origin.x, origin.y + (10 * scrollIncrement));
+  public void pageUp() {
+    smoothScroll(origin.x, origin.y + getHeight());
   }
   
   public void scrollLeft() {
-    setImageOrigin(origin.x + scrollIncrement, origin.y);
+    smoothScroll(origin.x + (getWidth() / SCROLL_INCREMENTS_PER_PAGE), origin.y);
   }
 
-  public void scrollLeftFast() {
-    setImageOrigin(origin.x + (10 * scrollIncrement), origin.y);
+  public void pageLeft() {
+    smoothScroll(origin.x + getWidth(), origin.y);
   }
 
   public void scrollDown() {
-    setImageOrigin(origin.x, origin.y - scrollIncrement);
+    smoothScroll(origin.x, origin.y - (getHeight() / SCROLL_INCREMENTS_PER_PAGE));
   }
   
-  public void scrollDownFast() {
-    setImageOrigin(origin.x, origin.y - (10 * scrollIncrement));
+  public void pageDown() {
+    smoothScroll(origin.x, origin.y - getHeight());
   }
 
   public void scrollRight() {
-    setImageOrigin(origin.x - scrollIncrement, origin.y);
+    smoothScroll(origin.x - (getWidth() / SCROLL_INCREMENTS_PER_PAGE), origin.y);
   }
 
-  public void scrollRightFast() {
-    setImageOrigin(origin.x - (10 * scrollIncrement), origin.y);
+  public void pageRight() {
+    smoothScroll(origin.x - getWidth(), origin.y);
+  }
+  
+  /**
+   * Smoothly scroll to the new origin.
+   * 
+   * @param x  the x coordinate of the new image origin
+   * @param y  the y coordinate of the new image origin
+   */
+  private void smoothScroll(int x, int y) {
+    Point oldOrigin = getImageOrigin();
+    int oldX = oldOrigin.x;
+    int oldY = oldOrigin.y;
+    
+    int xIncrement = (x - oldX) / SMOOTH_SCROLL_INCREMENTS;
+    int yIncrement = (y - oldY) / SMOOTH_SCROLL_INCREMENTS;
+    
+    setHighQualityRenderingEnabled(false);
+    
+    for (int i=1; i<= SMOOTH_SCROLL_INCREMENTS; i++) {
+      int xx = oldX + (i * xIncrement);
+      int yy = oldY + (i * yIncrement);
+      if (i == SMOOTH_SCROLL_INCREMENTS) setHighQualityRenderingEnabled(true);
+      setImageOrigin(xx, yy, false);
+      paintImmediately(getBounds());
+    }
   }
 
   /**
@@ -887,7 +982,7 @@ public class ImagePanel extends JPanel {
     int newOriginX = (origin.x - panelPoint.x) + Math.round(getWidth() / 2f);
     int newOriginY = (origin.y - panelPoint.y) + Math.round(getHeight() / 2f);
     
-    setImageOrigin(newOriginX, newOriginY);
+    smoothScroll(newOriginX, newOriginY);
   }
 
   /**
@@ -900,7 +995,7 @@ public class ImagePanel extends JPanel {
     int newOriginX = -(scaledImagePoint.x - getWidth() / 2);
     int newOriginY = -(scaledImagePoint.y - getHeight() / 2);
 
-    setImageOrigin(newOriginX, newOriginY);
+    smoothScroll(newOriginX, newOriginY);
   }
 
   /**
@@ -916,6 +1011,39 @@ public class ImagePanel extends JPanel {
     int newOriginY = origin.y + yDelta;
 
     setImageOrigin(newOriginX, newOriginY);
+  }
+  
+  /**
+   * Gets if high quality rendering is enabled.
+   * 
+   * @return  true if high quality rendering is enabled, false otherwise
+   */
+  public boolean isHighQualityRenderingEnabled() {
+    return highQualityRenderingEnabled;
+  }
+  
+  /**
+   * Enables or disables high quality rendering.
+   * 
+   * @param enabled  if true, high quality rendering is enabled
+   */
+  public void setHighQualityRenderingEnabled(boolean enabled) {
+    if (highQualityRenderingEnabled == enabled) {
+      return;
+    }
+    
+    highQualityRenderingEnabled = enabled;
+    
+    firePropertyChange(HIGH_QUALITY_RENDERING_ENABLED_PROPERTY, !enabled, enabled);
+  }
+  
+  /**
+   * Gets the threshold value under which high quality rendering will be used.
+   * 
+   * @return  the threshold
+   */
+  public double getHighQualityRenderingThreshold() {
+    return HIGH_QUALITY_RENDERING_SCALE_THRESHOLD;
   }
 
   /**
@@ -957,7 +1085,8 @@ public class ImagePanel extends JPanel {
       return;
     }
 
-    if (scale > HIGH_QUALITY_RENDERING_SCALE_THRESHOLD) {
+    if (highQualityRenderingEnabled &&
+        scale > HIGH_QUALITY_RENDERING_SCALE_THRESHOLD) {
       Rectangle rect = getImageClipBounds();
       if (rect == null || rect.width == 0 || rect.height == 0) {
         return;
