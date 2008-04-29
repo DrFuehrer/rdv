@@ -84,7 +84,13 @@ public class ImagePanel extends JPanel {
   public static final String NAVIGATION_IMAGE_ENABLED = "navigationImageEnabled";
 
   /** the scaling factor for the navigation image, relative to the panel width */
-  private static final double NAV_IMAGE_FACTOR = 0.15;
+  private static final float NAVIGATION_IMAGE_FACTOR = 0.15f;
+  
+  /** the minimum dimension allowed (width or height) for the navigation image */
+  private static final int MINIMUM_NAVIGATION_IMAGE_DIMENSION = 50;
+  
+  /** the maximum dimension allowed (width or height) for the navigation image */
+  private static final int MAXIMUM_NAVIGATION_IMAGE_DIMENSION = 150;
 
   /** the scale threshold for the high quality rendering mode */
   private static final double HIGH_QUALITY_RENDERING_SCALE_THRESHOLD = 1.0;
@@ -401,8 +407,21 @@ public class ImagePanel extends JPanel {
    * Creates the image used for navigation.
    */
   private void createNavigationImage() {
-    int navImageWidth = (int) (getWidth() * NAV_IMAGE_FACTOR);
-    int navImageHeight = navImageWidth * image.getHeight() / image.getWidth();
+    // Compute the size of the navigation image. This will be a percentage of
+    // the panel size, bounded by an absolute minimum and maximum dimension.
+    int navImageWidth, navImageHeight;
+    if (image.getWidth() >= image.getHeight()) {
+      navImageWidth = Math.round(getWidth() * NAVIGATION_IMAGE_FACTOR);
+      navImageWidth = Math.max(navImageWidth, MINIMUM_NAVIGATION_IMAGE_DIMENSION);
+      navImageWidth = Math.min(navImageWidth, MAXIMUM_NAVIGATION_IMAGE_DIMENSION);
+      navImageHeight = navImageWidth * image.getHeight() / image.getWidth();
+    } else {
+      navImageHeight = Math.round(getHeight() * NAVIGATION_IMAGE_FACTOR);
+      navImageHeight = Math.max(navImageHeight, MINIMUM_NAVIGATION_IMAGE_DIMENSION);
+      navImageHeight = Math.min(navImageHeight, MAXIMUM_NAVIGATION_IMAGE_DIMENSION);
+      navImageWidth = navImageHeight * image.getWidth() / image.getHeight();
+    }
+    
     navigationImage = new BufferedImage(navImageWidth, navImageHeight, image
         .getType());
     Graphics g = navigationImage.getGraphics();
