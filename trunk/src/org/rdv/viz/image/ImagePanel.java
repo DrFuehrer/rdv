@@ -117,13 +117,13 @@ public class ImagePanel extends JPanel {
   private BufferedImage navigationImage;
 
   /** the scale for the image */
-  private double scale = 1;
+  private double scale;
 
   /** a flag for auto scaling */
-  private boolean autoScaling = true;
+  private boolean autoScaling;
 
   /** the origin for the image in the panel */
-  private Point origin = new Point();
+  private Point origin;
   
   /** the current mouse position */
   private Point mousePosition;
@@ -132,15 +132,24 @@ public class ImagePanel extends JPanel {
   private boolean draggingInNavigationImage; 
 
   /** a flag for the navigation image */
-  private boolean navigationImageEnabled = true;
+  private boolean navigationImageEnabled;
   
   /** a flag for the high quality rendering */
-  private boolean highQualityRenderingEnabled = true;
+  private boolean highQualityRenderingEnabled;
   
   /**
    * Creates an image panel with auto zooming and the navigation image enabled.
    */
   public ImagePanel() {
+    scale = 1;
+    autoScaling = true;
+    origin = new Point();
+    
+    draggingInNavigationImage = false;
+    navigationImageEnabled = false;
+    
+    highQualityRenderingEnabled = true;
+    
     setFocusable(true);
     
     addComponentListener(new ComponentAdapter() {
@@ -563,13 +572,15 @@ public class ImagePanel extends JPanel {
     
     firePropertyChange(NAVIGATION_IMAGE_ENABLED_PROPERTY, !navigationImageEnabled, navigationImageEnabled);
 
-    if (navigationImageEnabled && image != null) {
-      createNavigationImage();
-    } else {
-      navigationImage = null;
+    if (image != null) {
+      if (navigationImageEnabled) {
+        createNavigationImage();
+      } else {
+        navigationImage = null;
+      }
+  
+      repaint();
     }
-
-    repaint();
   }
   
   /**

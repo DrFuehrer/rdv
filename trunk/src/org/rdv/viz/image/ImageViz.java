@@ -95,11 +95,21 @@ import com.rbnb.sapi.ChannelMap;
  * @author Jason P. Hanley
  */
 public class ImageViz extends AbstractDataPanel implements AuthenticationListener {
-	
-	static Log log = LogFactory.getLog(ImageViz.class.getName());
+  
+  /** the logger for this class */
+  static Log log = LogFactory.getLog(ImageViz.class.getName());
+  
+  /** the data panel property for the scale */
+  private static final String DATA_PANEL_PROPERTY_SCALE = "scale";
+  
+  /** the data panel property for the navigation panel visibility */
+  private static final String DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE = "showNavigationImage";
+  
+  /** the data panel property for the robotic controls visibility */
+  private static final String DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS = "hideRoboticControls";
 
   ImagePanel image;
-	JPanel panel;
+  JPanel panel;
   JPanel topControls;
   JPanel irisControls;
   JPanel focusControls;  
@@ -168,17 +178,17 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
           boolean autoScaling = (Boolean)pce.getNewValue();
           autoScaleMenuItem.setSelected(autoScaling);
           if (autoScaling) {
-            properties.remove("scale");
+            properties.remove(DATA_PANEL_PROPERTY_SCALE);
           }
         } else if (propertyName.equals(ImagePanel.SCALE_PROPERTY) && !image.isAutoScaling()) {
-          properties.setProperty("scale", pce.getNewValue().toString());
+          properties.setProperty(DATA_PANEL_PROPERTY_SCALE, pce.getNewValue().toString());
         } else if (propertyName.equals(ImagePanel.NAVIGATION_IMAGE_ENABLED_PROPERTY)) {
           boolean showNavigationImage = (Boolean)pce.getNewValue();
           showNavigationImageMenuItem.setSelected(showNavigationImage);
           if (showNavigationImage) {
-            properties.remove("showNavigationImage");
+            properties.setProperty(DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE, "true");
           } else {
-            properties.setProperty("showNavigationImage", "false");
+            properties.remove(DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE);
           }
         }
       }
@@ -495,7 +505,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     });
     popupMenu.add(resetScaleMenuItem);
     
-    showNavigationImageMenuItem = new JCheckBoxMenuItem("Show navigation image", true);
+    showNavigationImageMenuItem = new JCheckBoxMenuItem("Show navigation image", image.isNavigationImageEnabled());
     showNavigationImageMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         setShowNavigationImage(showNavigationImageMenuItem.isSelected());
@@ -586,10 +596,10 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   
   private void setRoboticControls() {
     if (hideRoboticControlsMenuItem.isSelected()) {
-      properties.setProperty("hideRoboticControls", "true");
+      properties.setProperty(DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS, "true");
       removeRoboticControls();      
     } else {
-      properties.remove("hideRoboticControls");
+      properties.remove(DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS);
       if (state == Player.STATE_MONITORING) {
         addRoboticControls();
       } else {
@@ -1068,6 +1078,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 		displayedImageTime = -1;
 	}
 
+  @Override
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
     
@@ -1075,16 +1086,16 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       return;
     }
     
-    if (key.equals("scale")) {
+    if (key.equals(DATA_PANEL_PROPERTY_SCALE)) {
       try {
         double scale = Double.parseDouble(value);
         image.setScale(scale);
       } catch (NumberFormatException e) {
         log.warn("Unable to set scale: " + value + ".");
       }
-    } else if (key.equals("showNavigationImage") && !Boolean.parseBoolean(value)) {
-      image.setNavigationImageEnabled(false);
-    } else if (key.equals("hideRoboticControls") && Boolean.parseBoolean(value) == true) {
+    } else if (key.equals(DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE) && Boolean.parseBoolean(value)) {
+      image.setNavigationImageEnabled(true);
+    } else if (key.equals(DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS) && Boolean.parseBoolean(value)) {
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();
     }
