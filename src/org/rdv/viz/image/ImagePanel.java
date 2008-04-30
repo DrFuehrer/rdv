@@ -76,6 +76,9 @@ public class ImagePanel extends JPanel {
 
   /** the auto scaling property */
   public static final String AUTO_SCALING_PROPERTY = "autoScaling";
+  
+  /** the origin property */
+  public static final String ORIGIN_PROPERTY = "origin";
 
   /** the image property */
   public static final String IMAGE_PROPERTY = "image";
@@ -691,7 +694,9 @@ public class ImagePanel extends JPanel {
     
     if (image == null) {
       scale = newScale;
-      firePropertyChange(SCALE_PROPERTY, oldScale, newScale);
+      if (scale != oldScale) {
+        firePropertyChange(SCALE_PROPERTY, oldScale, scale);
+      }
       return;
     }
 
@@ -733,14 +738,20 @@ public class ImagePanel extends JPanel {
     scale = newScale;
     Coords panelP = imageToPanelCoords(imageP);
 
+    Point oldOrigin = new Point(origin);
     origin.x += (correctedP.getIntX() - (int) panelP.x);
     origin.y += (correctedP.getIntY() - (int) panelP.y);
-
     boundImageOrigin();
 
-    firePropertyChange(SCALE_PROPERTY, oldScale, newScale);
+    if (scale != oldScale) {
+      firePropertyChange(SCALE_PROPERTY, oldScale, scale);
+    }
+    
+    if (!origin.equals(oldOrigin)) {
+      firePropertyChange(ORIGIN_PROPERTY, oldOrigin, origin);
+    }
 
-    if (repaint) {
+    if (repaint && (scale != oldScale || !origin.equals(oldOrigin))) {
       repaint();
     }
   }
@@ -867,9 +878,15 @@ public class ImagePanel extends JPanel {
    * Centers the image in the panel.
    */
   private void autoCenter() {
+    Point oldOrigin = new Point(origin);
+    
     // centers the image in the panel
     origin.x = (int) (getWidth() - getScaledImageWidth()) / 2;
     origin.y = (int) (getHeight() - getScaledImageHeight()) / 2;
+    
+    if (!origin.equals(oldOrigin)) {
+      firePropertyChange(ORIGIN_PROPERTY, oldOrigin, origin);
+    }
   }
 
   /**
@@ -877,7 +894,7 @@ public class ImagePanel extends JPanel {
    * 
    * @return  the origin of the image in the panel
    */
-  public Point getImageOrigin() {
+  public Point getOrigin() {
     return origin;
   }
 
@@ -887,8 +904,8 @@ public class ImagePanel extends JPanel {
    * @param x  the x coordinate of the new image origin
    * @param y  the y coordinate of the new image origin
    */
-  public void setImageOrigin(int x, int y) {
-    setImageOrigin(x, y, true);
+  public void setOrigin(int x, int y) {
+    setOrigin(x, y, true);
   }
 
   /**
@@ -898,21 +915,28 @@ public class ImagePanel extends JPanel {
    * @param y        the y coordinate of the new image origin
    * @param repaint  if true, call repaint
    */
-  private void setImageOrigin(int x, int y, boolean repaint) {
+  private void setOrigin(int x, int y, boolean repaint) {
     setAutoScaling(false, false);
     
-    Point origin = new Point(x, y);
+    Point newOrigin = new Point(x, y);
 
-    if (this.origin.equals(origin)) {
+    if (origin.equals(newOrigin)) {
       return;
     }
     
-    this.origin = origin;
+    Point oldOrigin = new Point(origin);
+    origin = newOrigin;
     
-    boundImageOrigin();
-
-    if (repaint) {
-      repaint();
+    if (image != null) {
+      boundImageOrigin();
+    }
+    
+    if (!origin.equals(oldOrigin)) {
+      firePropertyChange(ORIGIN_PROPERTY, oldOrigin, origin);
+      
+      if (image != null && repaint) {
+        repaint();
+      }
     }
   }
   
@@ -955,7 +979,7 @@ public class ImagePanel extends JPanel {
    * @param y  the y coordinate of the new image origin
    */
   private void smoothScroll(int x, int y) {
-    Point oldOrigin = getImageOrigin();
+    Point oldOrigin = getOrigin();
     int oldX = oldOrigin.x;
     int oldY = oldOrigin.y;
     
@@ -968,7 +992,7 @@ public class ImagePanel extends JPanel {
       int xx = oldX + (i * xIncrement);
       int yy = oldY + (i * yIncrement);
       if (i == SMOOTH_SCROLL_INCREMENTS) setHighQualityRenderingEnabled(true);
-      setImageOrigin(xx, yy, false);
+      setOrigin(xx, yy, false);
       paintImmediately(getBounds());
     }
   }
@@ -1040,7 +1064,7 @@ public class ImagePanel extends JPanel {
     int newOriginX = origin.x + xDelta;
     int newOriginY = origin.y + yDelta;
 
-    setImageOrigin(newOriginX, newOriginY);
+    setOrigin(newOriginX, newOriginY);
   }
   
   /**

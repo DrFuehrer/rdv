@@ -102,6 +102,9 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   /** the data panel property for the scale */
   private static final String DATA_PANEL_PROPERTY_SCALE = "scale";
   
+  /** the data panel property for the origin */
+  private static final String DATA_PANEL_PROPERTY_ORIGIN = "origin";
+  
   /** the data panel property for the navigation panel visibility */
   private static final String DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE = "showNavigationImage";
   
@@ -179,9 +182,17 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
           autoScaleMenuItem.setSelected(autoScaling);
           if (autoScaling) {
             properties.remove(DATA_PANEL_PROPERTY_SCALE);
+            properties.remove(DATA_PANEL_PROPERTY_ORIGIN);
+          } else {
+            properties.setProperty(DATA_PANEL_PROPERTY_SCALE, Double.toString(image.getScale()));
+            properties.setProperty(DATA_PANEL_PROPERTY_ORIGIN, pointToString(image.getOrigin()));
           }
         } else if (propertyName.equals(ImagePanel.SCALE_PROPERTY) && !image.isAutoScaling()) {
           properties.setProperty(DATA_PANEL_PROPERTY_SCALE, pce.getNewValue().toString());
+        } else if (propertyName.equals(ImagePanel.ORIGIN_PROPERTY) && !image.isAutoScaling()) {
+          Point origin = (Point)pce.getNewValue();
+          String originString = pointToString(origin);
+          properties.setProperty(DATA_PANEL_PROPERTY_ORIGIN, originString);
         } else if (propertyName.equals(ImagePanel.NAVIGATION_IMAGE_ENABLED_PROPERTY)) {
           boolean showNavigationImage = (Boolean)pce.getNewValue();
           showNavigationImageMenuItem.setSelected(showNavigationImage);
@@ -1093,12 +1104,35 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       } catch (NumberFormatException e) {
         log.warn("Unable to set scale: " + value + ".");
       }
+    } else if (key.equals(DATA_PANEL_PROPERTY_ORIGIN)) {
+      String[] pointComponents = value.split(",");
+      if (pointComponents.length == 2) {
+        try {
+          int x = Integer.parseInt(pointComponents[0]);
+          int y = Integer.parseInt(pointComponents[1]);
+          image.setOrigin(x, y);
+        } catch (NumberFormatException e) {
+          log.warn("Unable to set origin: " + value + ".");
+        }
+      } else {
+        log.warn("Unable to set origin: " + value + ".");
+      }
     } else if (key.equals(DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE) && Boolean.parseBoolean(value)) {
       image.setNavigationImageEnabled(true);
     } else if (key.equals(DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS) && Boolean.parseBoolean(value)) {
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();
     }
+  }
+  
+  /**
+   * Converts the coordinates of a point to a string of the format "x,y".
+   * 
+   * @param p  the point
+   * @return   the coordinates of the point as a string
+   */
+  private static String pointToString(Point p) {
+    return p.x + "," + p.y;    
   }
   
   public void authenticationChanged(AuthenticationEvent event) {
