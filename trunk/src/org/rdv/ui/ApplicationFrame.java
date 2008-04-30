@@ -86,6 +86,7 @@ import org.rdv.action.ActionFactory;
 import org.rdv.action.DataViewerAction;
 import org.rdv.auth.AuthenticationManager;
 import org.rdv.rbnb.ConnectionListener;
+import org.rdv.rbnb.LocalServer;
 import org.rdv.rbnb.MessageListener;
 import org.rdv.rbnb.Player;
 import org.rdv.rbnb.RBNBController;
@@ -1224,7 +1225,8 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
       
-      boolean offline = rbnb.getRBNBHostName().equals("localhost");
+      boolean offline = rbnb.getRBNBHostName().equals("localhost") &&
+                        rbnb.getRBNBPortNumber() == LocalServer.getInstance().getPort();
       saveAction.setEnabled(!offline);
       importAction.setEnabled(offline);
       exportAction.setEnabled(true);
