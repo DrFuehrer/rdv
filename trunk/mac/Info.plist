@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>@APPLICATIONID@</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string>@APPLICATIONNAME@ @VERSION@, Copyright © 2005-2008 Contributors</string>
 	<key>CFBundleIconFile</key>
 	<string>@APPLICATIONID@.icns</string>
 	<key>CFBundleIdentifier</key>
