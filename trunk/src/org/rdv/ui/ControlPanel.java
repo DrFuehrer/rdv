@@ -33,7 +33,6 @@
 package org.rdv.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -45,7 +44,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -54,6 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
+import javax.swing.JToolBar;
 import javax.swing.SpinnerListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -61,7 +60,9 @@ import javax.swing.event.ChangeListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jdesktop.application.ResourceMap;
 import org.rdv.DataViewer;
+import org.rdv.RDV;
 import org.rdv.rbnb.EventMarker;
 import org.rdv.rbnb.EventMarkerListener;
 import org.rdv.rbnb.MetadataListener;
@@ -83,7 +84,7 @@ import com.rbnb.sapi.ChannelTree;
  * @author Jason P. Hanley
  * @author Lawrence J. Miller
  */
-public class ControlPanel extends JPanel implements TimeListener, StateListener, SubscriptionListener, MetadataListener, PlaybackRateListener, TimeScaleListener, TimeAdjustmentListener, EventMarkerListener {
+public class ControlPanel extends JToolBar implements TimeListener, StateListener, SubscriptionListener, MetadataListener, PlaybackRateListener, TimeScaleListener, TimeAdjustmentListener, EventMarkerListener {
 
   /** serialization version identifier */
   private static final long serialVersionUID = 2727527118691092710L;
@@ -96,8 +97,8 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
   private boolean hideEmptyTime;
 
   private JButton beginButton;
-	private JButton monitorButton;
-	private JButton playButton;
+  private JButton rtButton;
+  private JButton playButton;
   private JButton endButton;
 	
   private JLabel playbackRateLabel;
@@ -156,13 +157,12 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
 		GridBagConstraints c = new GridBagConstraints();
     
     JPanel container = new JPanel();
-    container.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.lightGray));
     container.setLayout(new GridBagLayout());
     
     Box firstRowPanel = new Box(BoxLayout.LINE_AXIS);
     
-    beginButton = new JButton("Beginning ", DataViewer.getIcon("icons/begin.gif"));
-    beginButton.setToolTipText("Go to beginning of data");
+    beginButton = new JButton();
+    beginButton.setName("beginButton");
     beginButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         setLocationBegin();
@@ -170,21 +170,21 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     });
     firstRowPanel.add(beginButton);    
     
-    monitorButton = new JButton("Real time ", DataViewer.getIcon("icons/rt.gif"));
-    monitorButton.setToolTipText("View live data");
-    monitorButton.addActionListener(new ActionListener() {
+    rtButton = new JButton();
+    rtButton.setName("rtButton");
+    rtButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        if (monitorButton.isSelected()) {
+        if (rtButton.isSelected()) {
           rbnbController.pause();
         } else {
           rbnbController.monitor();
         }
       }
     });
-    firstRowPanel.add(monitorButton);
+    firstRowPanel.add(rtButton);
     
-    playButton = new JButton("Play    ", DataViewer.getIcon("icons/play.gif"));
-    playButton.setToolTipText("Play");
+    playButton = new JButton();
+    playButton.setName("playButton");
     playButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         if (playButton.isSelected()) {
@@ -196,8 +196,8 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     });
     firstRowPanel.add(playButton);
     
-    endButton = new JButton("End ", DataViewer.getIcon("icons/end.gif"));
-    endButton.setToolTipText("Go to end of data");
+    endButton = new JButton();
+    endButton.setName("endButton");
     endButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         setLocationEnd();
@@ -668,28 +668,30 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
    * @param newState  the new controller state
    * @param oldState  the old controller state
    */
-	public void postState(int newState, int oldState) {
+  public void postState(int newState, int oldState) {
+    ResourceMap resourceMap = RDV.getInstance().getContext().getResourceMap();
+      
     if (newState == Player.STATE_MONITORING) {
-      monitorButton.setIcon(DataViewer.getIcon("icons/pause.gif"));
-      monitorButton.setText("Pause      ");
-      monitorButton.setSelected(true);
+      rtButton.setName("pauseButton");
+      resourceMap.injectComponent(rtButton);
+      rtButton.setSelected(true);
       
       playbackRateSpinner.setEnabled(false);
     } else if (oldState == Player.STATE_MONITORING) {
-      monitorButton.setIcon(DataViewer.getIcon("icons/rt.gif"));
-      monitorButton.setText("Real time ");
-      monitorButton.setSelected(false);
+      rtButton.setName("rtButton");
+      resourceMap.injectComponent(rtButton);
+      rtButton.setSelected(false);
       
       playbackRateSpinner.setEnabled(true);
     }
     
     if (newState == Player.STATE_PLAYING) {
-      playButton.setIcon(DataViewer.getIcon("icons/pause.gif"));
-      playButton.setText("Pause ");
+      playButton.setName("pauseButton");
+      resourceMap.injectComponent(playButton);
       playButton.setSelected(true);
     } else if (oldState == Player.STATE_PLAYING) {
-      playButton.setIcon(DataViewer.getIcon("icons/play.gif"));
-      playButton.setText("Play    ");
+      playButton.setName("playButton");
+      resourceMap.injectComponent(playButton);
       playButton.setSelected(false);
     }    
 
@@ -712,7 +714,7 @@ public class ControlPanel extends JPanel implements TimeListener, StateListener,
     super.setEnabled(enabled);
     
     beginButton.setEnabled(enabled);
-    monitorButton.setEnabled(enabled);
+    rtButton.setEnabled(enabled);
     playButton.setEnabled(enabled);
     endButton.setEnabled(enabled);
     
