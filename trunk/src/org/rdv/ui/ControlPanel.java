@@ -60,6 +60,7 @@ import javax.swing.event.ChangeListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jdesktop.application.Resource;
 import org.jdesktop.application.ResourceMap;
 import org.rdv.DataViewer;
 import org.rdv.RDV;
@@ -89,33 +90,59 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
   /** serialization version identifier */
   private static final long serialVersionUID = 2727527118691092710L;
 
-	static Log log = LogFactory.getLog(ControlPanel.class.getName());
+  /** the logger for this class */
+  private static Log log = LogFactory.getLog(ControlPanel.class.getName());
 
-	private final RBNBController rbnbController;
+  /** the RBNB controller */
+  private final RBNBController rbnbController;
   
   /** Indicate if we are hiding empty time regions */
   private boolean hideEmptyTime;
 
+  /** the button to go to the beginning of data */
   private JButton beginButton;
+  
+  /** the button to enter real time mode */
   private JButton rtButton;
+  
+  /** the play button */
   private JButton playButton;
+  
+  /** the button to go to the end of data */
   private JButton endButton;
 	
-  private JLabel playbackRateLabel;
+  /** the spinner to select the playback rate */
   private JSpinner playbackRateSpinner;	
   
-  private JLabel timeScaleLabel;
+  /** the combo box to select the time scale */
   private JComboBox timeScaleComboBox;
   
+  /** the button to display and update the location */
   private JButton locationButton;
   
+  /** the zoomed time slider */
   private TimeSlider zoomTimeSlider;
   
+  /** the label displaying the minimum of the zoomed time slider */
   private JLabel zoomMinimumLabel;
+  
+  /** the label displaying the range of the zoomed time slider */
   private JLabel zoomRangeLabel;
+  
+  /** the label displaying the maximum of the zoomed time slider */
   private JLabel zoomMaximumLabel;
   
+  /** the global time slider */
   private TimeSlider globalTimeSlider;
+  
+  /** the title for the invalid time scale error dialog */
+  @Resource private String timeScaleErrorTitle;
+  
+  /** the message for the time scale parse error dialog */
+  @Resource private String timeScaleParseErrorMessage;
+  
+  /** the message for the non positive time scale error dialog */
+  @Resource private String timeScaleNonPositiveErrorMessage;
 
   /** Predefined time scales */
  	private static final double timeScales[] = {0.001, 0.002, 0.005, 0.01, 0.02,
@@ -128,19 +155,23 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
     5e-2, 1e-1, 2e-1, 5e-1, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0,
     500.0, 1000.0}; 
 
-	public ChannelTree ctree;
+  /** the latest channel tree */
+  private ChannelTree ctree;
 
   /**
    * Construct a control panel to control data playback.
    */
-	public ControlPanel() {
-		super();
-
-		this.rbnbController = RBNBController.getInstance();
+  public ControlPanel() {
+    super();
+    
+    this.rbnbController = RBNBController.getInstance();
     
     hideEmptyTime = false;
-		
-		initPanel();
+    
+    initPanel();
+    
+    // inject fields from properties file
+    RDV.getInstance().getContext().getResourceMap().injectFields(this);
     
     double location = rbnbController.getLocation();
     globalTimeSlider.setValues(location, 0, location, 0, location);
@@ -207,15 +238,12 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
     
     firstRowPanel.add(Box.createHorizontalStrut(8));
     
-    playbackRateLabel = new JLabel("Playback rate: ");
-    firstRowPanel.add(playbackRateLabel);
-
     SpinnerListModel playbackRateModel = new SpinnerListModel(playbackRates);
     playbackRateSpinner = new JSpinner(playbackRateModel);
+    playbackRateSpinner.setName("playbackRateSpinner");
     JSpinner.ListEditor playbackRateEditor = new JSpinner.ListEditor(playbackRateSpinner);
     playbackRateEditor.getTextField().setEditable(false);
     playbackRateSpinner.setEditor(playbackRateEditor);
-    playbackRateSpinner.setToolTipText("The rate at which to playback data");
     playbackRateSpinner.setPreferredSize(new Dimension(80, playbackRateSpinner.getPreferredSize().height));
     playbackRateSpinner.setMinimumSize(playbackRateSpinner.getPreferredSize());
     playbackRateSpinner.setMaximumSize(playbackRateSpinner.getPreferredSize());
@@ -228,12 +256,9 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
 
     firstRowPanel.add(Box.createHorizontalStrut(8));
     
-    timeScaleLabel = new JLabel("Time scale: ");
-    firstRowPanel.add(timeScaleLabel);
-    
     timeScaleComboBox = new JComboBox();
+    timeScaleComboBox.setName("timeScaleComboBox");
     timeScaleComboBox.setEditable(true);
-    timeScaleComboBox.setToolTipText("The amount of data to display");
     timeScaleComboBox.setPreferredSize(new Dimension(96, timeScaleComboBox.getPreferredSize().height));
     timeScaleComboBox.setMinimumSize(timeScaleComboBox.getPreferredSize());
     timeScaleComboBox.setMaximumSize(timeScaleComboBox.getPreferredSize());
@@ -250,7 +275,7 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
     firstRowPanel.add(Box.createHorizontalGlue());
     
     locationButton = new JButton();
-    locationButton.setToolTipText("The current time location");
+    locationButton.setName("locationButton");
     locationButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
         TimeRange timeRange = RBNBHelper.getChannelsTimeRange();
@@ -295,16 +320,16 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
     zoomTimePanel.setLayout(new BorderLayout());
     
     zoomMinimumLabel = new JLabel();
-    zoomMinimumLabel.setToolTipText("The minimum time for the zoom time slider (above)");
+    zoomMinimumLabel.setName("zoomMinimumLabel");
     zoomTimePanel.add(zoomMinimumLabel, BorderLayout.WEST);
     
     zoomRangeLabel = new JLabel();
-    zoomRangeLabel.setToolTipText("The length in time of the zoom time slider (above)");
+    zoomRangeLabel.setName("zoomRangeLabel");
     zoomRangeLabel.setHorizontalAlignment(JLabel.CENTER);
     zoomTimePanel.add(zoomRangeLabel, BorderLayout.CENTER);
     
     zoomMaximumLabel = new JLabel();
-    zoomMaximumLabel.setToolTipText("The maximum time for the zoom time slider (above)");
+    zoomMaximumLabel.setName("zoomMaximumLabel");
     zoomTimePanel.add(zoomMaximumLabel, BorderLayout.EAST);
 
     c.fill = GridBagConstraints.HORIZONTAL;
@@ -522,16 +547,16 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
         timeScale = DataViewer.parseTime(timeScaleString);
       } catch (IllegalArgumentException e) {
         JOptionPane.showMessageDialog(this,
-            "The time scale is not formatted correctly.",
-            "Invalid time scale",
+            timeScaleParseErrorMessage,
+            timeScaleErrorTitle,
             JOptionPane.ERROR_MESSAGE);
         timeScale = rbnbController.getTimeScale();
       }
       
       if (timeScale <= 0) {
         JOptionPane.showMessageDialog(this,
-            "The time scale must be greater than 0.",
-            "Invalid time scale",
+            timeScaleNonPositiveErrorMessage,
+            timeScaleErrorTitle,
             JOptionPane.ERROR_MESSAGE);
         timeScale = rbnbController.getTimeScale();        
       }
@@ -718,14 +743,12 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
     playButton.setEnabled(enabled);
     endButton.setEnabled(enabled);
     
-    playbackRateLabel.setEnabled(enabled);
     if (enabled && rbnbController.getState() != Player.STATE_MONITORING) {
       playbackRateSpinner.setEnabled(true);
     } else {
       playbackRateSpinner.setEnabled(false);
     }
 
-    timeScaleLabel.setEnabled(enabled);
     timeScaleComboBox.setEnabled(enabled);
     
     locationButton.setEnabled(enabled);
