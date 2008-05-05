@@ -242,7 +242,7 @@ public class DataViewer {
     if (osName.startsWith("Mac OS")) {
       Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
       Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[] {String.class});
-      openURL.invoke(null, new Object[] {url});
+      openURL.invoke(null, new Object[] {url.toString()});
     } else if (osName.startsWith("Windows")) {
       Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
     } else { //assume Unix or Linux
