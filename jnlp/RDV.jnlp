@@ -1,27 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+"
-  codebase="http://it.nees.org/software/rdv"
-  href="RDV.jnlp">
+  codebase="http://rdv.googlecode.com/svn/wiki/"
+  href="rdv.jnlp">
 	<information>
 		<title>RDV</title>
-		<vendor>University at Buffalo, NEESit</vendor>
-		<homepage href="http://it.nees.org/software/rdv/"/>
-		<description>A tool to view synchronzied, streaming data from a Data Turbine server.</description>
-		<icon href="RDV.gif"/>
+		<vendor>Palta Software</vendor>
+		<homepage href="http://rdv.googlecode.com/"/>
+		<description>A visualization environment for scientific and engineering data.</description>
+		<icon href="rdv.png"/>
 		<offline-allowed/>
-		<shortcut online="false">
-			<desktop/>
-			<menu submenu="RDV"/>
-		</shortcut>
 	</information>
 	<security>
 		<all-permissions/>
 	</security>
 	<resources>
 		<j2se version="1.5+" initial-heap-size="64m" max-heap-size="256m"/>
-		<jar href="RDV.jar" main="true"/>
+		<jar href="rdv.jar" main="true"/>
 	</resources>
-	<application-desc main-class="org.rdv.DataViewer">
+	<application-desc main-class="org.rdv.RDV">
 		<property name="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.NoOpLog"/>
 	</application-desc>
 </jnlp>
