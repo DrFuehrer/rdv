@@ -9,8 +9,8 @@
 	<property name="debug" value="off"/>
 	
 	<!-- get version information -->
-	<property file="version.properties"/>
-	<property name="version" value="${version.major}.${version.minor}.${version.release}"/>
+	<property file="resources/org/rdv/resources/RDV.properties"/>
+	<property name="version" value="${Application.version}"/>
 			
 	<!-- source directory -->
 	<property name="src.dir" value="src"/>
@@ -103,7 +103,6 @@
 		
 		<jar destfile="${build.lib}/${ant.project.name}.jar">
 			<fileset dir="${build.classes}"/>
-			<fileset file="version.properties"/>
 			<fileset file="rdv.properties"/>
 			<fileset file="LICENSE.txt"/>
 			<zipfileset dir="${config.dir}" prefix="${config.dir}"/>
