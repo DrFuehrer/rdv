@@ -35,48 +35,43 @@ package org.rdv.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
 
 import org.jdesktop.application.ResourceMap;
+import org.rdv.DataViewer;
 import org.rdv.RDV;
 
 /**
  * @author Jason P. Hanley
  */
-public class AboutDialog extends JDialog {
-  
-  /** serialization version identifier */
-  private static final long serialVersionUID = 2530934125867161659L;
+class LicenseDialog extends JDialog {
 
-  LicenseDialog licenseDialog;
-		
-  public AboutDialog(JFrame owner) {
+  /** serialization version identifier */
+  private static final long serialVersionUID = 7319178973244961918L;
+
+  public LicenseDialog(JDialog owner) {
     super(owner);
     
-    setName("aboutDialog");
+    setName("licenseDialog");
     
-    setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-    
+    setDefaultCloseOperation(AboutDialog.DISPOSE_ON_CLOSE);
+
     JPanel container = new JPanel();
     container.setLayout(new BorderLayout());
     container.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
@@ -85,76 +80,69 @@ public class AboutDialog extends JDialog {
     InputMap inputMap = container.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     ActionMap actionMap = container.getActionMap();
 
-    // get the frame image and convert it to an icon
-    Image logoImage = RDV.getInstance(RDV.class).getMainFrame().getIconImage();
-    Icon logoIcon = new ImageIcon(logoImage);
-    
-    JLabel logoLabel = new JLabel(logoIcon);
-    logoLabel.setName("logoLabel");
-    logoLabel.setBorder(BorderFactory.createEmptyBorder(0,0,0,10));
-    logoLabel.setVerticalAlignment(SwingConstants.TOP);
-    container.add(logoLabel, BorderLayout.WEST);
-
-    JTextArea aboutTextArea = new JTextArea();
-    aboutTextArea.setName("aboutTextArea");
-    aboutTextArea.setBorder(BorderFactory.createCompoundBorder(
-        BorderFactory.createEtchedBorder(EtchedBorder.LOWERED),
-        BorderFactory.createEmptyBorder(5,5,5,5)));
-    aboutTextArea.setBackground(Color.white);
-    aboutTextArea.setFont(logoLabel.getFont());
-    aboutTextArea.setEditable(false);      
-    aboutTextArea.setLineWrap(true);
-    aboutTextArea.setWrapStyleWord(true);
-    aboutTextArea.setPreferredSize(new Dimension(256,256));
-    container.add(aboutTextArea, BorderLayout.CENTER);
-    
     Action disposeAction = new AbstractAction() {
       /** serialization version identifier */
-      private static final long serialVersionUID = -6076510093659918139L;
+      private static final long serialVersionUID = 5818337446139393403L;
 
       public void actionPerformed(ActionEvent arg0) {
         dispose();
       }
     };
+
     disposeAction.putValue(Action.NAME, "OK");
     inputMap.put(KeyStroke.getKeyStroke("ENTER"), "dispose");
     inputMap.put(KeyStroke.getKeyStroke("ESCAPE"), "dispose");
-    actionMap.put("dispose", disposeAction);
-       
-    JPanel buttonPanel = new JPanel();
-    buttonPanel.setBorder(BorderFactory.createEmptyBorder(10,0,0,0));
-    buttonPanel.setLayout(new BorderLayout());
+    actionMap.put("dispose", disposeAction);     
+    
+    JTextArea textArea = new JTextArea();
+    textArea.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+    textArea.setBackground(Color.white);
+    textArea.setEditable(false);      
+    textArea.setLineWrap(true);
+    textArea.setWrapStyleWord(true);
 
-    JButton licenseButton = new JButton("License");
-    licenseButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-        showLicense();
-      }
-    });
-    buttonPanel.add(licenseButton, BorderLayout.WEST);
+    JScrollPane scrollPane = 
+        new JScrollPane(textArea,
+                        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollPane.setPreferredSize(new Dimension(500, 300));
+    container.add(scrollPane, BorderLayout.CENTER);
+    
+    JPanel buttonPanel = new JPanel();
+    buttonPanel.setLayout(new BorderLayout());
+    buttonPanel.setBorder(BorderFactory.createEmptyBorder(10,0,0,0));
     
     JButton okButton = new JButton(disposeAction);
-    buttonPanel.add(okButton, BorderLayout.EAST);
-
+    buttonPanel.add(okButton, BorderLayout.EAST);      
+    
     container.add(buttonPanel, BorderLayout.SOUTH);
+    
+    loadLicense(textArea);
+    textArea.setCaretPosition(0);
     
     // inject resources from the properties for this component
     ResourceMap resourceMap = RDV.getInstance().getContext().getResourceMap(getClass());
     resourceMap.injectComponents(this);
-		
+
     pack();
 
     okButton.requestFocusInWindow();
 
     setLocationByPlatform(true);
-    setVisible(true);
+    setVisible(true);      
   }
   
-  private void showLicense() {
-    if (licenseDialog == null) {
-      licenseDialog = new LicenseDialog(this);
-    } else {
-      licenseDialog.setVisible(true);
-    }
+  private void loadLicense(JTextArea textArea) {
+    try {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(DataViewer.getResourceAsStream("LICENSE.txt")));
+
+      String s = null;
+      while ((s = reader.readLine()) != null) {
+        textArea.append(s);
+        textArea.append("\n");
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }      
   }
 }
