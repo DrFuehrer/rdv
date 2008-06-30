@@ -63,13 +63,17 @@ import javax.imageio.ImageIO;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.PopupMenuEvent;
@@ -140,6 +144,9 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   
   /** a flag to enabled/disable filmstrip mode */
   private boolean filmstripMode;
+  
+  /** the values for the maximum number of filmstrip image */
+  private static final int[] MAXIMUM_FILMSTRIP_IMAGES_VALUES = new int[] { 2, 3, 4, 5, 6, 8, 9, 10, 12, 15, 16, 18, 20 };
   
   /** a flag to enable/disable usage of a thumbnail image */
   private boolean useThumbnailImage;
@@ -550,7 +557,8 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     });
     popupMenu.add(zoomOutMenuItem);
 
-    popupMenu.addSeparator();
+    final JSeparator zoomMenuSeparator = new JPopupMenu.Separator();
+    popupMenu.add(zoomMenuSeparator);
 
     autoScaleMenuItem = new  JCheckBoxMenuItem("Auto scale", true);
     autoScaleMenuItem.addActionListener(new ActionListener() {
@@ -576,6 +584,21 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     });
     popupMenu.add(showNavigationImageMenuItem);
     
+    final JMenu maximumFilmstripImagesMenu = new JMenu("Maximum number of images");
+    ButtonGroup maximumFilmstripImagesButtonGroup = new ButtonGroup();
+    for (final int maximumFilmstripImagesValue : MAXIMUM_FILMSTRIP_IMAGES_VALUES) {
+      boolean selected = filmstripPanel.getMaximumNumberOfImages() == maximumFilmstripImagesValue;
+      JMenuItem maximumFilmStripImagesMenuItem = new JRadioButtonMenuItem(Integer.toString(maximumFilmstripImagesValue), selected);
+      maximumFilmStripImagesMenuItem.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          filmstripPanel.setMaximumNumberOfImages(maximumFilmstripImagesValue);
+        }        
+      });
+      maximumFilmstripImagesButtonGroup.add(maximumFilmStripImagesMenuItem);
+      maximumFilmstripImagesMenu.add(maximumFilmStripImagesMenuItem);
+    }
+    popupMenu.add(maximumFilmstripImagesMenu);
+    
     popupMenu.addSeparator();
     
     final JCheckBoxMenuItem showAsFilmstripMenuItem = new JCheckBoxMenuItem("Show as filmstrip", filmstripMode);
@@ -593,6 +616,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
         setUseThumbnailImage(useThumbnailImageMenuItem.isSelected());
       }
     });
+    popupMenu.add(useThumbnailImageMenuItem);
 
     hideRoboticControlsMenuItem = new JCheckBoxMenuItem("Disable robotic controls", false);
     hideRoboticControlsMenuItem.addActionListener(new ActionListener() {
@@ -600,37 +624,34 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
         setRoboticControls();
       }
     });
+    popupMenu.add(hideRoboticControlsMenuItem);
     
     // enable the save image popup if an image is being displayed
     popupMenu.addPopupMenuListener(new PopupMenuListener() {
       public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
-        boolean enable = displayedImageData != null;
-        saveImageMenuItem.setEnabled(enable);
-        copyImageMenuItem.setEnabled(enable);
-        printImageMenuItem.setEnabled(enable);
+        boolean hasImage = displayedImageData != null;
+        saveImageMenuItem.setEnabled(hasImage);
+        copyImageMenuItem.setEnabled(hasImage);
+        printImageMenuItem.setEnabled(hasImage);
         
-        boolean enableZoom = enable && ! filmstripMode;
+        boolean enableZoom = hasImage && ! filmstripMode;
         zoomInMenuItem.setEnabled(enableZoom);
+        zoomInMenuItem.setVisible(!filmstripMode);
         zoomOutMenuItem.setEnabled(enableZoom);
+        zoomOutMenuItem.setVisible(!filmstripMode);
+        zoomMenuSeparator.setVisible(!filmstripMode);
         
-        autoScaleMenuItem.setEnabled(!filmstripMode);
-        resetScaleMenuItem.setEnabled(!filmstripMode);
-        showNavigationImageMenuItem.setEnabled(!filmstripMode);
+        autoScaleMenuItem.setVisible(!filmstripMode);
+        resetScaleMenuItem.setVisible(!filmstripMode);
+        showNavigationImageMenuItem.setVisible(!filmstripMode);
+        maximumFilmstripImagesMenu.setVisible(filmstripMode);
         
         showAsFilmstripMenuItem.setSelected(filmstripMode);
 
         useThumbnailImageMenuItem.setSelected(useThumbnailImage);
-        if (imageHasThumbnail()) {
-          popupMenu.add(useThumbnailImageMenuItem);
-        } else {
-          popupMenu.remove(useThumbnailImageMenuItem);
-        }
+        useThumbnailImageMenuItem.setVisible(imageHasThumbnail());
         
-        if (flexTPSStream != null) {
-          popupMenu.add(hideRoboticControlsMenuItem);
-        } else {
-          popupMenu.remove(hideRoboticControlsMenuItem);
-        }
+        hideRoboticControlsMenuItem.setVisible(flexTPSStream != null);
       }
       public void popupMenuWillBecomeInvisible(PopupMenuEvent arg0) {}
       public void popupMenuCanceled(PopupMenuEvent arg0) {}

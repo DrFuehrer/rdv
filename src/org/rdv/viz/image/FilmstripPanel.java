@@ -52,12 +52,17 @@ import org.rdv.rbnb.RBNBController;
  * A class to display images like a filmstrip.
  * 
  * @author Jason P. Hanley
- *
  */
 public class FilmstripPanel extends JPanel {
 
   /** serialization version identifier */
   private static final long serialVersionUID = 6924475674504241229L;
+  
+  /** the default value for the maximum number of images */
+  private static final int DEFAULT_MAXIMUM_NUMBER_OF_IMAGES = 4;
+  
+  /** the maximum number of images that can be displayed at one time */
+  private int maximumNumberOfImages; 
   
   /** the current time */
   private double time;
@@ -68,11 +73,16 @@ public class FilmstripPanel extends JPanel {
   /** the mouse listener for clicks on an image */
   private final MouseListener mouseListener;
   
+  /** a image panel cached for later use */
+  private ImagePanel cachedImagePanel;
+  
   /**
    * Creates a filmstrip panel with a time scale of 1.
    */
   public FilmstripPanel() {
     super();
+    
+    maximumNumberOfImages = DEFAULT_MAXIMUM_NUMBER_OF_IMAGES;
     
     timescale = 1;
     
@@ -106,20 +116,27 @@ public class FilmstripPanel extends JPanel {
       }
     }
     
-    ImagePanel imagePanel = new ImagePanel(false);
-    imagePanel.setBackground(Color.black);    
+    ImagePanel imagePanel;
+    if (cachedImagePanel != null) {
+      imagePanel = cachedImagePanel;
+      cachedImagePanel = null;
+    } else {
+      imagePanel = new ImagePanel(false);
+      imagePanel.setBackground(Color.black);
+      imagePanel.setComponentPopupMenu(getComponentPopupMenu());
+      imagePanel.addMouseListener(mouseListener);
+      
+      for (MouseListener listener : getMouseListeners()) {
+        imagePanel.addMouseListener(listener);
+      }
+    }
+        
     imagePanel.setImage(image, timestamp);
     imagePanel.setToolTipText(DataViewer.formatDateSmart(timestamp));
-    imagePanel.setComponentPopupMenu(getComponentPopupMenu());
-    imagePanel.addMouseListener(mouseListener);
-    
-    for (MouseListener listener : getMouseListeners()) {
-      imagePanel.addMouseListener(listener);
-    }
     
     add(imagePanel);
     
-    ageImages();
+    purgeImages();
   }
   
   /**
@@ -130,14 +147,39 @@ public class FilmstripPanel extends JPanel {
   }
   
   /**
-   * Sets the time for the filmstrip.
+   * Gets the maximum number of images displayed in the filmstrip.
+   * 
+   * @return  the maximum number of images displayed
+   */
+  public int getMaximumNumberOfImages() {
+    return maximumNumberOfImages;
+  }
+  
+  /**
+   * Sets the maximum number of images displayed in the filmstrip.
+   * 
+   * @param maximumNumberOfImages  the maximum number of images to display
+   */
+  public void setMaximumNumberOfImages(int maximumNumberOfImages) {
+    if (this.maximumNumberOfImages == maximumNumberOfImages || maximumNumberOfImages < 2) {
+      return;
+    }
+    
+    this.maximumNumberOfImages = maximumNumberOfImages;
+    
+    purgeImages();
+  }
+  
+  /**
+   * Sets the time for the filmstrip. Images older than the time scale will be
+   * removed.
    * 
    * @param time  the new time
    */
   public void setTime(double time) {
     this.time = time;
     
-    ageImages();
+    purgeImages();
   }
   
   /**
@@ -148,25 +190,56 @@ public class FilmstripPanel extends JPanel {
   public void setTimescale(double timescale) {
     this.timescale = timescale;
     
-    ageImages();
+    purgeImages();
   }
   
   /**
-   * Ages images older than the time scale, relative to the current time.
+   * Purges images that shouldm't be displayed anymore. This includes enforcing
+   * the maximum number of images and aging images older than the time scale,
+   * relative to the current time.
    */
-  private void ageImages() {
-    int componentCount = getComponentCount();
-    if (componentCount == 0) {
+  private void purgeImages() {
+    if (getComponentCount() == 0) {
       return;
     }
     
-    for (int i=componentCount-1; i>=0 ; i--) {
+    boolean revalidate = false;
+    
+    while (getComponentCount() > maximumNumberOfImages) {
+      cacheImagePanel((ImagePanel)getComponent(0));
+      
+      remove(0);
+      revalidate = true;
+    }
+    
+    for (int i=getComponentCount()-1; i>=0 ; i--) {
       ImagePanel imagePanel = (ImagePanel)getComponent(i);
       if (imagePanel.getTimestamp() <= time-timescale || imagePanel.getTimestamp() > time) {
+        cacheImagePanel((ImagePanel)getComponent(i));
+        
         remove(i);
-        revalidate();
+        revalidate = true; 
       }
     }
+    
+    if (revalidate) {
+      revalidate();
+    }
+  }
+  
+  /**
+   * Caches the image panel if one isn't cached already. The image panel will
+   * be cleared of any image it contains.
+   * 
+   * @param imagePanel  the image panel to cache
+   */
+  private void cacheImagePanel(ImagePanel imagePanel) {
+    if (cachedImagePanel != null) {
+      return;
+    }
+    
+    imagePanel.setImage(null, -1);
+    cachedImagePanel = imagePanel;
   }
   
   /**
