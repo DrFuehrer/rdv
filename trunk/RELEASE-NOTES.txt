@@ -8,15 +8,16 @@ INTRODUCTION
 
 NEW FEATURES
 
-  - Support for PNG and GIF images with the ImageViz visualization extension.
+  - Support for panning and zooming of an image. A clickable navigation image
+    can be used to jump around parts of an image when zoomed in.
+  - Filmstrip interface to view images
+  - Support for viewing a thumbnail of an image to conserve bandwidth.
+  - Support for PNG and GIF images.
   - DialViz, a visualization extension to view a numeric data channel on a dial.
   - Export of data to the MATLAB MAT-file format.
+  - Cursors on an XY plot to indicate the current data point in a series.
   - Support for port knocking authentication.
-  - Added support for panning and zooming to ImageViz. A clickable thumbnail
-  	image was also added and is displayed for navigation purposes when zoomed
-  	in.
-  - Added a cursor to the XY plot to indicate the current data point in a
-    series.
+  
 
 BUG FIXES
 

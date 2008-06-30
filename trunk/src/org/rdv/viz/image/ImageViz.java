@@ -1,10 +1,11 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://rdv.googlecode.com/
  * 
  * Copyright (c) 2005-2007 University at Buffalo
  * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2008 Palta Software
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
 import java.awt.print.PrinterException;
@@ -111,34 +113,61 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   /** the data panel property for the robotic controls visibility */
   private static final String DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS = "hideRoboticControls";
 
-  ImagePanel image;
-  JPanel panel;
-  JPanel topControls;
-  JPanel irisControls;
-  JPanel focusControls;  
-  JPanel zoomControls;
-  JPanel tiltControls;
-  JPanel panControls;
-  JCheckBoxMenuItem autoScaleMenuItem;
-  JCheckBoxMenuItem showNavigationImageMenuItem;
-  JCheckBoxMenuItem hideRoboticControlsMenuItem;
+  /** the main panel */
+  private JPanel panel;
   
-  MouseInputAdapter clickMouseListener;
- 	
- 	double displayedImageTime;
-  byte[] displayedImageData;
+  /** the panel to display the image */
+  private ImagePanel imagePanel;
   
-  FlexTPSStream flexTPSStream;
- 	 	
-	public ImageViz() {
-		super();
-		
-		displayedImageTime = -1;
-	
-		initUI();
+  /** the panel to display images as a filmstrip */
+  private FilmstripPanel filmstripPanel;
 
-		setDataComponent(panel);
-	}
+  // the panels for the robotic controls
+  private JPanel topControls;
+  private JPanel irisControls;
+  private JPanel focusControls;  
+  private JPanel zoomControls;
+  private JPanel tiltControls;
+  private JPanel panControls;
+  
+  // menu items for the popup menu
+  private JCheckBoxMenuItem autoScaleMenuItem;
+  private JCheckBoxMenuItem showNavigationImageMenuItem;
+  private JCheckBoxMenuItem hideRoboticControlsMenuItem;
+
+  /** the mouse click listener for robotic control */
+  MouseInputAdapter roboticMouseClickListener;
+  
+  /** a flag to enabled/disable filmstrip mode */
+  private boolean filmstripMode;
+  
+  /** a flag to enable/disable usage of a thumbnail image */
+  private boolean useThumbnailImage;
+  
+  /** the name of the thumbnail plugin */
+  private static final String THUMBNAIL_PLUGIN_NAME = "_Thumbnails";
+ 	
+  /** the time for the currently displayed image */
+  private double displayedImageTime;
+ 	
+  /** the data for the currently displayed image */
+  private byte[] displayedImageData;
+  
+  /** the flexTPS stream object for the current channel */
+  private FlexTPSStream flexTPSStream;
+ 	 	
+  public ImageViz() {
+    super();
+    
+    filmstripMode = false;
+    useThumbnailImage = false;
+    
+    displayedImageTime = -1;
+    
+    initUI();
+    
+    setDataComponent(panel);
+  }
   
   public void openPanel(final DataPanelManager dataPanelManager) {
     super.openPanel(dataPanelManager);
@@ -156,25 +185,27 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     panel = new JPanel();
     panel.setLayout(new BorderLayout());
     
-    initImage();
+    initImagePanel();
     
-    topControls = new JPanel();
-    topControls.setLayout(new BorderLayout());
-    panel.add(topControls, BorderLayout.NORTH);
+    initFilmstripPanel();
+    
+    initTopControlsPanel();
     
     initIrisControls();   
     initFocusControls();
     initZoomControls();
     initTiltControls();
     initPanControls();
+    
+    initRoboticMouseClickListener();
 
     initPopupMenu();
   }
 			
-	private void initImage() {
-		image = new ImagePanel();
-    image.setBackground(Color.black);
-    image.addPropertyChangeListener(new PropertyChangeListener() {
+  private void initImagePanel() {
+    imagePanel = new ImagePanel();
+    imagePanel.setBackground(Color.black);
+    imagePanel.addPropertyChangeListener(new PropertyChangeListener() {
       public void propertyChange(PropertyChangeEvent pce) {
         String propertyName = pce.getPropertyName();
         if (propertyName.equals(ImagePanel.AUTO_SCALING_PROPERTY)) {
@@ -184,12 +215,12 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
             properties.remove(DATA_PANEL_PROPERTY_SCALE);
             properties.remove(DATA_PANEL_PROPERTY_ORIGIN);
           } else {
-            properties.setProperty(DATA_PANEL_PROPERTY_SCALE, Double.toString(image.getScale()));
-            properties.setProperty(DATA_PANEL_PROPERTY_ORIGIN, pointToString(image.getOrigin()));
+            properties.setProperty(DATA_PANEL_PROPERTY_SCALE, Double.toString(imagePanel.getScale()));
+            properties.setProperty(DATA_PANEL_PROPERTY_ORIGIN, pointToString(imagePanel.getOrigin()));
           }
-        } else if (propertyName.equals(ImagePanel.SCALE_PROPERTY) && !image.isAutoScaling()) {
+        } else if (propertyName.equals(ImagePanel.SCALE_PROPERTY) && !imagePanel.isAutoScaling()) {
           properties.setProperty(DATA_PANEL_PROPERTY_SCALE, pce.getNewValue().toString());
-        } else if (propertyName.equals(ImagePanel.ORIGIN_PROPERTY) && !image.isAutoScaling()) {
+        } else if (propertyName.equals(ImagePanel.ORIGIN_PROPERTY) && !imagePanel.isAutoScaling()) {
           Point origin = (Point)pce.getNewValue();
           String originString = pointToString(origin);
           properties.setProperty(DATA_PANEL_PROPERTY_ORIGIN, originString);
@@ -205,17 +236,27 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       }
     });
     
-    clickMouseListener = new MouseInputAdapter() {
+    panel.add(imagePanel, BorderLayout.CENTER);
+  }
+  
+  private void initFilmstripPanel() {
+    filmstripPanel = new FilmstripPanel();
+    filmstripPanel.setBackground(Color.black);
+    
+    filmstripPanel.addMouseListener(new MouseAdapter() {
       public void mouseClicked(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-          Point imagePoint = image.panelToScaledImagePoint(e.getPoint());
-          if (imagePoint != null) {
-            center(imagePoint);
-          }
+        if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
+          setFilmstripMode(false);
         }
-      }   
-    };
-	}
+      }
+    });
+  }
+  
+  private void initTopControlsPanel() {
+    topControls = new JPanel();
+    topControls.setLayout(new BorderLayout());
+    panel.add(topControls, BorderLayout.NORTH);
+  }
   
   private void initIrisControls() {
     irisControls = new JPanel();
@@ -397,8 +438,6 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   }
   
   private void initPanControls() {
-    panel.add(image, BorderLayout.CENTER);
-    
     panControls = new JPanel();
     panControls.setLayout(new BorderLayout());
     
@@ -445,7 +484,20 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     
     panControls.add(bottomRightControls, BorderLayout.EAST);    
   }
-  
+
+  private void initRoboticMouseClickListener() {
+    roboticMouseClickListener = new MouseInputAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        if (e.getButton() == MouseEvent.BUTTON1) {
+          Point imagePoint = imagePanel.panelToScaledImagePoint(e.getPoint());
+          if (imagePoint != null) {
+            center(imagePoint);
+          }
+        }
+      }   
+    };    
+  }
+
   private void initPopupMenu() {
     final JPopupMenu popupMenu = new JPopupMenu();
     
@@ -485,7 +537,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     final JMenuItem zoomInMenuItem = new JMenuItem("Zoom in");
     zoomInMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        image.zoomIn();
+        imagePanel.zoomIn();
       }
     });
     popupMenu.add(zoomInMenuItem);
@@ -493,7 +545,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     final JMenuItem zoomOutMenuItem = new JMenuItem("Zoom out");
     zoomOutMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        image.zoomOut();
+        imagePanel.zoomOut();
       }
     });
     popupMenu.add(zoomOutMenuItem);
@@ -508,15 +560,15 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     });
     popupMenu.add(autoScaleMenuItem);
     
-    JMenuItem resetScaleMenuItem = new JMenuItem("Reset scale");
+    final JMenuItem resetScaleMenuItem = new JMenuItem("Reset scale");
     resetScaleMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
-        image.setScale(1);
+        imagePanel.setScale(1);
       }
     });
     popupMenu.add(resetScaleMenuItem);
     
-    showNavigationImageMenuItem = new JCheckBoxMenuItem("Show navigation image", image.isNavigationImageEnabled());
+    showNavigationImageMenuItem = new JCheckBoxMenuItem("Show navigation image", imagePanel.isNavigationImageEnabled());
     showNavigationImageMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
         setShowNavigationImage(showNavigationImageMenuItem.isSelected());
@@ -524,13 +576,31 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     });
     popupMenu.add(showNavigationImageMenuItem);
     
+    popupMenu.addSeparator();
+    
+    final JCheckBoxMenuItem showAsFilmstripMenuItem = new JCheckBoxMenuItem("Show as filmstrip", filmstripMode);
+    showAsFilmstripMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        boolean filmstripMode = showAsFilmstripMenuItem.isSelected(); 
+        setFilmstripMode(filmstripMode);
+      }
+    });
+    popupMenu.add(showAsFilmstripMenuItem);
+    
+    final JCheckBoxMenuItem useThumbnailImageMenuItem = new JCheckBoxMenuItem("Use thumbnail image", useThumbnailImage);
+    useThumbnailImageMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        setUseThumbnailImage(useThumbnailImageMenuItem.isSelected());
+      }
+    });
+
     hideRoboticControlsMenuItem = new JCheckBoxMenuItem("Disable robotic controls", false);
     hideRoboticControlsMenuItem.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
         setRoboticControls();
       }
     });
-
+    
     // enable the save image popup if an image is being displayed
     popupMenu.addPopupMenuListener(new PopupMenuListener() {
       public void popupMenuWillBecomeVisible(PopupMenuEvent arg0) {
@@ -538,8 +608,23 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
         saveImageMenuItem.setEnabled(enable);
         copyImageMenuItem.setEnabled(enable);
         printImageMenuItem.setEnabled(enable);
-        zoomInMenuItem.setEnabled(enable);
-        zoomOutMenuItem.setEnabled(enable);
+        
+        boolean enableZoom = enable && ! filmstripMode;
+        zoomInMenuItem.setEnabled(enableZoom);
+        zoomOutMenuItem.setEnabled(enableZoom);
+        
+        autoScaleMenuItem.setEnabled(!filmstripMode);
+        resetScaleMenuItem.setEnabled(!filmstripMode);
+        showNavigationImageMenuItem.setEnabled(!filmstripMode);
+        
+        showAsFilmstripMenuItem.setSelected(filmstripMode);
+
+        useThumbnailImageMenuItem.setSelected(useThumbnailImage);
+        if (imageHasThumbnail()) {
+          popupMenu.add(useThumbnailImageMenuItem);
+        } else {
+          popupMenu.remove(useThumbnailImageMenuItem);
+        }
         
         if (flexTPSStream != null) {
           popupMenu.add(hideRoboticControlsMenuItem);
@@ -553,8 +638,96 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     
     // set component popup and mouselistener to trigger it
     panel.setComponentPopupMenu(popupMenu);
-    image.setComponentPopupMenu(popupMenu);
+    imagePanel.setComponentPopupMenu(popupMenu);
+    filmstripPanel.setComponentPopupMenu(popupMenu);
     panel.addMouseListener(new MouseInputAdapter() {});    
+  }
+  
+  /**
+   * Sets filmstrip mode. If enabled, images will be displayed like a filmstrip,
+   * if disbaled only the latest image will be displayed.
+   * 
+   * @param filmstripMode  if true, display images like a filmstrip
+   */
+  private void setFilmstripMode(boolean filmstripMode) {
+    if (this.filmstripMode == filmstripMode) {
+      return;
+    }
+    
+    this.filmstripMode = filmstripMode;
+    
+    BufferedImage displayedImage = getDisplayedImage();
+    
+    if (filmstripMode) {
+      panel.remove(imagePanel);
+      imagePanel.setImage(null, -1);
+
+      if (displayedImage != null) {
+        filmstripPanel.addImage(displayedImage, displayedImageTime);
+      }
+      panel.add(filmstripPanel, BorderLayout.CENTER);
+    } else {
+      panel.remove(filmstripPanel);
+      filmstripPanel.clearImages();
+      
+      if (displayedImage != null) {
+        imagePanel.setImage(displayedImage, displayedImageTime);
+      }
+      panel.add(imagePanel, BorderLayout.CENTER);
+    }
+    
+    setRoboticControls();
+    
+    panel.revalidate();
+    panel.repaint();
+  }
+  
+  /**
+   * Controls the usage of thumbnail images.
+   * 
+   * @param useThumbnailImage  if true, use thumbnail images, otherwise don't
+   */
+  private void setUseThumbnailImage(boolean useThumbnailImage) {
+    if (this.useThumbnailImage == useThumbnailImage) {
+      return;
+    }
+    
+    if (useThumbnailImage && !imageHasThumbnail()) {
+      return;
+    }
+    
+    this.useThumbnailImage = useThumbnailImage;
+    
+    clearImage();
+    
+    String channelName = (String)channels.iterator().next();
+    String thumbnailChannelName = THUMBNAIL_PLUGIN_NAME + "/" + channelName;
+    
+    if (useThumbnailImage) {
+      rbnbController.unsubscribe(channelName, this);
+      rbnbController.subscribe(thumbnailChannelName, this);
+    } else {
+      rbnbController.unsubscribe(thumbnailChannelName, this);
+      rbnbController.subscribe(channelName, this);
+    }
+  }
+
+  /**
+   * Returns true if there is a thumbnail image channel available for this
+   * image.
+   * 
+   * @return
+   */
+  private boolean imageHasThumbnail() {
+    if (channels.size() == 0) {
+      return false;
+    }
+    
+    String channelName = (String)channels.iterator().next();
+    String thumbnailChannelName = THUMBNAIL_PLUGIN_NAME + "/" + channelName;
+    Channel thumbnailChannel = rbnbController.getChannel(thumbnailChannelName);
+    
+    return thumbnailChannel != null;
   }
   
   private void addRoboticControls() {
@@ -590,8 +763,8 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     
     panel.revalidate();
     
-    image.removeMouseListener(clickMouseListener);
-    image.addMouseListener(clickMouseListener);
+    imagePanel.removeMouseListener(roboticMouseClickListener);
+    imagePanel.addMouseListener(roboticMouseClickListener);
   }
   
   private void removeRoboticControls() {
@@ -602,10 +775,15 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     panel.remove(panControls);
     panel.revalidate();
     
-    image.removeMouseListener(clickMouseListener);
+    imagePanel.removeMouseListener(roboticMouseClickListener);
   }
   
   private void setRoboticControls() {
+    if (filmstripMode) {
+      removeRoboticControls();
+      return;
+    }
+    
     if (hideRoboticControlsMenuItem.isSelected()) {
       properties.setProperty(DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS, "true");
       removeRoboticControls();      
@@ -617,6 +795,29 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
         removeRoboticControls();
       }      
     }
+  }
+  
+  /**
+   * Gets the displayed image. If no image is displayed or there is an error
+   * decoding the displayed image, null is returned.
+   * 
+   * @return  the displayed image, or null if there is one or if there is an
+   *          error decoding the image
+   */
+  private BufferedImage getDisplayedImage() {
+    if (displayedImageData == null) {
+      return null;
+    }
+    
+    InputStream in = new ByteArrayInputStream(displayedImageData);
+    BufferedImage bufferedImage = null;
+    try {
+      bufferedImage = ImageIO.read(in);
+    } catch (IOException e) {
+      log.error("Failed to decode displayed image.");
+      e.printStackTrace();
+    }
+    return bufferedImage;
   }
   
   /**
@@ -694,7 +895,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
    */
   private void copyImage() {
     // get the displayed image
-    Image displayedImage = image.getImage();
+    Image displayedImage = getDisplayedImage();
     if (displayedImage == null) {
       return;
     }
@@ -715,7 +916,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
    */
   private void printImage() {
     // get the displayed image
-    final Image displayedImage = image.getImage();
+    final Image displayedImage = getDisplayedImage();
     if (displayedImage == null) {
       return;
     }
@@ -783,11 +984,11 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   }
   
   private void setShowNavigationImage(boolean showNavigation) {
-    image.setNavigationImageEnabled(showNavigation);
+    imagePanel.setNavigationImageEnabled(showNavigation);
   }
   
   private void setAutoScale(boolean autoScale) {
-    image.setAutoScaling(autoScale);
+    imagePanel.setAutoScaling(autoScale);
   }
 
   private void panLeft() {
@@ -834,7 +1035,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   
   private void center(Point p) {
     if (flexTPSStream != null) {
-      flexTPSStream.center(p, image.getScaledImageSize());
+      flexTPSStream.center(p, imagePanel.getScaledImageSize());
     }
   }
   
@@ -971,11 +1172,19 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   
   protected void channelAdded(String channelName) {
     clearImage();
+
     setupFlexTPSStream();
   }
   
   protected void channelRemoved(String channelName) {
+    if (useThumbnailImage) {
+      String thumbnailChannelName = THUMBNAIL_PLUGIN_NAME + "/" + channelName;
+      rbnbController.unsubscribe(thumbnailChannelName, this);
+      useThumbnailImage = false;
+    }
+    
     clearImage();
+    
     flexTPSStream = null;
     removeRoboticControls();
   }
@@ -984,17 +1193,38 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 		super.postData(channelMap);
 	}
 
-	public void postTime(double time) {
+	public void postTime(final double time) {
 		super.postTime(time);
-    
+
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        filmstripPanel.setTime(time);
+      }
+    });
+		
     postImage();
     
     //clear stale images
     if (displayedImageTime != -1 && (displayedImageTime <= time-timeScale || displayedImageTime > time)) {
-      clearImage();
+      SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          clearImage();
+        }
+      });
     }
   }
-  
+	
+  @Override
+  public void timeScaleChanged(final double timeScale) {
+    super.timeScaleChanged(timeScale);
+    
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        filmstripPanel.setTimescale(timeScale);
+      }
+    });
+  }
+
   private void postImage() {
 		if (channelMap == null) {
 			//no data to display yet
@@ -1007,7 +1237,13 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 			return;
 		}
 			
-		final String channelName = (String)it.next();
+		final String channelName;
+		
+		if (useThumbnailImage) {
+		  channelName = THUMBNAIL_PLUGIN_NAME + "/" + (String)it.next();
+		} else {
+		  channelName = (String)it.next();
+		}
 		
 		try {			
 			int channelIndex = channelMap.GetIndex(channelName);
@@ -1038,7 +1274,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 				return;
 			}
 
-			double imageTime = times[imageIndex];
+			final double imageTime = times[imageIndex];
 			if (imageTime == displayedImageTime) {
 				//we are already displaying this image
 				return;
@@ -1053,10 +1289,16 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 				//draw image on screen
         final InputStream in = new ByteArrayInputStream(displayedImageData);
         
-        SwingUtilities.invokeAndWait(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
           public void run() {
             try {
-              image.setImage(ImageIO.read(in));
+              BufferedImage bufferedImage = ImageIO.read(in);
+              
+              if (filmstripMode) {
+                filmstripPanel.addImage(bufferedImage, imageTime);
+              } else {
+                imagePanel.setImage(bufferedImage, imageTime);
+              }
             } catch (IOException e) {
               log.error("Failed to decode image for " + channelName + ".");
               e.printStackTrace();
@@ -1084,7 +1326,12 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   }
 	
 	private void clearImage() {
-		image.setImage(null);
+	  if (filmstripMode) {
+	    filmstripPanel.clearImages();
+	  } else {
+	    imagePanel.setImage(null, -1);
+	  }
+	  
 		displayedImageData = null;
 		displayedImageTime = -1;
 	}
@@ -1100,7 +1347,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     if (key.equals(DATA_PANEL_PROPERTY_SCALE)) {
       try {
         double scale = Double.parseDouble(value);
-        image.setScale(scale);
+        imagePanel.setScale(scale);
       } catch (NumberFormatException e) {
         log.warn("Unable to set scale: " + value + ".");
       }
@@ -1110,7 +1357,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
         try {
           int x = Integer.parseInt(pointComponents[0]);
           int y = Integer.parseInt(pointComponents[1]);
-          image.setOrigin(x, y);
+          imagePanel.setOrigin(x, y);
         } catch (NumberFormatException e) {
           log.warn("Unable to set origin: " + value + ".");
         }
@@ -1118,7 +1365,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
         log.warn("Unable to set origin: " + value + ".");
       }
     } else if (key.equals(DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE) && Boolean.parseBoolean(value)) {
-      image.setNavigationImageEnabled(true);
+      imagePanel.setNavigationImageEnabled(true);
     } else if (key.equals(DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS) && Boolean.parseBoolean(value)) {
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();
