@@ -134,11 +134,11 @@ public class DataViewer {
     if (t.length() == 0) {
       throw new IllegalArgumentException("Empty input string.");
     } else if (t.endsWith("ns")) {
-      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000;
+      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000000000;
     } else if (t.endsWith("us")) {
       time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000000;
     } else if (t.endsWith("ms")) {
-      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000000000;      
+      time = Double.parseDouble(t.substring(0, t.length()-2).trim()) / 1000;      
     } else if (t.endsWith("s")) {
       time = Double.parseDouble(t.substring(0, t.length()-1).trim());
     } else if (t.endsWith("m")) {
