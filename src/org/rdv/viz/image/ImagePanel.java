@@ -1,9 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://rdv.googlecode.com/
  * 
- * Copyright (c) 2007 Palta Software
+ * Copyright (c) 2008 Palta Software
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -115,6 +115,9 @@ public class ImagePanel extends JPanel {
   
   /** the image */
   private BufferedImage image;
+  
+  /** the timestamp for the image */
+  private double timestamp;
 
   /** the navigation image */
   private BufferedImage navigationImage;
@@ -141,9 +144,21 @@ public class ImagePanel extends JPanel {
   private boolean highQualityRenderingEnabled;
   
   /**
-   * Creates an image panel with auto zooming and the navigation image enabled.
+   * Creates an image panel with auto zooming and the navigation image disabled.
    */
   public ImagePanel() {
+    this(true);
+  }
+  
+  /**
+   * Creates an image panel with auto zooming and the navigation image disabled.
+   * The mouse and key listeners can be disabled with this constructor.
+   * 
+   * @param enableInputListeners
+   */
+  public ImagePanel(boolean enableInputListeners) {
+    timestamp = -1;
+    
     scale = 1;
     autoScaling = true;
     origin = new Point();
@@ -152,8 +167,6 @@ public class ImagePanel extends JPanel {
     navigationImageEnabled = false;
     
     highQualityRenderingEnabled = true;
-    
-    setFocusable(true);
     
     addComponentListener(new ComponentAdapter() {
       public void componentResized(ComponentEvent e) {
@@ -175,7 +188,16 @@ public class ImagePanel extends JPanel {
         repaint();
       }
     });
-
+    
+    if (enableInputListeners) {
+      setFocusable(true);
+      
+      initMouseListeners();
+      initKeyBindings();
+    }
+  }
+  
+  private void initMouseListeners() {
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
@@ -266,20 +288,7 @@ public class ImagePanel extends JPanel {
           zoomOut(p);
         }
       }
-    });
-    
-    initKeyBindings();
-  }
-
-  /**
-   * Creates an image panel with auto zooming and the navigation image enabled.
-   * The specified image is initially displayed.
-   * 
-   * @param image  the initial image to display
-   */
-  public ImagePanel(BufferedImage image) {
-    this();
-    setImage(image);
+    });    
   }
 
   /**
@@ -397,6 +406,15 @@ public class ImagePanel extends JPanel {
   public BufferedImage getImage() {
     return image;
   }
+  
+  /**
+   * Gets the timestamp for the image.
+   * 
+   * @return  the timestamp for the image
+   */
+  public double getTimestamp() {
+    return timestamp;
+  }
 
   /**
    * Sets the image displayed in the panel. If null is passed, no image is
@@ -404,9 +422,10 @@ public class ImagePanel extends JPanel {
    * 
    * @param image  the image to display
    */
-  public void setImage(BufferedImage image) {
+  public void setImage(BufferedImage image, double timestamp) {
     BufferedImage oldImage = this.image;
     this.image = image;
+    this.timestamp = timestamp;
 
     firePropertyChange(IMAGE_PROPERTY, oldImage, image);
 
