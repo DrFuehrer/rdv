@@ -123,6 +123,9 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   /** the data panel property for the maximum number of images to display in filmstrip mode */
   private static final String DATA_PANEL_PROPERTY_MAXIMUM_FILMSTRIP_IMAGES = "maximumFilmstripImages";
   
+  /** the data panel property for the usage of the thumbnail images */
+  private static final String DATA_PANEL_PROPERTY_USE_THUMBNAIL_IMAGE = "useThumbnailImage";
+  
   /** the data panel property for the robotic controls visibility */
   private static final String DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS = "hideRoboticControls";
 
@@ -764,23 +767,31 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       return;
     }
     
-    if (useThumbnailImage && !imageHasThumbnail()) {
+    if (channels.size() != 0 && useThumbnailImage && !imageHasThumbnail()) {
       return;
     }
     
     this.useThumbnailImage = useThumbnailImage;
     
-    clearImage();
-    
-    String channelName = (String)channels.iterator().next();
-    String thumbnailChannelName = THUMBNAIL_PLUGIN_NAME + "/" + channelName;
+    if (channels.size() != 0) {
+      clearImage();
+      
+      String channelName = (String)channels.iterator().next();
+      String thumbnailChannelName = THUMBNAIL_PLUGIN_NAME + "/" + channelName;
+      
+      if (useThumbnailImage) {
+        rbnbController.unsubscribe(channelName, this);
+        rbnbController.subscribe(thumbnailChannelName, this);
+      } else {
+        rbnbController.unsubscribe(thumbnailChannelName, this);
+        rbnbController.subscribe(channelName, this);
+      }
+    }
     
     if (useThumbnailImage) {
-      rbnbController.unsubscribe(channelName, this);
-      rbnbController.subscribe(thumbnailChannelName, this);
+      properties.setProperty(DATA_PANEL_PROPERTY_USE_THUMBNAIL_IMAGE, "true");
     } else {
-      rbnbController.unsubscribe(thumbnailChannelName, this);
-      rbnbController.subscribe(channelName, this);
+      properties.remove(DATA_PANEL_PROPERTY_USE_THUMBNAIL_IMAGE);
     }
   }
 
@@ -1242,17 +1253,39 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 		return false;
 	}
   
+  @Override
+  public boolean addChannel(String channelName) {
+    if (!super.addChannel(channelName)) {
+      return false;
+    }
+    
+    // subscribe to the thumbnail channel if it exists
+    if (useThumbnailImage) {
+      if (imageHasThumbnail()) {
+        // TODO we are still subscribing to the channel initially and this will
+        //      cause a fetch of 1 image, so we should suppress this somehow
+        rbnbController.unsubscribe(channelName, this);
+        
+        String thumbnailChannelName = THUMBNAIL_PLUGIN_NAME + "/" + channelName;
+        rbnbController.subscribe(thumbnailChannelName, this);        
+      } else {
+        setUseThumbnailImage(false);
+      }
+    }
+    
+    return true;
+  }
+  
+  @Override
   protected void channelAdded(String channelName) {
-    clearImage();
-
     setupFlexTPSStream();
   }
   
+  @Override
   protected void channelRemoved(String channelName) {
     if (useThumbnailImage) {
       String thumbnailChannelName = THUMBNAIL_PLUGIN_NAME + "/" + channelName;
       rbnbController.unsubscribe(thumbnailChannelName, this);
-      useThumbnailImage = false;
     }
     
     clearImage();
@@ -1447,6 +1480,8 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       } catch (NumberFormatException e) {
         log.warn("Unable to set maximum filmstrip images: " + value + ".");
       }
+    } else if (key.equals(DATA_PANEL_PROPERTY_USE_THUMBNAIL_IMAGE) && Boolean.parseBoolean(value)) {
+      setUseThumbnailImage(true);
     } else if (key.equals(DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS) && Boolean.parseBoolean(value)) {
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();
