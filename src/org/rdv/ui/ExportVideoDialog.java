@@ -80,7 +80,6 @@ import org.rdv.rbnb.EventMarker;
 import org.rdv.rbnb.ProgressListener;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBExport;
-import org.rdv.rbnb.RBNBUtilities;
 import org.rdv.util.ReadableStringComparator;
 
 import org.apache.commons.logging.Log;
