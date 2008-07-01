@@ -1103,6 +1103,15 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
   public void showExportVideoDialog(List<String> channels) {
     new ExportVideoDialog(frame, rbnb, channels);
   }
+  
+  /**
+   * Gets a list of channels selected in the channel list.
+   * 
+   * @return  a list of selected channels
+   */
+  public List<String> getSelectedChannels() {
+    return channelListPanel.getSelectedChannels();
+  }
 
  	/**
    * A check box menu item that uses the "selected" property from it's action.
