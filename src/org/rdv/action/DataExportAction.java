@@ -40,6 +40,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 import org.rdv.DataViewer;
+import org.rdv.RDV;
 import org.rdv.data.ASCIIDataFileWriter;
 import org.rdv.data.DataChannel;
 import org.rdv.data.DataFileWriter;
@@ -49,6 +50,7 @@ import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBReader;
 import org.rdv.rbnb.RBNBUtilities;
+import org.rdv.ui.ApplicationFrame;
 import org.rdv.ui.ExportDialog;
 import org.rdv.ui.ProgressWindow;
 
@@ -76,10 +78,9 @@ public class DataExportAction extends DataViewerAction {
    * Show the data export dialog with all channels.
    */
   public void actionPerformed(ActionEvent ae) {
-    // FIXME this shows hidden channels, even when they are hidden in the UI
-    ChannelTree ctree = RBNBController.getInstance().getMetadataManager()
-        .getMetadataChannelTree();
-    List<String> channels = RBNBUtilities.getAllChannels(ctree, true);
+    // FIXME major hackage to get the list of selected channels
+    ApplicationFrame mainFrame = (ApplicationFrame) RDV.getInstance(RDV.class).getMainView().getFrame().getContentPane().getComponent(0);
+    List<String> channels = mainFrame.getSelectedChannels();
     exportData(channels);
   }
 
