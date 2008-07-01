@@ -47,6 +47,7 @@ import org.rdv.util.ReadableNodeComparator;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
+import com.rbnb.sapi.ChannelTree.Node;
 
 /**
  * RBNBUtilities is a utility class to provide static methods for dealing with RBNB.
@@ -213,7 +214,8 @@ public final class RBNBUtilities {
 
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
-      boolean isHidden = node.getName().startsWith("_");
+      String fullName = node.getFullName();
+      boolean isHidden = fullName.startsWith("_") || fullName.contains("/_");
       ChannelTree.NodeTypeEnum nodeType = node.getType();
       if ((showHiddenChildren || !isHidden) &&
           (nodeType == ChannelTree.CHANNEL || node.getType() == ChannelTree.FOLDER ||
@@ -242,7 +244,7 @@ public final class RBNBUtilities {
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
       if (node.getType() == ChannelTree.CHANNEL &&
-          ((!node.getName().startsWith("_") && !node.getParent().getName().startsWith("_"))|| hidden)) {
+          (!node.getFullName().contains("/_") || hidden)) {
         channels.add(node.getFullName());
       }
     }
@@ -252,19 +254,22 @@ public final class RBNBUtilities {
   /**
    * Returns all the names of children of this node that are channels.
    * 
-   * @param source  the source node
+   * @param container  the source node
    * @param hidden  include hidden channels
    * @return        a list of channel names
    * @since         1.3
    */
-  public static List<String> getChildChannels(ChannelTree.Node source, boolean hidden) {
+  public static List<String> getChildChannels(ChannelTree.Node container, boolean hidden) {
     ArrayList<String> channels = new ArrayList<String>();
-    Iterator children = source.getChildren().iterator();
+    Iterator children = container.getChildren().iterator();
     while (children.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)children.next();
-      if (node.getType() == ChannelTree.CHANNEL &&
-          ((!node.getName().startsWith("_") && !node.getParent().getName().startsWith("_"))|| hidden)) {
-        channels.add(node.getFullName());
+      if (node.getType() == ChannelTree.CHANNEL) {
+        if (!node.getFullName().contains("/_") || hidden) {
+          channels.add(node.getFullName());
+        }
+      } else {
+        channels.addAll(getChildChannels(node, hidden));
       }
     }
     return channels;
