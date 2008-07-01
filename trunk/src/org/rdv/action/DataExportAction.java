@@ -45,6 +45,7 @@ import org.rdv.data.DataChannel;
 import org.rdv.data.DataFileWriter;
 import org.rdv.data.MATFileWriter;
 import org.rdv.data.NumericDataSample;
+import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBReader;
 import org.rdv.rbnb.RBNBUtilities;
@@ -89,6 +90,15 @@ public class DataExportAction extends DataViewerAction {
    *          the channels to export
    */
   public void exportData(List<String> channels) {
+    // remove non-data channels
+    for (int i=channels.size()-1; i>=0; i--) {
+      Channel channel = RBNBController.getInstance().getChannel(channels.get(i));
+      String mime = channel.getMetadata("mime");
+      if (!mime.equals("application/octet-stream")) {
+        channels.remove(i);
+      }
+    }
+    
     // don't bring up the dialog if there are no channels specified
     if (channels == null || channels.isEmpty()) {
       JOptionPane.showMessageDialog(null,
