@@ -69,7 +69,7 @@ public class Channel extends DataChannel {
       String channelName = getName();
       if (channelName.endsWith(".jpg")) {
         mime = "image/jpeg";
-      } else if (channelName.startsWith("_Log")) {
+      } else if (channelName.contains("_Log/")) {
         mime = "text/plain";
       } else {
         mime = "application/octet-stream";
