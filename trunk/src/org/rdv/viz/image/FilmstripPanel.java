@@ -58,11 +58,14 @@ public class FilmstripPanel extends JPanel {
   /** serialization version identifier */
   private static final long serialVersionUID = 6924475674504241229L;
   
-  /** the default value for the maximum number of images */
-  private static final int DEFAULT_MAXIMUM_NUMBER_OF_IMAGES = 4;
+  /** the maximum images property */
+  public static final String MAXIMUM_IMAGES_PROPERTY = "maximumImages";
+  
+  /** the default value for the maximum images */
+  public static final int MAXIMUM_IMAGES_DEFAULT = 4;
   
   /** the maximum number of images that can be displayed at one time */
-  private int maximumNumberOfImages; 
+  private int maximumImages; 
   
   /** the current time */
   private double time;
@@ -82,7 +85,7 @@ public class FilmstripPanel extends JPanel {
   public FilmstripPanel() {
     super();
     
-    maximumNumberOfImages = DEFAULT_MAXIMUM_NUMBER_OF_IMAGES;
+    maximumImages = MAXIMUM_IMAGES_DEFAULT;
     
     timescale = 1;
     
@@ -151,21 +154,24 @@ public class FilmstripPanel extends JPanel {
    * 
    * @return  the maximum number of images displayed
    */
-  public int getMaximumNumberOfImages() {
-    return maximumNumberOfImages;
+  public int getMaximumImages() {
+    return maximumImages;
   }
   
   /**
    * Sets the maximum number of images displayed in the filmstrip.
    * 
-   * @param maximumNumberOfImages  the maximum number of images to display
+   * @param maximumImages  the maximum number of images to display
    */
-  public void setMaximumNumberOfImages(int maximumNumberOfImages) {
-    if (this.maximumNumberOfImages == maximumNumberOfImages || maximumNumberOfImages < 2) {
+  public void setMaximumImages(int maximumImages) {
+    if (this.maximumImages == maximumImages || maximumImages < 2) {
       return;
     }
     
-    this.maximumNumberOfImages = maximumNumberOfImages;
+    int oldMaximumImages = this.maximumImages;
+    this.maximumImages = maximumImages;
+    
+    firePropertyChange(MAXIMUM_IMAGES_PROPERTY, oldMaximumImages, maximumImages);
     
     purgeImages();
   }
@@ -205,7 +211,7 @@ public class FilmstripPanel extends JPanel {
     
     boolean revalidate = false;
     
-    while (getComponentCount() > maximumNumberOfImages) {
+    while (getComponentCount() > maximumImages) {
       cacheImagePanel((ImagePanel)getComponent(0));
       
       remove(0);

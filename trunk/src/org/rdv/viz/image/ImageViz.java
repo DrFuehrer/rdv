@@ -61,8 +61,11 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.Iterator;
 
+import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -114,6 +117,12 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   /** the data panel property for the navigation panel visibility */
   private static final String DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE = "showNavigationImage";
   
+  /** the data panel property for filmstrip mode */
+  private static final String DATA_PANEL_PROPERTY_FILMSTRIP_MODE = "filmstripMode";
+  
+  /** the data panel property for the maximum number of images to display in filmstrip mode */
+  private static final String DATA_PANEL_PROPERTY_MAXIMUM_FILMSTRIP_IMAGES = "maximumFilmstripImages";
+  
   /** the data panel property for the robotic controls visibility */
   private static final String DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS = "hideRoboticControls";
 
@@ -138,6 +147,9 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   private JCheckBoxMenuItem autoScaleMenuItem;
   private JCheckBoxMenuItem showNavigationImageMenuItem;
   private JCheckBoxMenuItem hideRoboticControlsMenuItem;
+  
+  /** the group of radio buttons for the maximum filmstrip images */
+  private ButtonGroup maximumFilmstripImagesButtonGroup;
 
   /** the mouse click listener for robotic control */
   MouseInputAdapter roboticMouseClickListener;
@@ -249,6 +261,19 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
   private void initFilmstripPanel() {
     filmstripPanel = new FilmstripPanel();
     filmstripPanel.setBackground(Color.black);
+    filmstripPanel.addPropertyChangeListener(new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent pce) {
+        String propertyName = pce.getPropertyName();
+        if (propertyName.equals(FilmstripPanel.MAXIMUM_IMAGES_PROPERTY)) {
+          if (filmstripPanel.getMaximumImages() != FilmstripPanel.MAXIMUM_IMAGES_DEFAULT) {
+            properties.setProperty(DATA_PANEL_PROPERTY_MAXIMUM_FILMSTRIP_IMAGES, pce.getNewValue().toString());
+          } else {
+            properties.remove(DATA_PANEL_PROPERTY_MAXIMUM_FILMSTRIP_IMAGES);
+          }
+          updateMaximumFilmstripImagesRadioButtons();
+        }
+      }      
+    });
     
     filmstripPanel.addMouseListener(new MouseAdapter() {
       public void mouseClicked(MouseEvent e) {
@@ -585,13 +610,13 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     popupMenu.add(showNavigationImageMenuItem);
     
     final JMenu maximumFilmstripImagesMenu = new JMenu("Maximum number of images");
-    ButtonGroup maximumFilmstripImagesButtonGroup = new ButtonGroup();
+    maximumFilmstripImagesButtonGroup = new ButtonGroup();
     for (final int maximumFilmstripImagesValue : MAXIMUM_FILMSTRIP_IMAGES_VALUES) {
-      boolean selected = filmstripPanel.getMaximumNumberOfImages() == maximumFilmstripImagesValue;
+      boolean selected = filmstripPanel.getMaximumImages() == maximumFilmstripImagesValue;
       JMenuItem maximumFilmStripImagesMenuItem = new JRadioButtonMenuItem(Integer.toString(maximumFilmstripImagesValue), selected);
       maximumFilmStripImagesMenuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-          filmstripPanel.setMaximumNumberOfImages(maximumFilmstripImagesValue);
+          filmstripPanel.setMaximumImages(maximumFilmstripImagesValue);
         }        
       });
       maximumFilmstripImagesButtonGroup.add(maximumFilmStripImagesMenuItem);
@@ -701,6 +726,32 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
     
     panel.revalidate();
     panel.repaint();
+    
+    if (filmstripMode) {
+      properties.setProperty(DATA_PANEL_PROPERTY_FILMSTRIP_MODE, "true");
+    } else {
+      properties.remove(DATA_PANEL_PROPERTY_FILMSTRIP_MODE);
+    }
+  }
+  
+  /**
+   * Select the correct radio button for the maximum number of filmstrip images.
+   */
+  private void updateMaximumFilmstripImagesRadioButtons() {
+    int maximumFilmstripImages = filmstripPanel.getMaximumImages();
+    int index = Arrays.binarySearch(MAXIMUM_FILMSTRIP_IMAGES_VALUES, maximumFilmstripImages);
+    if (index >= 0) {
+      Enumeration<AbstractButton> elements = maximumFilmstripImagesButtonGroup.getElements();
+      AbstractButton button = null;
+      while (index-- >= 0) {
+        button = elements.nextElement();
+      }
+      
+      maximumFilmstripImagesButtonGroup.setSelected(button.getModel(), true);
+    } else {
+      maximumFilmstripImagesButtonGroup.clearSelection();
+    }
+    
   }
   
   /**
@@ -1387,6 +1438,15 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       }
     } else if (key.equals(DATA_PANEL_PROPERTY_SHOW_NAVIGATION_IMAGE) && Boolean.parseBoolean(value)) {
       imagePanel.setNavigationImageEnabled(true);
+    } else if (key.equals(DATA_PANEL_PROPERTY_FILMSTRIP_MODE) && Boolean.parseBoolean(value)) {
+      setFilmstripMode(true);
+    } else if (key.equals(DATA_PANEL_PROPERTY_MAXIMUM_FILMSTRIP_IMAGES)) {
+      try {
+        int maximumFilmstripImages = Integer.parseInt(value);
+        filmstripPanel.setMaximumImages(maximumFilmstripImages);
+      } catch (NumberFormatException e) {
+        log.warn("Unable to set maximum filmstrip images: " + value + ".");
+      }
     } else if (key.equals(DATA_PANEL_PROPERTY_HIDE_ROBOTIC_CONTROLS) && Boolean.parseBoolean(value)) {
       hideRoboticControlsMenuItem.setSelected(true);
       setRoboticControls();
