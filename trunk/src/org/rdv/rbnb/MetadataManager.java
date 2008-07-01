@@ -341,8 +341,7 @@ public class MetadataManager {
       NodeTypeEnum type = node.getType();
       
       // look for child servers or plugins and get their channels      
-      if ((type == ChannelTree.SERVER || type == ChannelTree.PLUGIN || type == ChannelTree.FOLDER) &&
-          node.getChildren().isEmpty() &&
+      if ((type == ChannelTree.SERVER || type == ChannelTree.PLUGIN) &&
           !path.startsWith(node.getFullName())) {
         ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels);
         ctree = childChannelTree.merge(ctree);
