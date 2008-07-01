@@ -85,6 +85,7 @@ import org.rdv.RDV;
 import org.rdv.action.ActionFactory;
 import org.rdv.action.DataViewerAction;
 import org.rdv.auth.AuthenticationManager;
+import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.ConnectionListener;
 import org.rdv.rbnb.LocalServer;
 import org.rdv.rbnb.MessageListener;
@@ -1093,14 +1094,24 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
 
   public void showExportVideoDialog() {
     List<String> channels = channelListPanel.getSelectedChannels();
-    if (channels.size() == 0) {
-      JOptionPane.showMessageDialog(this, "No video channel(s) selected!", "video export", JOptionPane.ERROR_MESSAGE);
+    
+    // remove non-data channels
+    for (int i=channels.size()-1; i>=0; i--) {
+      Channel channel = RBNBController.getInstance().getChannel(channels.get(i));
+      String mime = channel.getMetadata("mime");
+      if (!mime.equals("image/jpeg")) {
+        channels.remove(i);
+      }
+    }
+    
+    // don't bring up the dialog if there are no channels specified
+    if (channels.isEmpty()) {
+      JOptionPane.showMessageDialog(null,
+          "There are no video channels selected.", "Error",
+          JOptionPane.ERROR_MESSAGE);
       return;
     }
-    showExportVideoDialog(channels);
-  }
-  
-  public void showExportVideoDialog(List<String> channels) {
+    
     new ExportVideoDialog(frame, rbnb, channels);
   }
   
