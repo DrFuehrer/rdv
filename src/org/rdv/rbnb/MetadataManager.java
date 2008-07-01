@@ -56,7 +56,6 @@ import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
  * are also included to access metadata for individual channels.
  * 
  * @author  Jason P. Hanley
- * @since   1.3
  */
 public class MetadataManager {
 
@@ -113,6 +112,12 @@ public class MetadataManager {
    * The timeout used when fetching data.
    */
   private static final long FETCH_TIMEOUT = 15000;
+  
+  /**
+   * The maximum depth to make recursive requests with (to detect circular
+   * references).
+   */
+  private static final int MAX_REQUEST_DEPTH = 5;
 
   /**
    * Create the class using the RBNBController for connection information.
@@ -279,20 +284,26 @@ public class MetadataManager {
    * @throws SAPIException if a server error occurs
    */
   private ChannelTree getChannelTree(Sink sink, Map<String,Channel> channels) throws SAPIException {
-    return getChannelTree(sink, null, channels);
+    return getChannelTree(sink, null, channels, 0);
   }
 
   /**
    * Get the metadata channel tree for the given <code>path</code>. This will
    * populate the channel map with channel objects derived from the metadata.
+   * This will recursively make requests for child servers and plugins up to the
+   * maximum request depth of {@value #MAX_REQUEST_DEPTH}.
    * 
    * @param sink sink the sink connection to the RBNB server
    * @param path the path for the desired metadata
    * @param channels the map to populate with channel objects
+   * @param depth the depth of the request
    * @return the metadata channel tree for the given path
    * @throws SAPIException if a server error occurs
+   * @see #MAX_REQUEST_DEPTH
    */
-  private ChannelTree getChannelTree(Sink sink, String path, Map<String,Channel> channels) throws SAPIException {
+  private ChannelTree getChannelTree(Sink sink, String path, Map<String,Channel> channels, int depth) throws SAPIException {
+    depth++;
+    
     ChannelTree ctree = ChannelTree.EMPTY_TREE;
     
     ChannelMap markerChannelMap = new ChannelMap();
@@ -342,8 +353,8 @@ public class MetadataManager {
       
       // look for child servers or plugins and get their channels      
       if ((type == ChannelTree.SERVER || type == ChannelTree.PLUGIN) &&
-          !path.startsWith(node.getFullName())) {
-        ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels);
+          !path.startsWith(node.getFullName()) && depth < MAX_REQUEST_DEPTH) {
+        ChannelTree childChannelTree = getChannelTree(sink, node.getFullName(), channels, depth);
         ctree = childChannelTree.merge(ctree);
       }
     }
