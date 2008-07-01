@@ -344,7 +344,8 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
         if (selectedPaths[i].getLastPathComponent() != treeModel.getRoot()) {
           ChannelTree.Node selectedNode = (ChannelTree.Node)selectedPaths[i].getLastPathComponent();
           NodeTypeEnum type = selectedNode.getType();
-          if (type == ChannelTree.SOURCE) {
+          if (type == ChannelTree.SERVER || type == ChannelTree.SOURCE ||
+              type == ChannelTree.PLUGIN || type == ChannelTree.PLUGIN) {
             selectedChannels.addAll(RBNBUtilities.getChildChannels(selectedNode, treeModel.isHiddenChannelsVisible()));
           } else if (type == ChannelTree.CHANNEL) {
             selectedChannels.add(selectedNode.getFullName());
@@ -533,10 +534,12 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
       popup = getRootPopup();
     } else {
       ChannelTree.Node node = (ChannelTree.Node)o;
+      NodeTypeEnum type = node.getType();
       
-      if (node.getType() == ChannelTree.SOURCE) {
+      if (type == ChannelTree.SERVER || type == ChannelTree.SOURCE ||
+          type == ChannelTree.PLUGIN || type == ChannelTree.FOLDER) {
         popup = getSourcePopup(node);
-      } else if (node.getType() == ChannelTree.CHANNEL) {
+      } else if (type == ChannelTree.CHANNEL) {
         popup = getChannelPopup(node);
       }
     }
