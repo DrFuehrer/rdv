@@ -616,27 +616,29 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     }
 
     String mime = getMime(channels);
-    if (mime.equals("application/octet-stream")) {
-      menuItem = new JMenuItem("Export data channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
-      menuItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-          ActionFactory.getInstance().getDataExportAction().exportData(channels);
-        }
-      });
-      popup.add(menuItem);
-    } else if (mime.equals("image/jpeg")) {
-      menuItem = new JMenuItem("Export video channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
-      menuItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-          JFrame frame = RDV.getInstance(RDV.class).getMainFrame();
-          new ExportVideoDialog(frame, rbnb, channels);
-        }
-      });
-      popup.add(menuItem);      
-    } else {
-      popup.remove(popup.getComponentCount()-1);
+    if (mime != null) {
+      if (mime.equals("application/octet-stream")) {
+        menuItem = new JMenuItem("Export data channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
+        menuItem.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent ae) {
+            ActionFactory.getInstance().getDataExportAction().exportData(channels);
+          }
+        });
+        popup.add(menuItem);
+      } else if (mime.equals("image/jpeg")) {
+        menuItem = new JMenuItem("Export video channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
+        menuItem.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent ae) {
+            JFrame frame = RDV.getInstance(RDV.class).getMainFrame();
+            new ExportVideoDialog(frame, rbnb, channels);
+          }
+        });
+        popup.add(menuItem);      
+      } else {
+        popup.remove(popup.getComponentCount()-1);
+      }
     }
-  
+    
     return popup;    
   }
   
