@@ -148,21 +148,13 @@
 		
 		<zip destfile="${build.dist}/${ant.project.name}-${version}.zip">
 			<fileset dir=".">
-				<include name="README.txt"/>
 				<include name="LICENSE.txt"/>
 				<include name="NOTICE.txt"/>
+				<include name="README.txt"/>
+				<include name="RELEASE-NOTES.txt"/>
 			</fileset>
 			<fileset file="${build.bin}/${ant.project.name}.jar"/>
 		</zip>
-		
-		<tar destfile="${build.dist}/${ant.project.name}-${version}.tar.gz" compression="gzip">
-			<fileset dir=".">
-				<include name="README.txt"/>
-				<include name="LICENSE.txt"/>
-				<include name="NOTICE.txt"/>
-			</fileset>
-			<fileset file="${build.bin}/${ant.project.name}.jar"/>
-		</tar>
 	</target>
 	
 	<target name="dist-src" description="Build the source distribution">
@@ -177,7 +169,7 @@
 			</fileset>
 		</delete>
 		
-		<zip destfile="${build.dist}/${ant.project.name}-src-${version}.zip">
+		<zip destfile="${build.dist}/${ant.project.name}-${version}-src.zip">
 			<zipfileset file="debian/rules" filemode="755" prefix="${ant.project.name}-${version}/debian"/>
 			<zipfileset dir="." prefix="${ant.project.name}-${version}">
 				<include name="**"/>
@@ -186,21 +178,11 @@
 				<exclude name="debian/rules"/>
 			</zipfileset>
 		</zip>
-		
-		<tar destfile="${build.dist}/${ant.project.name}-src-${version}.tar.gz" compression="gzip">
-			<tarfileset file="debian/rules" filemode="755" prefix="${ant.project.name}-${version}/debian"/>
-			<tarfileset dir="." prefix="${ant.project.name}-${version}">
-				<include name="**"/>
-				<exclude name="${build.dir}/**"/>
-				<exclude name="${lib.dir}/**"/>
-				<exclude name="debian/rules"/>
-			</tarfileset>
-		</tar>
 	</target>
 
 	<target name="dist" depends="dist-bin,dist-src" description="Build the binary and source distributions"/>
 	
-	<target name="exe" depends="checkLaunch4j,jar" description="Build windows executable">
+	<target name="exe" depends="checkLaunch4j,bin" description="Build windows executable">
 		<mkdir dir="${build.exe}"/>
 		
 		<property name="launch4j.home" value="${env.LAUNCH4J_HOME}"/>
@@ -208,12 +190,12 @@
 			classpath="${launch4j.home}/launch4j.jar:${launch4j.home}/lib/xstream.jar"/>
 		
 		<launch4j configFile="launch4j/RDV-launch4j.xml"
-			jar="${build.lib}/${ant.project.name}.jar"
+			jar="${build.bin}/${ant.project.name}.jar"
 			outfile="${build.exe}/${ant.project.name}.exe"
 			fileVersion="${version}.0"
-			txtFileVersion="${version} build ${svn.revision}"
+			txtFileVersion="${version}"
 			productVersion="${version}.0"
-			txtProductVersion="${version} build ${svn.revision}"/>
+			txtProductVersion="${version}"/>
 	</target>
 	
 	<target name="installer" depends="exe" description="Build windows installer">
