@@ -14,7 +14,7 @@ Var STARTMENU_FOLDER
 !define MUI_WELCOMEPAGE_TITLE "Welcome to the RDV Setup Wizard"
 !define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of RDV.\r\n\r\n$_CLICK"
 
-!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKCU" 
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT "HKLM" 
 !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\RDV" 
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
 
@@ -42,6 +42,12 @@ Section "Install"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM "SOFTWARE\RDV" "" "$INSTDIR"
+  
+  ; Cleanup old start menu items
+  !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
+  Delete "$SMPROGRAMS\$MUI_TEMP\RDV.lnk"
+  Delete "$SMPROGRAMS\$MUI_TEMP\Uninstall RDV.lnk"
+  RMDir "$SMPROGRAMS\$MUI_TEMP"
   
   SetShellVarContext all
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application   
@@ -79,6 +85,5 @@ Section "Uninstall"
 
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\RDV"
   DeleteRegKey HKLM "Software\RDV"
-  DeleteRegKey HKCU "Software\RDV" 
 
 SectionEnd
