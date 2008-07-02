@@ -3,17 +3,19 @@ Section: science
 Priority: optional
 Maintainer: Jason P. Hanley <jason@paltasoftware.com>
 Build-Depends: debhelper (>= 5), cdbs
-Build-Depends-Indep: sun-java6-jdk, ant, libcommons-cli-java, 
- libcommons-logging-java, libjcommon-java, libjfreechart-java >= 1.0.7,
- libjgoodies-looks-java, librbnb-java, libtritonus-java
+Build-Depends-Indep: openjdk-6-jdk, ant, libappframework-java,
+ libcommons-cli-java, libcommons-logging-java, libjcommon-java,
+ libjfreechart-java, librbnb-java, libswingworker-java,
+ libtritonus-java
 Standards-Version: 3.7.2
 
 Package: rdv
 Architecture: all
-Depends: java-virtual-machine, sun-java6-jre | sun-java5-jre | java5-runtime,
+Depends: java-virtual-machine, java6-runtime, libappframework-java,
  libcommons-cli-java, libcommons-logging-java, libjcommon-java,
- libjfreechart-java >= 1.0.7, libjlayer-java, libjgoodies-looks-java,
- libmp3spi-java, librbnb-java, libtritonus-java
-Description: A data viewer for streaming scientific and engineering data.
- Live and archived data can be viewed seamlessly within RDV with built-in
- support for many data types and viewers to visualize data in different ways.
+ libjfreechart-java, libjlayer-java, libmp3spi-java, librbnb-java,
+ libswingworker-java, libtritonus-java
+Description: A visualization environment for scientific and engineering data.
+ Built on top of the RBNB dynamic data server, RDV supports local and remote
+ data sources and can visualize numeric, video, image, and audio data in a
+ number of different ways

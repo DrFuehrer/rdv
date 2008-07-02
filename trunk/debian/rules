@@ -3,7 +3,7 @@
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/ant.mk
 
-JAVA_HOME := /usr/lib/jvm/java-6-sun
+JAVA_HOME := /usr/lib/jvm/java-6-openjdk
 ANT_HOME := /usr/share/ant
 
 DEB_ANT_BUILD_TARGET := jar
@@ -13,7 +13,7 @@ install/rdv::
 	dh_link /usr/share/java/rdv-$(DEB_UPSTREAM_VERSION).jar /usr/share/java/rdv.jar
 	install -m 755 -D debian/rdv.sh $(DEB_DESTDIR)usr/bin/rdv
 	dh_install debian/rdv.xml /usr/share/mime/packages
-	dh_install icons/rdv.png /usr/share/pixmaps
+	dh_install resources/org/rdv/resources/rdv.png /usr/share/pixmaps
 	dh_install debian/rdv.desktop /usr/share/applications
 	
 binary-post-install/rdv::
