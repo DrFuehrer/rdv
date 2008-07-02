@@ -44,6 +44,12 @@ Section "Install"
   ; Write the installation path into the registry
   WriteRegStr HKLM "SOFTWARE\RDV" "" "$INSTDIR"
   
+  ; File association
+  WriteRegStr HKCR ".rdv" "" "RDV.Configuration"
+  WriteRegStr HKCR "RDV.Configuration" "" "RDV Configuration File"
+  WriteRegStr HKCR "RDV.Configuration\DefaultIcon" "" "$INSTDIR\RDV.exe,0"
+  WriteRegStr HKCR "RDV.Configuration\shell\open\command" "" '"$INSTDIR\RDV.exe" "%1"'
+  
   ; Cleanup old start menu items
   !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
   Delete "$SMPROGRAMS\$MUI_TEMP\RDV.lnk"
@@ -78,6 +84,9 @@ Section "Uninstall"
   Delete "$INSTDIR\*.txt"
   Delete "$INSTDIR\uninstall.exe"
   RMDir "$INSTDIR"
+  
+  DeleteRegKey HKCR ".rdv"
+  DeleteRegKey HKCR "RDV.Configuration"
 
   SetShellVarContext all
   !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP

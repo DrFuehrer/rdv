@@ -8,7 +8,7 @@
     <maxHeapSize>256</maxHeapSize>
   </jre>
   <versionInfo>
-    <fileDescription>Real-time Data Viewer</fileDescription>
+    <fileDescription>RDV</fileDescription>
     <copyright>2005-2008 Contributors</copyright>
     <productName>RDV</productName>
     <internalName>RDV</internalName>
