@@ -9,9 +9,8 @@
   </jre>
   <versionInfo>
     <fileDescription>Real-time Data Viewer</fileDescription>
-    <copyright>2005-2006 University at Buffalo</copyright>
+    <copyright>2005-2008 Contributors</copyright>
     <productName>RDV</productName>
-    <companyName>University at Buffalo</companyName>
     <internalName>RDV</internalName>
     <originalFilename>RDV.exe</originalFilename>    
   </versionInfo>
