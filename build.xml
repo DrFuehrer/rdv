@@ -200,6 +200,7 @@
 	
 	<target name="installer" depends="exe" description="Build windows installer">
 		<exec executable="makensis">
+			<arg value="/Dversion=${version}"/>
 			<arg value="/V3"/>
 			<arg value="nsis/rdv.nsi"/>
 		</exec>		
