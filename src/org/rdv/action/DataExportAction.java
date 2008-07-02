@@ -49,18 +49,16 @@ import org.rdv.data.NumericDataSample;
 import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBReader;
-import org.rdv.rbnb.RBNBUtilities;
 import org.rdv.ui.ApplicationFrame;
 import org.rdv.ui.ExportDialog;
 import org.rdv.ui.ProgressWindow;
 
-import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.SAPIException;
 
 /**
  * An action to export data from a RBNB server to disk
  * 
- * @author Jason P Hanley
+ * @author Jason P. Hanley
  * @see RBNBReader
  * @see DataFileWriter
  */
@@ -70,8 +68,8 @@ public class DataExportAction extends DataViewerAction {
   private static final long serialVersionUID = 8366769228683976744L;
 
   public DataExportAction() {
-    super("Export data to file",
-        "Export data from an RBNB server to a local file");
+    super("Export data channels",
+        "Export data on the server to the local computer");
   }
 
   /**
