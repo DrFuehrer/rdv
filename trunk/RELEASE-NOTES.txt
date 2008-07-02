@@ -1,9 +1,5 @@
 RDV
-Version #.#
-RELEASE DATE
-
-
-INTRODUCTION
+Version 1.9.0
 
 
 NEW FEATURES
