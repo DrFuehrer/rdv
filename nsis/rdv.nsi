@@ -33,6 +33,8 @@ Var STARTMENU_FOLDER
 
 !insertmacro MUI_LANGUAGE "English"
 
+RequestExecutionLevel admin
+
 Section "Install"
 
   SetOutPath $INSTDIR
@@ -41,6 +43,7 @@ Section "Install"
   ; Write the installation path into the registry
   WriteRegStr HKLM "SOFTWARE\RDV" "" "$INSTDIR"
   
+  SetShellVarContext all
   !insertmacro MUI_STARTMENU_WRITE_BEGIN Application   
   CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\RDV.lnk" "$INSTDIR\RDV.exe"
@@ -68,6 +71,7 @@ Section "Uninstall"
   Delete $INSTDIR\uninstall.exe
   RMDir "$INSTDIR"
 
+  SetShellVarContext all
   !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
   Delete "$SMPROGRAMS\$MUI_TEMP\RDV.lnk"
   Delete "$SMPROGRAMS\$MUI_TEMP\Uninstall RDV.lnk"
