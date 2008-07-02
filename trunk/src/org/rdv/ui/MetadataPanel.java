@@ -47,7 +47,6 @@ import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.ChannelManager;
 import org.rdv.rbnb.MetadataListener;
 import org.rdv.rbnb.RBNBController;
-import org.rdv.rbnb.RBNBUtilities;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelTree;

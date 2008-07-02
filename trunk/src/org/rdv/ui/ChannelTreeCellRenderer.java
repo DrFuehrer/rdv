@@ -42,7 +42,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import org.rdv.DataViewer;
 import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.RBNBController;
-import org.rdv.rbnb.RBNBUtilities;
 
 import com.rbnb.sapi.ChannelTree;
 
