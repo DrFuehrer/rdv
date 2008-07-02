@@ -80,7 +80,6 @@ import org.rdv.DataViewer;
 import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.EventMarker;
 import org.rdv.rbnb.RBNBController;
-import org.rdv.rbnb.RBNBUtilities;
 import org.rdv.util.ReadableStringComparator;
 
 /**
