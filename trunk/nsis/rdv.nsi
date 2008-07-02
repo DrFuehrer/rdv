@@ -2,7 +2,7 @@
 
 Name "RDV"
 Caption "RDV Setup"
-OutFile "..\build\exe\rdv-1.9.0-setup.exe"
+OutFile "..\build\exe\rdv-${version}-setup.exe"
 InstallDir $PROGRAMFILES\RDV
 InstallDirRegKey HKLM "Software\RDV" ""
 
