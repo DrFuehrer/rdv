@@ -47,7 +47,6 @@ import org.rdv.util.ReadableNodeComparator;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
-import com.rbnb.sapi.ChannelTree.Node;
 
 /**
  * RBNBUtilities is a utility class to provide static methods for dealing with RBNB.
