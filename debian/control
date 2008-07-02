@@ -5,15 +5,15 @@ Maintainer: Jason P. Hanley <jason@paltasoftware.com>
 Build-Depends: debhelper (>= 5), cdbs
 Build-Depends-Indep: openjdk-6-jdk, ant, libappframework-java,
  libcommons-cli-java, libcommons-logging-java, libjcommon-java,
- libjfreechart-java, librbnb-java, libswingworker-java,
+ libjfreechart-java (>= 1.0.7), librbnb-java, libswingworker-java,
  libtritonus-java
 Standards-Version: 3.7.2
 
 Package: rdv
 Architecture: all
-Depends: java-virtual-machine, java6-runtime, libappframework-java,
+Depends: java-virtual-machine, java5-runtime, libappframework-java,
  libcommons-cli-java, libcommons-logging-java, libjcommon-java,
- libjfreechart-java, libjlayer-java, libmp3spi-java, librbnb-java,
+ libjfreechart-java (>= 1.0.7), libjlayer-java, libmp3spi-java, librbnb-java,
  libswingworker-java, libtritonus-java
 Description: A visualization environment for scientific and engineering data.
  Built on top of the RBNB dynamic data server, RDV supports local and remote
