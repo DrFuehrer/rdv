@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Action;
@@ -352,7 +351,7 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
     
     exportAction = new DataViewerAction("Export", "Export Menu", KeyEvent.VK_E, "icons/export.gif");
 
-    exportVideoAction = new DataViewerAction("Export video channels", "Export video on server to local computer") {
+    exportVideoAction = new DataViewerAction("Export video channels", "Export video on the server to the local computer") {
       /** serialization version identifier */
       private static final long serialVersionUID = -6420430928972633313L;
 
@@ -807,9 +806,8 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
  		
  		JMenu windowMenu = new JMenu(windowAction);
   		
- 		ArrayList extensions = dataPanelManager.getExtensions();
- 		for (int i=0; i<extensions.size(); i++) {
- 			final Extension extension = (Extension)extensions.get(i);
+ 		List<Extension> extensions = dataPanelManager.getExtensions();
+ 		for (final Extension extension : extensions) {
 	 		Action action = new DataViewerAction("Add " + extension.getName(), "", KeyEvent.VK_J) {
         /** serialization version identifier */
         private static final long serialVersionUID = 36998228704476723L;

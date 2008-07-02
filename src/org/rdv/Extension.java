@@ -32,18 +32,17 @@
 
 package org.rdv;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author  Jason P. Hanley
- * @since   1.2
  */
 public class Extension {
 	private String ID;
 	private String name;
-	private ArrayList mimeTypes;
+	private List<String> mimeTypes;
 	
-	public Extension(String ID, String name, ArrayList mimeTypes) {
+	public Extension(String ID, String name, List<String> mimeTypes) {
 		this.ID = ID;
 		this.name = name;
 		this.mimeTypes = mimeTypes;
@@ -57,7 +56,7 @@ public class Extension {
 		return name;
 	}
 	
-	public ArrayList getMimeTypes() {
+	public List<String> getMimeTypes() {
 		return mimeTypes;
 	}
 }

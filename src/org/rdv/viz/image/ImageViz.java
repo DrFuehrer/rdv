@@ -64,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
@@ -1241,9 +1242,9 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
         
 		Extension extension = dataPanelManager.getExtension(this.getClass());
 		if (extension != null) {
-			ArrayList mimeTypes = extension.getMimeTypes();
+			List<String> mimeTypes = extension.getMimeTypes();
 			for (int i=0; i<mimeTypes.size(); i++) {
-				String mime = (String)mimeTypes.get(i);
+				String mime = mimeTypes.get(i);
         if (mime.equals(mimeType)) {
 					return true;
 				}

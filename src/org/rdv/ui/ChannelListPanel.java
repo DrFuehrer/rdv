@@ -47,6 +47,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -55,6 +56,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -77,16 +79,18 @@ import org.apache.commons.logging.LogFactory;
 import org.rdv.DataPanelManager;
 import org.rdv.DataViewer;
 import org.rdv.Extension;
+import org.rdv.RDV;
 import org.rdv.action.ActionFactory;
-import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.MetadataListener;
 import org.rdv.rbnb.Player;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBUtilities;
 import org.rdv.rbnb.StateListener;
+import org.rdv.util.ReadableStringComparator;
 
 import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelTree;
+import com.rbnb.sapi.ChannelTree.Node;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 
 import javax.swing.TransferHandler;
@@ -336,25 +340,33 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
   }
   
   public List<String> getSelectedChannels() {
-    ArrayList<String> selectedChannels = new ArrayList<String>();
+    ArrayList<String> channels = new ArrayList<String>();
     
-    TreePath[] selectedPaths = tree.getSelectionPaths();
-    if (selectedPaths != null) {
-      for (int i=0; i<selectedPaths.length; i++) {
-        if (selectedPaths[i].getLastPathComponent() != treeModel.getRoot()) {
-          ChannelTree.Node selectedNode = (ChannelTree.Node)selectedPaths[i].getLastPathComponent();
-          NodeTypeEnum type = selectedNode.getType();
+    TreePath[] paths = tree.getSelectionPaths();
+    if (paths != null) {
+      for (int i=0; i<paths.length; i++) {
+        if (paths[i].getLastPathComponent() != treeModel.getRoot()) {
+          Node node = (ChannelTree.Node)paths[i].getLastPathComponent();
+          NodeTypeEnum type = node.getType();
           if (type == ChannelTree.SERVER || type == ChannelTree.SOURCE ||
               type == ChannelTree.PLUGIN || type == ChannelTree.PLUGIN) {
-            selectedChannels.addAll(RBNBUtilities.getChildChannels(selectedNode, treeModel.isHiddenChannelsVisible()));
+            for (String channel : RBNBUtilities.getChildChannels(node, treeModel.isHiddenChannelsVisible())) {
+              if (!channels.contains(channel)) {
+                channels.add(channel);
+              }
+            }
           } else if (type == ChannelTree.CHANNEL) {
-            selectedChannels.add(selectedNode.getFullName());
+            if (!channels.contains(node.getFullName())) {
+              channels.add(node.getFullName());
+            }
           }
         }
       }
     }
     
-    return selectedChannels;
+    Collections.sort(channels, new ReadableStringComparator());
+    
+    return channels;
   }
   
   public void addChannelSelectionListener(ChannelSelectionListener e) {
@@ -376,7 +388,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
       
     ChannelSelectionEvent cse = new ChannelSelectionEvent(channelName, children, isRoot);
     
-    Iterator i = channelSelectionListeners.iterator();
+    Iterator<ChannelSelectionListener> i = channelSelectionListeners.iterator();
     while (i.hasNext()) {
       ChannelSelectionListener csl = (ChannelSelectionListener)i.next();
       csl.channelSelected(cse);
@@ -384,7 +396,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
   }
   
   private void fireNoChannelsSelected() {
-    Iterator i = channelSelectionListeners.iterator();
+    Iterator<ChannelSelectionListener> i = channelSelectionListeners.iterator();
     while (i.hasNext()) {
       ChannelSelectionListener csl = (ChannelSelectionListener)i.next();
       csl.channelSelectionCleared();
@@ -533,15 +545,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     if (o == treeModel.getRoot()) {
       popup = getRootPopup();
     } else {
-      ChannelTree.Node node = (ChannelTree.Node)o;
-      NodeTypeEnum type = node.getType();
-      
-      if (type == ChannelTree.SERVER || type == ChannelTree.SOURCE ||
-          type == ChannelTree.PLUGIN || type == ChannelTree.FOLDER) {
-        popup = getSourcePopup(node);
-      } else if (type == ChannelTree.CHANNEL) {
-        popup = getChannelPopup(node);
-      }
+      popup = getChannelPopup();
     }
     
     if (popup != null && popup.getComponentCount() > 0) {
@@ -574,134 +578,61 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     return popup;
   }
   
-  private JPopupMenu getSourcePopup(final ChannelTree.Node source) {
+  private JPopupMenu getChannelPopup() {
     JPopupMenu popup = new JPopupMenu();
     JMenuItem menuItem;
     
-    final String sourceName = source.getFullName();
-
-    List extensions = getExtensionsForSource(source);          
-    Iterator i = extensions.iterator();
-    while (i.hasNext()) {
-      final Extension extension = (Extension)i.next();
-      
-      menuItem = new JMenuItem("View source with " + extension.getName());
-      menuItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-          List channels = RBNBUtilities.getSortedChildren(source, treeModel.isHiddenChannelsVisible());
-          viewChannels(channels, extension);
-        }                
-      });
-      popup.add(menuItem);
+    final List<String> channels = getSelectedChannels();
+    if (channels.isEmpty()) {
+      return null;
     }
     
+    String plural = (channels.size() == 1) ? "" : "s";
+
+    List<Extension> extensions = dataPanelManager.getExtensions(channels);
     if (extensions.size() > 0) {
+      for (final Extension extension : extensions) {
+        menuItem = new JMenuItem("View channel" + plural + " with " + extension.getName());
+        menuItem.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent ae) {
+            viewChannels(channels, extension);
+          }                
+        });            
+        popup.add(menuItem);
+      }
+      
       popup.addSeparator();
-    }          
-     
-    if (dataPanelManager.isSourceSubscribed(sourceName)) {
-      menuItem = new JMenuItem("Unsubscribe from source");
+    }
+    
+    if (dataPanelManager.isAnyChannelSubscribed(channels)) {
+      menuItem = new JMenuItem("Unsubscribe from channel" + plural);
       menuItem.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent ae) {
-          dataPanelManager.unsubscribeSource(sourceName, true);
-        }
-      });
-      popup.add(menuItem);
-      popup.addSeparator();
-    }
-    
-    menuItem = new JMenuItem("Export data source...", DataViewer.getIcon("icons/export.gif"));
-    menuItem.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent arg0) {
-        ActionFactory.getInstance().getDataExportAction().exportData(
-            RBNBUtilities.getChildChannels(source,
-                                           treeModel.isHiddenChannelsVisible()));
-      }
-    });
-    popup.add(menuItem);          
-    
-    return popup;
-  }
-  
-  private JPopupMenu getChannelPopup(ChannelTree.Node channel) {
-    JPopupMenu popup = new JPopupMenu();
-    JMenuItem menuItem;
-
-    final List<ChannelTree.Node> selectedChannels = new ArrayList<ChannelTree.Node>();   
- 
-    TreePath[] selectedNodes = tree.getSelectionPaths();
-    if (selectedNodes != null) {
-      for (int i=0; i<selectedNodes.length; i++) {
-        if (selectedNodes[i].getLastPathComponent() != treeModel.getRoot()) {
-          ChannelTree.Node selectedNode = (ChannelTree.Node)selectedNodes[i].getLastPathComponent();
-          NodeTypeEnum type = selectedNode.getType();
-          if (type == ChannelTree.CHANNEL) {
-            selectedChannels.add(selectedNode);
-          }
-        }
-      }
-    }
-        
-    final String channelName = channel.getFullName();
-    final Channel channelMetadata = rbnb.getMetadataManager().getChannel(channelName);
-
-    ArrayList extensions = dataPanelManager.getExtensions(channelName);
-    final Extension defaultExtension = dataPanelManager.getDefaultExtension(channelName);
-    if (defaultExtension != null) {
-      menuItem = new JMenuItem("View with " + defaultExtension.getName());
-      menuItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent ae) {
-          viewChannels(selectedChannels, defaultExtension);
-        }                
-      });            
-      popup.add(menuItem);
-      popup.addSeparator();
-      
-      if (extensions.size() > 1) {
-        Iterator i = extensions.iterator();
-        while (i.hasNext()) {
-          final Extension extension = (Extension)i.next();
-          if (extension != defaultExtension) {
-            menuItem = new JMenuItem("View with " + extension.getName());
-            menuItem.addActionListener(new ActionListener() {
-              public void actionPerformed(ActionEvent ae) {
-                viewChannels(selectedChannels, extension);
-              }                
-            });
-            popup.add(menuItem);
-          }
-        }
-      
-        popup.addSeparator();
-      }      
-    }
-    
-    if (dataPanelManager.isChannelSubscribed(channelName)) {
-      menuItem = new JMenuItem("Unsubscribe from channel");
-      menuItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent arg0) {
-          dataPanelManager.unsubscribeChannel(channelName, true);
+          dataPanelManager.unsubscribeChannels(channels);
         }            
       });
       popup.add(menuItem);
       popup.addSeparator();
     }
 
-    String mime = channelMetadata.getMetadata("mime");
+    String mime = getMime(channels);
     if (mime.equals("application/octet-stream")) {
-      String plural = selectedChannels.size()==1?"":"s";
-      menuItem = new JMenuItem("Export channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
+      menuItem = new JMenuItem("Export data channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
       menuItem.addActionListener(new ActionListener() {
-        public void actionPerformed(ActionEvent arg0) {
-          List<String> selectedChannelsAsString = new ArrayList<String>();
-          for (ChannelTree.Node node : selectedChannels) {
-            selectedChannelsAsString.add(node.getFullName());
-          }
-          ActionFactory.getInstance().getDataExportAction().exportData(
-              selectedChannelsAsString);
+        public void actionPerformed(ActionEvent ae) {
+          ActionFactory.getInstance().getDataExportAction().exportData(channels);
         }
       });
       popup.add(menuItem);
+    } else if (mime.equals("image/jpeg")) {
+      menuItem = new JMenuItem("Export video channel" + plural + "...", DataViewer.getIcon("icons/export.gif"));
+      menuItem.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent ae) {
+          JFrame frame = RDV.getInstance(RDV.class).getMainFrame();
+          new ExportVideoDialog(frame, rbnb, channels);
+        }
+      });
+      popup.add(menuItem);      
     } else {
       popup.remove(popup.getComponentCount()-1);
     }
@@ -710,7 +641,6 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
   }
   
   private void viewChannel(final String channelName) {
-    log.debug("viewChannel() - start.. channleName: " + channelName);
     new Thread() {
       public void run() {
         dataPanelManager.viewChannel(channelName);
@@ -718,31 +648,38 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     }.start();
   }
   
-  private void viewChannels(final List channels, final Extension extension) {
+  private void viewChannels(final List<String> channels, final Extension extension) {
     new Thread() {
       public void run() {
         dataPanelManager.viewChannels(channels, extension);
       }
     }.start();
   }
-  
-  private List getExtensionsForSource(ChannelTree.Node source) {
-    List<Extension> extensions = new ArrayList<Extension>();
+
+  /**
+   * Gets the common mime type amoung all the channels. If the channels are all
+   * the same mime type this will return their mime type. If they are of
+   * different type this will return null.
+   * 
+   * @param channels  the list of channels
+   * @return          the common mime type of the channels, or null if there is
+   *                  none
+   */
+  private String getMime(List<String> channels) {
+    if (channels == null || channels.isEmpty()) {
+      return null;
+    }
     
-    List children = RBNBUtilities.getSortedChildren(source, treeModel.isHiddenChannelsVisible());
-    Iterator it = children.iterator();
-    while (it.hasNext()) {
-      String channelName = ((ChannelTree.Node)it.next()).getFullName();
-      ArrayList channelExtensions = dataPanelManager.getExtensions(channelName);
-      for (int i=0; i<channelExtensions.size(); i++) {
-        Extension e = (Extension)channelExtensions.get(i);
-        if (!extensions.contains(e)) {
-          extensions.add(e);
-        }
+    String mime = rbnb.getChannel(channels.get(0)).getMetadata("mime");
+    
+    for (int i=1; i<channels.size(); i++) {
+      String channel = channels.get(i);
+      if (!mime.equals(rbnb.getChannel(channel).getMetadata("mime"))) {
+        return null;
       }
     }
     
-    return extensions;
+    return mime;
   }
   
 	public void postState(int newState, int oldState) {
