@@ -39,6 +39,7 @@ Section "Install"
 
   SetOutPath $INSTDIR
   File "..\build\exe\RDV.exe"
+  File "..\*.txt"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM "SOFTWARE\RDV" "" "$INSTDIR"
@@ -73,8 +74,9 @@ SectionEnd
 
 Section "Uninstall"
   
-  Delete $INSTDIR\RDV.exe
-  Delete $INSTDIR\uninstall.exe
+  Delete "$INSTDIR\RDV.exe"
+  Delete "$INSTDIR\*.txt"
+  Delete "$INSTDIR\uninstall.exe"
   RMDir "$INSTDIR"
 
   SetShellVarContext all
