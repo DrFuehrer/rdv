@@ -1,9 +1,9 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://rdv.googlecode.com/
  * 
- * Copyright (c) 2007 Palta Software
+ * Copyright (c) 2008 Palta Software
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
