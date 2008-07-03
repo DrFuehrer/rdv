@@ -61,6 +61,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -120,6 +121,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    */
 	static Log log = LogFactory.getLog(JFreeChartDataPanel.class.getName());
 	
+  /** the data panel property to control the legend visibility */
+  private static final String DATA_PANEL_PROPERTY_SHOW_LOGEND = "showLegend";
+  
   /**
    * The chart.
    */
@@ -161,6 +165,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    */
 	JPanel chartPanelPanel;
 	
+  /** the menu item to control legend visibility */
+  private JCheckBoxMenuItem showLegendMenuItem;
+  
   /**
    * A bit to indicate if we are plotting time series charts of x vs. y charts.
    */
@@ -201,6 +208,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    */
   JFileChooser chooser;
   
+  /** a flag to control the legend visibility, defaults to true */
+  private boolean showLegend;
+  
   /**
    * Constructs a chart data panel in time series mode.
    */
@@ -221,6 +231,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     lastTimeDisplayed = -1;
     
     colors = new HashMap<String,Color>();
+
+    // show the legend by default    
+    showLegend = true;
 		
 		initChart();
 		
@@ -299,6 +312,16 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     popupMenu.insert(copyChartMenuItem, 2);
 
     popupMenu.insert(new JPopupMenu.Separator(), 3);
+    
+    popupMenu.add(new JPopupMenu.Separator());
+    
+    showLegendMenuItem = new JCheckBoxMenuItem("Show Legend", true);
+    showLegendMenuItem.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent ae) {
+        setShowLegend(showLegendMenuItem.isSelected());
+      }
+    });
+    popupMenu.add(showLegendMenuItem);
     
     if (xyMode) {
       popupMenu.add(new JPopupMenu.Separator());
@@ -689,6 +712,29 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
   }
   
   /**
+   * Shows or hides the legend.
+   * 
+   * @param showLegend  if true, the legend will show, otherwise it will not
+   */
+  private void setShowLegend(boolean showLegend) {
+    if (this.showLegend == showLegend) {
+      return;
+    }
+    
+    this.showLegend = showLegend;
+    
+    showLegendMenuItem.setSelected(showLegend);
+    
+    if (showLegend) {
+      properties.remove(DATA_PANEL_PROPERTY_SHOW_LOGEND);
+    } else {
+      properties.setProperty(DATA_PANEL_PROPERTY_SHOW_LOGEND, "false");
+    }
+    
+    updateLegend();
+  }
+  
+  /**
    * Update the legend and axis labels based on the series being viewed.
    */
   private void updateLegend() {
@@ -726,7 +772,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       }
     }
     
-    if (series >= 2) {
+    // show the legend if it is enabled and there are at least 2 series
+    if (showLegend && series >= 2) {
       if (chart.getLegend() == null) {
         chart.addLegend(seriesLegend);
       }
@@ -1320,7 +1367,9 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
         rangeAxis.setLowerBound(Double.parseDouble(value));
       } else if (key.equals("rangeUpperBound")) {
         rangeAxis.setUpperBound(Double.parseDouble(value));
-      }      
+      } else if (key.equals(DATA_PANEL_PROPERTY_SHOW_LOGEND) && !Boolean.parseBoolean(value)) {
+        setShowLegend(false);
+      }
     }
   }
 	
