@@ -1,10 +1,11 @@
 /*
  * RDV
  * Real-time Data Viewer
- * http://it.nees.org/software/rdv/
+ * http://rdv.googlecode.com/
  * 
  * Copyright (c) 2005-2007 University at Buffalo
  * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2008 Palta Software
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
