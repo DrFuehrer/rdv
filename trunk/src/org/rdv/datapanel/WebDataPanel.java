@@ -571,7 +571,8 @@ public class WebDataPanel extends AbstractDataPanel {
    * 
    * @returns the title of the webpage, or null if none is being displayed
    */
-  String getTitle() {
+  @Override
+  protected String getTitle() {
     return (String)htmlRenderer.getDocument().getProperty("title");
   }
   

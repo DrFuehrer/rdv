@@ -31,14 +31,14 @@
  * $Author$
  */
 
-package org.rdv.datapanel;
+package org.rdv.viz.chart;
 
 /**
  * @author  Jason P. Hanley
  * @since   1.2
  */
-public class XYDataPanel extends JFreeChartDataPanel {
-	public XYDataPanel() {
+public class XYChartViz extends ChartViz {
+	public XYChartViz() {
 		super(true);
 	}
 }
