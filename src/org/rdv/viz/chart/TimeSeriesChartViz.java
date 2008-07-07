@@ -31,11 +31,11 @@
  * $Author$
  */
 
-package org.rdv.datapanel;
+package org.rdv.viz.chart;
 
 /**
  * @author  Jason P. Hanley
  * @since   1.2
  */
-public class TimeSeriesDataPanel extends JFreeChartDataPanel {
+public class TimeSeriesChartViz extends ChartViz {
 }

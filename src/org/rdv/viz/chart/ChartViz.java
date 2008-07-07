@@ -31,32 +31,23 @@
  * $Author$
  */
 
-package org.rdv.datapanel;
+package org.rdv.viz.chart;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
-import java.awt.Point;
-import java.awt.Shape;
-import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -78,34 +69,21 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.event.AxisChangeEvent;
 import org.jfree.chart.event.AxisChangeListener;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.labels.XYToolTipGenerator;
-import org.jfree.chart.plot.CrosshairState;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
-import org.jfree.chart.renderer.xy.XYItemRendererState;
 import org.jfree.chart.title.LegendTitle;
-import org.jfree.chart.urls.XYURLGenerator;
-import org.jfree.data.general.Series;
-import org.jfree.data.general.SeriesException;
 import org.jfree.data.time.FixedMillisecond;
-import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.time.TimeSeriesDataItem;
-import org.jfree.data.xy.AbstractXYDataset;
 import org.jfree.data.xy.XYDataset;
-import org.jfree.ui.RectangleEdge;
-import org.jfree.util.ShapeUtilities;
-import org.jfree.util.UnitType;
 import org.rdv.data.DataChannel;
 import org.rdv.data.DataFileReader;
 import org.rdv.data.NumericDataSample;
+import org.rdv.datapanel.AbstractDataPanel;
 import org.rdv.rbnb.Channel;
 
 import com.rbnb.sapi.ChannelMap;
@@ -115,11 +93,11 @@ import com.rbnb.sapi.ChannelMap;
  * 
  * @author Jason P. Hanley
  */
-public class JFreeChartDataPanel extends AbstractDataPanel {	
+public abstract class ChartViz extends AbstractDataPanel {	
   /**
    * The logger for this class.
    */
-	static Log log = LogFactory.getLog(JFreeChartDataPanel.class.getName());
+	static Log log = LogFactory.getLog(ChartViz.class.getName());
 	
   /** the data panel property to control the legend visibility */
   private static final String DATA_PANEL_PROPERTY_SHOW_LOGEND = "showLegend";
@@ -214,7 +192,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
   /**
    * Constructs a chart data panel in time series mode.
    */
-	public JFreeChartDataPanel() {
+	public ChartViz() {
 		this(false);
 	}
 
@@ -223,7 +201,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * 
    * @param xyMode  if true in x vs. y mode, otherwise in time series mode
    */
-	public JFreeChartDataPanel(boolean xyMode) {
+	public ChartViz(boolean xyMode) {
 		super();
 		
 		this.xyMode = xyMode;
@@ -366,7 +344,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       chooser = new JFileChooser();
     }
     
-    int returnVal = chooser.showOpenDialog(dataComponent);
+    int returnVal = chooser.showOpenDialog(getDataComponent());
     if(returnVal != JFileChooser.APPROVE_OPTION) {
       return;
     }
@@ -380,7 +358,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     try {
       reader = new DataFileReader(file);
     } catch (IOException e) {
-      JOptionPane.showMessageDialog(dataComponent,
+      JOptionPane.showMessageDialog(getDataComponent(),
           e.getMessage(),
           "Problem reading data file",
           JOptionPane.ERROR_MESSAGE);
@@ -389,7 +367,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     List<DataChannel> channels = reader.getChannels();
     if (channels.size() < 2) {
-      JOptionPane.showMessageDialog(dataComponent,
+      JOptionPane.showMessageDialog(getDataComponent(),
           "There must be at least 2 channels in the data file",
           "Problem with data file",
           JOptionPane.ERROR_MESSAGE);      
@@ -404,7 +382,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       yChannel = channels.get(1);
     } else {    
       xChannel = (DataChannel)JOptionPane.showInputDialog(
-          dataComponent,
+          getDataComponent(),
           "Select the x channel:",
           "Add local channel",
           JOptionPane.PLAIN_MESSAGE,
@@ -417,7 +395,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       }
       
       yChannel = (DataChannel)JOptionPane.showInputDialog(
-          dataComponent,
+          getDataComponent(),
           "Select the y channel:",
           "Add local channel",
           JOptionPane.PLAIN_MESSAGE,
@@ -791,17 +769,18 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * 
    * @return  the title of the data panel
    */
-	String getTitle() {
+  @Override
+  protected String getTitle() {
 		if (xyMode) {
       int remoteSeries = dataCollection.getSeriesCount()-localSeries;
       
       String title = new String();
-			Iterator i = channels.iterator();
+			Iterator<String> i = channels.iterator();
       while (i.hasNext()) {
-        String firstChannel = (String)i.next();
+        String firstChannel = i.next();
         title += firstChannel;
         if (i.hasNext()) {
-          String secondChannel = (String)i.next();
+          String secondChannel = i.next();
           title += " vs. " + secondChannel;
           if (i.hasNext() || localSeries > 0) {
             title += ", ";
@@ -829,7 +808,8 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    * 
    * @return  the component displaying the channels for the data panel
    */
-  JComponent getChannelComponent() {
+	@Override
+  protected JComponent getChannelComponent() {
     if (xyMode) {
       int remoteSeries = dataCollection.getSeriesCount()-localSeries;
 
@@ -841,13 +821,13 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
       titleBar.setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0));
       titleBar.setOpaque(false);
       
-      if (showChannelsInTitle) {
-        Iterator i = channels.iterator();
+      if (isShowChannelsInTitle()) {
+        Iterator<String> i = channels.iterator();
         while (i.hasNext()) {
-          String firstChannel = (String)i.next();
+          String firstChannel = i.next();
           String series = firstChannel;
           if (i.hasNext()) {
-            series += " vs. " + (String)i.next();
+            series += " vs. " + i.next();
           }
           titleBar.add(new ChannelTitle(series, firstChannel));
         }
@@ -957,7 +937,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
     
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
-        JFreeChartDataPanel.this.channelMap = channelMap;
+        ChartViz.this.channelMap = channelMap;
       }
     });
 	}
@@ -969,9 +949,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
    */
 	private void postDataTimeSeries(ChannelMap channelMap) {
 		//loop over all channels and see if there is data for them
-		Iterator i = channels.iterator();
-		while (i.hasNext()) {
-			String channelName = (String)i.next();
+		for (String channelName : channels) {
 			int channelIndex = channelMap.GetIndex(channelName);
 			
 			//if there is data for channel, post it
@@ -983,7 +961,7 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	
   /**
    * Posts the data in the channel map to the specified channel when in time
-   * seires mode.
+   * series mode.
    * 
    * @param channelMap    the channel map containing the new data
    * @param channelName   the name of the channel to post data to
@@ -1379,981 +1357,4 @@ public class JFreeChartDataPanel extends AbstractDataPanel {
 	public String toString() {
 		return "JFreeChart Data Panel";
 	}
-  
-  /**
-   * Optimized XY item renderer from JFreeChart forums.
-   */
-  public static class FastXYItemRenderer extends StandardXYItemRenderer {
-
-    /** serialization version identifier */
-    private static final long serialVersionUID = 4976826552487720209L;
-
-    /** a flag to control whether the cursor visibility */
-    private boolean cursorVisible;
-    
-    /** the size of the cursor */
-    private static final int DEFAULT_CURSOR_SIZE = 10;
-
-    /**
-     * A counter to prevent unnecessary Graphics2D.draw() events in drawItem()
-     */
-    private int previousDrawnItem = 1;
-
-    public FastXYItemRenderer() {
-      this(LINES, null);
-    }
-    
-    public FastXYItemRenderer(int type) {
-      this(type, null);
-    }    
-    
-    public FastXYItemRenderer(int type, XYToolTipGenerator toolTipGenerator) {
-      this(type, toolTipGenerator, null);
-    }
-   
-    public FastXYItemRenderer(int type, XYToolTipGenerator toolTipGenerator, XYURLGenerator urlGenerator) {
-        super(type, toolTipGenerator, urlGenerator);
-        
-        this.cursorVisible = false;
-    }
-
-    /**
-     * Gets the cursor visibility flag. This defaults to false.
-     * 
-     * @return  true if the cursor is visible, false otherwise
-     */
-    public boolean getCursorVisible() {
-      return this.cursorVisible;
-    }
-    
-    /**
-     * Sets the cursor visibility flag. If set, a cursor will be drawn to
-     * indicate the position of the last data item in each series.
-     * 
-     * @param cursorVisible  the flag to control cursor visibility
-     */
-    public void setCursorVisible(boolean cursorVisible) {
-      if (this.cursorVisible != cursorVisible) {
-        this.cursorVisible = cursorVisible;
-        fireChangeEvent();
-      }
-    }
-    
-    @Override
-    public void drawItem(Graphics2D g2, XYItemRendererState state,
-        Rectangle2D dataArea, PlotRenderingInfo info, XYPlot plot,
-        ValueAxis domainAxis, ValueAxis rangeAxis, XYDataset dataset,
-        int series, int item, CrosshairState crosshairState, int pass) {
-
-      boolean itemVisible = getItemVisible(series, item);
-      
-      // setup for collecting optional entity info...
-      Shape entityArea = null;
-      EntityCollection entities = null;
-      if (info != null) {
-        entities = info.getOwner().getEntityCollection();
-      }
-
-      PlotOrientation orientation = plot.getOrientation();
-      Paint paint = getItemPaint(series, item);
-      Stroke seriesStroke = getItemStroke(series, item);
-      g2.setPaint(paint);
-      g2.setStroke(seriesStroke);
-
-      // get the data point...
-      double x1 = dataset.getXValue(series, item);
-      double y1 = dataset.getYValue(series, item);
-      if (Double.isNaN(x1) || Double.isNaN(y1)) {
-        itemVisible = false;
-      }
-
-      RectangleEdge xAxisLocation = plot.getDomainAxisEdge();
-      RectangleEdge yAxisLocation = plot.getRangeAxisEdge();
-      double transX1 = domainAxis.valueToJava2D(x1, dataArea, xAxisLocation);
-      double transY1 = rangeAxis.valueToJava2D(y1, dataArea, yAxisLocation);
-
-      if (getPlotLines()) {
-        if (item == 0) {
-          previousDrawnItem = 1;
-        }
-
-        if (getDrawSeriesLineAsPath()) {
-          State s = (State) state;
-          if (s.getSeriesIndex() != series) {
-            // we are starting a new series path
-            s.seriesPath.reset();
-            s.setLastPointGood(false);
-            s.setSeriesIndex(series);
-          }
-
-          // update path to reflect latest point
-          if (itemVisible && !Double.isNaN(transX1) && !Double.isNaN(transY1)) {
-            float x = (float) transX1;
-            float y = (float) transY1;
-            if (orientation == PlotOrientation.HORIZONTAL) {
-              x = (float) transY1;
-              y = (float) transX1;
-            }
-            if (s.isLastPointGood()) {
-              // TODO: check threshold
-              s.seriesPath.lineTo(x, y);
-            } else {
-              s.seriesPath.moveTo(x, y);
-            }
-            s.setLastPointGood(true);
-          } else {
-            s.setLastPointGood(false);
-          }
-          if (item == dataset.getItemCount(series) - 1) {
-            if (s.getSeriesIndex() == series) {
-              // draw path
-              g2.setStroke(lookupSeriesStroke(series));
-              g2.setPaint(lookupSeriesPaint(series));
-              g2.draw(s.seriesPath);
-            }
-          }
-        }
-
-        else if (item != 0 && itemVisible) {
-          // get the previous data point...
-          double x0 = dataset.getXValue(series, item - previousDrawnItem);
-          double y0 = dataset.getYValue(series, item - previousDrawnItem);
-          if (!Double.isNaN(x0) && !Double.isNaN(y0)) {
-            boolean drawLine = true;
-            if (getPlotDiscontinuous()) {
-              // only draw a line if the gap between the current and
-              // previous data point is within the threshold
-              int numX = dataset.getItemCount(series);
-              double minX = dataset.getXValue(series, 0);
-              double maxX = dataset.getXValue(series, numX - 1);
-              if (getGapThresholdType() == UnitType.ABSOLUTE) {
-                drawLine = Math.abs(x1 - x0) <= getGapThreshold();
-              } else {
-                drawLine = Math.abs(x1 - x0) <= ((maxX - minX) / numX * getGapThreshold());
-              }
-            }
-            if (drawLine) {
-              double transX0 = domainAxis.valueToJava2D(x0, dataArea,
-                  xAxisLocation);
-              double transY0 = rangeAxis.valueToJava2D(y0, dataArea,
-                  yAxisLocation);
-
-              // only draw if we have good values
-              if (Double.isNaN(transX0) || Double.isNaN(transY0)
-                  || Double.isNaN(transX1) || Double.isNaN(transY1)) {
-                return;
-              }
-
-              // Only draw line if it is more than a pixel away from the
-              // previous one
-              if ((transX1 - transX0 > 2 || transX1 - transX0 < -2
-                  || transY1 - transY0 > 2 || transY1 - transY0 < -2)) {
-                previousDrawnItem = 1;
-
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                  state.workingLine.setLine(transY0, transX0, transY1, transX1);
-                } else if (orientation == PlotOrientation.VERTICAL) {
-                  state.workingLine.setLine(transX0, transY0, transX1, transY1);
-                }
-
-                if (state.workingLine.intersects(dataArea)) {
-                  g2.draw(state.workingLine);
-                }
-              } else {
-                // Increase counter for the previous drawn item.
-                previousDrawnItem++;
-              }
-            }
-          }
-        }
-      }
-
-      // we needed to get this far even for invisible items, to ensure that
-      // seriesPath updates happened, but now there is nothing more we need
-      // to do for non-visible items...
-      if (!itemVisible) {
-        return;
-      }
-      
-      // add a cursor to indicate the position of the last data item
-      if (getCursorVisible() && item == dataset.getItemCount(series) - 1) {
-        Line2D cursorX = new Line2D.Double(transX1 - DEFAULT_CURSOR_SIZE, transY1, transX1 + DEFAULT_CURSOR_SIZE, transY1);
-        g2.draw(cursorX);       
-        Line2D cursorY = new Line2D.Double(transX1, transY1 - DEFAULT_CURSOR_SIZE, transX1, transY1 + DEFAULT_CURSOR_SIZE); 
-        g2.draw(cursorY);
-      }
-      
-      if (getBaseShapesVisible()) {
-
-        Shape shape = getItemShape(series, item);
-        if (orientation == PlotOrientation.HORIZONTAL) {
-          shape = ShapeUtilities.createTranslatedShape(shape, transY1, transX1);
-        } else if (orientation == PlotOrientation.VERTICAL) {
-          shape = ShapeUtilities.createTranslatedShape(shape, transX1, transY1);
-        }
-        if (shape.intersects(dataArea)) {
-          if (getItemShapeFilled(series, item)) {
-            g2.fill(shape);
-          } else {
-            g2.draw(shape);
-          }
-        }
-        entityArea = shape;
-
-      }
-
-      if (getPlotImages()) {
-        Image image = getImage(plot, series, item, transX1, transY1);
-        if (image != null) {
-          Point hotspot = getImageHotspot(plot, series, item, transX1, transY1,
-              image);
-          g2.drawImage(image, (int) (transX1 - hotspot.getX()),
-              (int) (transY1 - hotspot.getY()), null);
-          entityArea = new Rectangle2D.Double(transX1 - hotspot.getX(), transY1
-              - hotspot.getY(), image.getWidth(null), image.getHeight(null));
-        }
-
-      }
-
-      double xx = transX1;
-      double yy = transY1;
-      if (orientation == PlotOrientation.HORIZONTAL) {
-        xx = transY1;
-        yy = transX1;
-      }
-
-      // draw the item label if there is one...
-      if (isItemLabelVisible(series, item)) {
-        drawItemLabel(g2, orientation, dataset, series, item, xx, yy,
-            (y1 < 0.0));
-      }
-
-      int domainAxisIndex = plot.getDomainAxisIndex(domainAxis);
-      int rangeAxisIndex = plot.getRangeAxisIndex(rangeAxis);
-      updateCrosshairValues(crosshairState, x1, y1, domainAxisIndex,
-          rangeAxisIndex, transX1, transY1, orientation);
-
-      // add an entity for the item...
-      if (entities != null && dataArea.contains(xx, yy)) {
-        addEntity(entities, entityArea, dataset, series, item, xx, yy);
-      }
-    }
-  }
-  
-  /**
-   * This is an optimizied version of the TimeSeries class. It adds methods to
-   * support fast loading of large amounts of data. 
-   */
-  public class FastTimeSeries extends TimeSeries {
-
-    /** serialization version identifier */
-    private static final long serialVersionUID = -8280730280322014742L;
-
-    public FastTimeSeries(String name, Class timePeriodClass) {
-      super(name, timePeriodClass);
-    }
-    
-    /**
-     * Set the maximum item age. Age items according to the latest time.
-     * 
-     * @param periods  the maximum item age
-     * @param latest   the latest time to age by
-     */
-    public void setMaximumItemAge(long periods, long latest) {
-      setMaximumItemAge(periods);
-      removeAgedItems(latest, true);
-    }
-    
-    /**
-     * Does nothing. This class only supports aging items with an explicit
-     * latest time.
-     * 
-     * @param  notify listeners
-     */
-    public void removeAgedItems(boolean notify) {}
-    
-    /**
-     * Remove items that are older than the maximum item age relative to the
-     * latest time provided. Optionally notify listeners that the series has
-     * changed.
-     * 
-     * Note: This overides the version in the base class because it is not
-     *       correct and throws exceptions when it shouldn't.
-     * 
-     * @param latest  the time to age items by
-     * @param notify  if true, notify listeners if the series changes, otherwise
-     *                don't notify listeners
-     */
-    public void removeAgedItems(long latest, boolean notify) {
-      long minAge = latest - this.getMaximumItemAge();
-      
-      boolean removed = false;
-      while (data.size() > 0 && getTimePeriod(0).getSerialIndex() <= minAge) {
-        data.remove(0);
-        removed = true;
-      }
-      
-      if (removed && notify) {
-        fireSeriesChanged();
-      }
-    }
-
-    /**
-     * Signal that a number of items will be added to the series.
-     * 
-     * This increases the capacity of this series to ensure it hold at least the
-     * number of elements specified plus the current number of elements.
-     * 
-     * @param items  the number of items to be added
-     */
-    public void startAdd(int items) {
-      ((ArrayList)data).ensureCapacity(data.size()+items);
-    }
-    
-    /**
-     * Adds a data item to the series. If the time period is less than the last
-     * time period, the item will not be added.
-     *
-     * @param period  the time period to add (<code>null</code> not permitted).
-     * @param value  the new value.
-     */
-    @SuppressWarnings("unchecked")
-    public void add(RegularTimePeriod period, double value) {
-      TimeSeriesDataItem item = new TimeSeriesDataItem(period, value);
-      int count = getItemCount();
-      if (count == 0) {
-        data.add(item);
-      } else {
-        RegularTimePeriod last = getTimePeriod(count-1);
-        if (period.compareTo(last) > 0) {
-          data.add(item);
-        } else {
-          int index = Collections.binarySearch(data, item);
-          if (index < 0) {
-            data.add(-index - 1, item);
-          }
-        }
-      }      
-    }
-  }
-  
-  /**
-   * Represents one timestamped (x,y) data item.
-   */
-  public class XYTimeSeriesDataItem implements Cloneable, Comparable<XYTimeSeriesDataItem>, Serializable {
-    private static final long serialVersionUID = 941152355835111553L;
-
-    /** The time period */
-    private final RegularTimePeriod period;
-    
-    /** The x value */
-    private Number x;
-    
-    /** The y value */
-    private Number y;
-    
-    /**
-     * Construct a new data item with the time.
-     * 
-     * @param period  the time for the data
-     */
-    public XYTimeSeriesDataItem(RegularTimePeriod period) {
-      this(period, null, null);
-    }
-    
-    /**
-     * Construct a new data item with timestamped (x,y) values.
-     * 
-     * @param period  the time for the data
-     * @param x       the x value
-     * @param y       the y value
-     */
-    public XYTimeSeriesDataItem(RegularTimePeriod period, Number x, Number y) {
-      if (period == null) {
-        throw new IllegalArgumentException("Null 'period' argument.");   
-      }
-      
-      this.period = period;
-      this.x = x;
-      this.y = y;
-    }
-    
-    /**
-     * Get a copy of this data item.
-     */
-    public Object clone() {
-      return new XYTimeSeriesDataItem(period, x.doubleValue(), y.doubleValue());
-    }
-
-    /**
-     * Compare this data item to another. This only compares the time of the
-     * data item.
-     * 
-     * @param o  the data item to compare to
-     * @return   an integer indicating the order of this data item relative to
-     *           the other
-     */
-    @SuppressWarnings("unchecked")
-    public int compareTo(XYTimeSeriesDataItem d) {
-      return period.compareTo(d.getPeriod());
-    }
-    
-    /**
-     * Test if this object is equal to another.
-     * 
-     * @return  true if the object is equal, false otherwise
-     */
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      
-      if (o instanceof XYTimeSeriesDataItem) {
-        XYTimeSeriesDataItem d = (XYTimeSeriesDataItem)o;
-        return period.equals(d.getPeriod()) && x.equals(d.getX()) && y.equals(d.getY());
-      }
-      
-      return false;
-    }
-    
-    /**
-     * Get the hash code for this object.
-     */
-    public int hashCode() {
-      int result;
-      result = period.hashCode();
-      result = 29 * result + (x != null ? x.hashCode() : 0);
-      result = 29 * result + (y != null ? y.hashCode() : 0);
-      return result;
-    }
-    
-    /**
-     * Get the time period for this data item.
-     * 
-     * @return  the time period
-     */
-    public RegularTimePeriod getPeriod() {
-      return period;
-    }
-    
-    /**
-     * Get the x value.
-     * 
-     * @return  the x value
-     */
-    public Number getX() {
-      return x;
-    }
-    
-    /**
-     * Set the x value.
-     * 
-     * @param x  the new value of x
-     */
-    public void setX(Number x) {
-      this.x = x;
-    }
-    
-    /**
-     * Get the y value.
-     * 
-     * @return  the y value
-     */
-    public Number getY() {
-      return y;
-    }
-    
-    /**
-     * Set the y value
-     * @param y  the new value of y
-     */
-    public void setY(Number y) {
-      this.y = y;
-    }
-    
-    /**
-     * Set the x and y value.
-     * 
-     * @param x  the new value of x
-     * @param y  the new value of y
-     */
-    public void setValue(Number x, Number y) {
-      this.x = x;
-      this.y = y;
-    }
-  }
-  
-  /**
-   * A sequence of (x,y) data items that are timestamped. Only one data item may
-   * is allowed per time.
-   */
-  public class XYTimeSeries extends Series implements Serializable {
-    private static final long serialVersionUID = -5092511186726301050L;
-
-    /**
-     * The time period of the series.
-     */
-    private Class timePeriodClass;
-    
-    /**
-     * The list of data items.
-     */
-    private ArrayList<XYTimeSeriesDataItem> data;
-    
-    /**
-     * The old age of a data item relative to the newest one or a given time.
-     */
-    private long maximumItemAge;
-
-    /**
-     * Creates an empty series.
-     * 
-     * @param name             the name of the series
-     * @param timePeriodClass  the time period
-     */
-    public XYTimeSeries(String name, Class timePeriodClass) {
-      super(name);
-      
-      this.timePeriodClass = timePeriodClass;
-      
-      data = new ArrayList<XYTimeSeriesDataItem>();
-      maximumItemAge = Long.MAX_VALUE;
-    }
-    
-    /**
-     * Get the time period for this series.
-     * 
-     * @return  the class of the time period
-     */
-    public Class getTimePeriodClass() {
-      return timePeriodClass;
-    }
-    
-    /**
-     * Call to optimize the addition of large amount of data items.
-     * 
-     * @param items  the number of item that will be added.
-     */
-    public void startAdd(int items) {
-      data.ensureCapacity(data.size()+items);
-    }
-    
-    /**
-     * Add a data item and notify series change listeners.
-     * 
-     * @param period  the period of the data item
-     * @param x       the x value of the data item
-     * @param y       the y value of the data item.
-     */
-    public void add(RegularTimePeriod period, Number x, Number y) {
-     add(period, x, y, true); 
-    }
-
-    /**
-     * Add a data item. Optionally notify series change listeners.
-     * 
-     * @param period  the period of the data item
-     * @param x       the x value of the data item
-     * @param y       the y value of the data item
-     * @param notify  if true notify series change listeners
-     */
-    public void add(RegularTimePeriod period, Number x, Number y, boolean notify) {
-      add(new XYTimeSeriesDataItem(period, x, y), notify);
-    }
-    
-    /**
-     * Add the data item and notify series change listeners.
-     * 
-     * @param item  the data item to add
-     */
-    public void add(XYTimeSeriesDataItem item) {
-      add(item, true);
-    }
-    
-    /**
-     * Add the data item. Optionally notify series change listeners.
-     * 
-     * @param item    the data item to add
-     * @param notify  if true notify series change listeners
-     */
-    @SuppressWarnings("unchecked")
-    public void add(XYTimeSeriesDataItem item, boolean notify) {
-      if (item == null) {
-        throw new IllegalArgumentException("Null 'item' argument.");
-      }
-      
-      if (!item.getPeriod().getClass().equals(timePeriodClass)) {
-        throw new SeriesException("Invalid time period class for this series.");
-      }
-      
-      boolean added = false;
-      int count = getItemCount();
-      if (count == 0) {
-        data.add(item);
-        added = true;
-      } else {
-        RegularTimePeriod last = getDataItem(count-1).getPeriod();
-        if (item.getPeriod().compareTo(last) > 0) {
-          data.add(item);
-          added = true;
-        } else {
-          int index = Collections.binarySearch(data, item);
-          if (index < 0) {
-            data.add(-index - 1, item);
-            added = true;
-          }          
-        }
-      }
-      
-      if (added && notify) {
-        fireSeriesChanged();
-      }
-    }
-    
-    /**
-     * Update the values at the time period.
-     * 
-     * @param period  the time period to update
-     * @param x       the new x value
-     * @param y       the new y value
-     */
-    public void update(RegularTimePeriod period, Number x, Number y) {
-      XYTimeSeriesDataItem item = getDataItem(period);
-      if (item != null) {
-        item.setValue(x, y);
-        
-        fireSeriesChanged();
-      } else {
-        throw new SeriesException("Period does not exist.");
-      }
-    }
-    
-    /**
-     * Delete the data item at the time period.
-     * 
-     * @param period  the time period at which to delete the data item
-     */
-    public void delete(RegularTimePeriod period) {
-      int index = getIndex(period);
-      data.remove(index);
-      fireSeriesChanged();
-    }
-
-    /**
-     * Remove all data items from the series.
-     */
-    public void clear() {
-      if (data.size() > 0) {
-        data.clear();
-        fireSeriesChanged();
-      }
-    }
-    
-    /**
-     * Get the data item at the specified index.
-     * 
-     * @param index  the index at which the data item is located
-     * @return       the data item, or null if there is none at the index
-     */
-    public XYTimeSeriesDataItem getDataItem(int index) {
-      return data.get(index);
-    }
-    
-    /**
-     * Get the data item at the specified time.
-     * 
-     * @param period  the time of the data item
-     * @return        the data item or null if there is no data item at the time
-     */
-    public XYTimeSeriesDataItem getDataItem(RegularTimePeriod period) {
-      int index = getIndex(period);
-      if (index >= 0) {
-        return data.get(index);
-      } else {
-        return null;
-      }
-    }
-    
-    /**
-     * Get the index of the data item at the specified time.
-     * 
-     * @param period  the time to look for the data item
-     * @return        the index of the data item, or a negative number if not
-     */
-    public int getIndex(RegularTimePeriod period) {
-      if (period == null) {
-        throw new IllegalArgumentException("Null 'period' argument");
-      }
-      
-      XYTimeSeriesDataItem dummy = new XYTimeSeriesDataItem(period);
-      return Collections.binarySearch(data, dummy);
-    }
-    
-    /**
-     * Get the number of data items in this series.
-     * 
-     * @return  the number of data items in this series
-     */
-    public int getItemCount() {
-      return data.size();
-    }
-    
-    /**
-     * Get a read-only list of the data item in this series.
-     * 
-     * @return  a list of data item in this series
-     */
-    public List<XYTimeSeriesDataItem> getItems() {
-      return Collections.unmodifiableList(data);
-    }
-    
-    /**
-     * Get the maximum ago of a data item.
-     * 
-     * @return  the maximum age
-     */
-    public long getMaximumItemAge() {
-      return maximumItemAge;
-    }
-    
-    /**
-     * Set the maximum ago of a data item.
-     * 
-     * @param periods  the maximum age
-     */
-    public void setMaximumItemAge(long periods) {
-      if (periods < 0) {
-        throw new IllegalArgumentException("Negative 'periods' argument.");
-      }
-      maximumItemAge = periods;
-      removeAgedItems();       
-    }
-    
-    /**
-     * Set the maximum age of a data item. Age items according to the latest
-     * time
-     * 
-     * @param periods  the maximum age
-     * @param latest   the latest time to age by
-     */
-    public void setMaximumItemAge(long periods, long latest) {
-      if (periods < 0) {
-        throw new IllegalArgumentException("Negative 'periods' argument.");
-      }
-      maximumItemAge = periods;
-      removeAgedItems(latest);       
-    }    
-    
-    /**
-     * Remove data items that exceed the maximum age and notify series change
-     * listeners if any data items are aged.
-     */
-    public void removeAgedItems() {
-      removeAgedItems(true);
-    }
-    
-    /**
-     * Remove data items that exceed the maximum age. Optionally notify series
-     * change listeners if any data items are aged.
-     * 
-     * @param notify  if true notify series change listeners
-     */
-    public void removeAgedItems(boolean notify) {
-      int items = getItemCount(); 
-      if (items > 0) {
-        removeAgedItems(getDataItem(items-1).getPeriod().getSerialIndex(), notify);
-      }
-    }
-    
-    /**
-     * Remove data items that exceed the maximum age starting at the given time.
-     * Notify series change listeners if any data items are aged.
-     * 
-     * @param latest  the time to start at
-     */
-    public void removeAgedItems(long latest) {
-      removeAgedItems(latest, true);
-    }
-    
-    /**
-     * Remove data items that exceed the maximum age starting at the given time.
-     * Optionally notify series change listeners if any data items are aged.
-     * 
-     * @param latest  the time to start at
-     * @param notify  if true notify series change listenerss
-     */
-    public void removeAgedItems(long latest, boolean notify) {
-      boolean removed = false;
-      
-      long minimumItemAge = latest - maximumItemAge;
-      while (getItemCount() > 0 && getDataItem(0).getPeriod().getSerialIndex() < minimumItemAge) {
-        data.remove(0);
-        removed = true;
-      }
-      
-      if (notify && removed) {
-        fireSeriesChanged();
-      }
-    }
-  }
-  
-  /**
-   * A collection of XYTimeSeries objects that form a dataset. 
-   */
-  public class XYTimeSeriesCollection extends AbstractXYDataset implements Serializable {
-    private static final long serialVersionUID = 4352896561682820035L;
-    
-    /** List of series */
-    private List<XYTimeSeries> data;
-    
-    /**
-     * Create an empty dataset.
-     */
-    public XYTimeSeriesCollection() {
-      super();
-      
-      data = new ArrayList<XYTimeSeries>();
-    }
-
-    /**
-     * Get the number of data series in this collection
-     * 
-     * @return  the number of data series
-     */
-    public int getSeriesCount() {
-      return data.size();
-    }
-    
-    /**
-     * Get a list of all data series in this collection. This list is read-only.
-     * 
-     * @return  a list of data series
-     */
-    public List<XYTimeSeries> getSeries() {
-      return Collections.unmodifiableList(this.data);
-    }    
-    
-    /**
-     * Get the data series at the specified index.
-     * 
-     * @param series  the index of the series
-     * @return        if found, the series, null otherwise
-     */
-    public XYTimeSeries getSeries(int series) {
-      if ((series < 0) || (series >= getSeriesCount())) {
-        throw new IllegalArgumentException("The 'series' argument is out of bounds (" + series + ").");
-      }
-
-      return data.get(series);      
-    }
-    
-    /**
-     * Get the data series with the specified key.
-     * 
-     * @param key  the key to the data series
-     * @return     if foud, the data series, null otherwise
-     */
-    public XYTimeSeries getSeries(String key) {
-      for (XYTimeSeries xyTimeSeries : data) {
-        Comparable k = xyTimeSeries.getKey();
-        if (k != null && k.equals(key)) {
-          return xyTimeSeries;
-        }
-      }
-      
-      return null;
-    }
-
-    /**
-     * Get the key for the specified series index.
-     * @param key  the index to the data series
-     * @return     if found, the key for the series, null otherwise
-     */
-    public Comparable getSeriesKey(int series) {
-      return getSeries(series).getKey();
-    }
-    
-    /**
-     * Add the series to the collection.
-     * 
-     * @param series  the series to add
-     */
-    public void addSeries(XYTimeSeries series) {
-      addSeries(getSeriesCount(), series);
-    }
-    
-    /**
-     * Add the series to the collection at the specified index.
-     * 
-     * @param index   the index at which to add the series
-     * @param series  the series to add
-     */
-    public void addSeries(int index, XYTimeSeries series) {
-      if (series == null) {
-        throw new IllegalArgumentException("Null 'series' argument.");
-      }
-      data.add(index, series);
-      series.addChangeListener(this);
-      fireDatasetChanged();      
-    }
-    
-    /**
-     * Remove the series from the collection.
-     * 
-     * @param series  the series to remove
-     */
-    public void removeSeries(XYTimeSeries series) {
-      if (series == null) {
-        throw new IllegalArgumentException("Null 'series' argument.");
-      }
-      data.remove(series);
-      series.removeChangeListener(this);
-      fireDatasetChanged();      
-    }
-    
-    /**
-     * Remove the series, specified by the, index from the collection.
-     * 
-     * @param index  the index of the series
-     */
-    public void removeSeries(int index) {
-      XYTimeSeries series = getSeries(index);
-      if (series != null) {
-        removeSeries(series);
-      }
-    }
-
-    /**
-     * Get the number of data items in the specified series
-     * 
-     * @param series  the index to the data series
-     */
-    public int getItemCount(int series) {
-      return getSeries(series).getItemCount();
-    }
-
-    /**
-     * Get the x value of the series at the specified data item.
-     * 
-     * @param series  the index of the data series
-     * @param item    the index of the data item
-     * @return        the x value
-     */
-    public Number getX(int series, int item) {
-      XYTimeSeries xyTimeSeries = getSeries(series);
-      return xyTimeSeries.getDataItem(item).getX();
-    }
-
-    /**
-     * Get the x yalue of the series at the specified data item.
-     * 
-     * @param series  the index of the data series
-     * @param item    the index of the data item
-     * @return        the y value
-     */
-    public Number getY(int series, int item) {
-      XYTimeSeries xyTimeSeries = getSeries(series);
-      return xyTimeSeries.getDataItem(item).getY();
-    }
-  }
 }

@@ -248,7 +248,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
   String description;
   
   /**
-   * Wheather to show the channel names in the title;
+   * Whether to show the channel names in the title;
    */
   boolean showChannelsInTitle;
   
@@ -437,6 +437,15 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 			removeChannel(i.next());
 		}
 	}
+	
+	/**
+	 * Gets the UI component used for displaying data.
+	 * 
+	 * @return  the UI component used to display data
+	 */
+	protected JComponent getDataComponent() {
+	  return dataComponent;
+	}
 		
 	/**
 	 * Set the UI component to be used for displaying data. This method must be 
@@ -456,7 +465,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	 * 
 	 * @since  1.1
 	 */
-	String getTitle() {
+  protected String getTitle() {
     if (description != null) {
       return description;
     }
@@ -574,7 +583,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
     return descriptionLabel;
   }
   
-  JComponent getChannelComponent() {
+  protected JComponent getChannelComponent() {
     if (channels.size() == 0) {
       return null;
     }
@@ -600,12 +609,16 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
    * header panel and the text displayed in the frame if the data panel is
    * detached.
    */
-  void updateTitle() {
+  protected void updateTitle() {
     component.setTitle(getTitleComponent());
     
     if (!attached) {
       frame.setTitle(getTitle());
     }
+  }
+  
+  protected boolean isShowChannelsInTitle() {
+    return showChannelsInTitle;
   }
   
   void setShowChannelsInTitle(boolean showChannelsInTitle) {
@@ -968,7 +981,7 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	
 	public void dragExit(DropTargetEvent e) {}
   
-  class ChannelTitle extends JPanel {
+  public class ChannelTitle extends JPanel {
 
     /** serialization version identifier */
     private static final long serialVersionUID = -7191565876111378704L;

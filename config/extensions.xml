@@ -9,14 +9,14 @@
 		</mimeTypes>
 	</extension>
 	<extension>
-		<id>org.rdv.datapanel.TimeSeriesDataPanel</id>
+		<id>org.rdv.viz.chart.TimeSeriesChartViz</id>
 		<name>Time Series Data Panel</name>
 		<mimeTypes>
 			<mimeType>application/octet-stream</mimeType>
 		</mimeTypes>
 	</extension>
 	<extension>
-		<id>org.rdv.datapanel.XYDataPanel</id>
+		<id>org.rdv.viz.chart.XYChartViz</id>
 		<name>XY Data Panel</name>
 		<mimeTypes>
 			<mimeType>application/octet-stream</mimeType>
