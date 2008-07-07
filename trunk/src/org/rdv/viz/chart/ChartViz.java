@@ -65,7 +65,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.event.AxisChangeEvent;
@@ -241,8 +240,9 @@ public abstract class ChartViz extends AbstractDataPanel {
 		} else {
 			dataCollection = new TimeSeriesCollection();
       
-      domainAxis = new DateAxis();
+      domainAxis = new FixedAutoAdjustRangeDateAxis();
       domainAxis.setLabel("Time");
+      domainAxis.setAutoRange(false);
             
       toolTipGenerator = new StandardXYToolTipGenerator("{0}: {1} , {2}",
           new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"),
@@ -921,6 +921,7 @@ public abstract class ChartViz extends AbstractDataPanel {
         
         if (!xyMode) {
           domainAxis.setRange((time-timeScale)*1000, time*1000);
+          ((FixedAutoAdjustRangeDateAxis)domainAxis).setAutoAdjustRange((time-timeScale)*1000, time*1000);
         }        
       }
     });		
@@ -1289,6 +1290,7 @@ public abstract class ChartViz extends AbstractDataPanel {
     
     if (!xyMode) {
       domainAxis.setRange((time-timeScale)*1000, time*1000);
+      ((FixedAutoAdjustRangeDateAxis)domainAxis).setAutoAdjustRange((time-timeScale)*1000, time*1000);
     }
 	}	
 	
