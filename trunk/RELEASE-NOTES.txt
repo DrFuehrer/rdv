@@ -1,29 +1,45 @@
-RDV
-Version 1.9.0
+RDV 1.9.0 Release Notes
 
+RDV is a visualization environment for scientific and engineering data. Built on
+top of the RBNB dynamic data server, it supports local and remote data sources
+and can visualize numeric, video, image, and audio data in a number of different
+ways.
+
+See http://rdv.googlecode.com/ for information on RDV.
+
+This release contains significant new features for viewing images and video, a
+new dial visualization, and support for exporting MATLAB files. A number of
+smaller improvements for plotting have been added in addition to a few bug
+fixes.
 
 NEW FEATURES
 
-  - Support for panning and zooming of an image. A clickable navigation image
-    can be used to jump around parts of an image when zoomed in.
-  - Filmstrip interface to view images
-  - Support for viewing a thumbnail of an image to conserve bandwidth.
-  - Support for PNG and GIF images.
+  - Support for zooming and panning of an image. A clickable navigation image
+    can be used to jump around parts of an image when zoomed in. [2]
+  - Filmstrip interface to view images sequentially. [3]
+  - Support for viewing a thumbnail of an image to conserve bandwidth. [3]
   - DialViz, a visualization extension to view a numeric data channel on a dial.
-  - Export of data to the MATLAB MAT-file format.
-  - Cursors on an XY plot to indicate the current data point in a series.
-  - Support for port knocking authentication.
-  
+    [22]
+  - Export of data to the MATLAB MAT-file format. [23]
+  - Support for port knocking authentication. [11]
+
+IMPROVEMENTS
+
+  - Cursors on an XY plot to indicate the current data point in a series. [1]
+  - Zooming out of a plot via the mouse will remember previous zoom levels. [15]
+  - Support for PNG and GIF images. [24]
+  - Ability to hide the legend in a plot. [13]
 
 BUG FIXES
 
-  - [4] Can't connect to RBNB server with circular references.
-  - [5] Children of shortcut servers aren't shown in channel list.
-
+  - Can't connect to RBNB server with circular references. [4]
+  - Children of shortcut servers aren't shown in channel list. [5]
+  - Auto adjusting the domain axis in a time series plot does not work
+    correctly. [16]
 
 CHANGES
 
-  - All RDV class were moved to the "org.rdv" package.
-  - Plots set to auto range, don't always include zero anymore.
+  - Plots set to auto range, don't always include zero anymore. [25]
   - The system look & feel is used now, so RDV should look more native to the
-    platform it is running on.
+    platform it is running on. [27]
+  - All RDV class were moved to the "org.rdv" package. [26]
