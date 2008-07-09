@@ -174,7 +174,6 @@
 			<zipfileset dir="." prefix="${ant.project.name}-${version}">
 				<include name="**"/>
 				<exclude name="${build.dir}/**"/>
-				<exclude name="${lib.dir}/**"/>
 				<exclude name="debian/rules"/>
 			</zipfileset>
 		</zip>
