@@ -35,7 +35,7 @@ Images and video can be viewed within RDV with the ability to zoom in and out.
 
 Event markers are used to mark a time where something interesting has happened. Event markers are flexible and can contain a label and a description to classify the event. And when used on a remote data source, all other uses connected to that data source will see your event, so they can be used in a collaborative way.
 
-[Screenshots http://rdv.googlecode.com/svn/wiki/rdv-screenshot-eventmarker.png]
+[http://code.google.com/p/rdv/wiki/Screenshots http://rdv.googlecode.com/svn/wiki/rdv-screenshot-eventmarker.png]
 
 == Extensions ==
 
