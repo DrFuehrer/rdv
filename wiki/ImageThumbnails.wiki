@@ -1,6 +1,8 @@
 #summary How to configure a Data Turbine server to enable thumbnail viewing in RDV
 #labels Documentation-Admin
 
+= Introduction =
+
 An image channel can have a thumbnail image channel associated with it. This is done using the `ThumbNailPlugIn` distributed with Data Turbine. When this plugin is started, RDV can use it to display a thumbnail image instead of the full resolution image. This can be used to save bandwidth when you are not interested in the full resolution image
 
 = Starting the Thumbnail Plugin ==
@@ -13,13 +15,13 @@ The following options can be passed to plugin when starting it.
 
 || *Description*             || *Command line* || *Default*      ||
 || RBNB Server Address       || -a             || localhost:3333 ||
-|| !PlugIn Name               || -n             || !ThumbNail     ||
+|| !PlugIn Name              || -n             || !ThumbNail     ||
 || JPEG Source/Channel       || -c             ||                ||
 || Image Scale Factor (0-4)  || -s             || 0.5            ||
 || Image Quality (0-1)       || -q             || 0.5            ||
 || Maximum Number of Images  || -M             || 10             ||
 
-If no source or channel is specified, the plugin will thumbnail all image channels. Specify a source or channel to limit the thumbnail to these sources or channels.
+If no source or channel is specified, the plugin will thumbnail all image channels. To limit the thumbnailing to specific sources or channels, specify a source or channel.
 
 == Starting Via Web Turbine ==
 
