@@ -585,7 +585,7 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
 
       public void actionPerformed(ActionEvent ae) {
         try {
-          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-17-users-guide.php");
+          URL usersGuideURL = new URL("http://it.nees.org/library/telepresence/rdv-19-users-guide.php");
           DataViewer.browse(usersGuideURL);
         } catch (Exception e) {}        
       }
