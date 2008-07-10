@@ -11,3 +11,4 @@ Guides for using features of RDV.
 == Administration ==
  * === [http://it.nees.org/library/telepresence/rdv-17-admin-guide.php Administration Guide] ===
  * [JavaWebStart Deploying with Java Web Start]
+ * [ImageThumbnails Enabled thumbnail images]
