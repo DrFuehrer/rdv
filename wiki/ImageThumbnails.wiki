@@ -3,7 +3,7 @@
 
 = Introduction =
 
-An image channel can have a thumbnail image channel associated with it. This is done using the `ThumbNailPlugIn` distributed with Data Turbine. When this plugin is started, RDV can use it to display a thumbnail image instead of the full resolution image. This can be used to save bandwidth when you are not interested in the full resolution image
+An image channel can have a thumbnail image channel associated with it. This is done using the `ThumbNailPlugIn` distributed with Data Turbine. When this plugin is started, RDV can use it to display a thumbnail image instead of a full resolution image. This can be used to save bandwidth when you are not interested in the full resolution image
 
 = Starting the Thumbnail Plugin ==
 
