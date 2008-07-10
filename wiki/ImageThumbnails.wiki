@@ -1,4 +1,4 @@
-#summary How to configure a Data Turbine server to enable thumbnailviewing in RDV
+#summary How to configure a Data Turbine server to enable thumbnail viewing in RDV
 #labels Documentation-Admin
 
 = Introduction =
