@@ -1,0 +1,15 @@
+#summary Projects using RDV
+
+== [http://www.nees.org/ NEES] ==
+ * [http://it.nees.org/software/rdv/ NEESit's RDV distribution]
+
+== [http://www.nznees.auckland.ac.nz/ NZNEES] ==
+ * [http://www.nznees.auckland.ac.nz/portals/4/publications/Overview_of_NZNEES_Web.pdf Overview of NZNEES@Auckland]
+
+== [http://gleon.org/ GLEON] and [http://www.coralreefeon.org/ CREON] ==
+ * [http://www.dataturbine.org/files/isog2007_final.pdf Kenting’s Underwater Ecological Observatory]
+
+== [http://ucist.cive.wustl.edu/ UCIST] ==
+ * [http://www.seismosoc.org/publications/SRL/SRL_78/srl_78-4_eq.html Tele-operation Tools for Bench-scale Shake Tables for Instruction in Earthquake Engineering]
+
+== [http://www.engr.uconn.edu/~richard/research.html Structures Research Lab at University of Connecticut] ==
