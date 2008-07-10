@@ -1,4 +1,5 @@
 #summary How to configure a Data Turbine server to enable thumbnail images in RDV
+#labels Documentation-Admin
 
 == Introduction ==
 
