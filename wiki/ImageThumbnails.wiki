@@ -13,7 +13,7 @@ The following options can be passed to plugin when starting it.
 
 || *Description*             || *Command line* || *Default*      ||
 || RBNB Server Address       || -a             || localhost:3333 ||
-|| PlugIn Name               || -n             || !ThumbNail     ||
+|| !PlugIn Name               || -n             || !ThumbNail     ||
 || JPEG Source/Channel       || -c             ||                ||
 || Image Scale Factor (0-4)  || -s             || 0.5            ||
 || Image Quality (0-1)       || -q             || 0.5            ||
