@@ -31,10 +31,10 @@ To start the plugin via Web Turbine, go to the Web Turbine web site for your Dat
 
 To start the plugin via the command line, replace `$RBNB_HOME` with the root Data Turbine directory, and execute the following command:
 
-`java -cp $RBNB_HOME/bin/rbnb.jar:$RBNB_HOME/apache-tomcat-5.5.12/webapps/webTurbine/WEB-INF/classes/ ThumbNailPlugIn -n _Thumbnails`
+ `java -cp $RBNB_HOME/bin/rbnb.jar:$RBNB_HOME/apache-tomcat-5.5.12/webapps/webTurbine/WEB-INF/classes/ ThumbNailPlugIn -n _Thumbnails`
 
 The other plugins options listed above may be used, but they are optional.
 
 = Viewing Thumbnails in RDV =
 
-Once the plugin is started, RDV will automatically detect that this plugin is running, and give you the option of switching to viewing thumbnails. Switching to viewing a thumbnail image can be enabled via the popup menu that appears when right-clicking the image.
+Once the plugin is started, RDV will automatically detect that the plugin is running. To switching to viewing a thumbnail, right click the image to bring up the popup menu and select `Use thumbnail image`.
