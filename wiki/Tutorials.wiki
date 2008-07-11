@@ -2,5 +2,5 @@
 #labels Documentation-User
 
 == Video Tutorials ==
- * [http://it.nees.org/software/rdv/getting-started/ Getting Started with RDV]
+ * [http://it.nees.org/software/rdv/getting-started/index.htm Getting Started with RDV]
  * [http://www.vimeo.com/902512 Dial Data Panel]
