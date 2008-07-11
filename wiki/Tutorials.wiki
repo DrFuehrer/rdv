@@ -3,4 +3,4 @@
 
 == Video Tutorials ==
  * [http://it.nees.org/software/rdv/getting-started/index.htm Getting Started with RDV]
- * [http://www.vimeo.com/902512 Dial Data Panel]
+ * [http://www.vimeo.com/902512 Using the Dial Data Panel]
