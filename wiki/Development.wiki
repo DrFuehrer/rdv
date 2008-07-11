@@ -7,4 +7,4 @@
 Use extensions to add new functionality to RDV.
 
 == Planning ==
- * [ReleasePlanel20 RDV 2.0 release plan]
+ * [ReleasePlan20 RDV 2.0 release plan]
