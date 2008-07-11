@@ -12,3 +12,4 @@ Guides for using features of RDV.
  * === [http://it.nees.org/library/telepresence/rdv-17-admin-guide.php Administration Guide] ===
  * [JavaWebStart Deploying with Java Web Start]
  * [ThumbnailImages Enabling thumbnail images]
+ * [PortKnockingAuthentication Using port knocking authentication]
