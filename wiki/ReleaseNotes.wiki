@@ -14,7 +14,7 @@ fixes.
   * Support for viewing a [ThumbnailImages thumbnail of an image] to conserve bandwidth.
   * !DialViz, a visualization extension to view a numeric data channel on a dial.
   * Export of data to the MATLAB MAT-file format.
-  * Support for port knocking authentication.
+  * Support for [PortKnockingAuthentication port knocking authentication].
 
 === Improvements ===
 
