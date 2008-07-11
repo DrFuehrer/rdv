@@ -11,7 +11,7 @@ It is beyond the scope of this document to give instructions on how to configure
 
 == The Knock Sequence ==
 
-RDV accepts the knock sequence as an ordered list of ports. These ports will be knocked before connecting to the Data Turbine server. By default, RDV will wait 100 ms after knocking on each port. The knock sequence is defined on the command line with the `-k` or `--knock` option.
+RDV accepts the knock sequence as an ordered list of ports. These ports will be knocked before connecting to the Data Turbine server. By default, RDV will wait 100 ms after knocking on each port. The knock sequence is defined on the [CommandLineOptions command line] with the `-k` or `--knock` option.
 
 || *Option* || *Long Option* || *Description* || *Default* ||
 || -k           || --knock     || A list of ports to knock before connecting to the server || none ||
