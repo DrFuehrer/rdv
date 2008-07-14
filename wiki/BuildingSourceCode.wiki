@@ -98,3 +98,23 @@ To create the Debian package, run:
  `> ant deb`
 
 This will create the Debian package at `../rdv-<version>-<revision>.deb`.
+
+== Ant Targets ==
+Most of the any targets are described above, but here is a complete list of them.
+
+|| *Name*    || *Description*                             ||
+|| api       || Build documentation                       ||
+|| bin       || Build a standalone jar                    ||
+|| clean     || Remove all generated files                ||
+|| compile   || Build from source                         ||
+|| deb       || Build debian package                      ||
+|| dist      || Build the binary and source distributions ||
+|| dist-bin  || Build the binary distribution             ||
+|| dist-src  || Build the source distribution             ||
+|| exe       || Build windows executable                  ||
+|| help      || Show usage                                ||
+|| installer || Build windows installer                   ||
+|| jar       || Build jar                                 ||
+|| mac       || Build a mac application bundle            ||
+|| run       || Run application                           ||
+|| test      || Run unit tests                            ||
