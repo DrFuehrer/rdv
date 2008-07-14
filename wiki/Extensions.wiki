@@ -46,7 +46,7 @@ public class TemplateDataPanel extends AbstractDataPanel {
   private double lastTimeDisplayed;
 
   /**
-   * Initialize the object and UI
+   * Create the data panel.
    */
   public TemplateDataPanel() {
     super();
@@ -59,8 +59,8 @@ public class TemplateDataPanel extends AbstractDataPanel {
    */
   private void initDataComponent() {
     // TODO create data component
-
-    setDataComponent(dataComponent);
+    JComponent myComponent = null;
+    setDataComponent(myComponent);
   }
 
   public boolean supportsMultipleChannels() {
