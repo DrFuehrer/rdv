@@ -1,0 +1,100 @@
+#summary How to build the RDV source code
+#labels Documentation-Dev
+
+== Introduction ==
+RDV is developed in [http://java.sun.com/ Java] and uses Swing for it's UI. RDV also uses a of a number of free software libraries, including:
+
+ * [http://dataturbine.org/ Data Turbine] for the dynamic data server
+ * [http://www.jfree.org/jfreechart/ JFreeChart] for plotting and charting
+ * [http://www.javazoom.net/javalayer/javalayer.html JLayer], [http://www.javazoom.net/mp3spi/mp3spi.html MP3SPI] , and [http://tritonus.org/ Tritonus] for audio
+ * [https://jaxb.dev.java.net/ JAXB] for XML binding
+ * and the [https://appframework.dev.java.net/ Swing Application Framework ], Apache Commons [http://commons.apache.org/cli/ CLI] and [http://commons.apache.org/logging/ Logging] for application infrastructure.
+
+These libraries can be found in the `lib` directory.
+
+== Requirements ==
+To build RDV, the following programs are needed:
+
+ * [http://java.sun.com/javase/ Java SE Development Kit] version 5 or greater
+ * [http://ant.apache.org/ Apache Ant]
+
+Make sure Ant's bin directory is in your path and JAVA_HOME is set to the JDK path.
+
+== Getting the Source Code ==
+Source code for RDV releases can be obtained from the [http://code.google.com/p/rdv/downloads/list?q=label:Type-Source downloads page]. The latest source code can be obtained from the trunk of RDV's [http://code.google.com/p/rdv/source/checkout SVN repository].
+
+== Compiling ==
+To compile RDV run the following command:
+
+ `> ant compile`
+
+This will compile all the java source files in `src` into class files and put them into `build/classes`
+
+== Build JAR's ==
+To make a jar of the class files, run:
+
+ `> ant jar`
+
+This will create `build/lib/rdv.jar`. This jar file will have it's `Main-Class` attribute set to RDV's main class. The jar's `Class-Path` attribute will also be set so all of RDV's dependent libraries will be loaded if they are in the same directory.
+
+To create a jar file will all of RDV's dependent libraries included, run:
+
+ `> ant bin`
+
+This will create `build/bin/rdv.jar`. This jar file will be standalone in the sense that it require no additional libraries to run.
+
+== Making a distribution ==
+To make a distriution of RDV, run:
+
+ `> ant dist`
+
+This will create a binary and source distribution in `build/dist`. The binary distribution file will be named `rdv-<version>.zip` and will contain the standalone jar along with basic documentation text files. The source distribution file will be named `rdv-<version>-src.zip` and will contain the full source code and dependent libraries.
+
+== Platform Installers ==
+RDV can also be installed using the native installation mechanism for Windows, Mac, and Debian/Ubuntu.
+
+=== Windows ===
+To build the Windows installer, you will need:
+ * [http://launch4j.sourceforge.net/ Launch4j]
+ * [http://nsis.sourceforge.net/ NSIS]
+
+The LAUNCH4J_HOME environmental variable needs to be set to the directory where Launch4j is installed and the NSIS installation directory needs to be added to the path.
+
+To make the installer, run:
+
+ `> ant installer`
+
+This will create the installer at `build/exe/rdv-<version>-setup.exe`.
+
+=== Mac ===
+To build the Mac disk image, you will need:
+ * [http://developer.apple.com/tools/ Apple Developer Tools]
+
+To make the disk image, run:
+
+ `> ant mac`
+
+This will create the disk image at `build/mac/rdv-<version>.dmg`.
+
+=== Debian/Ubuntu ====
+To build the Debian package you will need to have the following packages installed:
+ * dpkg-dev
+ * fakeroot
+ * debhelper
+ * cdbs
+ * openjdk-6-jdk
+ * ant
+ * libappframework-java
+ * libcommons-cli-java
+ * libcommons-logging-java
+ * libjcommon-java
+ * libjfreechart-java (>= 1.0.7)
+ * librbnb-java
+ * libswingworker-java
+ * libtritonus-java
+
+To create the Debian package, run:
+
+ `> ant deb`
+
+This will create the Debian package at `../rdv-<version>-<revision>.deb`.
