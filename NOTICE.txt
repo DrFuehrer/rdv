@@ -22,15 +22,14 @@ limitations under the License.
 JFreeChart
 ----------
 
-Copyright (c) 2000-2007 Object Refinery Limited and Contributors.
+Copyright (c) 2000-2008 Object Refinery Limited and Contributors.
 
-This program is licensed under the terms of the GNU Lesser General
-Public Licence (LGPL).  A copy of the licence is included at the end of this
-file.
+This program is licensed under the terms of the GNU Lesser General Public
+License (LGPL). A copy of the license is included at the end of this file.
 
 Please note that this program is distributed WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  Please refer to the licence for details.
+PARTICULAR PURPOSE.  Please refer to the license for details.
 
 
 JLayer
@@ -119,6 +118,40 @@ OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
 OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+Swing Application Framework
+---------------------------
+
+Copyright (c) 2005-2006 Sun Microsystems, Inc., 4150 Network Circle, Santa
+Clara, California 95054, U.S.A. All rights reserved.  Use is subject to license
+terms below. Sun, Sun Microsystems and the Sun logo are trademarks or registered
+trademarks of Sun Microsystems, Inc. in the U.S. and other countries.
+
+This program is licensed under the terms of the GNU Lesser General Public
+License (LGPL). A copy of the license is included at the end of this file.
+ 
+Notice: This product is covered by U.S. export control laws and may be subject
+to the export or import laws in other countries. These laws may restrict the
+fields of use for this software and may require you to secure government
+authorization.
+ 
+
+Swing Worker
+------------
+
+Copyright (c) 2005 Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+California 95054, U.S.A. All rights reserved.  Use is subject to license terms
+below.  Sun, Sun Microsystems and the Sun logo are trademarks or registered
+trademarks of Sun Microsystems, Inc. in the U.S. and other countries.
+
+This program is licensed under the terms of the GNU Lesser General Public
+License (LGPL). A copy of the license is included at the end of this file.
+ 
+Notice: This product is covered by U.S. export control laws and may be subject
+to the export or import laws in other countries. These laws may restrict the
+fields of use for this software and may require you to secure government
+authorization.
 
 
 Apache Commons CLI
