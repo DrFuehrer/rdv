@@ -8,9 +8,13 @@ Notes on new features, bugs fixed, and changes in RDV releases.
 == [Tutorials] ==
 Guides for using features of RDV.
 
-== Administration ==
+== For Administrators ==
  * === [http://it.nees.org/library/telepresence/rdv-17-admin-guide.php Administration Guide] ===
  * [JavaWebStart Deploying with Java Web Start]
  * [CommandLineOptions The command line options RDV accepts]
  * [ThumbnailImages Enabling thumbnail images]
  * [PortKnockingAuthentication Using port knocking authentication]
+
+== For [Development Developers] ==
+ * [BuildingSourceCode Building the source code]
+ * [Extensions Extending RDV's functionality]
