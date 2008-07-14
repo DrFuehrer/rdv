@@ -7,11 +7,11 @@ RDV contains an extension mechanism that can be used to support new types of dat
 
 == A Data Panel ==
 
-`DataPanel` is the interface that all extensions implement. Data panel's are managed by RDV and their main job is do _something_ with the data in channels RDV makes available. A data panel can (and usually does) have a UI component to display this data in some way. This UI component can be docked into the main area of RDV that contains all the data panels.
+_[http://code.google.com/p/rdv/source/browse/trunk/src/org/rdv/datapanel/DataPanel.java DataPanel]_ is the interface that all extensions implement. Data panel's are managed by RDV and their main job is do _something_ with the data in channels RDV makes available. A data panel can (and usually does) have a UI component to display this data in some way. This UI component can be docked into the main area of RDV that contains all the data panels.
 
 == !AbstractDataPanel ==
 
-`AbstractDataPanel` is an abstract implementation of `DataPanel` and all of RDV's extensions currently use this just for the sheer convenience. It does most of the work of creating a data panel for you. It will:
+_[http://code.google.com/p/rdv/source/browse/trunk/src/org/rdv/datapanel/AbstractDataPanel.java AbstractDataPanel]_ is an abstract implementation of `DataPanel` and all of RDV's extensions currently use this just for the sheer convenience. It does most of the work of creating a data panel for you. It will:
 
  * Registers listeners and keeps track of posted data and times
  * Handles subscribing and unsubscribing from channels
@@ -31,7 +31,7 @@ Follow the steps below to create a basic data panel. It won't do much yet, but w
  # Initialize any UI components and call `setDataComponent(JComponent)` with your main UI component while in the constructor.
  # Implement the following method: `public boolean supportsMultipleChannels()`. If you data panel can display data from multiple channels at once, return true, otherwise return false.
 
-Below is a part of the class `org.rdv.datapanel.TemplateDataPanel`. Use it as a starting point for you data panel. It contains stubs for these methods that you must implement and can be used as a template for your data panel.
+Below is a part of the class _[http://code.google.com/p/rdv/source/browse/trunk/src/org/rdv/datapanel/TemplateDataPanel.java TemplateDataPanel]_. Use it as a starting point for you data panel. It contains stubs for these methods that you must implement and can be used as a template for your data panel.
 
 {{{
 /**
@@ -191,7 +191,7 @@ When a data panel is restored, the method `setProperty(String key, String value)
 
 == Registering a data panel extension ==
 
-A list a extension to register on application start-up is stored in the file _config/extensions.xml_. In it is an entry for each extension with the following attributes:
+A list a extension to register on application start-up is stored in the file _[http://code.google.com/p/rdv/source/browse/trunk/config/extensions.xml config/extensions.xml]_. In it is an entry for each extension with the following attributes:
 
 || *Name*      || *Description* ||
 || `id`        || The name of the extension class ||
