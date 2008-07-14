@@ -12,5 +12,8 @@ Source code for RDV releases can be obtained from the [http://code.google.com/p/
 == [Extensions] ==
 Use extensions to add new functionality to RDV.
 
+== [Documentation] ==
+ * [BuildingSourceCode Building the source code]
+
 == Planning ==
  * [ReleasePlan20 RDV 2.0 release plan]
