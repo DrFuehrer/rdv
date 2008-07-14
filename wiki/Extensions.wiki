@@ -3,7 +3,7 @@
 
 == Introduction ==
 
-RDV contains an extension mechanism that can be used to support new types of data or to visualize data in new ways. In fact, all of the standard tools included in RDV for viewing numeric, image, video, and audio data are implemented as extensions. Use extensions to take advantage of RDV's ability to deliver data from local and remote sources through a common interface, and concentrate on the type of data and the visualization you want to implement.
+RDV contains an extension mechanism that can be used to support new types of data or to visualize data in new ways. All of the standard tools included in RDV for viewing numeric, image, video, and audio data are implemented as extensions. Use extensions to take advantage of RDV's ability to deliver data from local and remote sources through a common interface, and concentrate on the type of data and the visualization you want to implement.
 
 == A Data Panel ==
 
@@ -27,7 +27,7 @@ It should make your life a little easier, but you can still implement a data pan
 Follow the steps below to create a basic data panel. It won't do much yet, but we'll extend it later to handle data.
 
  # Create a class that extends `AbstractDataPanel`.
- # Implement an no argument constructor.
+ # Implement a no argument constructor.
  # Initialize any UI components and call `setDataComponent(JComponent)` with your main UI component while in the constructor.
  # Implement the following method: `public boolean supportsMultipleChannels()`. If you data panel can display data from multiple channels at once, return true, otherwise return false.
 
@@ -72,7 +72,7 @@ public class TemplateDataPanel extends AbstractDataPanel {
 
 == Dealing with channels ==
 
-Override the following methods if you need to do anything special when a channel is added or removed from your data panel.
+Override the following methods if you need to do anything special when a channel is added or removed from your data panel. Most data panel's will need to do this to update the UI or to create data structures to deal with new channels.
 
 {{{
 /**
@@ -93,6 +93,7 @@ protected void channelAdded(String channelName) {}
  */
 protected void channelRemoved(String channelName) {}
 }}}
+
 
 == Getting data ==
 
@@ -125,7 +126,7 @@ public void postTime(double time) {
 }
 }}}
 
-This is the `displayData` method from `TemplateDataPanel` and it will look for the data that should be displayed at this time.
+This is the `displayData` method from `TemplateDataPanel` and it will look for the data that should be displayed at this time. This implementation is looking data of type `double`, but any other type of data can be supported.
 
 {{{
 private void displayData(String channelName, int channelIndex) {
@@ -180,6 +181,13 @@ private void displayData(String channelName, int channelIndex) {
 }}}
 
 Put your code where the `TODO` is to display the data in your UI component.
+
+== Saving and restoring state ==
+
+The state of a data panel can be saved and later restored with a RDV configuration file.
+This is handled with Java [http://java.sun.com/j2se/1.5.0/docs/api/java/util/Properties.html Properties]. `AbstractDataPanel` has a `Properties` instance available to subclasses under the `properties` variable. Use this to store the state of your data panel.
+
+When a data panel is restored, the method `setProperty(String key, String value)` will be called for each property. Override this to restore the state of your data panel from these properties.
 
 == Registering a data panel extension ==
 
