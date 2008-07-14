@@ -1,7 +1,13 @@
 #summary How to launch RDV via Java Web Start
 #labels Documentation-Admin
 
-RDV can be launched from any website via [http://java.sun.com/products/javawebstart/ Java Web Start]. To do this, setup a JNLP file, like the one below, and put it in a directory on your web server along with [http://code.google.com/p/rdv/downloads/list rdv.jar] and [http://rdv.googlecode.com/svn/wiki/rdv.png rdv.png]. Be sure to change the `codebase` attribute to the URL where you put the web start files. The JNLP file should have the .jnlp extension and your web server should be setup to serve the file with the `application/x-java-jnlp-file` MIME type.
+== Introduction ==
+
+RDV can be launched from any website via [http://java.sun.com/products/javawebstart/ Java Web Start].
+
+== Creating a JNLP file ==
+
+To do this, a JNLP file needs to be created like the one below, and put it in a directory on your web server along with the files [http://code.google.com/p/rdv/downloads/list rdv.jar] and [http://rdv.googlecode.com/svn/wiki/rdv.png rdv.png]. Be sure to change the `codebase` attribute to the URL where you put the web start files. The JNLP file should have the .jnlp extension and your web server should be setup to serve the file with the `application/x-java-jnlp-file` MIME type.
 
 {{{
 <?xml version="1.0" encoding="UTF-8"?>
@@ -29,7 +35,22 @@ RDV can be launched from any website via [http://java.sun.com/products/javawebst
 </jnlp>
 }}}
 
-When the user clicks a link to the JNLP file, java should open the JNLP file are start downloading RDV. If the user doesn't have Java version 1.5 or greater, they will be asked to upgrade. Once RDV is downloaded and the correct version of Java is available, RDV will run. Note that the user must have at least some version of Java installed for this to work, otherwise they will be prompted with a dialog asking what to do with the JNLP file.
+[CommandLineOptions Command line options] can be passed by specifying multiple `argument` elements under the `application-desc` element. For example, to set the host:
+
+{{{
+<argument>--host</argument>
+<argument>example.com</argument> 
+}}}
+
+or to specify a configuration file:
+
+{{{
+<argument>http://example.com/my-rdv-setup.rdv</argument>
+}}}
+
+== Launching RDV ==
+
+When the user clicks a link to the JNLP file, java should open the JNLP file are start downloading RDV. If the user doesn't have Java version 1.5 or greater, they will be asked to upgrade. Once RDV is downloaded and the correct version of Java is available, RDV will run. Note that the user must have at least some version of Java installed for this to work, otherwise they will be prompted with a dialog asking them what to do with the JNLP file.
 
 The latest version of RDV can always be launched via web start at [http://rdv.googlecode.com/svn/wiki/rdv.jnlp]. Give it a try below.
 
