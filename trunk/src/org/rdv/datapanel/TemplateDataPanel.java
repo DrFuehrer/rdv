@@ -33,9 +33,9 @@
 
 package org.rdv.datapanel;
 
-import java.util.Iterator;
-
 import javax.swing.JComponent;
+
+import com.rbnb.sapi.ChannelMap;
 
 /**
  * A template for creating a data panel extension. This is the bare minumum
@@ -45,47 +45,103 @@ import javax.swing.JComponent;
  */
 public class TemplateDataPanel extends AbstractDataPanel {
 
-	/**
-	 * The UI component to display the data in
-	 */
-	JComponent dataComponent;
-	
-	/**
-	 * Initialize the object and UI
-	 */
-	public TemplateDataPanel() {
-		super();
+  /** the last time displayed */
+  private double lastTimeDisplayed;
 
-		initDataComponent();
-	}
-	
-	/**
-	 * Initialize the UI component and pass it too the abstract class.
-	 */
-	private void initDataComponent() {
-		// TODO create data component
-		
-		setDataComponent(dataComponent);
-	}
+  /**
+   * Create the data panel.
+   */
+  public TemplateDataPanel() {
+    super();
 
-	public boolean supportsMultipleChannels() {
-		// TODO change if this data panel supports multiple channels
-		return false;
-	}
+    initDataComponent();
+  }
 
-	public void postTime(double time) {
-		super.postTime(time);
-		
-		//loop over all channels and see if there is data for them
-		Iterator i = channels.iterator();
-		while (i.hasNext()) {
-			String channelName = (String)i.next();
-			int channelIndex = channelMap.GetIndex(channelName);
-			
-			//if there is data for channel, post it
-			if (channelIndex != -1) {
-				// TODO display the data in your data component
-			}
-		}
-	}
+  /**
+   * Initialize the UI component and pass it too the abstract class.
+   */
+  private void initDataComponent() {
+    // TODO create data component
+    JComponent myComponent = null;
+    setDataComponent(myComponent);
+  }
+
+  public boolean supportsMultipleChannels() {
+    // TODO change if this data panel supports multiple channels
+    return false;
+  }
+
+  public void postTime(double time) {
+    if (time < this.time) {
+      lastTimeDisplayed = -1;
+
+      // TODO clear data in your data component
+    }
+
+    super.postTime(time);
+
+    if (channelMap == null) {
+      //no data to display yet
+      return;
+    }
+
+    //loop over all channels and see if there is data for them
+    for (String channelName : channels) {
+      int channelIndex = channelMap.GetIndex(channelName);
+
+      //if there is data for channel, post it
+      if (channelIndex != -1) {
+        displayData(channelName, channelIndex);
+      }
+    }
+  }
+
+  private void displayData(String channelName, int channelIndex) {
+    if (channelMap.GetType(channelIndex) != ChannelMap.TYPE_FLOAT64) {
+      return;
+    }
+    
+    double[] times = channelMap.GetTimes(channelIndex);
+
+    int startIndex = -1;
+
+    // determine what time we should load data from
+    double dataStartTime;
+    if (lastTimeDisplayed == time) {
+      dataStartTime = time - timeScale;
+    } else {
+      dataStartTime = lastTimeDisplayed;
+    }
+
+    for (int i = 0; i < times.length; i++) {
+      if (times[i] > dataStartTime && times[i] <= time) {
+        startIndex = i;
+        break;
+      }
+    }
+
+    //see if there is no data in the time range we are loooking at
+    if (startIndex == -1) {
+      return;
+    }
+
+    int endIndex = startIndex;
+
+    for (int i = times.length - 1; i > startIndex; i--) {
+      if (times[i] <= time) {
+        endIndex = i;
+        break;
+      }
+    }
+
+    double[] datas = channelMap.GetDataAsFloat64(channelIndex);
+    for (int i=startIndex; i<=endIndex; i++) {
+      double time = times[i];
+      double data = datas[i];
+      
+      // TODO display the data at this timestamp
+    }
+
+    lastTimeDisplayed = times[endIndex];
+  }
 }
