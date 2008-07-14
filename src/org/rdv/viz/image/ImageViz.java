@@ -67,6 +67,7 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -752,7 +753,10 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       
       maximumFilmstripImagesButtonGroup.setSelected(button.getModel(), true);
     } else {
-      maximumFilmstripImagesButtonGroup.clearSelection();
+      ButtonModel buttonModel = maximumFilmstripImagesButtonGroup.getSelection();
+      if (buttonModel != null) {
+        buttonModel.setSelected(false);
+      }
     }
     
   }
