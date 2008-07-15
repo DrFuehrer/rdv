@@ -297,17 +297,6 @@ public final class RBNBUtilities {
   }
   
   /**
-   * Converts an ISO8601 timestamp into a RBNB timestamp.
-   * 
-   * @param iso8601          an IS8601 timestamp
-   * @return                 a RBNB timestamp
-   * @throws ParseException  if the timestamp is not valid
-   */
-  public static double ISO8601ToSeconds(String iso8601) throws ParseException {
-    return ISO8601_DATE_FORMAT.parse(iso8601).getTime()/1000d;
-  }
-  
-  /**
    * Converts the date and time provided in numbers of milliseconds since the
    * epoch to a ISO8601 date and time representation (UTC to the millisecond).
    * 
