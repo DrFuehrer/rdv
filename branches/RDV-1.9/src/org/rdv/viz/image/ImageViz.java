@@ -751,10 +751,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
       }
       
       maximumFilmstripImagesButtonGroup.setSelected(button.getModel(), true);
-    } else {
-      maximumFilmstripImagesButtonGroup.clearSelection();
     }
-    
   }
   
   /**
