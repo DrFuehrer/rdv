@@ -3,4 +3,5 @@
 
 == Video Tutorials ==
  * [http://it.nees.org/software/rdv/getting-started/index.htm Getting Started with RDV]
+ * [http://www.vimeo.com/1347305 New Image and Video Viewing Features in RDV 1.9]
  * [http://www.vimeo.com/902512 Using the Dial Data Panel]
