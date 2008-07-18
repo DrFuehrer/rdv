@@ -9,7 +9,7 @@ Notes on new features, bugs fixed, and changes in RDV releases.
 Guides for using features of RDV.
 
 == For Administrators ==
- * === [http://it.nees.org/library/telepresence/rdv-17-admin-guide.php Administration Guide] ===
+ * === [http://it.nees.org/library/telepresence/rdv-admin-guide.php Administration Guide] ===
  * [JavaWebStart Deploying with Java Web Start]
  * [CommandLineOptions The command line options RDV accepts]
  * [ThumbnailImages Enabling thumbnail images]
