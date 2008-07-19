@@ -1,6 +1,6 @@
 #summary Notes on new features, bugs fixed, and changes in RDV releases
 
-== RDV 1.9 - _July 10, 2008_ ==
+== RDV 1.9 - _July 18, 2008_ ==
 
 This release contains significant new features for viewing images and video, a
 new dial visualization, and support for exporting MATLAB files. A number of
