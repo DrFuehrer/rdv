@@ -17,7 +17,7 @@
 		<j2se version="1.5+" initial-heap-size="64m" max-heap-size="256m"/>
 		<jar href="rdv.jar" main="true"/>
 	</resources>
-	<application-desc main-class="org.nees.buffalo.rdv.DataViewer">
+	<application-desc>
 		<property name="org.apache.commons.logging.Log" value="org.apache.commons.logging.impl.NoOpLog"/>
 	</application-desc>
 </jnlp>
