@@ -1,5 +1,3 @@
-#summary One-sentence summary of this page.
-
 == RDV 1.9 Released - _July 18, 2008_ ==
 
 RDV 1.9 has been released and contains significant new features for viewing images and video, a new dial visualization, and support for exporting MATLAB files. A number of smaller improvements for plotting have been added in addition to a few bug fixes. Download the [http://code.google.com/p/rdv/downloads/list?q=label:1.9 binary or source release] and read more about this release in the [http://code.google.com/p/rdv/wiki/ReleaseNotes#RDV_1.9_-_July_18,_2008 release notes].
