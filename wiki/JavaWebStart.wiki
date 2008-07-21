@@ -54,4 +54,4 @@ When the user clicks a link to the JNLP file, java should open the JNLP file are
 
 The latest version of RDV can always be launched via web start at [http://rdv.googlecode.com/svn/wiki/rdv.jnlp]. Give it a try below.
 
-=== [http://rdv.googlecode.com/svn/wiki/rdv.jnlp http://rdv.googlecode.com/svn/wiki/rdv-logo-small.png] [http://rdv.googlecode.com/svn/wiki/rdv.jnlp Run RDV ] - _Requires [http://www.java.com/getjava/ Java 1.5] or higher_ ===
+=== [http://rdv.googlecode.com/svn/wiki/rdv.jnlp http://rdv.googlecode.com/svn/wiki/rdv-logo-small.png] [http://rdv.googlecode.com/svn/wiki/rdv.jnlp Run RDV ] - _Requires [http://www.java.com/getjava/ Java]_ ===
