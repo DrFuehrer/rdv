@@ -10,7 +10,7 @@ NEES uses RDV to remotely observe and participate in experiments through the use
 
 == [http://gleon.org/ GLEON] and [http://www.coralreefeon.org/ CREON] ==
 
-The Global Lake Ecological Observatory Network is a grassroots network of limnologists, information technology experts, and engineers who have a common goal of building a scalable, persistent network of lake ecology observatories.
+The Global Lake Ecological Observatory Network ([http://gleon.org/ GLEON]) is a grassroots network of limnologists, information technology experts, and engineers who have a common goal of building a scalable, persistent network of lake ecology observatories.
 
 The Coral Reef Environmental Observatory Network ([http://www.coralreefeon.org/ CREON]) is a collaborating association of scientists and engineers from around the world striving to design and build marine sensor networks.
 
