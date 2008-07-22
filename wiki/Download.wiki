@@ -14,7 +14,7 @@ Version 1.9, Released July 18, 2008, Mac OS X Disk Image, 4 MB
 == [UbuntuInstall Ubuntu/Debian] ==
 Version 1.9, Released July 18, Debian Package, 2008
 
-*Requirements*: [http://www.ubuntu.com/ Ubuntu 8.04] or [http://www.debian.org/releases/lenny/ Debian 5.0]
+*Requirements*: [http://www.ubuntu.com/ Ubuntu 8.04] or [http://www.debian.org/ Debian 5.0]
 
 == [http://rdv.googlecode.com/files/rdv-1.9.0.zip Binary] ==
 Version 1.9, Released July 18, 2008, Platform Independent Zip File, 4.1 MB
