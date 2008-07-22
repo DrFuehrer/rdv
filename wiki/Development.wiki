@@ -1,13 +1,11 @@
 #labels Featured
 == [http://code.google.com/p/rdv/source/checkout Source Code] ==
-Source code for RDV releases can be obtained from the [http://code.google.com/p/rdv/downloads/list?q=label:Type-Source downloads page]. The latest source code can be obtained from RDV's [http://code.google.com/p/rdv/source/checkout SVN repository].
+Source code for RDV releases can be obtained from the [http://code.google.com/p/rdv/downloads/list?q=label:Type-Source downloads page]. The latest source code can be obtained from RDV's [http://code.google.com/p/rdv/source/checkout SVN repository]. [http://code.google.com/p/rdv/source/list Commits] can be tracked via the [http://groups.google.com/group/rdv-commits RDV commits] mailing list or via [http://cia.vc/stats/project/rdv CIA.vc] ([http://cia.vc/stats/project/rdv/.rss RSS]).
 
-== Mailing Lists ==
+== Mailing List ==
 [http://groups.google.com/group/rdv-developers RDV developers] is a mailing list for discussion of issues related to RDV's development. To start a discussion, send an email to [mailto:rdv-developers@googlegroups.com rdv-developers@googlegroups.com]. If you are interested in what others are discussing you may subscribe to the list or view the archives using the links below.
  * [http://groups.google.com/group/rdv-developers/topics List archvies]
  * [http://groups.google.com/group/rdv-developers/subscribe Subscribe or unsubscribe]
-
-[http://groups.google.com/group/rdv-commits RDV commits] is a mailing list to track SVN commits. This is an announcement only list.
 
 == [Extensions] ==
 Use extensions to add new functionality to RDV.
