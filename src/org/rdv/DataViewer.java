@@ -37,14 +37,10 @@ import java.awt.Image;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -61,9 +57,6 @@ public class DataViewer {
   private static final SimpleDateFormat FULL_DATE_FORMAT = new SimpleDateFormat("EEEE, MMMM d, yyyy h:mm.ss.SSS a");
   private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm.ss.SSS a");
   private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss.SSS a");
-  
-  /** format used to parse the date and time */
-  private static final SimpleDateFormat PARSE_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmssz");
   
   /** global cache for icons */
   private static final Map<String, ImageIcon> iconCache = new ConcurrentHashMap<String, ImageIcon>();;
@@ -118,78 +111,6 @@ public class DataViewer {
     
  		return secondsString;
  	}
-	
-	/**
-	 * Parses a timestamp in ISO8601 format. This expects the timestamp to contain
-	 * a year, month, day, hour, minute, and second. Fractional seconds and a time
-	 * zone are optional. If no time zone is provided, the local one is assumed.
-	 * Years must be 4 digits, while months, days, hours, minutes, and seconds
-	 * must be 2 digits. Fractional seconds can be of any length. 
-	 * 
-	 * Below are a few valid timestamps:
-	 * 
-	 * 2008-07-14T14:37
-	 * 2008-07-14T14:37.120932
-	 * 2008-07-14T14:37.120932Z
-	 * 2008-07-14T14:37.120932PDT
-	 * 2008-07-14T14:37.120932+0500
-	 * 2008-07-14T14:37.120932-0800
-	 * 
-	 * Hyphens (-) in dates, and colons (:) in times, are allowed for readability
-	 * but will be ignored in the parsing.
-	 * 
-	 * @param                  timestamp
-	 * @return                 the time in seconds
-	 * @throws ParseException  if there is an problem parsing this timestamp
-	 */
-	public static double parseTimestamp(String timestamp) throws ParseException {
-	  // pattern to match yyyy-MM-dd'T'HH:mm:ss.SSSz with some leniency
-	  Pattern pattern = Pattern.compile("^(\\d{4})-?(\\d{2})-?(\\d{2})[tT ]?(\\d{2}):?(\\d{2}):?(\\d{2})[\\.,]?(\\d+)? ?([\\+\\-a-zA-Z].*)?$");
-    Matcher matcher = pattern.matcher(timestamp);
-    if (!matcher.find()) {
-      throw new ParseException("Unparseable date: \"" + timestamp + "\"", 0);
-    }
-    
-    String year = matcher.group(1);
-    String month = matcher.group(2);
-    String day = matcher.group(3);
-    String hour = matcher.group(4);
-    String minute = matcher.group(5);
-    String second = matcher.group(6);
-    String fractionSeconds = matcher.group(7);    
-    String timeZone = matcher.group(8);
-    
-    if (timeZone == null) {
-      // set time zone
-      TimeZone tz = TimeZone.getDefault();
-      timeZone = tz.getDisplayName(tz.inDaylightTime(new Date()), TimeZone.SHORT);
-    } else if (timeZone.compareToIgnoreCase("Z") == 0) {
-      // Z is for Zulu time, which is UTC
-      timeZone = "UTC";
-    }
-	  
-    // reconstruct the timestamp in the format yyyyMMddHHmmssz for Java to parse
-	  String shortTimestamp = year + month + day + hour + minute + second + timeZone;
-	  Date date = PARSE_DATE_FORMAT.parse(shortTimestamp);
-	  
-	  // convert the date to seconds
-    double time = date.getTime() / 1000;
-    
-    if (fractionSeconds != null) {
-      // add back the fractional seconds since the java timestamp parser doesn't
-      // handle these well
-      try {
-        double seconds = Double.parseDouble("0." + fractionSeconds);
-        if (seconds > 0) {
-          time += seconds;
-        }
-      } catch (NumberFormatException e) {
-        throw new ParseException("Unparseable date: \"" + timestamp + "\"", 0);
-      }
-    }
-    
-    return time;
-	}
 
   /**
    * Returns a double representing the amount of seconds represented by the

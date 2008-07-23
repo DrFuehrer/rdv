@@ -33,6 +33,7 @@
 
 package org.rdv.rbnb;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -293,6 +294,17 @@ public final class RBNBUtilities {
    */
   public static String secondsToISO8601(double date) {
     return ISO8601_DATE_FORMAT.format(new Date(((long)(date*1000))));
+  }
+  
+  /**
+   * Converts an ISO8601 timestamp into a RBNB timestamp.
+   * 
+   * @param iso8601          an IS8601 timestamp
+   * @return                 a RBNB timestamp
+   * @throws ParseException  if the timestamp is not valid
+   */
+  public static double ISO8601ToSeconds(String iso8601) throws ParseException {
+    return ISO8601_DATE_FORMAT.parse(iso8601).getTime()/1000d;
   }
   
   /**

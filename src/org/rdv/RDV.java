@@ -154,29 +154,24 @@ public class RDV extends SingleFrameApplication {
     Options options = new Options();
 
     Option hostNameOption = OptionBuilder.withArgName("host name").hasArg()
-        .withDescription("The host name of the Data Turbine server")
+        .withDescription("The host name of the RBNB server")
         .withLongOpt("host").create('h');
 
     Option portNumberOption = OptionBuilder.withArgName("port number").hasArg()
-        .withDescription("The port number of the Data Turbine server")
-        .withLongOpt("port").create('p');
+        .withDescription("The port number of the RBNB server").withLongOpt(
+            "port").create('p');
 
     Option channelsOption = OptionBuilder.withArgName("channels").hasArgs()
-        .withDescription("A list of channels to subscribe to")
-        .withLongOpt("channels").create('c');
+        .withDescription("Channels to subscribe to").withLongOpt("channels")
+        .create('c');
 
     Option playbackRateOption = OptionBuilder.withArgName("playback rate")
-        .hasArg().withDescription("The playback rate")
-        .withLongOpt("playback-rate").create('r');
+        .hasArg().withDescription("The playback rate").withLongOpt(
+            "playback-rate").create('r');
 
     Option timeScaleOption = OptionBuilder.withArgName("time scale").hasArg()
         .withDescription("The time scale in seconds").withLongOpt("time-scale")
         .create('s');
-    
-    Option locationOption = OptionBuilder.withArgName("time").hasArg()
-        .withDescription(
-            "The time in ISO8601 format (e.g. 2008-07-15T14:13:54.735EDT)")
-        .withLongOpt("time").create('t');
 
     Option playOption = OptionBuilder
         .withDescription("Start playing back data").withLongOpt("play")
@@ -187,7 +182,7 @@ public class RDV extends SingleFrameApplication {
 
     Option portKnockOption = OptionBuilder.withArgName("ports").hasArgs()
         .withDescription(
-            "A list of ports to knock before connecting to the server")
+            "A list of ports to port knock before connecting to the server")
         .withLongOpt("knock").create('k');
 
     Option helpOption = new Option("?", "help", false, "Display usage");
@@ -197,7 +192,6 @@ public class RDV extends SingleFrameApplication {
     options.addOption(channelsOption);
     options.addOption(playbackRateOption);
     options.addOption(timeScaleOption);
-    options.addOption(locationOption);
     options.addOption(playOption);
     options.addOption(realTimeOption);
     options.addOption(portKnockOption);
@@ -223,7 +217,6 @@ public class RDV extends SingleFrameApplication {
     String[] channels = null;
     double playbackRate = -1;
     double timeScale = -1;
-    double location = -1;
     boolean play = false;
     boolean realTime = false;
     int[] knockPorts = null;
@@ -235,7 +228,7 @@ public class RDV extends SingleFrameApplication {
 
       if (line.hasOption('?')) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar rdv.jar", options, true);
+        formatter.printHelp("DataViewer", options, true);
         return false;
       }
 
@@ -276,16 +269,6 @@ public class RDV extends SingleFrameApplication {
       if (line.hasOption('s')) {
         String value = line.getOptionValue('s');
         timeScale = Double.parseDouble(value);
-      }
-      
-      if (line.hasOption('t')) {
-        String value = line.getOptionValue('t');
-        try {
-          location = DataViewer.parseTimestamp(value);
-        } catch (java.text.ParseException e) {
-          System.err.println("Invalid time: " + value);
-          return false;
-        }
       }
 
       if (line.hasOption("play")) {
@@ -362,12 +345,6 @@ public class RDV extends SingleFrameApplication {
       return true;
     }
     
-    // set location before we add channels so they load the correct data, but
-    // this can get reset, so it is set again after all the channels are added
-    if (location >= 0) {
-      rbnbController.setLocation(location);
-    }
-    
     if (channels != null) {
       for (int i = 0; i < channels.length; i++) {
         String channel = channels[i];
@@ -382,10 +359,6 @@ public class RDV extends SingleFrameApplication {
     } else if (realTime) {
       log.info("Viewing data in real time.");
       rbnbController.monitor();
-    } else if (location >= 0) {
-      // make sure the location is set since it can be reset when channel's are
-      // added and they have no data at the current location
-      rbnbController.setLocation(location);
     }
     
     return true;
