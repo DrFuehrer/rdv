@@ -70,7 +70,6 @@ import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -94,6 +93,7 @@ import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBHelper;
 import org.rdv.rbnb.StateListener;
 import org.rdv.rbnb.TimeRange;
+import org.rdv.util.RDVConfigurationFileFilter;
 
 import com.jgoodies.uif_lite.component.Factory;
 
@@ -301,7 +301,7 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
 
       public void actionPerformed(ActionEvent ae) {
         JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new RDVFileFilter());
+        chooser.setFileFilter(new RDVConfigurationFileFilter());
         chooser.setApproveButtonText("Load");
         chooser.setApproveButtonToolTipText("Load selected file");
         int returnVal = chooser.showOpenDialog(frame);
@@ -323,7 +323,7 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
 
       public void actionPerformed(ActionEvent ae) {
         JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new RDVFileFilter());
+        chooser.setFileFilter(new RDVConfigurationFileFilter());
         int returnVal = chooser.showSaveDialog(frame);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
           File file = chooser.getSelectedFile();
@@ -1296,17 +1296,6 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
   
   private void stopThrobber() {
     throbber.setIcon(throbberStop);
-  }
-  
-  public class RDVFileFilter extends FileFilter {
-    public boolean accept(File f) {
-      return !f.isFile() || f.getName().endsWith(".rdv");
-    }
-
-    public String getDescription() {
-      return "RDV Configuration Files (*.rdv)";
-    }
-    
   };
 
 }
