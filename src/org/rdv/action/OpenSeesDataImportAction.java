@@ -1,3 +1,34 @@
+/*
+ * RDV
+ * Real-time Data Viewer
+ * http://rdv.googlecode.com/
+ * 
+ * Copyright (c) 2005-2007 NEES Cyberinfrastructure Center
+ * Copyright (c) 2008 Palta Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ * 
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
+ */
 
 package org.rdv.action;
 
@@ -13,7 +44,6 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLDecoder;
 
-import javax.swing.filechooser.FileFilter;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -26,100 +56,93 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.rdv.util.OpenSeesFileFilter;
+
 
 /**
- * @author msoltani
- *
+ * An action to import data from OpenSees XML files.
+ * 
+ * @author  Moji Soltani
+ * @author  Jason P. Hanley
  */
-public class OpenSeesDataImportAction extends DataImportAction {
+public class OpenSeesDataImportAction extends DataViewerAction {
   
   /** serialization version identifier */
   private static final long serialVersionUID = -6446885350157840581L;
 
-  String outputDataFileName = "data.dat";
-  
-  /** Reader for inpout file  */
-  BufferedReader buffReader;
+  /** Reader for input file  */
+  private BufferedReader buffReader;
   
   /** writer for output file */
-  BufferedWriter buffWriter;
+  private BufferedWriter buffWriter;
 
-  /** Constructor to show text/description
-   * 
+  /**
+   * Constructor to show text/description
    */
   public OpenSeesDataImportAction() {
     super("Import OpenSees data file",
         "Import local data to RBNB server");
   }
  
-  /** Helper class to delete a temporary folder created on file system */
-  private static DirectoryDeleter deleterThread;
-  /** Thread to delete folder on Exit */
-  static
-  {
-      deleterThread = new DirectoryDeleter();
-      Runtime.getRuntime().addShutdownHook(deleterThread);
-  }
-  
   /**
-   * Prompts the user for the input OpesSees data file and uploads the data to the RBNB server.
+   * Prompts the user for the input OpenSees data file and uploads the data to
+   * the RBNB server.
    */
   public void actionPerformed(ActionEvent ae) {
+    File inputDataFile = getFile();
+    if (inputDataFile == null) {
+      return;
+    }
     
-    boolean error = false;
+    File openSeesDataFile;    
     try {
-      File inputDataFile = getFile();
-      if (inputDataFile != null) {
-        File openSeesDataFile = createOSDataFile(inputDataFile);
-        importData(openSeesDataFile);      
-      }
-      
+      openSeesDataFile = createOSDataFile(inputDataFile);
     } catch (Exception e) {
       e.printStackTrace();
-      error = true;
-    }
-    
-    if (error) {
       JOptionPane.showMessageDialog(null,
-          "There was an error importing the data file.",
+          "There was an error importing the OpenSees XML file.",
           "Import failed",
           JOptionPane.ERROR_MESSAGE);
+      return;
     }
+    
+    ActionFactory.getInstance().getDataImportAction().importData(openSeesDataFile);
   }
-  
   
   /**
    * Method to create flat OpenSees output data file from XML input
+   * 
    * @param input XML dataFile
    * @return flat output file
-   * @throws FileNotFoundException
    * @throws IOException
    */
-  private File createOSDataFile(File inputDataFile) throws FileNotFoundException, IOException {
+  private File createOSDataFile(File inputDataFile) throws IOException {
+    File outputDataFile = File.createTempFile("OpenSees", ".dat");
     
-    File tmpFolder = createTmpFolder();
-    
-    File outputDataFile = createOutputDataFile(tmpFolder);
-    
-    openReadWriteBuffers(inputDataFile, outputDataFile);
-    
-    writeOutputHeader(inputDataFile);
-    
-    writeOutputData(inputDataFile);
-    
-    closeReadWriteBuffers();
+    try {
+      openReadWriteBuffers(inputDataFile, outputDataFile);
+      
+      writeOutputHeader(inputDataFile);
+      
+      writeOutputData(inputDataFile);
+      
+      closeReadWriteBuffers();
+    } catch (IOException e) {
+      outputDataFile.delete();
+      
+      throw e;
+    }
     
     return outputDataFile;
   }
 
-
   /**
    * Writes all data between <Data></Data> tags to output
+   * 
    * @param input XML file
    * @throws IOException
    */
   private void writeOutputData(File input) throws IOException {
-
     String line;
 
     buffReader = new BufferedReader(new FileReader(input));
@@ -145,43 +168,28 @@ public class OpenSeesDataImportAction extends DataImportAction {
       }
     
     }
-    
   }
 
   /**
    * Write Header extracted from XML input
+   * 
    * @param inputFile OpesSees input File
    * @throws IOException
    */
   private void writeOutputHeader(File inputFile) throws IOException {
-    
     // parse header string from XML file
     String header = getHeaderString(inputFile);
     if (header != null) {
       writeLine(header, buffWriter);
     }
-    
   }
   
-  /**
-   * Create OpenSees output data file in temporary folder
-   * @param tmpFolder
-   * @return Output file created
-   */
-  private File createOutputDataFile(File tmpFolder) {
-
-    File output = new File(tmpFolder + "/" + outputDataFileName);
-    return output;
-  }
-
-  
-
   /** Transformation of input header xml file using the stylesheet
+   * 
    * @param input OpenSees XML file
    * @return Parsed string of the header
    */
   private String getHeaderString(File input) {
-    
     try {
       
       Source xmlSource = new StreamSource(input);
@@ -223,6 +231,8 @@ public class OpenSeesDataImportAction extends DataImportAction {
   }
 
   /**
+   * write a line
+   * 
    * @param line to write
    * @param writer target writer
    * @throws IOException
@@ -234,23 +244,23 @@ public class OpenSeesDataImportAction extends DataImportAction {
   
   /**
    * open buffers
+   * 
    * @param input File for reading
    * @param output File for writing
    * @throws FileNotFoundException
    * @throws IOException
    */
-  private void openReadWriteBuffers(File input, File output) throws FileNotFoundException, IOException {
-    
+  private void openReadWriteBuffers(File input, File output) throws IOException {
     buffReader = new BufferedReader(new FileReader(input));
     buffWriter = new BufferedWriter(new FileWriter(output));    
   }
 
   /**
    * close buffers
+   * 
    * @throws IOException
    */
   private void closeReadWriteBuffers() throws IOException {
-    
     if (buffReader != null) {
       buffReader.close();
     }
@@ -261,42 +271,14 @@ public class OpenSeesDataImportAction extends DataImportAction {
   }
   
   /**
-   * Create a temporary folder for output files
-   * @return
-   */
-  private File createTmpFolder() {
-    
-    // creates a random number between 99 and 999
-    String folderName = Integer.toString((int)(Math.random()*(999-99)) + 99);
-    File dir = new File(System.getProperty("java.io.tmpdir"), folderName);
-    dir.deleteOnExit();
-
-    if (!dir.exists() || !dir.isDirectory()) {
-      dir.mkdir();
-    }
-    
-    deleterThread.add(dir);
-    return dir;
-  }
-
-  /**
    * Prompts the user for the OpesSees XML input file to import data from.
    * 
    * @return  the data file, or null if none is selected
    */
   private static File getFile() {
     JFileChooser fileChooser = new JFileChooser();
-    
-    
 
-    fileChooser.setFileFilter(new FileFilter() {
-      public boolean accept(File f) {
-        return (f.isDirectory() || f.getName().toLowerCase().endsWith(".xml"));
-      }
-      public String getDescription() {
-        return "OpenSees XML Files";
-      }
-    });
+    fileChooser.setFileFilter(new OpenSeesFileFilter());
     
     int returnVal = fileChooser.showDialog(null, "Import");
     
@@ -306,6 +288,5 @@ public class OpenSeesDataImportAction extends DataImportAction {
       return null;
     }
   }
-  
 
 }
