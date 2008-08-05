@@ -37,6 +37,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -121,18 +122,50 @@ public class DataImportAction extends DataViewerAction {
   }
   
   /**
+   * Uploads the data to the RBNB server and optionally deletes the data file
+   * after import.
+   * 
+   * @param dataFile        the data file
+   * @param deleteDataFile  if true delete the data file after import
+   */
+  public void importData(File dataFile, boolean deleteDataFile) {
+    importData(dataFile, null, deleteDataFile);
+  }
+  
+  /**
    * Uploads the data to the RBNB server using the given source name.
    * 
    * @param dataFile    the data file
    * @param sourceName  the source name
    */
   public void importData(File dataFile, String sourceName) {
+    importData(dataFile, sourceName, false);
+  }
+  
+  /**
+   * Uploads the data to the RBNB server using the given source name and
+   * optionally deletes the data file after import.
+   * 
+   * @param dataFile        the data file
+   * @param sourceName      the source name
+   * @param deleteDataFile  if true delete the data file after import
+   */
+  public void importData(File dataFile, String sourceName, boolean deleteDataFile) {
     URL dataFileURL = null;
     try {
       dataFileURL = dataFile.toURI().toURL();
     } catch (MalformedURLException e) {}
     
-    importData(dataFileURL, sourceName);
+    importData(dataFileURL, sourceName, deleteDataFile);
+  }
+  
+  /**
+   * Uploads the data to the RBNB server.
+   * 
+   * @param dataFile  the data file URL
+   */
+  public void importData(URL dataFile) {
+    importData(dataFile, null);
   }
   
   /**
@@ -142,12 +175,25 @@ public class DataImportAction extends DataViewerAction {
    * @param sourceName  the source name
    */
   public void importData(URL dataFile, String sourceName) {
+    importData(dataFile, sourceName, false);
+  }
+
+  /**
+   * Uploads the data to the RBNB server using the given source name and
+   * optionally deletes the data file after import.
+   * 
+   * @param dataFile        the data file URL
+   * @param sourceName      the source name
+   * @param deleteDataFile  if true delete the data file after import
+   */
+  private void importData(URL dataFile, String sourceName, boolean deleteDataFile) {
     if (sourceName == null || sourceName.length() == 0) {
       sourceName = getDefaultSourceName(dataFile);
     }    
     
     importData(Collections.singletonList(dataFile),
-               Collections.singletonList(sourceName));
+               Collections.singletonList(sourceName),
+               deleteDataFile);
   }
   
   /**
@@ -161,17 +207,19 @@ public class DataImportAction extends DataViewerAction {
       sourceNames.add(getDefaultSourceName(dataFile));
     }
     
-    importData(dataFiles, sourceNames);
+    importData(dataFiles, sourceNames, false);
   }  
   
   /**
    * Uploads the data to the RBNB using the given source names. This will happen
-   * is a separate thread.
+   * in a separate thread. The data files will optionally be deleted after the
+   * import is complete (file URL's only).
    * 
-   * @param dataFiles    the data files
-   * @param sourceNames  the source names
+   * @param dataFiles        the data files
+   * @param sourceNames      the source names
+   * @param deleteDataFiles  if true delete the data files after import
    */
-  public void importData(final List<URL> dataFiles, final List<String> sourceNames) {
+  public void importData(final List<URL> dataFiles, final List<String> sourceNames, final boolean deleteDataFiles) {
     progressWindow = new ProgressWindow("Importing data...");
     progressWindow.setVisible(true);
     
@@ -186,6 +234,19 @@ public class DataImportAction extends DataViewerAction {
         } catch (RBNBException e) {
           error = true;
           e.printStackTrace();
+        }
+        
+        if (deleteDataFiles) {
+          for (URL dataFile : dataFiles) {
+            if (dataFile.getProtocol().equals("file")) {
+              try {
+                File file = new File(dataFile.toURI());
+                file.delete();
+              } catch (URISyntaxException e) {
+                e.printStackTrace();
+              }
+            }
+          }
         }
         
         progressWindow.dispose();
