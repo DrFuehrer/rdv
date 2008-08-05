@@ -12,7 +12,5 @@
 	<classpathentry kind="lib" path="lib/rbnb.jar"/>
 	<classpathentry kind="lib" path="lib/swing-worker.jar"/>
 	<classpathentry kind="lib" path="lib/tritonus_share.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-api.jar"/>
-	<classpathentry kind="lib" path="lib/jsr173-api.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

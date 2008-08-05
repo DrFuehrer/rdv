@@ -690,11 +690,6 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
     menuItem = new JMenuItem(actionFactory.getJPEGImportAction());
     importSubMenu.add(menuItem);
     
-    importSubMenu.addSeparator();
-    
-    menuItem = new JMenuItem(actionFactory.getCentralImportAction());
-    importSubMenu.add(menuItem);
-    
     fileMenu.add(importSubMenu);
 
     JMenu exportSubMenu = new JMenu(exportAction);

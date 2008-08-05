@@ -376,11 +376,6 @@ public class JPEGImportAction extends DataViewerAction {
   private static String getFileName(URL file) {
     String fileName = file.getPath();
 
-    // fix for annoying NEEScentral links
-    if (fileName.endsWith("/content")) {
-      fileName = fileName.substring(0, fileName.length()-8);
-    }
-    
     int lastPathIndex = fileName.lastIndexOf('/');
     if (fileName.length() > lastPathIndex+1) {
       fileName = fileName.substring(lastPathIndex+1);
