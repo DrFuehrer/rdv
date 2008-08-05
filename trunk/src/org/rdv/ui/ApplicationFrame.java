@@ -44,8 +44,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -716,13 +714,13 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
   		
  		JMenu controlMenu = new JMenu(controlAction);
  
- 		menuItem = new SelectedCheckBoxMenuItem(realTimeAction);
+ 		menuItem = new SelectableCheckBoxMenuItem(realTimeAction);
  		controlMenu.add(menuItem);
  		
- 		menuItem = new SelectedCheckBoxMenuItem(playAction);
+ 		menuItem = new SelectableCheckBoxMenuItem(playAction);
  		controlMenu.add(menuItem);
  		
- 		menuItem = new SelectedCheckBoxMenuItem(pauseAction);
+ 		menuItem = new SelectableCheckBoxMenuItem(pauseAction);
  		controlMenu.add(menuItem);
     
     controlMenu.addMenuListener(new MenuListener() {
@@ -1116,66 +1114,6 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
    */
   public List<String> getSelectedChannels() {
     return channelListPanel.getSelectedChannels();
-  }
-
- 	/**
-   * A check box menu item that uses the "selected" property from it's action.
-   */
-  class SelectedCheckBoxMenuItem extends JCheckBoxMenuItem {
-
-    /** serialization version identifier */
-    private static final long serialVersionUID = 831834301317733433L;
-
-    /**
-     * Create a check box menu item from the action.
-     * 
-     * @param a  the action for this menu item
-     */
-    public SelectedCheckBoxMenuItem(Action a) {
-      super(a);
-    }
-    
-    /**
-     * Configure from the action properties. This looks for the selected
-     * property.
-     * 
-     * @param a  the action
-     */
-    protected void configurePropertiesFromAction(Action a) {
-      super.configurePropertiesFromAction(a);
-      
-      Boolean selected = (Boolean)a.getValue("selected");
-      if (selected != null && selected != isSelected()) {
-        setSelected(selected);
-      }      
-    }
-    
-    /**
-     * Create an action  property change listener. This listens for the 
-     * "selected" property.
-     * 
-     * @param a  the action to create the listener for
-     */
-    protected PropertyChangeListener createActionPropertyChangeListener(Action a) {
-      final PropertyChangeListener listener = super.createActionPropertyChangeListener(a);
-      
-      PropertyChangeListener myListener = new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent evt) {
-          listener.propertyChange(evt);
-          
-          if (evt.getPropertyName().equals("selected")) {
-            Boolean selected = (Boolean)evt.getNewValue();
-            if (selected == null) {
-              setSelected(false);
-            } else if (selected != isSelected()) {
-              setSelected(selected);
-            }
-          }
-        }
-      };
-      
-      return myListener;
-    }
   }
 
  	public void connecting() {
