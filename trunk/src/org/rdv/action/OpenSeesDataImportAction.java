@@ -36,16 +36,14 @@ import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLDecoder;
 
-
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -56,6 +54,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.rdv.ui.UIUtilities;
 import org.rdv.util.OpenSeesFileFilter;
 
 
@@ -89,7 +88,7 @@ public class OpenSeesDataImportAction extends DataViewerAction {
    * the RBNB server.
    */
   public void actionPerformed(ActionEvent ae) {
-    File inputDataFile = getFile();
+    File inputDataFile = UIUtilities.getFile(new OpenSeesFileFilter(), "Import");
     if (inputDataFile == null) {
       return;
     }
@@ -270,23 +269,4 @@ public class OpenSeesDataImportAction extends DataViewerAction {
     }
   }
   
-  /**
-   * Prompts the user for the OpesSees XML input file to import data from.
-   * 
-   * @return  the data file, or null if none is selected
-   */
-  private static File getFile() {
-    JFileChooser fileChooser = new JFileChooser();
-
-    fileChooser.setFileFilter(new OpenSeesFileFilter());
-    
-    int returnVal = fileChooser.showDialog(null, "Import");
-    
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-      return fileChooser.getSelectedFile();
-    } else {
-      return null;
-    }
-  }
-
 }
