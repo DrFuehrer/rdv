@@ -47,7 +47,7 @@ public class OpenSeesFileFilter extends FileFilter {
   }
 
   public String getDescription() {
-    return "OpenSees XML Files";
+    return "OpenSees XML Files (*.xml)";
   }
   
 }
