@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 import org.rdv.data.DataChannel;
@@ -52,6 +51,7 @@ import org.rdv.data.NumericDataSample;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBException;
 import org.rdv.rbnb.RBNBSource;
+import org.rdv.ui.UIUtilities;
 import org.rdv.ui.ProgressWindow;
 
 import java.net.URLDecoder;
@@ -95,7 +95,7 @@ public class DataImportAction extends DataViewerAction {
    * Prompts the user for the data file and uploads the data to the RBNB server.
    */
   public void importData() {
-    File dataFile = getFile();
+    File dataFile = UIUtilities.getFile("Import");
     
     if (dataFile == null) {
       return;
@@ -220,7 +220,8 @@ public class DataImportAction extends DataViewerAction {
    * @param deleteDataFiles  if true delete the data files after import
    */
   public void importData(final List<URL> dataFiles, final List<String> sourceNames, final boolean deleteDataFiles) {
-    progressWindow = new ProgressWindow("Importing data...");
+    progressWindow = new ProgressWindow(UIUtilities.getMainFrame(),
+        "Importing data...");
     progressWindow.setVisible(true);
     
     new Thread() {
@@ -228,10 +229,7 @@ public class DataImportAction extends DataViewerAction {
         boolean error = false;
         try {
           importDataThread(dataFiles, sourceNames);
-        } catch (IOException e) {
-          error = true;
-          e.printStackTrace();
-        } catch (RBNBException e) {
+        } catch (Exception e) {
           error = true;
           e.printStackTrace();
         }
@@ -254,13 +252,13 @@ public class DataImportAction extends DataViewerAction {
         RBNBController.getInstance().updateMetadata();        
 
         if (!error) {
-          JOptionPane.showMessageDialog(null,
+          JOptionPane.showMessageDialog(UIUtilities.getMainFrame(),
               "Import complete.",
               "Import complete",
               JOptionPane.INFORMATION_MESSAGE);        
           
         } else {
-          JOptionPane.showMessageDialog(null,
+          JOptionPane.showMessageDialog(UIUtilities.getMainFrame(),
               "There was an error importing the data file.",
               "Import failed",
               JOptionPane.ERROR_MESSAGE);
@@ -337,23 +335,6 @@ public class DataImportAction extends DataViewerAction {
   }
   
   /**
-   * Prompts the user for the file to import data from.
-   * 
-   * @return  the data file, or null if none is selected
-   */
-  private static File getFile() {
-    JFileChooser fileChooser = new JFileChooser();
-    
-    int returnVal = fileChooser.showDialog(null, "Import");
-    
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-      return fileChooser.getSelectedFile();
-    } else {
-      return null;
-    }
-  }
-  
-  /**
    * Gets the name of the file from the URL.
    * 
    * @param file  the file URL
@@ -392,4 +373,5 @@ public class DataImportAction extends DataViewerAction {
     
     return sourceName;
   }
+  
 }
