@@ -41,6 +41,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -55,25 +56,21 @@ public class ProgressWindow extends JDialog {
   /** serialization version identifier */
   private static final long serialVersionUID = 2629422248834179713L;
 
+  /** the progress bar */
   private JProgressBar progressBar;
   
+  /** the status label */
   private JLabel statusLabel;
   
-  /**
-   * Creates a ProgressWindow with no header text.
-   */
-  public ProgressWindow() {
-    this(null);
-  }
-
   /**
    * Creates a ProgressWindow with the supplied header text. The header text
    * will be displayed above the progress.
    * 
+   * @param frame       the parent frame
    * @param headerText  the text for the header
    */
-  public ProgressWindow(String headerText) {
-    super();
+  public ProgressWindow(JFrame frame, String headerText) {
+    super(frame);
     
     initProgressWindow(headerText);
   }
@@ -153,4 +150,5 @@ public class ProgressWindow extends JDialog {
   public void setStatus(String status) {
     statusLabel.setText(status);
   }
+  
 }

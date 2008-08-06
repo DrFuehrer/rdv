@@ -52,6 +52,7 @@ import org.rdv.rbnb.RBNBReader;
 import org.rdv.ui.ApplicationFrame;
 import org.rdv.ui.ExportDialog;
 import org.rdv.ui.ProgressWindow;
+import org.rdv.ui.UIUtilities;
 
 import com.rbnb.sapi.SAPIException;
 
@@ -151,6 +152,7 @@ public class DataExportAction extends DataViewerAction {
       final double endTime, final File file, final DataFileWriter writer) {
     // create a window for progress
     final ProgressWindow progressWindow = new ProgressWindow(
+        UIUtilities.getMainFrame(),
         "Exporting data...");
     progressWindow.setStatus("Exporting data to " + file.getName());
     progressWindow.setVisible(true);
@@ -179,11 +181,14 @@ public class DataExportAction extends DataViewerAction {
 
         // show a completion or error message
         if (!error) {
-          JOptionPane.showMessageDialog(null, "Export complete.",
-              "Export complete", JOptionPane.INFORMATION_MESSAGE);
+          JOptionPane.showMessageDialog(UIUtilities.getMainFrame(),
+              "Export complete.",
+              "Export complete",
+              JOptionPane.INFORMATION_MESSAGE);
         } else {
-          JOptionPane.showMessageDialog(null,
-              "There was an error export the data to file.", "Export failed",
+          JOptionPane.showMessageDialog(UIUtilities.getMainFrame(),
+              "There was an error exporting the data to file.",
+              "Export failed",
               JOptionPane.ERROR_MESSAGE);
         }
       }
