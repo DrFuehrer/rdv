@@ -33,32 +33,31 @@
 
 package org.rdv.data;
 
-import java.io.File;
-
 /**
  * A class to represent a data file containing a JPEG image.
  * 
  * @author Jason P. Hanley
  */
 public class JPEGFileDataSample extends DataSample{
+  
   /** the JPEG image */
   private final byte[] data;
   
-  /** the JPEG file */
-  private final File file;
+  /** the JPEG file name */
+  private final String name;
   
   /**
    * Creates the object to represent this JPEG file data sample.
    * 
+   * @param name       the file name of the image
    * @param timestamp  the timestamp of the image
    * @param data       the image data
-   * @param file       the file containing the image
    */
-  public JPEGFileDataSample(double timestamp, byte[] data, File file) {
+  public JPEGFileDataSample(String name, double timestamp, byte[] data) {
     super(timestamp);
     
     this.data = data;
-    this.file = file;
+    this.name = name;
   }
 
   /**
@@ -71,11 +70,12 @@ public class JPEGFileDataSample extends DataSample{
   }
   
   /**
-   * Gets the file containing the image.
+   * Gets the file name of the image.
    * 
-   * @return  the file containing the image
+   * @return  the file name of the image
    */
-  public File getFile() {
-    return file;
+  public String getName() {
+    return name;
   }
+  
 }
