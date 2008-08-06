@@ -55,6 +55,9 @@ public class ProgressWindow extends JDialog {
 
   /** serialization version identifier */
   private static final long serialVersionUID = 2629422248834179713L;
+  
+  /** the header label */
+  private JLabel headerLabel;
 
   /** the progress bar */
   private JProgressBar progressBar;
@@ -63,42 +66,35 @@ public class ProgressWindow extends JDialog {
   private JLabel statusLabel;
   
   /**
-   * Creates a ProgressWindow with the supplied header text. The header text
-   * will be displayed above the progress.
+   * Creates a ProgressWindow with the supplied title.
    * 
-   * @param frame       the parent frame
-   * @param headerText  the text for the header
+   * @param frame  the parent frame
+   * @param title  the title for the frame
    */
-  public ProgressWindow(JFrame frame, String headerText) {
-    super(frame);
+  public ProgressWindow(JFrame frame, String title) {
+    super(frame, title);
     
-    initProgressWindow(headerText);
+    initProgressWindow();
   }
   
   /**
-   * Creates the window to shw progress. This creates a progress bar with an
+   * Creates a window to show progress. This creates a progress bar with an
    * area for status text below it and an area for header text above it.
-   * 
-   * @param headerText  the text for the header
    */
-  private void initProgressWindow(String headerText) {
+  private void initProgressWindow() {
     setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
-    
-    setTitle(headerText);
     
     JPanel container = new JPanel();
     container.setLayout(new BorderLayout());
     setContentPane(container);
     
-    if (headerText != null) {
-      JLabel headerLabel = new JLabel("<html><font size=+1>" + headerText + "</font></html>");
-      headerLabel.setBackground(Color.white);
-      headerLabel.setOpaque(true);
-      headerLabel.setBorder(BorderFactory.createCompoundBorder(
-          BorderFactory.createMatteBorder(0,0,1,0,Color.gray),
-          BorderFactory.createEmptyBorder(10,10,10,10)));
-      container.add(headerLabel, BorderLayout.NORTH);
-    }
+    headerLabel = new JLabel();
+    headerLabel.setBackground(Color.white);
+    headerLabel.setOpaque(true);
+    headerLabel.setBorder(BorderFactory.createCompoundBorder(
+        BorderFactory.createMatteBorder(0,0,1,0,Color.gray),
+        BorderFactory.createEmptyBorder(10,10,10,10)));
+    container.add(headerLabel, BorderLayout.NORTH);
     
     Box bodyPanel = new Box(BoxLayout.PAGE_AXIS);
     bodyPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -118,8 +114,19 @@ public class ProgressWindow extends JDialog {
 
     container.add(bodyPanel, BorderLayout.CENTER);
 
+    setHeader(getTitle());
+    
     pack();
     setLocationByPlatform(true);
+  }
+  
+  /**
+   * Sets the header text.
+   * 
+   * @param header  the header text
+   */
+  public void setHeader(String header) {
+    headerLabel.setText("<html><font size=+1>" + header + "</font></html>");    
   }
   
   /**
