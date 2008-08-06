@@ -25,10 +25,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
- * $URL: https://rdv.svn.sourceforge.net/svnroot/rdv/trunk/src/org/rdv/windows/Registry.java $
- * $Revision: 943 $
- * $Date: 2007-12-17 13:42:15 -0500 (Mon, 17 Dec 2007) $
- * $Author: jphanley $
+ * $URL$
+ * $Revision$
+ * $Date$
+ * $Author$
  */
 
 package org.rdv.util;
