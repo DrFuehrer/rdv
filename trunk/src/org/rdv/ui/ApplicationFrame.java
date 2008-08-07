@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.List;
 
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
@@ -79,6 +80,7 @@ import org.rdv.DataPanelManager;
 import org.rdv.DataViewer;
 import org.rdv.Extension;
 import org.rdv.RDV;
+import org.rdv.action.Actions;
 import org.rdv.action.ActionFactory;
 import org.rdv.action.DataViewerAction;
 import org.rdv.auth.AuthenticationManager;
@@ -627,11 +629,15 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
   private void initMenuBar() {
     Application application = RDV.getInstance();
     ApplicationContext context = application.getContext();
+    
     ResourceMap resourceMap = context.getResourceMap();
     String platform = resourceMap.getString("platform");
     boolean isMac = (platform != null  && platform.equals("osx"));
     
     ActionFactory actionFactory = ActionFactory.getInstance();
+    
+    Actions actions = Actions.getInstance();
+    ActionMap actionMap = context.getActionMap(actions);
     
   	menuBar = new JMenuBar();
   
@@ -685,8 +691,7 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
     menuItem = new JMenuItem(actionFactory.getOpenSeesDataImportAction());
     importSubMenu.add(menuItem);
     
-    menuItem = new JMenuItem(actionFactory.getJPEGImportAction());
-    importSubMenu.add(menuItem);
+    importSubMenu.add(new JMenuItem(actionMap.get("importJPEGs")));
     
     fileMenu.add(importSubMenu);
 

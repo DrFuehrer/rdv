@@ -45,9 +45,6 @@ public class ActionFactory {
   /** the action to import data files */
   private DataImportAction dataImportAction;
   
-  /** the action to import JPEG files */
-  private JPEGImportAction jpegImportAction;
-  
   /** the action to export data file */
   private DataExportAction dataExportAction;
 
@@ -87,19 +84,6 @@ public class ActionFactory {
     }
     
     return dataImportAction;
-  }
-  
-  /**
-   * Gets the action for import JPEG files.
-   * 
-   * @return  the JPEG import action
-   */
-  public JPEGImportAction getJPEGImportAction() {
-    if (jpegImportAction == null) {
-      jpegImportAction = new JPEGImportAction();
-    }
-    
-    return jpegImportAction;
   }
   
   /**
