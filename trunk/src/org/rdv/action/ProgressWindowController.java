@@ -63,14 +63,22 @@ public class ProgressWindowController implements PropertyChangeListener {
    */
   public ProgressWindowController(Task<?, ?> task) {
     this.task = task;
-    
+
+    initProgressWindow();
+
+    task.addPropertyChangeListener(this);
+  }
+  
+  /**
+   * Initialize the progress window with the properties of a task and display
+   * it.
+   */
+  private void initProgressWindow() {
     progressWindow = new ProgressWindow(UIUtilities.getMainFrame(),
         task.getTitle());
     progressWindow.setStatus(task.getMessage());
     progressWindow.setProgress(task.getProgress() / 100f);
     progressWindow.setVisible(true);
-
-    task.addPropertyChangeListener(this);
   }
 
   /**
