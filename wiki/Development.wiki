@@ -15,3 +15,6 @@ Use extensions to add new functionality to RDV.
 
 == Planning ==
  * [ReleasePlan20 RDV 2.0 release plan]
+
+== Stats ==
+<wiki:gadget url="http://www.ohloh.net/projects/rdv/widgets/project_basic_stats.xml" height="220" border="1" />
