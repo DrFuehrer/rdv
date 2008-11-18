@@ -12,10 +12,10 @@ The RDV 2.0 release will be focused on enhancing the data processing and analysi
 
 == Goals ==
 
- * 3D Data Panel - Issue 29
+ * ~~~3D Data Panel - Issue 29~~~
 
 == Schedule ==
 
-|| September 4, 2008 || Beta ||
-|| September 25, 2008 || Release Candidate ||
-|| September 30, 2008 || Release ||
+|| December 1, 2008 || Beta ||
+|| December 8, 2008 || Release Candidate ||
+|| December 15, 2008 || Release ||
