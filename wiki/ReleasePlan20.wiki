@@ -12,7 +12,7 @@ The RDV 2.0 release will be focused on enhancing the data processing and analysi
 
 == Goals ==
 
- * ~~~3D Data Panel - Issue 29~~~
+ * ~~3D Data Panel - Issue 29~~
 
 == Schedule ==
 
