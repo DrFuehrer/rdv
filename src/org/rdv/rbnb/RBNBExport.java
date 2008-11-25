@@ -240,7 +240,7 @@ public class RBNBExport {
           String channel = (String)numericChannels.get(i);
           String unit = null;
           int index = rmap.GetIndex(channel);
-          String[] metadata = rmap.GetUserInfo(index).split("\t|,");
+          String[] metadata = rmap.GetUserInfo(index).split(",");
           for (int j=0; j<metadata.length; j++) {
             String[] elements = metadata[j].split("=");
             if (elements.length == 2 && elements[0].equals("units")) {

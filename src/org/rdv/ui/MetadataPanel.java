@@ -129,6 +129,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
         double start = Double.parseDouble(channelMetadata.getMetadata("start"));
         double duration = Double.parseDouble(channelMetadata.getMetadata("duration"));
         int size = Integer.parseInt(channelMetadata.getMetadata("size"));
+        String formula = channelMetadata.getMetadata("formula");
 
         s.append("<strong>" + channel + "</strong>");
         if (unit != null) {
@@ -193,6 +194,34 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
             }
           }
         }
+        
+        // metadata for local channels
+        if (formula != null) {
+          if (formula.length() > 50) {
+            formula = formula.substring(0, 47) + "...";
+          }
+          s.append("<br><br>" + formula);
+          
+          String variablesString = channelMetadata.getMetadata("variables");
+          if (variablesString != null) {
+            s.append(" where ");
+            String[] variables = variablesString.split("\\|");
+            
+            for (int i=0; i<variables.length; i++) {
+              String variable = variables[i];
+              String[] v = variable.split(":");
+              if (v.length == 2) {
+                s.append(" " + v[0] + "=" + v[1]);
+              } else {
+                s.append(variable);
+              }
+              if (i < variables.length-1) {
+                s.append(", ");
+              }
+            }
+          }
+        }
+        
         s.append("</p>");
       } else {
         s.append("<strong>" + channel + "</strong><br>");

@@ -35,6 +35,7 @@ import java.io.File;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
+import org.rdv.ui.AddLocalChannelDialog;
 import org.rdv.ui.UIUtilities;
 import org.rdv.util.ZipFileFilter;
 
@@ -66,6 +67,14 @@ public class Actions {
     }
     
     return instance;
+  }
+  
+  /**
+   * Shows the add local channel dialog.
+   */
+  @Action
+  public void addLocalChannel() {
+    new AddLocalChannelDialog(UIUtilities.getMainFrame());
   }
   
   /**

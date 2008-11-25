@@ -35,6 +35,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.rdv.rbnb.Channel;
+
 /**
  * An interface used for writing numeric data to a file.
  * 
@@ -52,7 +54,7 @@ public interface DataFileWriter {
    * @param file          the file to write the data to
    * @throws IOException  if there is an error initializing
    */
-  public void init(List<DataChannel> channels, double startTime, double endTime, File file) throws IOException;
+  public void init(List<Channel> channels, double startTime, double endTime, File file) throws IOException;
   
   /**
    * Write a data sample to disk. The data sample contains a timestamp and an

@@ -47,6 +47,7 @@ import org.rdv.DataViewer;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
+import com.rbnb.sapi.LocalChannelMap;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
 
@@ -94,7 +95,7 @@ public class RBNBController implements Player, MetadataListener {
 	private List<MessageListener> messageListeners;
 	private List<ConnectionListener> connectionListeners;
 	
-	private ChannelMap preFetchChannelMap;
+	private LocalChannelMap preFetchChannelMap;
 	private Object preFetchLock = new Object();
 	private boolean preFetchDone;
 		
@@ -224,12 +225,12 @@ public class RBNBController implements Player, MetadataListener {
   		synchronized (updateSubscriptionRequests) {
 				subscriptionRequest = (SubscriptionRequest)updateSubscriptionRequests.remove(0);
       }      
-			String channelName = subscriptionRequest.getChannelName();
+			List<String> channelNames = subscriptionRequest.getChannelNames();
 			DataListener listener = subscriptionRequest.getListener();		
 			if (subscriptionRequest.isSubscribe()) {
-				subscribeSafe(channelName, listener);
+				subscribeSafe(channelNames, listener);
 			} else {
-				unsubscribeSafe(channelName, listener);
+				unsubscribeSafe(channelNames, listener);
 			}
     }
 	}
@@ -437,28 +438,30 @@ public class RBNBController implements Player, MetadataListener {
 	
 	// Subscription Methods
 	
-	private boolean subscribeSafe(String channelName, DataListener panel) {
+	private void subscribeSafe(List<String> channelNames, DataListener panel) {
     //skip subscription if we are not connected
     if (state == STATE_DISCONNECTED) {
-      return false;
+      return;
     }
     
-		//subscribe to channel
-		try {
-			requestedChannels.Add(channelName);
-		} catch (SAPIException e) {
-			log.error("Failed to add channel " + channelName + ".");
-			e.printStackTrace();
-			return false;
-		}
-		
-		//notify channel manager
-		channelManager.subscribe(channelName, panel);
-		
+		//subscribe to channels
+    for (String channelName : channelNames) {
+  		try {
+  			requestedChannels.Add(channelName);
+  		} catch (SAPIException e) {
+  			log.error("Failed to subscribe to channel " + channelName + ".");
+  			e.printStackTrace();
+  			continue;
+  		}
+  		
+  		//notify channel manager
+  		channelManager.subscribe(channelName, panel);
+    }
+    
     int originalState = state;
     
     changeStateSafe(STATE_LOADING);
-		loadData(channelName);
+		loadData(channelNames);
     
     if (originalState == STATE_MONITORING) {
       changeStateSafe(STATE_MONITORING);
@@ -468,46 +471,53 @@ public class RBNBController implements Player, MetadataListener {
       changeStateSafe(STATE_STOPPED);
     }
 		
-		fireSubscriptionNotification(channelName);
-		
-		return true;
+    for (String channelName : channelNames) {
+      fireSubscriptionNotification(channelName);
+    }
 	}
 		
-	private boolean unsubscribeSafe(String channelName, DataListener panel) {
+	private void unsubscribeSafe(List<String> channelNames, DataListener panel) {
     //skip unsubscription if we are not connected
     if (state == STATE_DISCONNECTED) {
-      return false;
+      return;
     }
     
-		channelManager.unsubscribe(channelName, panel);
+    // a list of channels that have no more listeners
+    List<String> channelsToRemove = new ArrayList<String>();
+    
+    for (String channelName : channelNames) {
+      channelManager.unsubscribe(channelName, panel);
+      
+      if (!channelManager.isChannelSubscribed(channelName)) {
+        channelsToRemove.add(channelName);
+      }
+    }
 		
-		if (!channelManager.isChannelSubscribed(channelName)) {
-			//unsubscribe from the channel
+    // unsubscribe from channels that have no listeners
+		if (!channelsToRemove.isEmpty()) {
 			ChannelMap newRequestedChannels = new ChannelMap();		
 			String[] channelList = requestedChannels.GetChannelList();
 			for (int i=0; i<channelList.length; i++) {
-				if (!channelName.equals(channelList[i])) {
+				if (!channelsToRemove.contains(channelList[i])) {
 					try {
 						newRequestedChannels.Add(channelList[i]);
 					} catch (SAPIException e) {
-						log.error("Failed to remove to channel " + channelName + ".");
+						log.error("Failed to resubscribe to channel " + channelList[i] + ".");
 						e.printStackTrace();
-						return false;
+						continue;
 					}
 				}
 			}
 			requestedChannels = newRequestedChannels;
 		}
 		
-		log.info("Unsubscribed from " + channelName + " for listener " + panel + ".");
-		
 		if (state == STATE_MONITORING) {
 			monitorData();
 		}
 		
-		fireUnsubscriptionNotification(channelName);
-		
-		return true;
+		for (String channelName : channelNames) {
+		  fireUnsubscriptionNotification(channelName);
+		}
 	}
 	
 	
@@ -532,12 +542,12 @@ public class RBNBController implements Player, MetadataListener {
   }
   
   /**
-   * Load data for the specified channel.
+   * Load data for the specified channels.
    * 
-   * @param channelName  the name of the channel
+   * @param channelNames  the names of the channels
    */
-  private void loadData(String channelName) {
-    loadData(Collections.singletonList(channelName), location, timeScale);
+  private void loadData(List<String> channelNames) {
+    loadData(channelNames, location, timeScale);
   }
 	
   /**
@@ -659,7 +669,7 @@ public class RBNBController implements Player, MetadataListener {
 			return;
 		}
 		
-		ChannelMap getmap = null;
+		LocalChannelMap getmap = null;
 		
 		getmap = getPreFetchChannelMap();
 		if (getmap == null) {
@@ -722,8 +732,9 @@ public class RBNBController implements Player, MetadataListener {
 				}
 				
 				if (requestStatus) {
+				  preFetchChannelMap = new LocalChannelMap();
 					try {
-						preFetchChannelMap = sink.Fetch(LOADING_TIMEOUT);
+						sink.Fetch(LOADING_TIMEOUT, preFetchChannelMap);
 					} catch (Exception e) {
  						log.error("Failed to fetch data.");
  						e.printStackTrace();
@@ -740,7 +751,7 @@ public class RBNBController implements Player, MetadataListener {
 		}, "prefetch").start();				
 	}
 	
-	private ChannelMap getPreFetchChannelMap() {
+	private LocalChannelMap getPreFetchChannelMap() {
 		synchronized(preFetchLock) {
 			if (!preFetchDone) {
 				log.debug("Waiting for pre-fetch channel map.");
@@ -754,7 +765,7 @@ public class RBNBController implements Player, MetadataListener {
 			}
 		}
     
-		ChannelMap fetchedMap = preFetchChannelMap;
+		LocalChannelMap fetchedMap = preFetchChannelMap;
 		preFetchChannelMap = null;
 		
 		return fetchedMap;
@@ -810,7 +821,7 @@ public class RBNBController implements Player, MetadataListener {
 			return;
 		}
 		
-		ChannelMap getmap = null;
+		LocalChannelMap getmap = new LocalChannelMap();
 
 		long timeout;
 		if (state == STATE_MONITORING) {
@@ -820,7 +831,7 @@ public class RBNBController implements Player, MetadataListener {
 		}
 		
 		try {
-			getmap = sink.Fetch(timeout);
+			sink.Fetch(timeout, getmap);
 		} catch (Exception e) {
  			fireErrorMessage("Failed to load data from the server. Please try again later.");
  			e.printStackTrace();
@@ -1073,6 +1084,19 @@ public class RBNBController implements Player, MetadataListener {
 		return true;
 	}
 
+  /**
+   * Subscribe to the list of <code>channels</code> with the data
+   * <code>listener</code>.
+   * 
+   * @param channels  the channels to subscribe to
+   * @param listener  the data listener to post data to
+   */
+  public void subscribe(List<String> channels, DataListener listener) {
+    synchronized (updateSubscriptionRequests) {
+      updateSubscriptionRequests.add(new SubscriptionRequest(channels, listener, true));
+    }
+  }
+
 	public boolean unsubscribe(String channelName, DataListener listener) {
 		synchronized (updateSubscriptionRequests) {
 			updateSubscriptionRequests.add(new SubscriptionRequest(channelName, listener, false));
@@ -1080,6 +1104,19 @@ public class RBNBController implements Player, MetadataListener {
 		
 		return true;	
 	}
+
+  /**
+   * Unsubscribe from the list of <code>channels</code> for  the data
+   * <code>listener</code>.
+   * 
+   * @param channels  the list of channels to unsubscribe from
+   * @param listener  the data listener to unsubscribe
+   */
+	public void unsubscribe(List<String> channels, DataListener listener) {
+	  synchronized (updateSubscriptionRequests) {
+	    updateSubscriptionRequests.add(new SubscriptionRequest(channels, listener, false));
+	  }
+  }
 
 	public boolean isSubscribed(String channelName) {
 		return channelManager.isChannelSubscribed(channelName);
@@ -1447,18 +1484,22 @@ public class RBNBController implements Player, MetadataListener {
   }
 	
 	class SubscriptionRequest {
-		private String channelName;
+		private List<String> channelNames;
 		private DataListener listener;
 		private boolean isSubscribe;
 		
 		public SubscriptionRequest(String channelName, DataListener listener, boolean isSubscribe) {
-			this.channelName = channelName;
-			this.listener = listener;
-			this.isSubscribe = isSubscribe;
+		  this(Collections.singletonList(channelName), listener, isSubscribe);
 		}
 		
-		public String getChannelName() {
-			return channelName;
+		public SubscriptionRequest(List<String> channelNames, DataListener listener, boolean isSubscribe) {
+      this.channelNames = channelNames;
+      this.listener = listener;
+      this.isSubscribe = isSubscribe;		  
+		}
+		
+		public List<String> getChannelNames() {
+			return channelNames;
 		}
 		
 		public DataListener getListener() {

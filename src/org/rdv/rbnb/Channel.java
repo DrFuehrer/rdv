@@ -50,6 +50,7 @@ import com.rbnb.sapi.ChannelTree;
  */
 public class Channel extends DataChannel {
 
+  /** the metadata strings for this channel */
   private Map<String, String> metadata;
 
   /**
@@ -82,12 +83,14 @@ public class Channel extends DataChannel {
     metadata.put("duration", Double.toString(node.getDuration()));
     metadata.put("size", Integer.toString(node.getSize()));
 
-    if (userMetadata.length() > 0) {
-      String[] userMetadataTokens = userMetadata.split("\t|,");
+    if (userMetadata != null && userMetadata.length() > 0) {
+      String[] userMetadataTokens = userMetadata.split(",");
       for (int j = 0; j < userMetadataTokens.length; j++) {
         String[] tokens = userMetadataTokens[j].split("=");
         if (tokens.length == 2) {
           metadata.put(tokens[0].trim(), tokens[1].trim());
+        } else {
+          metadata.put(tokens[0].trim(), "");
         }
       }
     }
@@ -135,18 +138,27 @@ public class Channel extends DataChannel {
    */
   public String toString() {
     StringBuilder string = new StringBuilder(getName());
+    
     if (metadata.size() > 0) {
       string.append(": ");
-      Set keys = metadata.keySet();
-      Iterator it = keys.iterator();
+      Set<String> keys = metadata.keySet();
+      Iterator<String> it = keys.iterator();
       while (it.hasNext()) {
-        String key = (String) it.next();
-        string.append(key + "=" + metadata.get(key));
+        String key = it.next();
+        string.append(key);
+        
+        String value = metadata.get(key);
+        if (!value.isEmpty()) {
+          string.append('=');
+          string.append(value);
+        }
+        
         if (it.hasNext()) {
           string.append(", ");
         }
       }
     }
+    
     return string.toString();
   }
   

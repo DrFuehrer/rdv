@@ -37,6 +37,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.RBNBUtilities;
 
 /**
@@ -56,7 +57,7 @@ public class ASCIIDataFileWriter implements DataFileWriter {
   /** the time of the first data sample */
   private double firstSampleTime;
   
-  public void init(List<DataChannel> channels, double startTime, double endTime, File file) throws IOException {
+  public void init(List<Channel> channels, double startTime, double endTime, File file) throws IOException {
     this.file = file;
     
     fileWriter = new BufferedWriter(new FileWriter(file));
@@ -64,7 +65,7 @@ public class ASCIIDataFileWriter implements DataFileWriter {
     writeHeader(channels, startTime, endTime);
   }
   
-  private void writeHeader(List<DataChannel> channels, double startTime, double endTime) throws IOException {
+  private void writeHeader(List<Channel> channels, double startTime, double endTime) throws IOException {
     // write the times for the start, end, and export
     fileWriter.write("Start time: " + RBNBUtilities.secondsToISO8601(startTime) + "\r\n");
     fileWriter.write("End time: " + RBNBUtilities.secondsToISO8601(endTime) + "\r\n");

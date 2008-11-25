@@ -68,6 +68,9 @@ public class RDV extends SingleFrameApplication {
   
   /** the command line arguments */
   private String[] args;
+  
+  /** the main panel */
+  private ApplicationFrame mainPanel;
 
   /**
    * Initializes the application before startup.
@@ -94,7 +97,8 @@ public class RDV extends SingleFrameApplication {
    */
   @Override
   protected void startup() {
-    show(new ApplicationFrame());
+    mainPanel = new ApplicationFrame();
+    show(mainPanel);
   }
   
   /**
@@ -107,6 +111,15 @@ public class RDV extends SingleFrameApplication {
     
     Task task = new ProcessArgsTask(this, args);
     task.execute();
+  }
+  
+  /**
+   * Gets the main panel.
+   * 
+   * @return  the main panel
+   */
+  public ApplicationFrame getMainPanel() {
+    return mainPanel;
   }
   
   /**
