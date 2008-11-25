@@ -37,6 +37,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragGestureEvent;
 import java.awt.dnd.DragGestureListener;
@@ -47,6 +48,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -67,6 +70,7 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
+import javax.swing.TransferHandler;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -82,6 +86,8 @@ import org.rdv.DataViewer;
 import org.rdv.Extension;
 import org.rdv.RDV;
 import org.rdv.action.ActionFactory;
+import org.rdv.data.LocalChannelManager;
+import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.MetadataListener;
 import org.rdv.rbnb.Player;
 import org.rdv.rbnb.RBNBController;
@@ -93,11 +99,6 @@ import com.jgoodies.uif_lite.panel.SimpleInternalFrame;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.ChannelTree.Node;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
-
-import javax.swing.TransferHandler;
-import java.awt.datatransfer.Transferable;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 
 /**
  * A panel that contains the channels in a tree.
@@ -616,6 +617,19 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
       popup.addSeparator();
     }
 
+	// menu item to remove local channels
+    if (areLocal(channels)) {
+      menuItem = new JMenuItem("Remove channel" + plural);
+      menuItem.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent arg0) {
+          LocalChannelManager lcm = LocalChannelManager.getInstance();
+          lcm.removeChannels(channels);
+        }
+      });
+      popup.add(menuItem);
+      popup.addSeparator();
+    }
+    
     String mime = getMime(channels);
     if (mime != null) {
       if (mime.equals("application/octet-stream")) {
@@ -683,6 +697,27 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
     }
     
     return mime;
+  }
+  
+  /**
+   * Checks if the list of <code>channels</code> are local channels.
+   * 
+   * @param channels  the list of channels to check
+   * @return          if all the channels are local, false otherwise 
+   */
+  private boolean areLocal(List<String> channels) {
+    if (channels == null || channels.isEmpty()) {
+      return false;
+    }
+    
+    List<Channel> metadata = rbnb.getMetadataManager().getChannels(channels);
+    for (Channel channel : metadata) {
+      if (channel.getMetadata("local") == null) {
+        return false;
+      }
+    }
+    
+    return true;
   }
   
 	public void postState(int newState, int oldState) {

@@ -40,9 +40,10 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.rdv.data.LocalChannelManager;
 import org.rdv.datapanel.DigitalTabularDataPanel;
 
-import com.rbnb.sapi.ChannelMap;
+import com.rbnb.sapi.LocalChannelMap;
 
 /**
  * @author Jason P. Hanley
@@ -174,7 +175,9 @@ public class ChannelManager {
     return true;
   }
 	
-	public void postData(ChannelMap channelMap) {
+	public void postData(LocalChannelMap channelMap) {
+	  LocalChannelManager.getInstance().updateData(channelMap);
+	  
 		for (DataListener listener : playerChannelListeners) {
 			try {
 				listener.postData(channelMap);

@@ -44,10 +44,11 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rdv.DataViewer;
-import org.rdv.data.DataChannel;
+import org.rdv.data.LocalChannelManager;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
+import com.rbnb.sapi.LocalChannelMap;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
@@ -246,9 +247,10 @@ public class MetadataManager {
 
     Map<String,Channel> newChannels = new HashMap<String,Channel>();
 
+    ChannelTree channelTree;
     try {
       //create metadata channel tree
-      ctree = getChannelTree(metadataSink, newChannels); 
+      channelTree = getChannelTree(metadataSink, newChannels); 
     } catch (SAPIException e) {
       log.error("Failed to update metadata: " + e.getMessage() + ".");
 
@@ -264,6 +266,13 @@ public class MetadataManager {
       }     
       
       return;
+    }
+    
+    if (LocalChannelManager.getInstance().hasChannels()) {
+      ChannelTree localChannelTree = getLocalChannelTree(newChannels, ctree);
+      ctree = localChannelTree.merge(channelTree);
+    } else {
+      ctree = channelTree;
     }
     
     channels = newChannels;
@@ -379,6 +388,37 @@ public class MetadataManager {
   }
   
   /**
+   * Gets the metadata channel tree for local channels. This will add a
+   * <code>Channel</code> to <code>channels</code> for each local channel.
+   * 
+   * @param channels           the map of channel names to channel objects
+   * @param serverChannelTree  the metadata channel tree of server channels
+   * @return                   the metadata channel tree of local channels
+   * @see                      LocalChannelManager#updateMetadata(LocalChannelMap, ChannelTree)
+   */
+  private ChannelTree getLocalChannelTree(Map<String,Channel> channels, ChannelTree serverChannelTree) {
+    LocalChannelMap cmap = new LocalChannelMap();
+    LocalChannelManager localChannelManager = LocalChannelManager.getInstance();
+    Map<String,String> userDataMap;
+    userDataMap = localChannelManager.updateMetadata(cmap, serverChannelTree);
+    
+    ctree = ChannelTree.createFromChannelMap(cmap);
+    
+    //store user metadata in channel objects
+    String[] channelList = cmap.GetChannelList();
+    for (int i=0; i<channelList.length; i++) {
+      ChannelTree.Node node = ctree.findNode(channelList[i]);
+      if (node != null) {
+        String userMetadata = userDataMap.get(channelList[i]);
+        Channel channel = new Channel(node, userMetadata);
+        channels.put(channelList[i], channel);
+      }            
+    }
+
+    return ctree;
+  }
+  
+  /**
    * Return the latest metadata channel tree.
    * 
    * @return the metadata channel tree.
@@ -420,8 +460,8 @@ public class MetadataManager {
    * @param channelNames  the list of channels names to get
    * @return              a list of channels
    */
-  public List<DataChannel> getChannels(List<String> channelNames) {
-    List<DataChannel> channelsRequest = new ArrayList<DataChannel>();
+  public List<Channel> getChannels(List<String> channelNames) {
+    List<Channel> channelsRequest = new ArrayList<Channel>();
     
     for (String channelName : channelNames) {
       Channel channel = getChannel(channelName);
@@ -431,6 +471,21 @@ public class MetadataManager {
     }
     
     return channelsRequest;
+  }
+  
+  /**
+   * Gets a list of channels.
+   * 
+   * @return  a list of channels
+   */
+  public List<Channel> getChannels() {
+    List<Channel> allChannels = new ArrayList<Channel>();
+    
+    for (String channel : channels.keySet()) {
+      allChannels.add(channels.get(channel));
+    }
+    
+    return allChannels;
   }
   
   /**

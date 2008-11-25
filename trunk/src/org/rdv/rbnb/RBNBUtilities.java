@@ -44,6 +44,7 @@ import java.util.SimpleTimeZone;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rdv.util.ReadableNodeComparator;
+import org.rdv.util.ReadableStringComparator;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
@@ -272,6 +273,32 @@ public final class RBNBUtilities {
       }
     }
     return channels;
+  }
+  
+  /**
+   * Returns a list of the server channels that match the <code>mime</code>.
+   * 
+   * @param mime        the mime of the channels
+   * @param showHidden  flag to return or skip hidden channels
+   * @return  the server channels
+   */
+  public static List<String> getServerChannels(String mime, boolean showHidden) {
+    List<String> serverChannels = new ArrayList<String>();
+    
+    List<Channel> channels = RBNBController.getInstance().getMetadataManager().getChannels();
+    for (Channel channel : channels) {
+      String name = channel.getName();
+      boolean mimeMatches = channel.getMetadata("mime").equals(mime); 
+      boolean isServer = channel.getMetadata("local") == null;
+      boolean isHidden = name.startsWith("_") || name.contains("/_");
+      if (mimeMatches && isServer && (showHidden || !isHidden)) {
+        serverChannels.add(name);
+      }
+    }
+    
+    Collections.sort(serverChannels, new ReadableStringComparator());
+    
+    return serverChannels;
   }
   
   /**

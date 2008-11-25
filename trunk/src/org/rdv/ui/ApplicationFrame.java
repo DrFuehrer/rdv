@@ -683,6 +683,10 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
     
     fileMenu.addSeparator();
     
+    fileMenu.add(new JMenuItem(actionMap.get("addLocalChannel")));
+    
+    fileMenu.addSeparator();
+    
     JMenu importSubMenu = new JMenu(importAction);
  		
     menuItem = new JMenuItem(actionFactory.getDataImportAction());
@@ -1119,6 +1123,15 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
    */
   public List<String> getSelectedChannels() {
     return channelListPanel.getSelectedChannels();
+  }
+  
+  /**
+   * Gets if hidden channels are visible in the UI.
+   * 
+   * @return  true if hidden channels are visible, false otherwise
+   */
+  public boolean isHiddenChannelsVisible() {
+    return channelListPanel.isShowingHiddenChannles();
   }
 
  	public void connecting() {
