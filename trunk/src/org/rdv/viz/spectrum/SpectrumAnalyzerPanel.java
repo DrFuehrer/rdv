@@ -234,7 +234,7 @@ public class SpectrumAnalyzerPanel extends ChartPanel {
     
     // reduce the segment size if needed
     if (segmentSize > numberOfSamples) {
-      setSegmentSize(getLowerPowerOf2(numberOfSamples), false);
+      setSegmentSize(numberOfSamples, false);
     }
 
     plotSpectrum();
@@ -304,8 +304,8 @@ public class SpectrumAnalyzerPanel extends ChartPanel {
    * @param redraw       if true, redraw the chart, otherwise don't
    */
   private void setSegmentSize(int segmentSize, boolean redraw) {
-    if (segmentSize <= 1 || segmentSize > numberOfSamples || !isPower2(segmentSize)) {
-      throw new IllegalArgumentException("Segment size must be greater then 1, less then or equal to the number of samples, and a power of 2.");
+    if (segmentSize <= 1 || segmentSize > numberOfSamples) {
+      throw new IllegalArgumentException("Segment size must be greater then 1 and less then or equal to the number of samples.");
     }
     
     if (this.segmentSize == segmentSize) {
@@ -613,44 +613,6 @@ public class SpectrumAnalyzerPanel extends ChartPanel {
     for (int n = 0; n < window.length; n++) {
       window[n] = 1;
     }
-  }
-  
-  /**
-   * Returns a power of 2 that is less then or equal to {@code i}. 2 will
-   * be the lowest power of 2 returned, even if @{code i} is less then 2.
-   * 
-   * @param i  the maximum
-   * @return   a power of two not exceeding the maximum
-   */
-  public static final int getLowerPowerOf2(int i) {
-    if (i <= 2) return 2;
-    if (i % 2 != 0) i--;
-    while (i > 2) {
-      if (isPower2(i)) break;
-      i -= 2;
-    }
-    return i;
-  }
-
-  /**
-   * Tests if @{code i} is a power of 2.
-   * 
-   * @param i  the number to test
-   * @return   true if @{code i} is a power of 2, false otherwise
-   */
-  public static final boolean isPower2(final int i) {
-    if (i== 1 || i == 2) {
-      return true;
-    }
-    
-    double LOG2 = Math.log(2);
-    
-    if (i > 2) {
-      double x = Math.log(i) / LOG2;
-      return x == Math.rint(x);
-    }
-    
-    return false;
   }
 
 }
