@@ -10,6 +10,7 @@
 	<classpathentry kind="lib" path="lib/jfreechart.jar"/>
 	<classpathentry kind="lib" path="lib/jtransforms.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/meparser.jar"/>
 	<classpathentry kind="lib" path="lib/rbnb.jar"/>
 	<classpathentry kind="lib" path="lib/swing-worker.jar"/>
 	<classpathentry kind="lib" path="lib/tritonus_share.jar"/>
