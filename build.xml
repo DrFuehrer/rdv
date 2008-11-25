@@ -55,6 +55,7 @@
 			<include name="jcommon.jar"/>
 			<include name="jfreechart.jar"/>
 			<include name="jtransforms.jar"/>
+			<include name="meparser.jar"/>
 			<include name="rbnb.jar"/>
 			<include name="swing-worker.jar"/>
 			<include name="tritonus_share.jar"/>
@@ -107,7 +108,7 @@
 			<zipfileset dir="${resources.dir}"/>
 			<manifest>
 				<attribute name="Main-Class" value="${main.class}"/>
-				<attribute name="Class-Path" value="AppFramework.jar commons-cli.jar commons-logging.jar jcommon.jar jfreechart.jar jl.jar jtransforms.jar mp3spi.jar rbnb.jar swing-worker.jar tritonus_share.jar"/>
+				<attribute name="Class-Path" value="AppFramework.jar commons-cli.jar commons-logging.jar jcommon.jar jfreechart.jar jl.jar jtransforms.jar meparser.jar mp3spi.jar rbnb.jar swing-worker.jar tritonus_share.jar"/>
 			</manifest>			
 		</jar>		
 	</target>
@@ -126,6 +127,7 @@
 				<include name="jfreechart.jar"/>
 				<include name="jl.jar"/>
 				<include name="jtransforms.jar"/>
+				<include name="meparser.jar"/>
 				<include name="mp3spi.jar"/>
 				<include name="rbnb.jar"/>
 				<include name="swing-worker.jar"/>
