@@ -37,6 +37,13 @@
 		</mimeTypes>		
 	</extension>
 	<extension>
+		<id>org.rdv.viz.spectrum.SpectrumViz</id>
+		<name>Spectrum Analyzer</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>		
+	</extension>
+	<extension>
 		<id>org.rdv.datapanel.StringDataPanel</id>
 		<name>Text Data Panel</name>
 		<mimeTypes>
