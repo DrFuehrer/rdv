@@ -939,7 +939,8 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
 	
 	public void dropActionChanged(DropTargetDragEvent e) {}
 	
-	public void drop(DropTargetDropEvent e) {
+	@SuppressWarnings("unchecked")
+  public void drop(DropTargetDropEvent e) {
 		try {
       int dropAction = e.getDropAction();
       if (dropAction == DnDConstants.ACTION_LINK) {
@@ -949,12 +950,12 @@ public abstract class AbstractDataPanel implements DataPanel, DataListener, Time
           e.acceptDrop(DnDConstants.ACTION_LINK);
           e.dropComplete(true);
 
-  				final List channels = (List)tr.getTransferData(channelListDataFlavor);
+  				final List<String> channels = (List)tr.getTransferData(channelListDataFlavor);
           
           new Thread() {
             public void run() {
               for (int i=0; i<channels.size(); i++) {
-                String channel = (String)channels.get(i);
+                String channel = channels.get(i);
                 boolean status;
                 if (supportsMultipleChannels()) {
                   status = addChannel(channel);
