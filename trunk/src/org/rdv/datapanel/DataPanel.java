@@ -165,7 +165,7 @@ public interface DataPanel {
    * @return  a set of subscribed channels
    * @since   1.3
    */
-  public Collection subscribedChannels();
+  public Collection<String> subscribedChannels();
   
   /**
    * Checks if this data panel is subscribed to the given channel.

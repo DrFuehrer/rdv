@@ -108,10 +108,10 @@ public class ConfigurationManager {
     out.println("    <playbackRate>" + rbnb.getPlaybackRate() + "</playbackRate>");
     out.println("  </rbnb>");
     
-    List dataPanels = DataPanelManager.getInstance().getDataPanels();
-    Iterator it = dataPanels.iterator();
+    List<DataPanel> dataPanels = DataPanelManager.getInstance().getDataPanels();
+    Iterator<DataPanel> it = dataPanels.iterator();
     while (it.hasNext()) {
-      DataPanel dataPanel = (DataPanel)it.next();
+      DataPanel dataPanel = it.next();
       Properties properties = dataPanel.getProperties();
       
       if (isPanelDetached(dataPanel, properties)) {
@@ -123,9 +123,9 @@ public class ConfigurationManager {
       
       if (dataPanel.subscribedChannelCount() > 0) {
         out.println("    <channels>");
-        Iterator channels = dataPanel.subscribedChannels().iterator();
+        Iterator<String> channels = dataPanel.subscribedChannels().iterator();
         while (channels.hasNext()) {
-          String channel = (String)channels.next();
+          String channel = channels.next();
           out.println("      <channel>" + channel + "</channel>");
         }     
         out.println("    </channels>");
@@ -134,7 +134,7 @@ public class ConfigurationManager {
 
       if (properties.size() > 0) {
         out.println("    <properties>");
-        for (Enumeration keys = properties.propertyNames(); keys.hasMoreElements() ;) {
+        for (Enumeration<?> keys = properties.propertyNames(); keys.hasMoreElements() ;) {
            String key = (String)keys.nextElement();
            String value = properties.getProperty(key);
            out.println("      <entry key=\"" + key + "\">" + value + "</entry>");
@@ -161,7 +161,7 @@ public class ConfigurationManager {
     }
     
     String key, value;
-    for (Enumeration keys = properties.propertyNames(); keys.hasMoreElements() ;) {
+    for (Enumeration<?> keys = properties.propertyNames(); keys.hasMoreElements() ;) {
       key = (String)keys.nextElement();
       if (key == "attached") {
         value = properties.getProperty(key);
