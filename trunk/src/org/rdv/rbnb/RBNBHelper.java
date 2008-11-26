@@ -65,7 +65,7 @@ public class RBNBHelper {
       endTime = -1;
   
       // get the time bounds for all channels
-      Iterator it = channelTree.iterator();
+      Iterator<?> it = channelTree.iterator();
       while (it.hasNext()) {
         ChannelTree.Node node = (ChannelTree.Node)it.next();
         ChannelTree.NodeTypeEnum type = node.getType();

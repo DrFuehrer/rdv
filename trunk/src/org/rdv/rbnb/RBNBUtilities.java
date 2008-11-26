@@ -210,7 +210,7 @@ public final class RBNBUtilities {
     return getSortedChildren(node.getChildren().iterator(), showHiddenChildren);
   }  
   
-  private static List<ChannelTree.Node> getSortedChildren(Iterator it, boolean showHiddenChildren) {
+  private static List<ChannelTree.Node> getSortedChildren(Iterator<?> it, boolean showHiddenChildren) {
     List<ChannelTree.Node> list = new ArrayList<ChannelTree.Node>();
 
     while (it.hasNext()) {
@@ -241,7 +241,7 @@ public final class RBNBUtilities {
    */
   public static List<String> getAllChannels(ChannelTree ctree, boolean hidden) {
     List<String> channels = new ArrayList<String>();
-    Iterator it = ctree.iterator();
+    Iterator<?> it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
       if (node.getType() == ChannelTree.CHANNEL &&
@@ -262,7 +262,7 @@ public final class RBNBUtilities {
    */
   public static List<String> getChildChannels(ChannelTree.Node container, boolean hidden) {
     ArrayList<String> channels = new ArrayList<String>();
-    Iterator children = container.getChildren().iterator();
+    Iterator<?> children = container.getChildren().iterator();
     while (children.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)children.next();
       if (node.getType() == ChannelTree.CHANNEL) {

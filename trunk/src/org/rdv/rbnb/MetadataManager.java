@@ -357,7 +357,7 @@ public class MetadataManager {
       }            
     }
 
-    Iterator it = ctree.iterator();
+    Iterator<?> it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
       NodeTypeEnum type = node.getType();

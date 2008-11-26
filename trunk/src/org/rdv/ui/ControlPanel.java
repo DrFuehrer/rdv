@@ -407,7 +407,7 @@ public class ControlPanel extends JToolBar implements TimeListener, StateListene
     boolean hasSubscribedChannels = rbnbController.hasSubscribedChannels();
 
     // get the time bounds for all channels
-    Iterator it = ctree.iterator();
+    Iterator<?> it = ctree.iterator();
     while (it.hasNext()) {
       ChannelTree.Node node = (ChannelTree.Node)it.next();
       ChannelTree.NodeTypeEnum type = node.getType();
