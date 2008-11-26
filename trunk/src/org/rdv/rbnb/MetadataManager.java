@@ -44,11 +44,12 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rdv.DataViewer;
+import org.rdv.data.Channel;
+import org.rdv.data.LocalChannel;
 import org.rdv.data.LocalChannelManager;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
-import com.rbnb.sapi.LocalChannelMap;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
@@ -269,7 +270,7 @@ public class MetadataManager {
     }
     
     if (LocalChannelManager.getInstance().hasChannels()) {
-      ChannelTree localChannelTree = getLocalChannelTree(newChannels, ctree);
+      ChannelTree localChannelTree = getLocalChannelTree(newChannels, channelTree);
       ctree = localChannelTree.merge(channelTree);
     } else {
       ctree = channelTree;
@@ -345,7 +346,7 @@ public class MetadataManager {
       if (channelIndex != -1) {
         ChannelTree.Node node = ctree.findNode(channelList[i]);
         String userMetadata = cmap.GetUserInfo(channelIndex);
-        Channel channel = new Channel(node, userMetadata);
+        Channel channel = new RBNBChannel(node, userMetadata);
         channels.put(channelList[i], channel);
         
         //look for marker channels
@@ -389,7 +390,7 @@ public class MetadataManager {
   
   /**
    * Gets the metadata channel tree for local channels. This will add a
-   * <code>Channel</code> to <code>channels</code> for each local channel.
+   * <code>LocalChannel</code> to <code>channels</code> for each local channel.
    * 
    * @param channels           the map of channel names to channel objects
    * @param serverChannelTree  the metadata channel tree of server channels
@@ -397,25 +398,18 @@ public class MetadataManager {
    * @see                      LocalChannelManager#updateMetadata(LocalChannelMap, ChannelTree)
    */
   private ChannelTree getLocalChannelTree(Map<String,Channel> channels, ChannelTree serverChannelTree) {
-    LocalChannelMap cmap = new LocalChannelMap();
     LocalChannelManager localChannelManager = LocalChannelManager.getInstance();
-    Map<String,String> userDataMap;
-    userDataMap = localChannelManager.updateMetadata(cmap, serverChannelTree);
     
-    ctree = ChannelTree.createFromChannelMap(cmap);
+    // get channel tree for local channels
+    ChannelTree channelTree = localChannelManager.getMetadata(serverChannelTree);
     
-    //store user metadata in channel objects
-    String[] channelList = cmap.GetChannelList();
-    for (int i=0; i<channelList.length; i++) {
-      ChannelTree.Node node = ctree.findNode(channelList[i]);
-      if (node != null) {
-        String userMetadata = userDataMap.get(channelList[i]);
-        Channel channel = new Channel(node, userMetadata);
-        channels.put(channelList[i], channel);
-      }            
+    // add local channels to channels map
+    List<LocalChannel> localChannels = localChannelManager.getChannels();
+    for (LocalChannel localChannel : localChannels) {
+      channels.put(localChannel.getName(), localChannel);
     }
 
-    return ctree;
+    return channelTree;
   }
   
   /**

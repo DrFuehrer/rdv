@@ -33,25 +33,26 @@
 
 package org.rdv.rbnb;
 
-import org.rdv.rbnb.Channel;
+import junit.framework.TestCase;
 
-import com.rbnb.api.Server;
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
 import com.rbnb.sapi.Sink;
 import com.rbnb.sapi.Source;
 import com.rbnb.sapi.ChannelTree.Node;
 
-import junit.framework.TestCase;
-
 /**
- * Unit test for a data channel.
+ * Unit test for a RBNB channel.
  * 
  * @author Jason P. Hanley
  */
-public class ChannelTest extends TestCase {
+public class RBNBChannelTest extends TestCase {
+  
   /** the channel object to test */
-  private Channel channel;
+  private RBNBChannel channel;
+  
+  /** the address for the RBNB server */
+  private static final String serverAddress = "localhost";
   
   /** the source (parent) of the channel */
   private static final String sourceName = "TestSource";
@@ -59,8 +60,8 @@ public class ChannelTest extends TestCase {
   /** the name of the channel */
   private static final String channelName = "channel01";
   
-  /** the full name of the channel */
-  private static final String fullName = sourceName + "/" + channelName;
+  /** the name of the channel */
+  private static final String name = sourceName + "/" + channelName;
 
   /** the channel unit */
   private static final String unit = "in";
@@ -70,14 +71,12 @@ public class ChannelTest extends TestCase {
    * server, registers a channel with the server, and then creates the channel
    * object from this.
    */
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
     
-    String[] serverArgs = {};
-    Server server = Server.launchNewServer(serverArgs);
-    
     Source source = new Source();
-    source.OpenRBNBConnection("localhost", sourceName);
+    source.OpenRBNBConnection(serverAddress, sourceName);
     
     ChannelMap channelMap = new ChannelMap();
     int channelIndex = channelMap.Add(channelName);
@@ -90,40 +89,32 @@ public class ChannelTest extends TestCase {
     Sink sink = new Sink();
     sink.OpenRBNBConnection();
     sink.RequestRegistration();
-    channelMap = sink.Fetch(10000);
+    channelMap = sink.Fetch(-1);
     
-    channelIndex = channelMap.GetIndex(fullName);
+    channelIndex = channelMap.GetIndex(name);
     metadata = channelMap.GetUserInfo(channelIndex);
     
     ChannelTree channelTree = ChannelTree.createFromChannelMap(channelMap);
-    Node node = channelTree.findNode(fullName);
+    Node node = channelTree.findNode(name);
     
     sink.CloseRBNBConnection();
     source.CloseRBNBConnection();
-    server.stop();
     
-    channel = new Channel(node, metadata);
+    channel = new RBNBChannel(node, metadata);
   }
 
   /**
-   * Test getting the (short) name of the channel.
-   */
-  public void testGetShortName() {
-    assertEquals(channelName, channel.getShortName());
-  }
-
-  /**
-   * Test getting the (full) name of the channel.
+   * Test getting the name of the channel.
    */
   public void testGetName() {
-    assertEquals(fullName, channel.getName());
+    assertEquals(name, channel.getName());
   }
-
+  
   /**
-   * Test getting the parent (source) of the channel.
+   * Test getting the unit of the channel.
    */
-  public void testGetParent() {
-    assertEquals(sourceName, channel.getParent());
+  public void testGetUnit() {
+    assertEquals(unit, channel.getUnit());
   }
 
   /**
@@ -131,13 +122,11 @@ public class ChannelTest extends TestCase {
    * channel.
    */
   public void testGetMetadata() {
+    assertEquals("0.0", channel.getMetadata("duration"));
+    assertEquals("", channel.getMetadata("server"));
+    assertEquals("application/octet-stream", channel.getMetadata("mime"));
     assertEquals(unit, channel.getMetadata("units"));
+    assertEquals("8", channel.getMetadata("size"));
   }
 
-  /**
-   * Test getting the string representation of the channel.
-   */
-  public void testToString() {
-    assertEquals(fullName, channel.getName());
-  }
 }

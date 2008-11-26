@@ -33,8 +33,8 @@ package org.rdv.viz.dial;
 
 import java.util.Iterator;
 
+import org.rdv.data.Channel;
 import org.rdv.datapanel.AbstractDataPanel;
-import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.RBNBController;
 
 import com.rbnb.sapi.ChannelMap;
@@ -95,12 +95,12 @@ public class DialViz extends AbstractDataPanel {
       return;
     }
     
-    Iterator i = channels.iterator();
+    Iterator<String> i = channels.iterator();
     if (!i.hasNext()) {
       return;
     }
 
-    String channelName = (String) i.next();
+    String channelName = i.next();
     int channelIndex = channelMap.GetIndex(channelName);
 
     // if there is data for channel, post it

@@ -75,16 +75,15 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.rdv.DataViewer;
-import org.rdv.rbnb.Channel;
+import org.rdv.data.Channel;
 import org.rdv.rbnb.EventMarker;
 import org.rdv.rbnb.ProgressListener;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBExport;
 import org.rdv.util.ReadableStringComparator;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class ExportVideoDialog extends JDialog implements ProgressListener {
   

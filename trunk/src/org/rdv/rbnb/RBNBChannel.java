@@ -33,25 +33,16 @@
 
 package org.rdv.rbnb;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import org.rdv.data.Channel;
 
-import org.rdv.data.DataChannel;
-
-import com.rbnb.sapi.ChannelTree;
+import com.rbnb.sapi.ChannelTree.Node;
 
 /**
  * A class to describe a channel containing data and the metadata associated with it.
  * 
  * @author  Jason P. Hanley
- * @since   1.1
  */
-public class Channel extends DataChannel {
-
-  /** the metadata strings for this channel */
-  private Map<String, String> metadata;
+public class RBNBChannel extends Channel {
 
   /**
    * Construct a channel with a name and assigning the mime type and
@@ -61,11 +52,47 @@ public class Channel extends DataChannel {
    * @param userMetadata  The user metadata string (tab or comma delimited)
    * @since               1.3
    */
-  public Channel(ChannelTree.Node node, String userMetadata) {
+  public RBNBChannel(Node node, String userMetadata) {
     super(node.getFullName());
+    
+    // a key to signify that this is a server channel
+    setMetadata("server");
 
-    metadata = new HashMap<String, String>();
+    // copy metadata from the node
+    copyMetadataFromNode(node);
+    
+    // parse metadata from the user string
+    parseUserMetadata(userMetadata);
+    
+    // set the units property from the metadata map
+    setUnit(getMetadata("units"));
+  }
 
+  /**
+   * Copies metadata from the <code>node</code>. This includes the mime, start,
+   * duration, and size.
+   * 
+   * @param node  the node to copy metadata from
+   */
+  private void copyMetadataFromNode(Node node) {
+    // set the mime from the node
+    setMime(node);
+
+    // set other properties read from the node
+    setMetadata("start", Double.toString(node.getStart()));
+    setMetadata("duration", Double.toString(node.getDuration()));
+    setMetadata("size", Integer.toString(node.getSize()));
+  }
+  
+  /**
+   * Sets the mime metadata value to the value from the <code>node</code>.
+   * If the node has no mime set, it will be guessed based on channel naming
+   * conventions. If no mime can be guessed,
+   * <code>application/octet-stream</code> will be assumed.
+   * 
+   * @param node  the node to set the mime from
+   */
+  private void setMime(Node node) {
     String mime = node.getMime();
     if (mime == null) {
       String channelName = getName();
@@ -77,89 +104,38 @@ public class Channel extends DataChannel {
         mime = "application/octet-stream";
       }
     }
-    metadata.put("mime", mime);
     
-    metadata.put("start", Double.toString(node.getStart()));
-    metadata.put("duration", Double.toString(node.getDuration()));
-    metadata.put("size", Integer.toString(node.getSize()));
-
+    setMetadata("mime", mime);    
+  }
+  
+  /**
+   * Parses the <code>userMetadata</code> string and sets metadata key/value
+   * pairs based on it. The entries are separated by a comma and the key/value
+   * pairs are separated by an equals sign. Entries without a value will be
+   * added with the value set to an empty string. The metadata string should
+   * look like this:
+   * <p>
+   * <pre>key1=value1,key2,key3=value3,...</pre>
+   * 
+   * @param userMetadata  metadata key/value pairs in a string
+   */
+  private void parseUserMetadata(String userMetadata) {
     if (userMetadata != null && userMetadata.length() > 0) {
       String[] userMetadataTokens = userMetadata.split(",");
       for (int j = 0; j < userMetadataTokens.length; j++) {
         String[] tokens = userMetadataTokens[j].split("=");
+        String key = tokens[0].trim();
+        String value;
+        
         if (tokens.length == 2) {
-          metadata.put(tokens[0].trim(), tokens[1].trim());
+          value = tokens[1].trim();
         } else {
-          metadata.put(tokens[0].trim(), "");
-        }
-      }
-    }
-  }
-
-  /**
-   * Get the short name of the channel.
-   * 
-   * This is the part after the final forward slash (/).
-   * 
-   * @return the short name of the channel
-   * @since 1.1
-   */
-  public String getShortName() {
-    return getName().substring(getName().lastIndexOf("/") + 1);
-  }
-
-  /**
-   * Get the parent of the channel.
-   * 
-   * This is the part before the final forward slash (/).
-   * 
-   * @return  the parent of the channel
-   * @since   1.1
-   */
-  public String getParent() {
-    return getName().substring(0, getName().lastIndexOf("/"));
-  }
-
-  /**
-   * Return the metatadata string associated with the given key.
-   * 
-   * @param key  the key corresponding to the desired metadata string
-   * @return     the metadata string or null if the key was not found
-   * @since      1.3
-   */
-  public String getMetadata(String key) {
-    return (String) metadata.get(key);
-  }
-
-  /**
-   * Return a string with the channel name and all metadata.
-   * 
-   * @return  a string representation of the channel and its metadata
-   */
-  public String toString() {
-    StringBuilder string = new StringBuilder(getName());
-    
-    if (metadata.size() > 0) {
-      string.append(": ");
-      Set<String> keys = metadata.keySet();
-      Iterator<String> it = keys.iterator();
-      while (it.hasNext()) {
-        String key = it.next();
-        string.append(key);
-        
-        String value = metadata.get(key);
-        if (!value.isEmpty()) {
-          string.append('=');
-          string.append(value);
+          value = "";
         }
         
-        if (it.hasNext()) {
-          string.append(", ");
-        }
+        setMetadata(key, value);
       }
-    }
-    
-    return string.toString();
+    }    
   }
-  
+
 }

@@ -41,7 +41,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import org.rdv.DataViewer;
-import org.rdv.rbnb.Channel;
+import org.rdv.data.Channel;
 import org.rdv.rbnb.RBNBController;
 
 import com.rbnb.sapi.ChannelTree;
@@ -99,7 +99,7 @@ public class ChannelTreeCellRenderer extends DefaultTreeCellRenderer {
         setIcon(FOLDER_ICON);
       }
     } else if (type == ChannelTree.CHANNEL) {
-      Channel channel = RBNBController.getInstance().getMetadataManager().getChannel(node.getFullName()); 
+      Channel channel = RBNBController.getInstance().getChannel(node.getFullName()); 
       String mime = channel.getMetadata("mime");
       
       if (mime.equals("application/octet-stream")) {

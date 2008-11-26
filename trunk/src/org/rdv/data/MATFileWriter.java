@@ -40,8 +40,6 @@ import java.nio.DoubleBuffer;
 import java.util.Date;
 import java.util.List;
 
-import org.rdv.rbnb.Channel;
-
 /**
  * A class to write an array of numeric data to a MATLAB MAT file. This will
  * create a 2 dimensional array with the name 'data' containing all the data.

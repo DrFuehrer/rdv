@@ -37,7 +37,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.RBNBUtilities;
 
 /**
@@ -75,7 +74,7 @@ public class ASCIIDataFileWriter implements DataFileWriter {
     // write channel names
     fileWriter.write("Time\t");
     for (int i=0; i<channels.size(); i++) {
-      DataChannel channel = channels.get(i); 
+      Channel channel = channels.get(i); 
       String[] channelParts = channel.getName().split("/");
       fileWriter.write(channelParts[channelParts.length-1]);
       if (i != channels.size()-1) {
@@ -87,7 +86,7 @@ public class ASCIIDataFileWriter implements DataFileWriter {
     // write units
     fileWriter.write("Seconds\t");
     for (int i=0; i<channels.size(); i++) {
-      DataChannel channel = channels.get(i); 
+      Channel channel = channels.get(i); 
       if (channel.getUnit() != null) {
         fileWriter.write(channel.getUnit());
       }
