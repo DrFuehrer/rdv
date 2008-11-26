@@ -462,9 +462,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 
 		columnGroupCount--;
 
-		Iterator i = channels.iterator();
+		Iterator<String> i = channels.iterator();
 		while (i.hasNext()) {
-			String channelName = (String) i.next();
+			String channelName = i.next();
 			if (channelTableMap.get(channelName) == columnGroupCount) {
 				removeChannel(channelName);
 			}
@@ -636,7 +636,8 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 	 * @see org.rdv.datapanel.AbstractDataPanel for the
 	 * @see DropTargetListener interface
 	 */
-	public void drop(DropTargetDropEvent e) {
+  @SuppressWarnings("unchecked")
+  public void drop(DropTargetDropEvent e) {
 		try {
 			int dropAction = e.getDropAction();
 			if (dropAction == DnDConstants.ACTION_LINK) {
@@ -655,12 +656,12 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 																// component
 					final int tableNum = (int) (clickX * columnGroupCount / compWidth);
 
-					final List channels = (List)tr.getTransferData(channelListDataFlavor);
+					final List<String> channels = (List)tr.getTransferData(channelListDataFlavor);
 
 					new Thread() {
 						public void run() {
 							for (int i=0; i<channels.size(); i++) {
-                String channel = (String)channels.get(i);
+                String channel = channels.get(i);
 								boolean status;
 								if (supportsMultipleChannels()) {
 									status = addChannel(channel, tableNum);
@@ -823,9 +824,9 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 		}
 
 		// loop over all channels and see if there is data for them
-		Iterator i = channels.iterator();
+		Iterator<String> i = channels.iterator();
 		while (i.hasNext()) {
-			String channelName = (String) i.next();
+			String channelName = i.next();
 			int channelIndex = channelMap.GetIndex(channelName);
 
 			// if there is data for channel, post it
