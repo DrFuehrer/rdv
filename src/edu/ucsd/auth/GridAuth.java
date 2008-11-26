@@ -285,7 +285,7 @@ public class GridAuth {
   {
     try {
       String returnString = "";
-      Enumeration keys = userMapHashTable.keys();
+      Enumeration<String> keys = userMapHashTable.keys();
       while ( keys.hasMoreElements() ) {
         returnString = returnString + " " + keys.nextElement();
       }
