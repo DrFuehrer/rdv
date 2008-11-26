@@ -116,9 +116,9 @@ public class RBNBExport {
    * @param listener   a listener to post progress to
    * @since            1.3
    */
-  public void startExport(final List channels,
+  public void startExport(final List<String> channels,
                           final File dataFile,
-                          final List multimediaChannels,
+                          final List<String> multimediaChannels,
                           final File dataDirectory,                          
                           final double startTime, final double endTime,
                           final ProgressListener listener) {
@@ -140,9 +140,9 @@ public class RBNBExport {
    * @param listener   a listener to post progress to
    * @since            1.3
    */
-  private synchronized void exportData(List numericChannels,
+  private synchronized void exportData(List<String> numericChannels,
                                        File dataFile,
-                                       List multimediaChannels,
+                                       List<String> multimediaChannels,
                                        File dataDirectory,
                                        double startTime, double endTime,
                                        ProgressListener listener) {
@@ -158,11 +158,11 @@ public class RBNBExport {
     }
     
     if (numericChannels == null) {
-      numericChannels = new ArrayList();
+      numericChannels = new ArrayList<String>();
     }
     
     if (multimediaChannels == null) {
-      multimediaChannels = new ArrayList();
+      multimediaChannels = new ArrayList<String>();
     }
     
     if (numericChannels.size() == 0 && multimediaChannels.size() == 0) {
@@ -202,10 +202,10 @@ public class RBNBExport {
       sink.OpenRBNBConnection(rbnbHostName + ":" + rbnbPortNumber, "RDVExport");
       ChannelMap cmap = new ChannelMap();
       for (int i=0; i<numericChannels.size(); i++) {
-        cmap.Add((String)numericChannels.get(i));
+        cmap.Add(numericChannels.get(i));
       }
       for (int i=0; i<multimediaChannels.size(); i++) {
-        cmap.Add((String)multimediaChannels.get(i));
+        cmap.Add(multimediaChannels.get(i));
       }      
       
       BufferedWriter fileWriter = null;
@@ -222,7 +222,7 @@ public class RBNBExport {
         // write channel names
         fileWriter.write("Time\t");
         for (int i=0; i<numericChannels.size(); i++) {
-          String channel = (String)numericChannels.get(i);
+          String channel = numericChannels.get(i);
           String[] channelParts = channel.split("/");
           fileWriter.write(channelParts[channelParts.length-1]);
           if (i != numericChannels.size()-1) {
@@ -237,7 +237,7 @@ public class RBNBExport {
         
         fileWriter.write("Seconds\t");
         for (int i=0; i<numericChannels.size(); i++) {
-          String channel = (String)numericChannels.get(i);
+          String channel = numericChannels.get(i);
           String unit = null;
           int index = rmap.GetIndex(channel);
           String[] metadata = rmap.GetUserInfo(index).split(",");
@@ -271,7 +271,7 @@ public class RBNBExport {
         
         ArrayList<Sample> samples = new ArrayList<Sample>();
         for (int i=0; i<numericChannels.size(); i++) {
-          String channel = (String)numericChannels.get(i);
+          String channel = numericChannels.get(i);
           int index = dmap.GetIndex(channel);
           if (index != -1) {
             int type = dmap.GetType(index);
@@ -309,12 +309,12 @@ public class RBNBExport {
         
         Collections.sort(samples, new SampleTimeComparator());
         
-        Iterator it = samples.iterator();
+        Iterator<Sample> it = samples.iterator();
         boolean end = false;
         
         Sample s = null;
         if (it.hasNext()) {
-          s = (Sample)it.next();
+          s = it.next();
         } else {
           end = true;
         }
@@ -328,11 +328,11 @@ public class RBNBExport {
           
           fileWriter.write(Double.toString(t-dataStartTime) + "\t");
           for (int i=0; i<numericChannels.size(); i++) {
-            String c = (String)numericChannels.get(i);
+            String c = numericChannels.get(i);
             if (c.equals(s.getChannel()) && t == s.getTime()) {
               fileWriter.write(s.getData());
               if (it.hasNext()) {
-                s = (Sample)it.next();
+                s = it.next();
               } else {
                 fileWriter.write("\r\n");
                 end = true;
@@ -352,7 +352,7 @@ public class RBNBExport {
         dateFormat.setTimeZone(new SimpleTimeZone(0, "UTC"));
         
         for (int i=0; i<multimediaChannels.size(); i++) {
-          videoChannel = (String)multimediaChannels.get(i);
+          videoChannel = multimediaChannels.get(i);
           int index = dmap.GetIndex(videoChannel);
           if (index != -1) {
             int type = dmap.GetType(index);
