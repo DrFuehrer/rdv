@@ -109,7 +109,7 @@ public class RDV extends SingleFrameApplication {
   protected void ready() {
     super.ready();
     
-    Task task = new ProcessArgsTask(this, args);
+    ProcessArgsTask task = new ProcessArgsTask(this, args);
     task.execute();
   }
   
@@ -127,7 +127,7 @@ public class RDV extends SingleFrameApplication {
    * 
    * @author Jason P. Hanley
    */
-  private class ProcessArgsTask extends Task {
+  private class ProcessArgsTask extends Task<Void, Void> {
     private final String[] args;
     
     public ProcessArgsTask(Application application, String[] args) {
@@ -137,7 +137,7 @@ public class RDV extends SingleFrameApplication {
     }
 
     @Override
-    protected Object doInBackground() throws Exception {
+    protected Void doInBackground() throws Exception {
       parseArgs(args, true);
       return null;
     }
