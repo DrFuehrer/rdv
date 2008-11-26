@@ -162,7 +162,7 @@ public class DataPanelManager {
 	 * @param extensionClass  the class of the desired extension
 	 * @return                the extension, or null if the class wasn't found
 	 */
-	public Extension getExtension(Class extensionClass) {
+	public Extension getExtension(Class<?> extensionClass) {
 		for (int i=0; i<extensions.size(); i++) {
 			Extension extension = extensions.get(i);
 			if (extension.getID().equals(extensionClass.getName())) {
@@ -181,7 +181,7 @@ public class DataPanelManager {
    * @throws ClassNotFoundException
    */
   public Extension getExtension(String extensionID) throws ClassNotFoundException {
-    Class extensionClass = Class.forName(extensionID);
+    Class<?> extensionClass = Class.forName(extensionID);
     return getExtension(extensionClass);
   }
 	
@@ -211,7 +211,7 @@ public class DataPanelManager {
     
     List<Extension> usefulExtensions = new ArrayList<Extension>();
     for (int i=0; i<extensions.size(); i++) {
-      Extension extension = (Extension)extensions.get(i);
+      Extension extension = extensions.get(i);
       List<String> mimeTypes = extension.getMimeTypes();
       for (int j=0; j<mimeTypes.size(); j++) {
         String mimeType = mimeTypes.get(j);
@@ -300,7 +300,7 @@ public class DataPanelManager {
 	public void closeAllDataPanels() {
 		DataPanel dataPanel;
 		for (int i=dataPanels.size()-1; i>=0; i--) {
-			dataPanel = (DataPanel)dataPanels.get(i);
+			dataPanel = dataPanels.get(i);
 			closeDataPanel(dataPanel);
 		}
 	}
@@ -406,7 +406,7 @@ public class DataPanelManager {
 	 */
 	private Extension findExtension(String mime) {
 		for (int i=0; i<extensions.size(); i++) {
-			Extension extension = (Extension)extensions.get(i);
+			Extension extension = extensions.get(i);
 			List<String> mimeTypes = extension.getMimeTypes();
 			for (int j=0; j<mimeTypes.size(); j++) {
 				String mimeType = mimeTypes.get(j);
@@ -441,7 +441,7 @@ public class DataPanelManager {
 	 * @return            the newly created data panel
 	 */
 	public DataPanel createDataPanel(Extension extension) throws Exception {
-		Class dataPanelClass;
+		Class<?> dataPanelClass;
 		try {
 			dataPanelClass = Class.forName(extension.getID());
 		} catch (ClassNotFoundException e) {
@@ -496,7 +496,7 @@ public class DataPanelManager {
    */
   private void closeEmptyDataPanels() {
     for (int i=dataPanels.size()-1; i>=0; i--) {
-      DataPanel dp = (DataPanel)dataPanels.get(i);
+      DataPanel dp = dataPanels.get(i);
       if (dp.subscribedChannelCount() == 0) {
         closeDataPanel(dp);
       }

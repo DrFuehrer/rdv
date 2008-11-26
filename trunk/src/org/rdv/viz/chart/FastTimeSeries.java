@@ -49,7 +49,7 @@ public class FastTimeSeries extends TimeSeries {
   /** serialization version identifier */
   private static final long serialVersionUID = -8280730280322014742L;
 
-  public FastTimeSeries(String name, Class timePeriodClass) {
+  public FastTimeSeries(String name, Class<?> timePeriodClass) {
     super(name, timePeriodClass);
   }
   

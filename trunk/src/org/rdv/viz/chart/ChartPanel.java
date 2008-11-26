@@ -2371,6 +2371,7 @@ public class ChartPanel extends JPanel implements ChartChangeListener,
      *
      * @return An array of listeners.
      */
+    @SuppressWarnings("unchecked")
     public EventListener[] getListeners(Class listenerType) {
         if (listenerType == ChartMouseListener.class) {
             // fetch listeners from local storage

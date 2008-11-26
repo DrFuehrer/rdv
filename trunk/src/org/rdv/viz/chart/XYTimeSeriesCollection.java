@@ -101,7 +101,7 @@ public class XYTimeSeriesCollection extends AbstractXYDataset implements Seriali
    */
   public XYTimeSeries getSeries(String key) {
     for (XYTimeSeries xyTimeSeries : data) {
-      Comparable k = xyTimeSeries.getKey();
+      Comparable<?> k = xyTimeSeries.getKey();
       if (k != null && k.equals(key)) {
         return xyTimeSeries;
       }
@@ -115,7 +115,7 @@ public class XYTimeSeriesCollection extends AbstractXYDataset implements Seriali
    * @param key  the index to the data series
    * @return     if found, the key for the series, null otherwise
    */
-  public Comparable getSeriesKey(int series) {
+  public Comparable<?> getSeriesKey(int series) {
     return getSeries(series).getKey();
   }
   
