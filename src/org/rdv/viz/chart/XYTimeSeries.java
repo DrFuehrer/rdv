@@ -54,7 +54,7 @@ public class XYTimeSeries extends Series implements Serializable {
   /**
    * The time period of the series.
    */
-  private Class timePeriodClass;
+  private Class<?> timePeriodClass;
   
   /**
    * The list of data items.
@@ -73,7 +73,7 @@ public class XYTimeSeries extends Series implements Serializable {
    * @param timePeriodClass  the time period
    * @param chartViz TODO
    */
-  public XYTimeSeries(String name, Class timePeriodClass) {
+  public XYTimeSeries(String name, Class<?> timePeriodClass) {
     super(name);
     
     this.timePeriodClass = timePeriodClass;
@@ -87,7 +87,7 @@ public class XYTimeSeries extends Series implements Serializable {
    * 
    * @return  the class of the time period
    */
-  public Class getTimePeriodClass() {
+  public Class<?> getTimePeriodClass() {
     return timePeriodClass;
   }
   
