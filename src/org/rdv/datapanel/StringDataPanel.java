@@ -129,9 +129,9 @@ public class StringDataPanel extends AbstractDataPanel {
 		}
     
 		//loop over all channels and see if there is data for them
-		Iterator i = channels.iterator();
+		Iterator<String> i = channels.iterator();
 		while (i.hasNext()) {
-			String channelName = (String)i.next();
+			String channelName = i.next();
 			int channelIndex = channelMap.GetIndex(channelName);
 			
 			//if there is data for channel, post it
