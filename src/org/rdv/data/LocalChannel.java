@@ -57,14 +57,8 @@ import com.rbnb.sapi.ChannelTree.Node;
  * 
  * @author Jason P. Hanley
  */
-public class LocalChannel {
+public class LocalChannel extends Channel {
 
-  /** the name of the channel */
-  private String name;
-  
-  /** the unit for the channel */
-  private String unit;
-  
   /** an array of variable channels */
   private String[] variableChannels;
   
@@ -104,6 +98,9 @@ public class LocalChannel {
     "  <mime>application/octet-stream</mime>\n" +
     "</rbnb>\n";
   
+  /** the mime type for the metadata XML */
+  private final static String metadataXMLType = "text/xml";
+  
   /**
    * Creates a local channel with a <code>name</code>, <code>unit</code>
    * (optional), map of <code>variables</code> representing server channels, and
@@ -116,8 +113,7 @@ public class LocalChannel {
    * @see #setFormula(String, Map)
    */
   public LocalChannel(String name, String unit, Map<String,String> variables, String formula) {
-    this.name = name;
-    this.unit = unit;
+    super(name, unit);
     
     // create a dummy data listener
     dataListener = new DataListener() {
@@ -129,44 +125,10 @@ public class LocalChannel {
     engine = new DoubleEvaluator();
     
     setFormula(formula, variables);
+    
+    setMetadata();
   }
-
-  /**
-   * Gets the name for this channel.
-   * 
-   * @return  the name of the channel
-   */
-  public String getName() {
-    return name;
-  }
-
-  /**
-   * Sets the name for this channel.
-   * 
-   * @param name  the new channel name
-   */
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  /**
-   * Gets the unit of this channel.
-   * 
-   * @return  the unit of this channel
-   */
-  public String getUnit() {
-    return unit;
-  }
-
-  /**
-   * Sets the unit for this channel.
-   * 
-   * @param unit  the new unit
-   */
-  public void setUnit(String unit) {
-    this.unit = unit;
-  }
-
+  
   /**
    * Gets the formula for this channel.
    * 
@@ -228,50 +190,60 @@ public class LocalChannel {
   }
   
   /**
-   * Update the <code>channelMap</code> with the metadata for this channel. This
-   * will return a user metadata string with entries separated by a comma in the
-   * <code>key=value</code> form.
-   * 
-   * @param channelMap         the channel map to put this channels metadata in
-   * @param serverChannelTree  the channel tree of server channels
-   * @return                   the user metadata string for this channel, or
-   *                           null if this channel can't find its server
-   *                           channels
-   * @throws SAPIException     if there is an error adding the metadata
+   * Sets the local, formula, and variables metadata entries.
    */
-  public String updateMetadata(ChannelMap channelMap, ChannelTree serverChannelTree) throws SAPIException {
-    // see if the first server channel exists
-    Node serverNode = serverChannelTree.findNode(variableChannels[0]);
-    if (node == null) {
-      return null;
-    }
+  private void setMetadata() {
+    // set the mime type
+    setMetadata("mime", "application/octet-stream");
     
-    // add the channel metadata to the channel map
-    int index = channelMap.Add(name);
-    channelMap.PutTime(serverNode.getStart(), serverNode.getDuration());
-    channelMap.PutDataAsString(index, metadataXml);
-    channelMap.PutMime(index, "text/xml");
+    // set the size of the data
+    setMetadata("size", "8");
+    
+    // set start and duration metadata to default values
+    setMetadata("start", "0");
+    setMetadata("duration", "0");
+    
+    // a key to signify that this is a local channel
+    setMetadata("local");
 
-    // construct the user data with a local entry and the formula
-    String userData = "local=true,formula=" + formula;
+    // set the formula
+    setMetadata("formula", formula);
 
-    // add the variables name to the user data in the form
+    // set the variable names and channels in the form
     //   name1:channel1|name2:channel2
-    String variablesString = ",variables=";
+    String variablesString = "";
     for (int i=0; i<variableNames.length; i++) {
       variablesString += variableNames[i] + ":" + variableChannels[i];
       if (i != variableNames.length-1) {
         variablesString += "|";
       }
     }
-    userData += variablesString;
-    
-    // add the unit if it exists
-    if (unit != null && unit.length() > 0) {
-      userData += ",units=" + unit;
-    }
+    setMetadata("variables", variablesString);
+  }
 
-    return userData;
+  /**
+   * Update the <code>channelMap</code> with the metadata for this channel.
+   * 
+   * @param channelMap         the channel map to put this channels metadata in
+   * @param serverChannelTree  the channel tree of server channels
+   * @throws SAPIException     if there is an error adding the metadata
+   */
+  public void updateMetadata(ChannelMap channelMap, ChannelTree serverChannelTree) throws SAPIException {
+    // see if the first server channel exists
+    Node serverNode = serverChannelTree.findNode(variableChannels[0]);
+    if (node == null) {
+      return;
+    }
+    
+    // add the channel metadata to the channel map
+    int index = channelMap.Add(getName());
+    channelMap.PutTime(serverNode.getStart(), serverNode.getDuration());
+    channelMap.PutDataAsString(index, metadataXml);
+    channelMap.PutMime(index, metadataXMLType);
+    
+    // update start and duration metadata
+    setMetadata("start", Double.toString(serverNode.getStart()));
+    setMetadata("duration", Double.toString(serverNode.getDuration()));
   }
   
   /**
@@ -313,7 +285,7 @@ public class LocalChannel {
     }
     
     // add the channel to the channel map
-    int index = channelMap.Add(name);
+    int index = channelMap.Add(getName());
     channelMap.PutMime(index, "application/octet-stream");
     channelMap.PutTimeRef(channelMap, serverIndexes[0]);
     
@@ -361,6 +333,10 @@ public class LocalChannel {
     channelMap.PutDataAsFloat64(index, localData);
   }
   
+  /**
+   * Called when this local channel will no longer be used. This unsubscribes it
+   * from the server channels it was subscribed to.
+   */
   public void dispose() {
     List<String> serverChannels = Arrays.asList(variableChannels);
     RBNBController.getInstance().unsubscribe(serverChannels, dataListener);

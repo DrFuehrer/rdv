@@ -44,7 +44,7 @@ import javax.swing.border.EmptyBorder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rdv.DataViewer;
-import org.rdv.rbnb.Channel;
+import org.rdv.data.Channel;
 import org.rdv.rbnb.ChannelManager;
 import org.rdv.rbnb.MetadataListener;
 import org.rdv.rbnb.RBNBController;
@@ -122,7 +122,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
       StringBuffer s = new StringBuffer();
       ChannelTree.Node node = ctree.findNode(channel);
       if (node.getType() == ChannelTree.CHANNEL) {
-        Channel channelMetadata = (Channel)rbnb.getChannel(channel);
+        Channel channelMetadata = rbnb.getChannel(channel);
         String mime = channelMetadata.getMetadata("mime");
         String unit = channelMetadata.getMetadata("units");
         String description = channelMetadata.getMetadata("description");
@@ -211,7 +211,7 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
               String variable = variables[i];
               String[] v = variable.split(":");
               if (v.length == 2) {
-                s.append(" " + v[0] + "=" + v[1]);
+                s.append(v[0]).append('=').append(v[1]);
               } else {
                 s.append(variable);
               }

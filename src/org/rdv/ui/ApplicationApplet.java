@@ -37,6 +37,7 @@ import javax.swing.JApplet;
 
 import org.rdv.DataPanelManager;
 import org.rdv.DataViewer;
+import org.rdv.data.Channel;
 import org.rdv.rbnb.RBNBController;
 
 /**
@@ -90,7 +91,7 @@ public class ApplicationApplet extends JApplet {
   				for (int i=0; i<channels.length; i++) {
   					String channel = channels[i];
   					System.out.println("Viewing channel " + channel + ".");
-  					org.rdv.rbnb.Channel channelTest = rbnbController.getChannel(channel);
+  					Channel channelTest = rbnbController.getChannel(channel);
   					if ( channelTest == null )
   						System.out.println("No such channel: " + channel );
   					DataPanelManager.getInstance().viewChannel(channel);

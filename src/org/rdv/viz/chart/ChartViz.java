@@ -53,17 +53,16 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
@@ -78,11 +77,10 @@ import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.XYDataset;
-import org.rdv.data.DataChannel;
+import org.rdv.data.Channel;
 import org.rdv.data.DataFileReader;
 import org.rdv.data.NumericDataSample;
 import org.rdv.datapanel.AbstractDataPanel;
-import org.rdv.rbnb.Channel;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -364,7 +362,7 @@ public abstract class ChartViz extends AbstractDataPanel {
       return;
     }
     
-    List<DataChannel> channels = reader.getChannels();
+    List<Channel> channels = reader.getChannels();
     if (channels.size() < 2) {
       JOptionPane.showMessageDialog(getDataComponent(),
           "There must be at least 2 channels in the data file",
@@ -373,14 +371,14 @@ public abstract class ChartViz extends AbstractDataPanel {
       return;
     }
     
-    DataChannel xChannel;
-    DataChannel yChannel;
+    Channel xChannel;
+    Channel yChannel;
     
     if (channels.size() == 2) {
       xChannel = channels.get(0);
       yChannel = channels.get(1);
     } else {    
-      xChannel = (DataChannel)JOptionPane.showInputDialog(
+      xChannel = (Channel)JOptionPane.showInputDialog(
           getDataComponent(),
           "Select the x channel:",
           "Add local channel",
@@ -393,7 +391,7 @@ public abstract class ChartViz extends AbstractDataPanel {
         return;
       }
       
-      yChannel = (DataChannel)JOptionPane.showInputDialog(
+      yChannel = (Channel)JOptionPane.showInputDialog(
           getDataComponent(),
           "Select the y channel:",
           "Add local channel",

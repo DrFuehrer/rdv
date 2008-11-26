@@ -58,13 +58,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.imageio.ImageIO;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
@@ -93,8 +92,8 @@ import org.rdv.auth.Authentication;
 import org.rdv.auth.AuthenticationEvent;
 import org.rdv.auth.AuthenticationListener;
 import org.rdv.auth.AuthenticationManager;
+import org.rdv.data.Channel;
 import org.rdv.datapanel.AbstractDataPanel;
-import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.Player;
 
 import com.rbnb.sapi.ChannelMap;
@@ -1340,7 +1339,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 			return;
 		}
 		
-		Iterator it = channels.iterator();
+		Iterator<String> it = channels.iterator();
 		if (!it.hasNext()) {
 			//no channels to post to
 			return;
@@ -1349,9 +1348,9 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
 		final String channelName;
 		
 		if (useThumbnailImage) {
-		  channelName = THUMBNAIL_PLUGIN_NAME + "/" + (String)it.next();
+		  channelName = THUMBNAIL_PLUGIN_NAME + "/" + it.next();
 		} else {
-		  channelName = (String)it.next();
+		  channelName = it.next();
 		}
 		
 		try {			

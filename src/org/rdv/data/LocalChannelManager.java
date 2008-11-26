@@ -33,9 +33,8 @@ package org.rdv.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +57,7 @@ public class LocalChannelManager {
   /** the single instance for this class */
   private static LocalChannelManager instance;
   
-  /** the list of local channels being managed */
+  /** the list of local channels, iterators over this must be synchronized */
   private final List<LocalChannel> channels;
   
   /**
@@ -78,7 +77,7 @@ public class LocalChannelManager {
    * Creates the local channel manager.
    */
   private LocalChannelManager() {
-    channels = new ArrayList<LocalChannel>();
+    channels = Collections.synchronizedList(new ArrayList<LocalChannel>());
   }
   
   /**
@@ -88,6 +87,25 @@ public class LocalChannelManager {
    */
   public boolean hasChannels() {
     return !channels.isEmpty();
+  }
+  
+  /**
+   * Gets the local channel named <code>channelName</code>. If no such channel
+   * with this name exists, null is returned.
+   * 
+   * @param channelName  the channel name to get
+   * @return             the channel with this name or null if none is found
+   */
+  public LocalChannel getChannel(String channelName) {
+    synchronized(channels) {
+      for (LocalChannel channel : channels) {
+        if (channel.getName().equals(channelName)) {
+          return channel;
+        }
+      }
+    }
+    
+    return null;
   }
   
   /**
@@ -125,11 +143,14 @@ public class LocalChannelManager {
    * @see             LocalChannel#dispose()
    */
   public void removeChannels(List<String> channelNames) {
-    for (int i=channels.size()-1; i>=0; i--) {
-      LocalChannel channel = channels.get(i);
-      if (channelNames.contains(channel.getName())) {
-        channels.remove(channel);
-        channel.dispose();
+    synchronized(channels) {
+      Iterator<LocalChannel> i = channels.iterator();
+      while (i.hasNext()) {
+        LocalChannel channel = i.next();
+        if (channelNames.contains(channel.getName())) {
+          i.remove();
+          channel.dispose();
+        }
       }
     }
     
@@ -144,18 +165,17 @@ public class LocalChannelManager {
    * @param serverChannelTree  the channel tree of server channels
    * @return                   a map of channels to their user data
    */
-  public Map<String,String> updateMetadata(LocalChannelMap channelMap, ChannelTree serverChannelTree) {
-    Map<String,String> userDataMap = new HashMap<String,String>();
+  public ChannelTree getMetadata(ChannelTree serverChannelTree) {
+    LocalChannelMap channelMap = new LocalChannelMap();
     
-    for (LocalChannel channel : channels) {
-      try {
-        String userData = channel.updateMetadata(channelMap, serverChannelTree);
-        if (userData != null) {
-          userDataMap.put(channel.getName(), userData);
+    synchronized(channels) {
+      for (LocalChannel channel : channels) {
+        try {
+          channel.updateMetadata(channelMap, serverChannelTree);
+        } catch (Exception e) {
+          log.warn("Error updating metadata for local channel " + channel.getName() + ": " + e.getMessage());
+          e.printStackTrace();
         }
-      } catch (Exception e) {
-        log.warn("Error updating metadata for local channel " + channel.getName() + ": " + e.getMessage());
-        e.printStackTrace();
       }
     }
     
@@ -165,8 +185,10 @@ public class LocalChannelManager {
       log.warn("Failed to merge local channel metadata: " + e.getMessage());
       e.printStackTrace();
     }
+    
+    ChannelTree channelTree = ChannelTree.createFromChannelMap(channelMap);
 
-    return userDataMap;
+    return channelTree;
   }
   
   /**
@@ -176,12 +198,14 @@ public class LocalChannelManager {
    * @param channelMap  the channel map to post data to
    */
   public void updateData(LocalChannelMap channelMap) {
-    for (LocalChannel channel : channels) {
-      try {
-        channel.updateData(channelMap);
-      } catch (Exception e) {
-        log.warn("Error updating data for local channel " + channel.getName() + ": " + e.getMessage());
-        e.printStackTrace();
+    synchronized(channels) {
+      for (LocalChannel channel : channels) {
+        try {
+          channel.updateData(channelMap);
+        } catch (Exception e) {
+          log.warn("Error updating data for local channel " + channel.getName() + ": " + e.getMessage());
+          e.printStackTrace();
+        }
       }
     }
     

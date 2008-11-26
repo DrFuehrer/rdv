@@ -35,8 +35,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.rdv.rbnb.Channel;
-
 /**
  * An interface used for writing numeric data to a file.
  * 

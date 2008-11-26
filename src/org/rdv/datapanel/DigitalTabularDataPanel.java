@@ -41,6 +41,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.print.PrinterException;
@@ -76,12 +77,13 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import com.rbnb.sapi.ChannelMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.rdv.rbnb.Channel;
+import org.rdv.data.Channel;
 import org.rdv.rbnb.Player;
 import org.rdv.ui.ChannelListDataFlavor;
+
+import com.rbnb.sapi.ChannelMap;
 
 /**
  * A Data Panel extension to display numeric data in a tabular form. Maximum and

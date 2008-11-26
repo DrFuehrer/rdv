@@ -45,7 +45,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import org.rdv.data.DataChannel;
+import org.rdv.data.Channel;
 import org.rdv.data.DataFileReader;
 import org.rdv.data.NumericDataSample;
 import org.rdv.rbnb.RBNBController;
@@ -297,8 +297,8 @@ public class DataImportAction extends DataViewerAction {
       RBNBSource source = new RBNBSource(sourceName, archiveSize,
           rbnb.getRBNBHostName(), rbnb.getRBNBPortNumber());      
       
-      List<DataChannel> channels = reader.getChannels();
-      for (DataChannel channel : channels) {
+      List<Channel> channels = reader.getChannels();
+      for (Channel channel : channels) {
         source.addChannel(channel.getName(),
                           "application/octet-stream",
                           channel.getUnit());        

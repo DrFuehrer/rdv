@@ -42,8 +42,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.rdv.data.Channel;
 import org.rdv.datapanel.DataPanel;
-import org.rdv.rbnb.Channel;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.ui.DataPanelContainer;
 import org.w3c.dom.Document;

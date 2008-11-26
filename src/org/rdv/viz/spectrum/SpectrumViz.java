@@ -54,8 +54,8 @@ import javax.swing.SwingUtilities;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.rdv.data.Channel;
 import org.rdv.datapanel.AbstractDataPanel;
-import org.rdv.rbnb.Channel;
 import org.rdv.ui.SpringUtilities;
 
 import com.rbnb.sapi.ChannelMap;
