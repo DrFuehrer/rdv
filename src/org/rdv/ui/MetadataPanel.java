@@ -123,8 +123,8 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
       ChannelTree.Node node = ctree.findNode(channel);
       if (node.getType() == ChannelTree.CHANNEL) {
         Channel channelMetadata = rbnb.getChannel(channel);
+        String unit = channelMetadata.getUnit();
         String mime = channelMetadata.getMetadata("mime");
-        String unit = channelMetadata.getMetadata("units");
         String description = channelMetadata.getMetadata("description");
         double start = Double.parseDouble(channelMetadata.getMetadata("start"));
         double duration = Double.parseDouble(channelMetadata.getMetadata("duration"));

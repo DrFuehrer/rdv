@@ -881,7 +881,7 @@ public abstract class ChartViz extends AbstractDataPanel {
     String seriesName = channelName;
     Channel channel = rbnbController.getChannel(channelName);
     if (channel != null) {
-      String unit = channel.getMetadata("units");
+      String unit = channel.getUnit();
       if (unit != null) {
         seriesName += " (" + unit + ")";
       }
