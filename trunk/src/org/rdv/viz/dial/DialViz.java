@@ -72,7 +72,7 @@ public class DialViz extends AbstractDataPanel {
     model.setName(channelName);
     
     Channel channel = RBNBController.getInstance().getChannel(channelName);
-    String unit = (channel != null) ? channel.getMetadata("units") : null;
+    String unit = (channel != null) ? channel.getUnit() : null;
     model.setUnit(unit);
   }
 

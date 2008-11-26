@@ -739,7 +739,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 		Channel channel = rbnbController.getChannel(channelName);
 		String unit = null;
 		if (channel != null) {
-			unit = channel.getMetadata("units");
+			unit = channel.getUnit();
 			if (unit != null) {
 				labelText += "(" + unit + ")";
 			}
@@ -1052,7 +1052,7 @@ public class DigitalTabularDataPanel extends AbstractDataPanel {
 			String chanUnit = null;
 			Channel channel = rbnbController.getChannel(name);
 			if (channel != null)
-				chanUnit = channel.getMetadata("units");
+				chanUnit = channel.getUnit();
 			
 			for (int i = 0; i < rows.size(); i++) {
 				DataRow dataRow = (DataRow) rows.get(i);
