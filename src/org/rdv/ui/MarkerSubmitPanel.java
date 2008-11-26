@@ -218,7 +218,7 @@ public class MarkerSubmitPanel extends JPanel {
     Authentication authentication = AuthenticationManager.getInstance().getAuthentication();
     if (authentication != null) {
       String username = authentication.get("username");
-      if (username != null || username.length() > 0) {
+      if (username != null && username.length() > 0) {
         marker.setProperty("source", username);
       }
     }
