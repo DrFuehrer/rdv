@@ -936,7 +936,7 @@ public class RBNBController implements Player, MetadataListener {
 	private static boolean moreData(String[] channels, ChannelTree ctree, double time) {
 		double endTime = -1;
 		
-        Iterator it = ctree.iterator();
+        Iterator<?> it = ctree.iterator();
 		while (it.hasNext()) {
             ChannelTree.Node node = (ChannelTree.Node)it.next();
 			double channelEndTime = node.getStart() + node.getDuration();
