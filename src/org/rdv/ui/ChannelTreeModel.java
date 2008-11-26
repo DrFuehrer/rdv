@@ -49,6 +49,7 @@ import javax.swing.tree.TreePath;
 import org.rdv.rbnb.RBNBUtilities;
 
 import com.rbnb.sapi.ChannelTree;
+import com.rbnb.sapi.ChannelTree.Node;
 import com.rbnb.sapi.ChannelTree.NodeTypeEnum;
 
 /**
@@ -151,13 +152,14 @@ public class ChannelTreeModel implements TreeModel {
    * @return                true if that are structural differences, false
    *                        otherwise
    */
+  @SuppressWarnings("unchecked")
   private boolean isStructureChanged(ChannelTree newChannelTree) {
     boolean channelListChanged = false;
     
     //find channels removed
-    Iterator oldIterator = ctree.iterator();
+    Iterator<Node> oldIterator = ctree.iterator();
     while (oldIterator.hasNext()) {
-      ChannelTree.Node node = (ChannelTree.Node)oldIterator.next();
+      Node node = oldIterator.next();
       NodeTypeEnum type = node.getType();
       if (type == ChannelTree.CHANNEL || type == ChannelTree.FOLDER ||
                   type == ChannelTree.SERVER || type == ChannelTree.SOURCE ||
@@ -171,9 +173,9 @@ public class ChannelTreeModel implements TreeModel {
     
     if (!channelListChanged) {
       //find channels added
-      Iterator newIterator = newChannelTree.iterator();
+      Iterator<Node> newIterator = newChannelTree.iterator();
       while (newIterator.hasNext()) {
-        ChannelTree.Node node = (ChannelTree.Node)newIterator.next();
+        Node node = newIterator.next();
         NodeTypeEnum type = node.getType();
         if (type == ChannelTree.CHANNEL || type == ChannelTree.FOLDER ||
                       type == ChannelTree.SERVER || type == ChannelTree.SOURCE ||
@@ -228,7 +230,7 @@ public class ChannelTreeModel implements TreeModel {
   public boolean isLeaf(Object n) { 
     boolean isLeaf = false;
     if (n != root) {
-      ChannelTree.Node node = (ChannelTree.Node)n;
+      Node node = (Node)n;
       if (node.getType() == ChannelTree.CHANNEL) {
         isLeaf = true;
       }
@@ -255,12 +257,12 @@ public class ChannelTreeModel implements TreeModel {
    * @param n  the object
    * @return   a list of children, sorted
    */
-  private List getSortedChildren(Object n) {
-    List children;
+  private List<Node> getSortedChildren(Object n) {
+    List<Node> children;
     if (n == root) {
       children = RBNBUtilities.getSortedChildren(ctree, hiddenChannelsVisible);
     } else {
-      ChannelTree.Node node = (ChannelTree.Node)n;
+      Node node = (Node)n;
       children = RBNBUtilities.getSortedChildren(node, hiddenChannelsVisible);
     }
     
@@ -272,7 +274,7 @@ public class ChannelTreeModel implements TreeModel {
         Pattern p = Pattern.compile(regex);
         
         for (int i=children.size()-1; i>=0; i--) {
-          ChannelTree.Node child = (ChannelTree.Node)children.get(i);
+          Node child = (Node)children.get(i);
           String fullName = child.getFullName().toLowerCase();        
           if (!p.matcher(fullName).matches() &&
               getSortedChildren(child).size() == 0) {
