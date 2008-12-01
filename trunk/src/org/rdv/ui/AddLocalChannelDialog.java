@@ -79,7 +79,6 @@ import org.rdv.RDV;
 import org.rdv.data.Channel;
 import org.rdv.data.LocalChannel;
 import org.rdv.data.LocalChannelManager;
-import org.rdv.rbnb.MetadataManager;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBUtilities;
 
@@ -523,7 +522,14 @@ public class AddLocalChannelDialog extends JDialog {
   @Action
   public void addChannel() {
     String name = nameTextField.getText();
+    
+    // get the unit
     String unit = unitTextField.getText();
+    
+    // set the unit to null if it is empty
+    if (unit != null && unit.isEmpty()) {
+      unit = null;
+    }
     
     // get variables from the rows that aren't empty
     Map<String,String> variables = new HashMap<String,String>();
