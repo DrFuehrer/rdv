@@ -41,9 +41,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -54,6 +57,8 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.rdv.data.LocalChannel;
+import org.rdv.data.LocalChannelManager;
 import org.rdv.datapanel.DataPanel;
 import org.rdv.rbnb.RBNBController;
 import org.w3c.dom.Document;
@@ -107,6 +112,21 @@ public class ConfigurationManager {
     out.println("    <timeScale>" + rbnb.getTimeScale() + "</timeScale>");
     out.println("    <playbackRate>" + rbnb.getPlaybackRate() + "</playbackRate>");
     out.println("  </rbnb>");
+    
+    LocalChannelManager localChannelManager = LocalChannelManager.getInstance();
+    if (localChannelManager.hasChannels()) {
+      for (LocalChannel localChannel : localChannelManager.getChannels()) {
+        out.print("  <localChannel name=\"" + localChannel.getName() + "\"");
+        if (localChannel.getUnit() != null) {
+          out.print(" unit=\"" + localChannel.getUnit() + "\"");
+        }
+        out.println(" formula=\"" + localChannel.getFormula() + "\">");
+        for (Entry<String, String> variable : localChannel.getVariables().entrySet()) {
+          out.println("    <variable name=\"" + variable.getKey() + "\" channel=\"" + variable.getValue() + "\"/>");
+        }
+        out.println("  </localChannel>");
+      }
+    }
     
     List<DataPanel> dataPanels = DataPanelManager.getInstance().getDataPanels();
     Iterator<DataPanel> it = dataPanels.iterator();
@@ -200,6 +220,7 @@ public class ConfigurationManager {
     }
     
     RBNBController rbnb = RBNBController.getInstance();
+    LocalChannelManager localChannelManager = LocalChannelManager.getInstance();
     DataPanelManager dataPanelManager = DataPanelManager.getInstance();
     
     if (rbnb.getState() != RBNBController.STATE_DISCONNECTED) {
@@ -247,6 +268,8 @@ public class ConfigurationManager {
         
         rbnb.setRBNBHostName(host);
         rbnb.setRBNBPortNumber(port);
+      } else {
+        localChannelManager.removeAllChannels();
       }
       
       double timeScale = Double.parseDouble(findChildNodeText(rbnbNodes, "timeScale"));
@@ -259,6 +282,32 @@ public class ConfigurationManager {
       if (state != RBNBController.STATE_DISCONNECTED) {
         if (!rbnb.connect(true)) {
           return;
+        }
+      }
+      
+      NodeList localChannelNodes = (NodeList)xp.evaluate("/rdv/localChannel", document, XPathConstants.NODESET);
+      for (int i=0; i<localChannelNodes.getLength(); i++) {
+        Node localChannelNode = localChannelNodes.item(i);
+        String name = localChannelNode.getAttributes().getNamedItem("name").getNodeValue();
+        Node unitNode = localChannelNode.getAttributes().getNamedItem("unit");
+        String unit = (unitNode != null) ? unitNode.getNodeValue() : null;
+        String formula = localChannelNode.getAttributes().getNamedItem("formula").getNodeValue();
+        
+        Map<String,String> variables = new HashMap<String,String>();
+        
+        NodeList variableNodes = (NodeList)xp.evaluate("variable", localChannelNode, XPathConstants.NODESET);
+        for (int j=0; j<variableNodes.getLength(); j++) {
+          Node variableNode = variableNodes.item(j);
+          String variableName = variableNode.getAttributes().getNamedItem("name").getNodeValue();
+          String variableChannel = variableNode.getAttributes().getNamedItem("channel").getNodeValue();
+          variables.put(variableName, variableChannel);
+        }
+        
+        try {
+          LocalChannel localChannel = new LocalChannel(name, unit, variables, formula);
+          LocalChannelManager.getInstance().addChannel(localChannel);
+        } catch (Exception e) {
+          log.error("Failed to add local channel: " + name + ".");
         }
       }
 
