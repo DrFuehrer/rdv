@@ -1400,15 +1400,69 @@ public class RBNBController implements Player, MetadataListener {
     
     
   //Public Metadata Methods
-    
+
+	/**
+	 * Gets the <code>MetadataManager</code>.
+	 * 
+	 * @return  the metadata manager
+	 */
   public MetadataManager getMetadataManager() {
     return metadataManager; 
   }
   
+  /**
+   * Gets the <code>Channel</code> with this <code>channelName</code>. This is
+   * a convenience method for the same method in <code>MetadataManager</code>.
+   * 
+   * @param channelName  the name of the channel
+   * @return             the channel or null if it was not found
+   * @see                MetadataManager#getChannel(String)
+   */
   public Channel getChannel(String channelName) {
     return metadataManager.getChannel(channelName); 
   }
   
+  /**
+   * Gets a list of <code>Channel<code>'s. This is a convenience method for the
+   * same method in <code>MetadataManager</code>.
+   * 
+   * @return  a list of channels
+   * @see     MetadataManager#getChannels()
+   */
+  public List<Channel> getChannels() {
+    return metadataManager.getChannels();
+  }
+  
+  /**
+   * Gets a list of <code>Channel</code>'s with the <code>channelNames</code>.
+   * This is a convenience method for the same method in
+   * <code>MetadataManager</code>.
+   * 
+   * @param channelNames  the channel names to get
+   * @return              a list of channels
+   * @see                 MetadataManager#getChannels(List)
+   */
+  public List<Channel> getChannels(List<String> channelNames) {
+    return metadataManager.getChannels(channelNames);
+  }
+  
+  /**
+   * Gets the <code>ChannelTree</code>. This is a convenience method for the
+   * same method in <code>MetadataManager</code>.
+   * 
+   * @return  the channel tree
+   * @see     MetadataManager#getChannelTree()
+   */
+  public ChannelTree getChannelTree() {
+    return metadataManager.getChannelTree();
+  }
+  
+  /**
+   * Updates the metadata. This is a convenience method for the same method in
+   * <code>MetadataManager</code>.
+   * 
+   * @see  MetadataManager#updateMetadataBackground()
+   */
   public void updateMetadata() {
     metadataManager.updateMetadataBackground(); 
   }
