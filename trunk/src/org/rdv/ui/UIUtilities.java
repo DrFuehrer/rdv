@@ -49,6 +49,11 @@ public class UIUtilities {
   
   /** the current directory from the last file chooser */
   private static File currentDirectory;
+  
+  // initially set the current directory to the default from JFileChooser
+  static {
+    currentDirectory = new JFileChooser().getCurrentDirectory();
+  }
 
   /**
    * This class can not be instantiated and it's constructor always throws an
@@ -67,6 +72,15 @@ public class UIUtilities {
   public static File getCurrentDirectory() {
     return currentDirectory;
   }
+
+  /**
+   * Shows the open file dialog to let the user choose a file.
+   * 
+   * @return  the file the user choose, or null if they canceled out
+   */
+  public static File openFile() {
+    return openFile(null);
+  }
   
   /**
    * Shows the open file dialog to let the user choose a file.
@@ -78,9 +92,18 @@ public class UIUtilities {
     JFileChooser fileChooser = new JFileChooser();
     fileChooser.setDialogType(JFileChooser.OPEN_DIALOG);
     
-    return getFile(fileChooser, fileFilter, null);
+    return getFile(fileChooser, fileFilter, null, null, null);
   }
 
+  /**
+   * Shows the save file dialog to let the user choose a file.
+   * 
+   * @return  the file the user choose, or null if they canceled out
+   */
+  public static File saveFile() {
+    return saveFile(null);
+  }
+  
   /**
    * Shows the save file dialog to let the user choose a file.
    * 
@@ -91,7 +114,7 @@ public class UIUtilities {
     JFileChooser fileChooser = new JFileChooser();
     fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
     
-    return getFile(fileChooser, fileFilter, null);
+    return getFile(fileChooser, fileFilter, null, null, null);
   }
   
   /**
@@ -102,7 +125,7 @@ public class UIUtilities {
    *                           canceled out
    */
   public static File getFile(String approveButtonText) {
-    return getFile(null, approveButtonText);
+    return getFile(approveButtonText, null);
   }
   
   /**
@@ -114,7 +137,59 @@ public class UIUtilities {
    *                           canceled out
    */
   public static File getFile(FileFilter fileFilter, String approveButtonText) {
-    return getFile(null, fileFilter, approveButtonText);
+    return getFile(fileFilter, approveButtonText, null);
+  }
+  
+  /**
+   * Shows a file dialog to let the user choose a file.
+   * 
+   * @param approveButtonText  the text for the "ok" button
+   * @param dialogTitle        the title for the dialog
+   * @return                   the file the user choose, or null if they
+   *                           canceled out
+   */
+  public static File getFile(String approveButtonText, String dialogTitle) {
+    return getFile(approveButtonText, dialogTitle, null);
+  }
+
+  /**
+   * Shows a file dialog to let the user choose a file.
+   * 
+   * @param fileFilter         the file filter for the dialog
+   * @param approveButtonText  the text for the "ok" button
+   * @param dialogTitle        the title for the dialog
+   * @return                   the file the user choose, or null if they
+   *                           canceled out
+   */
+  public static File getFile(FileFilter fileFilter, String approveButtonText, String dialogTitle) {
+    return getFile(fileFilter, approveButtonText, dialogTitle, null);
+  }
+  
+  /**
+   * Shows a file dialog to let the user choose a file.
+   * 
+   * @param approveButtonText  the text for the "ok" button
+   * @param dialogTitle        the title for the dialog
+   * @param selectedFile       the selected file
+   * @return                   the file the user choose, or null if they
+   *                           canceled out
+   */
+  public static File getFile(String approveButtonText, String dialogTitle, File selectedFile) {
+    return getFile(null, approveButtonText, dialogTitle, selectedFile);
+  }
+  
+  /**
+   * Shows a file dialog to let the user choose a file.
+   * 
+   * @param fileFilter         the file filter for the dialog
+   * @param approveButtonText  the text for the "ok" button
+   * @param dialogTitle        the title for the dialog
+   * @param selectedFile       the selected file
+   * @return                   the file the user choose, or null if they
+   *                           canceled out
+   */
+  public static File getFile(FileFilter fileFilter, String approveButtonText, String dialogTitle, File selectedFile) {
+    return getFile(null, fileFilter, approveButtonText, dialogTitle, selectedFile);
   }
   
   /**
@@ -129,7 +204,20 @@ public class UIUtilities {
     JFileChooser fileChooser = new JFileChooser();
     fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
     
-    return getFile(fileChooser, fileFilter, approveButtonText);
+    return getFile(fileChooser, fileFilter, approveButtonText, null, null);
+  }
+  
+  /**
+   * Shows a directory dialog to let the user choose a file.
+   * 
+   * @param dialogTitle  the title for the dialog
+   * @return             the file the user choose, or null if they canceled out
+   */
+  public static File getDirectory(String dialogTitle) {
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+    
+    return getFile(fileChooser, null, null, dialogTitle, null);    
   }
   
   /**
@@ -138,16 +226,26 @@ public class UIUtilities {
    * @param fileChooser        the file chooser component
    * @param fileFilter         the file filter for the dialog
    * @param approveButtonText  the text for the "ok" button
+   * @param dialogTitle        the title for the dialog
+   * @param selectedFile       the selected file
    * @return                   the file the user choose, or null if they
    *                           canceled out
    */
-  private static File getFile(JFileChooser fileChooser, FileFilter fileFilter, String approveButtonText) {
+  private static File getFile(JFileChooser fileChooser, FileFilter fileFilter, String approveButtonText, String dialogTitle, File selectedFile) {
     if (fileChooser == null) {
       fileChooser = new JFileChooser();
     }
     
     if (fileFilter != null) {
       fileChooser.setFileFilter(fileFilter);
+    }
+    
+    if (dialogTitle != null) {
+      fileChooser.setDialogTitle(dialogTitle);
+    }
+    
+    if (selectedFile != null) {
+      fileChooser.setSelectedFile(selectedFile);
     }
     
     if (currentDirectory != null) {
