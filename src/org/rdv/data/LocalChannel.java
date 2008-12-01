@@ -69,9 +69,6 @@ public class LocalChannel extends Channel {
   /** the formula for this channel */
   private String formula;
   
-  /** a dummy data listener */
-  private DataListener dataListener;
-  
   /** the expression parser */
   private final Parser p;
   
@@ -115,11 +112,6 @@ public class LocalChannel extends Channel {
    */
   public LocalChannel(String name, String unit, Map<String,String> variables, String formula) {
     super(name, unit);
-    
-    // create a dummy data listener
-    dataListener = new DataListener() {
-      public void postData(ChannelMap channelMap) {}
-    };
     
     p = new Parser();
     
@@ -354,13 +346,4 @@ public class LocalChannel extends Channel {
     channelMap.PutDataAsFloat64(index, localData);
   }
   
-  /**
-   * Called when this local channel will no longer be used. This unsubscribes it
-   * from the server channels it was subscribed to.
-   */
-  public void dispose() {
-    List<String> serverChannels = Arrays.asList(variableChannels);
-    RBNBController.getInstance().unsubscribe(serverChannels, dataListener);
-  }
-
 }
