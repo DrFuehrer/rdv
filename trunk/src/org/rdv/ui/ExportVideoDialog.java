@@ -61,7 +61,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -108,7 +107,6 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
   DefaultListModel videoChannelModel;
   
   JTextField directoryTextField;
-  JFileChooser directoryChooser;
   JButton directoryButton;  
   
   JProgressBar exportProgressBar;
@@ -330,16 +328,13 @@ public class ExportVideoDialog extends JDialog implements ProgressListener {
     c.insets = new java.awt.Insets(0,0,10,5);
     container.add(directoryTextField, c);
     
-    directoryChooser = new JFileChooser();
-    directoryChooser.setDialogTitle("Select export directory");
-    directoryChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-    directoryTextField.setText(directoryChooser.getCurrentDirectory().getAbsolutePath());
+    directoryTextField.setText(UIUtilities.getCurrentDirectory().getAbsolutePath());
     directoryButton = new JButton("Browse");
     directoryButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        int status = directoryChooser.showOpenDialog(null);
-        if (status == JFileChooser.APPROVE_OPTION) {
-          directoryTextField.setText(directoryChooser.getSelectedFile().getAbsolutePath());
+        File selectedDirectory = UIUtilities.getDirectory("Select export directory");
+        if (selectedDirectory != null) {
+          directoryTextField.setText(selectedDirectory.getAbsolutePath());
         }
       }
     });
