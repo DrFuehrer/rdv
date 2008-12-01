@@ -69,7 +69,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -95,6 +94,7 @@ import org.rdv.auth.AuthenticationManager;
 import org.rdv.data.Channel;
 import org.rdv.datapanel.AbstractDataPanel;
 import org.rdv.rbnb.Player;
+import org.rdv.ui.UIUtilities;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -911,7 +911,7 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
    * bring up a file chooser to select the file.
    */
   private void saveImage() {
-    saveImage(null);
+    saveImage(UIUtilities.getCurrentDirectory());
   }
 
   /**
@@ -922,31 +922,27 @@ public class ImageViz extends AbstractDataPanel implements AuthenticationListene
    */
   private void saveImage(File directory) {
     if (displayedImageData != null) {
-      JFileChooser chooser = new JFileChooser();
-      
       // create default file name
       String channelName = (String)channels.iterator().next();
       String fileName = channelName.replace("/", " - ");
       if (!fileName.endsWith(".jpg")) {
         fileName += ".jpg";
       }
-      chooser.setSelectedFile(new File(directory, fileName));
+      File selectedFile = new File(directory, fileName);
       
       // create filter to only show files that end with '.jpg'
-      chooser.setFileFilter(new FileFilter() {
+      FileFilter fileFilter = new FileFilter() {
         public boolean accept(File f) {
           return (f.isDirectory() || f.getName().toLowerCase().endsWith(".jpg"));
         }
         public String getDescription() {
           return "JPEG Image Files";
         }
-      });
+      };
       
       // show dialog
-      int returnVal = chooser.showSaveDialog(null);
-      if (returnVal == JFileChooser.APPROVE_OPTION) {
-        File outFile = chooser.getSelectedFile();
-        
+      File outFile = UIUtilities.getFile(fileFilter, "Save", null, selectedFile);
+      if (outFile != null) {
         // prompt for overwrite if file already exists
         if (outFile.exists()) {
           int overwriteReturn = JOptionPane.showConfirmDialog(null,

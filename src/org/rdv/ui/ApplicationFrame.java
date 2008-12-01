@@ -55,7 +55,6 @@ import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -300,13 +299,8 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
       private static final long serialVersionUID = 7197815395398039821L;
 
       public void actionPerformed(ActionEvent ae) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new RDVConfigurationFileFilter());
-        chooser.setApproveButtonText("Load");
-        chooser.setApproveButtonToolTipText("Load selected file");
-        int returnVal = chooser.showOpenDialog(frame);
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
-          File configFile = chooser.getSelectedFile();
+        File configFile = UIUtilities.getFile(new RDVConfigurationFileFilter(), "Load");
+        if (configFile != null) {
           try {            
             URL configURL = configFile.toURI().toURL();
             ConfigurationManager.loadConfiguration(configURL);
@@ -322,12 +316,8 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
       private static final long serialVersionUID = -8259994975940624038L;
 
       public void actionPerformed(ActionEvent ae) {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileFilter(new RDVConfigurationFileFilter());
-        int returnVal = chooser.showSaveDialog(frame);
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
-          File file = chooser.getSelectedFile();
-
+        File file = UIUtilities.saveFile(new RDVConfigurationFileFilter());
+        if (file != null) {
           if (file.getName().indexOf(".") == -1) {
             file = new File(file.getAbsolutePath() + ".rdv");
           }

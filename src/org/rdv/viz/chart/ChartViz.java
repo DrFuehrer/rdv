@@ -54,7 +54,6 @@ import java.util.List;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -81,6 +80,7 @@ import org.rdv.data.Channel;
 import org.rdv.data.DataFileReader;
 import org.rdv.data.NumericDataSample;
 import org.rdv.datapanel.AbstractDataPanel;
+import org.rdv.ui.UIUtilities;
 
 import com.rbnb.sapi.ChannelMap;
 
@@ -177,11 +177,6 @@ public abstract class ChartViz extends AbstractDataPanel {
                     Color.decode("#0099FF"), Color.decode("#990000"),
                     Color.decode("#000099"), Color.black};
 
-  /**
-   * The file chooser UI used to select a local data file.
-   */
-  JFileChooser chooser;
-  
   /** a flag to control the legend visibility, defaults to true */
   private boolean showLegend;
   
@@ -337,16 +332,7 @@ public abstract class ChartViz extends AbstractDataPanel {
    * user for the file name, and which channels to use.
    */
   private void addLocalSeries() {
-    if (chooser == null) {
-      chooser = new JFileChooser();
-    }
-    
-    int returnVal = chooser.showOpenDialog(getDataComponent());
-    if(returnVal != JFileChooser.APPROVE_OPTION) {
-      return;
-    }
-    
-    File file = chooser.getSelectedFile();
+    File file = UIUtilities.openFile();
     if (file == null || !file.isFile() || !file.exists()) {
       return;
     }

@@ -62,7 +62,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -104,7 +103,6 @@ public class ExportDialog extends JDialog {
   DefaultListModel channelModel;
   
   JTextField dataFileTextField;
-  JFileChooser dataFileChooser;
   JButton dataFileButton;
   
   private JComboBox fileFormatComboBox;
@@ -324,17 +322,14 @@ public class ExportDialog extends JDialog {
     c.insets = new java.awt.Insets(0,0,10,5);
     container.add(dataFileTextField, c);
     
-    dataFileChooser = new JFileChooser();
-    dataFileChooser.setDialogTitle("Select export file");
-    dataFileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    dataFileTextField.setText(dataFileChooser.getCurrentDirectory().getAbsolutePath() + File.separator + "data.dat");
+    dataFileTextField.setText(UIUtilities.getCurrentDirectory().getAbsolutePath() + File.separator + "data.dat");
     dataFileButton = new JButton("Browse");
     dataFileButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent arg0) {
-        dataFileChooser.setSelectedFile(new File(dataFileTextField.getText()));
-        int status = dataFileChooser.showDialog(ExportDialog.this, "OK");
-        if (status == JFileChooser.APPROVE_OPTION) {
-          dataFileTextField.setText(dataFileChooser.getSelectedFile().getAbsolutePath());
+        File selectedFile = new File(dataFileTextField.getText());
+        selectedFile = UIUtilities.getFile("OK", "Select export file", selectedFile);
+        if (selectedFile != null) {
+          dataFileTextField.setText(selectedFile.getAbsolutePath());
         }
       }
     });
