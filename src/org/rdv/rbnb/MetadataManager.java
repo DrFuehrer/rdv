@@ -280,9 +280,6 @@ public class MetadataManager {
     
     //notify metadata listeners
     fireMetadataUpdated(ctree);
-    
-    //notify methods waiting on initial metadata fetch
-    notifyAll();    
   }
 
   /**
@@ -417,15 +414,7 @@ public class MetadataManager {
    * 
    * @return the metadata channel tree.
    */
-  public ChannelTree getMetadataChannelTree() {
-    if (ctree == null) {
-      synchronized (this) {
-        do {
-          try { wait(250); } catch (InterruptedException e) {}
-        } while (ctree == null);
-      }
-    }
-    
+  public ChannelTree getChannelTree() {
     return ctree;
   }
 	
@@ -437,14 +426,6 @@ public class MetadataManager {
    *         not found
    */
   public Channel getChannel(String channelName) {
-    if (ctree == null) {
-      synchronized (this) {
-        do {
-          try { wait(250); } catch (InterruptedException e) {}
-        } while (ctree == null);
-      }
-    }
-    
     return channels.get(channelName);
   }   
 
