@@ -33,6 +33,12 @@
 
 package org.rdv;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 import junit.framework.TestCase;
 
 /**
@@ -41,5 +47,29 @@ import junit.framework.TestCase;
  * @author Jason P. Hanley
  */
 public class DataViewerTest extends TestCase {
-  public void testMain() {}
+  public void testParseTimestamp() throws ParseException {
+    TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
+    
+    String[] timestamps = {
+        // timestamp to test           // what it should be in UTC
+        "2008-01-01T01:01:01.001UTC",  "2008-01-01T01:01:01.001",
+        "20081112142239000EST",        "2008-11-12T19:22:39.000",
+        "20080912142239000EST",        "2008-09-12T19:22:39.000",
+        "20080912142239000EDT",        "2008-09-12T18:22:39.000",
+        "20081112142239000PST",        "2008-11-12T22:22:39.000",
+        "20081112142239000Z",          "2008-11-12T14:22:39.000",
+        "20081112142239000",           "2008-11-12T19:22:39.000",
+        "20080912142239000",           "2008-09-12T18:22:39.000"
+    };
+    
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    df.setTimeZone(TimeZone.getTimeZone("UTC"));
+    
+    for (int i=0; i<timestamps.length; i+=2) {
+      double time = DataViewer.parseTimestamp(timestamps[i]);
+      Date date = new Date(Math.round(time*1000d));
+      String string = df.format(date);
+      assertEquals(timestamps[i+1], string);
+    }
+  }
 }
