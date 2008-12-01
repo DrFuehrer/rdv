@@ -754,7 +754,6 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
  		controlMenu.addSeparator();
  		
  		menuItem = new JCheckBoxMenuItem(dropDataAction);
- 		menuItem.setSelected(true);
  		controlMenu.add(menuItem);
  		
  		JMenu viewMenu = new JMenu(viewAction);
