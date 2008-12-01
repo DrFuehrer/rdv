@@ -32,6 +32,7 @@
 package org.rdv.data;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -215,6 +216,21 @@ public class LocalChannel extends Channel {
       }
     }
     setMetadata("variables", variablesString);
+  }
+  
+  /**
+   * Gets a map of variable names to channels.
+   * 
+   * @return  a map of the variables
+   */
+  public Map<String,String> getVariables() {
+    Map<String,String> variables = new HashMap<String,String>();
+    
+    for (int i=0; i<variableNames.length; i++) {
+      variables.put(variableNames[i], variableChannels[i]);
+    }
+    
+    return variables;
   }
   
   /**
