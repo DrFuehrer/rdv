@@ -286,7 +286,7 @@ public final class RBNBUtilities {
   public static List<String> getServerChannels(String mime, boolean showHidden) {
     List<String> serverChannels = new ArrayList<String>();
     
-    List<Channel> channels = RBNBController.getInstance().getMetadataManager().getChannels();
+    List<Channel> channels = RBNBController.getInstance().getChannels();
     for (Channel channel : channels) {
       String name = channel.getName();
       boolean mimeMatches = channel.getMetadata("mime").equals(mime); 

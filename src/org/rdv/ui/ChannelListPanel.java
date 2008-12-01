@@ -710,7 +710,7 @@ public class ChannelListPanel extends JPanel implements MetadataListener, StateL
       return false;
     }
     
-    List<Channel> metadata = rbnb.getMetadataManager().getChannels(channels);
+    List<Channel> metadata = rbnb.getChannels(channels);
     for (Channel channel : metadata) {
       if (channel.getMetadata("local") == null) {
         return false;

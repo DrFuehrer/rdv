@@ -53,7 +53,7 @@ public class RBNBHelper {
     double endTime = -1;
     
     RBNBController rbnb = RBNBController.getInstance();
-    ChannelTree channelTree = rbnb.getMetadataManager().getMetadataChannelTree();
+    ChannelTree channelTree = rbnb.getChannelTree();
     
     if (channelTree == null) {
       startTime = 0;
