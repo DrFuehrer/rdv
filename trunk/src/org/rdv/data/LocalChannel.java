@@ -183,10 +183,6 @@ public class LocalChannel extends Channel {
 
       i++;
     }
-    
-    // subscribe to the server channels so the server gets their data
-    List<String> serverChannels = Arrays.asList(variableChannels);
-    RBNBController.getInstance().subscribe(serverChannels, dataListener);
   }
   
   /**
@@ -219,6 +215,15 @@ public class LocalChannel extends Channel {
       }
     }
     setMetadata("variables", variablesString);
+  }
+  
+  /**
+   * Gets a list of channels that this local channel is calculated from.
+   * 
+   * @return  a list of channel names
+   */
+  public List<String> getServerChannels() {
+    return Arrays.asList(variableChannels);
   }
 
   /**

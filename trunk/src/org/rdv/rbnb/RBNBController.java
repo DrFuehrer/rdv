@@ -45,6 +45,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.rdv.DataViewer;
 import org.rdv.data.Channel;
+import org.rdv.data.LocalChannel;
 
 import com.rbnb.sapi.ChannelMap;
 import com.rbnb.sapi.ChannelTree;
@@ -445,16 +446,46 @@ public class RBNBController implements Player, MetadataListener {
       return;
     }
     
+    // a list of channels to load data for
+    List<String> channelsToLoad = new ArrayList<String>();
+    
 		//subscribe to channels
     for (String channelName : channelNames) {
-  		try {
-  			requestedChannels.Add(channelName);
-  		} catch (SAPIException e) {
-  			log.error("Failed to subscribe to channel " + channelName + ".");
-  			e.printStackTrace();
-  			continue;
-  		}
-  		
+      Channel channel = getChannel(channelName);
+      
+      // see if this is a local channel and subscribe to its server channels,
+      // otherwise just subscribe to the channel
+      if (channel != null && channel instanceof LocalChannel) {
+        LocalChannel localChannel = (LocalChannel) channel;
+        List<String> serverChannels = localChannel.getServerChannels();
+        
+        for (String serverChannel : serverChannels) {
+          try {
+            requestedChannels.Add(serverChannel);
+          } catch (SAPIException e) {
+            log.error("Failed to subscribe to channel " + serverChannel + ".");
+            e.printStackTrace();
+            continue;
+          }
+        }
+        
+        log.info("Subscribed to channel " + channelName + " with server channels: " + serverChannels);
+        
+        channelsToLoad.addAll(serverChannels);
+      } else {
+    		try {
+    			requestedChannels.Add(channelName);
+    		} catch (SAPIException e) {
+    			log.error("Failed to subscribe to channel " + channelName + ".");
+    			e.printStackTrace();
+    			continue;
+    		}
+    		
+    		log.info("Subscribed to channel " + channelName + ".");
+    		
+    		channelsToLoad.add(channelName);
+      }
+      
   		//notify channel manager
   		channelManager.subscribe(channelName, panel);
     }
@@ -462,7 +493,7 @@ public class RBNBController implements Player, MetadataListener {
     int originalState = state;
     
     changeStateSafe(STATE_LOADING);
-		loadData(channelNames);
+		loadData(channelsToLoad);
     
     if (originalState == STATE_MONITORING) {
       changeStateSafe(STATE_MONITORING);
@@ -483,34 +514,45 @@ public class RBNBController implements Player, MetadataListener {
       return;
     }
     
-    // a list of channels that have no more listeners
-    List<String> channelsToRemove = new ArrayList<String>();
-    
     for (String channelName : channelNames) {
       channelManager.unsubscribe(channelName, panel);
       
-      if (!channelManager.isChannelSubscribed(channelName)) {
-        channelsToRemove.add(channelName);
+      log.info("Unsubscribed from channel " + channelName + ".");
+    }
+
+    ChannelMap newRequestedChannels = new ChannelMap();
+
+    // recreate the channel map with the subscribed channels 
+    for (String channelName : channelManager.getSubscribedChannels()) {
+      Channel channel = getChannel(channelName);
+      
+      // see if this is a local channel and subscribe to its server channels,
+      // otherwise just subscribe to the channel
+      if (channel != null && channel instanceof LocalChannel) {
+        LocalChannel localChannel = (LocalChannel) channel;
+        List<String> serverChannels = localChannel.getServerChannels();
+
+        for (String serverChannel : serverChannels) {
+          try {
+            newRequestedChannels.Add(serverChannel);
+          } catch (SAPIException e) {
+            log.error("Failed to resubscribe to channel " + serverChannel + ".");
+            e.printStackTrace();
+            continue;
+          }
+        }
+      } else {
+        try {
+          newRequestedChannels.Add(channelName);
+        } catch (SAPIException e) {
+          log.error("Failed to resubscribe to channel " + channelName + ".");
+          e.printStackTrace();
+          continue;
+        }
       }
     }
-		
-    // unsubscribe from channels that have no listeners
-		if (!channelsToRemove.isEmpty()) {
-			ChannelMap newRequestedChannels = new ChannelMap();		
-			String[] channelList = requestedChannels.GetChannelList();
-			for (int i=0; i<channelList.length; i++) {
-				if (!channelsToRemove.contains(channelList[i])) {
-					try {
-						newRequestedChannels.Add(channelList[i]);
-					} catch (SAPIException e) {
-						log.error("Failed to resubscribe to channel " + channelList[i] + ".");
-						e.printStackTrace();
-						continue;
-					}
-				}
-			}
-			requestedChannels = newRequestedChannels;
-		}
+
+    requestedChannels = newRequestedChannels;
 		
 		if (state == STATE_MONITORING) {
 			monitorData();
