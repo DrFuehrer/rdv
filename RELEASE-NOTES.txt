@@ -1,4 +1,4 @@
-RDV 1.9.0 Release Notes
+RDV 2.0.0 Beta 1 Release Notes
 
 RDV is a visualization environment for scientific and engineering data. Built on
 top of the RBNB dynamic data server, it supports local and remote data sources
@@ -6,6 +6,40 @@ and can visualize numeric, video, image, and audio data in a number of different
 ways.
 
 See http://rdv.googlecode.com/ for information on RDV.
+
+This release contains a new Spectrum Analyzer panel visualizing data in the
+frequency domain. And the ability to add local channels that are functions of
+other channels.
+
+NEW FEATURES
+
+ - Spectrum Analyzer; a panel to display the power spectrum of a channel. [17]
+ - The ability to add local channels that are functions of other channels. [18]
+ 
+IMPROVEMENTS
+
+ - File dialog's will now remember the directory they previously were browsing.
+   [40]
+
+BUG FIXES
+
+ - Fixed an issue where some channels would not update in real-time mode. [8]
+ - Fixed an error that occurred when importing JPEG's contained in a zip file
+   with certain filenames. [37]
+
+CHANGES
+
+ - The local time zone will be assumed if none is specified when importing data
+   or JPEG files. GMT was previously assumed. [36]
+ - Drop data is now disabled by default and should only be enabled if needed.
+   [39]
+ - The ability to import data from NEEScentral has been disabled. [38]
+
+
+-----------------------
+
+
+RDV 1.9.0 Release Notes
 
 This release contains significant new features for viewing images and video, a
 new dial visualization, and support for exporting MATLAB files. A number of

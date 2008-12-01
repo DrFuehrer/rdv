@@ -187,9 +187,9 @@
 		<launch4j configFile="launch4j/RDV-launch4j.xml"
 			jar="${build.bin}/${ant.project.name}.jar"
 			outfile="${build.exe}/${ant.project.name}.exe"
-			fileVersion="${version}.0"
+			fileVersion="${Application.versionNumber}.0"
 			txtFileVersion="${version}"
-			productVersion="${version}.0"
+			productVersion="${Application.versionNumber}.0"
 			txtProductVersion="${version}"/>
 	</target>
 	
