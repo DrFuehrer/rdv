@@ -139,7 +139,7 @@ public class RBNBController implements Player, MetadataListener {
 		
 		requestIsMonitor = false;
 		
-		dropData = true;
+		dropData = false;
 		
     location = System.currentTimeMillis()/1000d;
 		playbackRate = 1;
