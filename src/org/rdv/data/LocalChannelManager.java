@@ -124,20 +124,14 @@ public class LocalChannelManager {
    * @param channel  the channel to add
    */
   public void addChannel(LocalChannel channel) {
-    RBNBController rbnb = RBNBController.getInstance();
-    if (rbnb.getChannel(channel.getName()) != null) {
-      return;
-    }
-    
     channels.add(channel);
     
-    rbnb.updateMetadata();
+    RBNBController.getInstance().updateMetadata();
   }
   
   /**
    * Removes the <code>LocalChannel</code>'s with <code>channelNames</code> from
-   * this class. This will call <code>dispose</code> on each
-   * <code>LocalChannel</code> removed.
+   * this class.
    * 
    * @param channelNames  the list of channel to remove
    * @see             LocalChannel#dispose()
@@ -149,10 +143,18 @@ public class LocalChannelManager {
         LocalChannel channel = i.next();
         if (channelNames.contains(channel.getName())) {
           i.remove();
-          channel.dispose();
         }
       }
     }
+    
+    RBNBController.getInstance().updateMetadata();
+  }
+  
+  /**
+   * Removes all the <code>LocalChannel</code>'s from this class.
+   */
+  public void removeAllChannels() {
+    channels.clear();
     
     RBNBController.getInstance().updateMetadata();
   }
