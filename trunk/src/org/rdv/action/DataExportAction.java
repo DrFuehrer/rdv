@@ -225,8 +225,8 @@ public class DataExportAction extends DataViewerAction {
     try {
       reader = new RBNBReader(rbnbServer, channels, startTime, endTime);
 
-      List<Channel> channelMetadata = RBNBController.getInstance()
-          .getMetadataManager().getChannels(channels);
+      RBNBController rbnb = RBNBController.getInstance();
+      List<Channel> channelMetadata = rbnb.getChannels(channels);
 
       writer.init(channelMetadata, startTime, endTime, file);
 

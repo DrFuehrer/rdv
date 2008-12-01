@@ -76,6 +76,7 @@ import org.jdesktop.application.ApplicationContext;
 import org.jdesktop.application.ResourceMap;
 import org.matheclipse.parser.client.SyntaxError;
 import org.rdv.RDV;
+import org.rdv.data.Channel;
 import org.rdv.data.LocalChannel;
 import org.rdv.data.LocalChannelManager;
 import org.rdv.rbnb.MetadataManager;
@@ -370,8 +371,8 @@ public class AddLocalChannelDialog extends JDialog {
     boolean nameMatches = name.matches("^[[a-zA-Z0-9\\.\\(\\)\\- ]+/]*[a-zA-Z0-9\\.\\(\\)\\- ]+$");
     
     // check for existing channel
-    MetadataManager metadataManager = RBNBController.getInstance().getMetadataManager();
-    boolean nameFree = metadataManager.getMetadataChannelTree().findNode(name) == null;
+    Channel channel = RBNBController.getInstance().getChannel(name);
+    boolean nameFree = channel == null;
     
     boolean nameValid = nameMatches && nameFree;
     
