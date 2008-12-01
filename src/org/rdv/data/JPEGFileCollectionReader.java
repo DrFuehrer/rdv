@@ -35,10 +35,10 @@ package org.rdv.data;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.rdv.DataViewer;
 
 /**
  * A data reader for a collection of timestamped JPEG files.
@@ -47,18 +47,6 @@ import java.util.regex.Pattern;
  */
 public abstract class JPEGFileCollectionReader {
 
-  /** the timestamp format for the file names */
-  private static final SimpleDateFormat ISO_8601_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH.mm.ss.SSS'Z'");
-  
-  /** the timestamp format for the file names (JpgSaverSink format) */
-  private static final SimpleDateFormat SHORT_ISO_8601_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmssSSS");
-  
-  // set timezone to UTC
-  static {
-    ISO_8601_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-    SHORT_ISO_8601_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
-  }
-  
   /**
    * Gets the name of the reader.
    * 
@@ -101,19 +89,14 @@ public abstract class JPEGFileCollectionReader {
    * @throws ParseException  if the timestamp can't be parsed
    */
   protected static double getTimestamp(String name) throws ParseException {
-    Pattern pattern = Pattern.compile("_?([0-9TZ\\-\\.]+).(?i)jpe?g$");
+    Pattern pattern = Pattern.compile("_?([0-9a-zA-Z\\-\\.]+).(?i)jpe?g$");
     Matcher matcher = pattern.matcher(name);
     if (!matcher.find()) {
       throw new ParseException("Can't find a timestamp in this file name: " + name + ".", 0);
     }
     
-    String timeString = matcher.group(1);
-    double timestamp;
-    if (timeString.length() == 17) {
-      timestamp = SHORT_ISO_8601_DATE_FORMAT.parse(timeString).getTime()/1000d;
-    } else {
-      timestamp = ISO_8601_DATE_FORMAT.parse(timeString).getTime()/1000d;
-    }
+    String timeString = matcher.group(1).replaceAll("[\\-\\.]", "");
+    double timestamp = DataViewer.parseTimestamp(timeString);
     return timestamp;
   }
   
