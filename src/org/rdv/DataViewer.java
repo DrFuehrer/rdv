@@ -62,6 +62,9 @@ public class DataViewer {
   private static final SimpleDateFormat DAY_DATE_FORMAT = new SimpleDateFormat("EEEE h:mm.ss.SSS a");
   private static final SimpleDateFormat TIME_DATE_FORMAT = new SimpleDateFormat("h:mm:ss.SSS a");
   
+  /** format used to parse the date and time (no time zone version */
+  private static final SimpleDateFormat PARSE_DATE_FORMAT_NO_TZ = new SimpleDateFormat("yyyyMMddHHmmss");
+  
   /** format used to parse the date and time */
   private static final SimpleDateFormat PARSE_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmssz");
   
@@ -160,9 +163,14 @@ public class DataViewer {
     String timeZone = matcher.group(8);
     
     if (timeZone == null) {
+      // get the date to determine if the time zone is in daylight savings time
+      String shortTimestamp = year + month + day + hour + minute + second;
+      Date date = PARSE_DATE_FORMAT_NO_TZ.parse(shortTimestamp);
+
       // set time zone
       TimeZone tz = TimeZone.getDefault();
-      timeZone = tz.getDisplayName(tz.inDaylightTime(new Date()), TimeZone.SHORT);
+      boolean inDaylightTime = tz.inDaylightTime(date);
+      timeZone = tz.getDisplayName(inDaylightTime, TimeZone.SHORT);
     } else if (timeZone.compareToIgnoreCase("Z") == 0) {
       // Z is for Zulu time, which is UTC
       timeZone = "UTC";
