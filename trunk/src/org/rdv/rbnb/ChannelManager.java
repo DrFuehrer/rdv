@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -126,6 +127,15 @@ public class ChannelManager {
 		Integer count = channelSubscriptionCounts.get(channelName);
 		return count != null;
 	}
+	
+	/**
+   * Gets the set of subscribed channels.
+   * 
+   * @return  the set of subscribed channels
+   */
+  public Set<String> getSubscribedChannels() {
+    return channelSubscriptionCounts.keySet();
+  }
 
   /**
    * Returns true if there is at least one listener subscribed to a channel.
