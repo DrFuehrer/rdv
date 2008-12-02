@@ -177,7 +177,7 @@ public class Channel {
         string.append(key);
         
         String value = metadata.get(key);
-        if (!value.isEmpty()) {
+        if (value.length() > 0) {
           string.append('=');
           string.append(value);
         }

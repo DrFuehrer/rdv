@@ -239,7 +239,7 @@ public class AddLocalChannelDialog extends JDialog {
     
     variablesTable = new JTable(variablesTableModel);
     variablesTable.setPreferredScrollableViewportSize(new Dimension(200,100));
-    variablesTable.setFillsViewportHeight(true);
+    // variablesTable.setFillsViewportHeight(true);
     variablesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
       public void valueChanged(ListSelectionEvent e) {
         variablesTableSectionChanged();
@@ -388,8 +388,8 @@ public class AddLocalChannelDialog extends JDialog {
       String variableName = (String) variablesTableModel.getValueAt(row, 1);
       
       // skip empty columns
-      if ((variableChannel == null || variableChannel.isEmpty()) &&
-          (variableName == null || variableName.isEmpty())) {
+      if ((variableChannel == null || variableChannel.length() == 0) &&
+          (variableName == null || variableName.length() == 0)) {
         continue;
       }
       
@@ -415,7 +415,7 @@ public class AddLocalChannelDialog extends JDialog {
     String formula = formulaTextArea.getText();
     
     // check if a formula has been entered
-    boolean formulaExists = !formula.isEmpty();
+    boolean formulaExists = formula.length() > 0;
 
     // check if all the variables are in the formula
     boolean formulaHasAllVariables = true;
@@ -444,7 +444,7 @@ public class AddLocalChannelDialog extends JDialog {
         String channel = (String) variablesTableModel.getValueAt(row, 0);
         String name = (String) variablesTableModel.getValueAt(row, 1);
         
-        if (channel != null && (name == null || name.isEmpty())) {
+        if (channel != null && (name == null || name.length() == 0)) {
           // create variable name from the channel name
           int index = channel.lastIndexOf('/');
           if (index != -1 && channel.length() > index+1) {
@@ -459,7 +459,7 @@ public class AddLocalChannelDialog extends JDialog {
             }
             
             // set the name if any characters are left
-            if (!name.isEmpty()) {
+            if (name.length() > 0) {
               variablesTableModel.setValueAt(name, row, 1);
             }
           }
@@ -527,7 +527,7 @@ public class AddLocalChannelDialog extends JDialog {
     String unit = unitTextField.getText();
     
     // set the unit to null if it is empty
-    if (unit != null && unit.isEmpty()) {
+    if (unit != null && unit.length() == 0) {
       unit = null;
     }
     
