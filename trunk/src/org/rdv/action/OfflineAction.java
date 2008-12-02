@@ -86,7 +86,7 @@ public class OfflineAction extends DataViewerAction {
       return;
     }
     
-    rbnb.setRBNBHostName("localhost");
+    rbnb.setRBNBHostName(server.getHost());
     rbnb.setRBNBPortNumber(server.getPort());
     rbnb.connect();    
 

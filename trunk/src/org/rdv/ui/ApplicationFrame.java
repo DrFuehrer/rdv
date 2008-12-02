@@ -1184,8 +1184,9 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
       controlAction.setEnabled(true);
       disconnectAction.setEnabled(true);
       
-      boolean offline = rbnb.getRBNBHostName().equals("localhost") &&
-                        rbnb.getRBNBPortNumber() == LocalServer.getInstance().getPort();
+      LocalServer localServer = LocalServer.getInstance();
+      boolean offline = rbnb.getRBNBHostName().equals(localServer.getHost()) &&
+                        rbnb.getRBNBPortNumber() == localServer.getPort();
       saveAction.setEnabled(!offline);
       importAction.setEnabled(offline);
       exportAction.setEnabled(true);
