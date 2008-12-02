@@ -48,8 +48,8 @@ import org.rdv.data.MATFileWriter;
 import org.rdv.data.NumericDataSample;
 import org.rdv.rbnb.RBNBController;
 import org.rdv.rbnb.RBNBReader;
-import org.rdv.ui.ApplicationFrame;
 import org.rdv.ui.ExportDialog;
+import org.rdv.ui.MainPanel;
 import org.rdv.ui.ProgressWindow;
 import org.rdv.ui.UIUtilities;
 
@@ -76,9 +76,8 @@ public class DataExportAction extends DataViewerAction {
    * Show the data export dialog with all channels.
    */
   public void actionPerformed(ActionEvent ae) {
-    // FIXME major hackage to get the list of selected channels
-    ApplicationFrame mainFrame = (ApplicationFrame) RDV.getInstance(RDV.class).getMainView().getFrame().getContentPane().getComponent(0);
-    List<String> channels = mainFrame.getSelectedChannels();
+    MainPanel mainPanel = RDV.getInstance(RDV.class).getMainPanel();
+    List<String> channels = mainPanel.getSelectedChannels();
     exportData(channels);
   }
 

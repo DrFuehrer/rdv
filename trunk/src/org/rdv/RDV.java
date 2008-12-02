@@ -53,7 +53,7 @@ import org.jdesktop.application.Task;
 import org.rdv.action.ActionFactory;
 import org.rdv.rbnb.LocalServer;
 import org.rdv.rbnb.RBNBController;
-import org.rdv.ui.ApplicationFrame;
+import org.rdv.ui.MainPanel;
 import org.rdv.util.PortKnock;
 
 /**
@@ -70,7 +70,7 @@ public class RDV extends SingleFrameApplication {
   private String[] args;
   
   /** the main panel */
-  private ApplicationFrame mainPanel;
+  private MainPanel mainPanel;
 
   /**
    * Initializes the application before startup.
@@ -97,7 +97,7 @@ public class RDV extends SingleFrameApplication {
    */
   @Override
   protected void startup() {
-    mainPanel = new ApplicationFrame();
+    mainPanel = new MainPanel();
     show(mainPanel);
   }
   
@@ -118,7 +118,7 @@ public class RDV extends SingleFrameApplication {
    * 
    * @return  the main panel
    */
-  public ApplicationFrame getMainPanel() {
+  public MainPanel getMainPanel() {
     return mainPanel;
   }
   

@@ -103,12 +103,12 @@ import com.jgoodies.uif_lite.component.Factory;
  * @author  Lawrence J. Miller
  * @since   1.2
  */
-public class ApplicationFrame extends JPanel implements MessageListener, ConnectionListener, StateListener {
+public class MainPanel extends JPanel implements MessageListener, ConnectionListener, StateListener {
 
   /** serialization version identifier */
   private static final long serialVersionUID = -4692978463068122918L;
 	
-	static Log log = LogFactory.getLog(ApplicationFrame.class.getName());
+	static Log log = LogFactory.getLog(MainPanel.class.getName());
 	
 	private RBNBController rbnb;
 	private DataPanelManager dataPanelManager;
@@ -186,7 +186,7 @@ public class ApplicationFrame extends JPanel implements MessageListener, Connect
   /** the key mask used for menus shortucts */
   private final int menuShortcutKeyMask;
  		
-	public ApplicationFrame() {
+	public MainPanel() {
 		super();
 		
 		this.rbnb = RBNBController.getInstance();
