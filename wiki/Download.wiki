@@ -12,7 +12,7 @@ Version 1.9, Released July 18, 2008, Mac OS X Disk Image, 4 MB
 *Requirements*: Mac OS X 10.4 or later, and [http://developer.apple.com/java/download/ Java 5] (only needed for Mac OS X 10.4)
 
 == [UbuntuInstall Ubuntu/Debian] ==
-Version 1.9, Released July 18, Debian Package, 2008
+Version 1.9, Released July 18, 2008, Debian Package
 
 *Requirements*: [http://www.ubuntu.com/ Ubuntu 8.04] or [http://www.debian.org/ Debian 5.0]
 
