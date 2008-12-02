@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry path="src" kind="src"/>
+	<classpathentry path="tests" output="build/tests" kind="src"/>
+	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
+	<classpathentry path="lib/AppFramework.jar" kind="lib"/>
+	<classpathentry path="lib/commons-cli.jar" kind="lib"/>
+	<classpathentry path="lib/commons-logging.jar" kind="lib"/>
+	<classpathentry path="lib/jcommon.jar" kind="lib"/>
+	<classpathentry path="lib/jfreechart.jar" kind="lib"/>
+	<classpathentry path="lib/jtransforms.jar" kind="lib"/>
+	<classpathentry path="lib/junit.jar" kind="lib"/>
+	<classpathentry path="lib/meparser.jar" kind="lib"/>
+	<classpathentry path="lib/rbnb.jar" kind="lib"/>
+	<classpathentry path="lib/swing-worker.jar" kind="lib"/>
+	<classpathentry path="lib/tritonus_share.jar" kind="lib"/>
+	<classpathentry path="lib/j3dcore.jar" kind="lib"/>
+	<classpathentry path="lib/j3dutils.jar" kind="lib"/>
+	<classpathentry path="lib/vecmath.jar" kind="lib"/>
+	<classpathentry path="build/classes" kind="output"/>
+</classpath>
