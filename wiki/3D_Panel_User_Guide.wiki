@@ -1,0 +1,99 @@
+#summary User's guide for the 3D Model Panel in RDV
+
+=3D Model Panel User's Guide=
+The following is a look at how to use the‭ ‬3D Model Panel as a part of the RDV program.‭ ‬It covers the usage of all the different modes that the 3D Model Panel is currently capable of as well as information of how to use and create model definition files. The 3D Model Panel uses Java3D for rendering, which is downloaded as part of the Web Start package.
+
+==Starting 3D Model Panel and the Main Interface==
+Select "Add 3D Model Panel" from the "Window" menu in RDV to create a new 3D Model Panel within RDV.
+
+[http://www.nees.lehigh.edu/wiki/images/3/3b/Add3DPanel.png]
+
+You will be presented with the new 3D Model Panel layout. The center black pane is the 3D viewing area where the model will be drawn. Along the top is a menu for accessing the model file functions, view controls, and the new edit modes. Along the bottom are the controls for the current mode. In the bottom right corner are a set of buttons for controlling some aspects of the view.
+
+[http://www.nees.lehigh.edu/wiki/images/5/58/3DPanelOverview.png]
+
+==Menus and Onscreen Controls==
+===Model Menu===
+The "Model" menu will allow you to manage previously defined model definition files. To load a previously defined model file from disk, select the "Open Model" option from the "Model" menu and select the file in the dialog. You will then see the model loaded onscreen in the 3D Viewing area. If this model file also contains information about channel links, you can load them (if connected to the appropriate server or working offline with the appropriate archive file) by selecting the "Load Channels" option from the "Model" menu. This will create the links defined by the model file and will then be ready for playback or real time streaming data.
+
+[http://www.nees.lehigh.edu/wiki/images/8/84/Modelmenu.png]
+
+The second part of the "Model" menu will let you save the current model back to file. A model can be saved with or without the channels currently linked to it, if no channels are currently linked, both options will have the same result. Saving a model with channels will allow you to use the "Load Channels" option in the "Model" menu the next time you use the model.
+
+===View Menu===
+The "View" menu provides several convenient options for controlling the model in the viewing area. The first section of the "View" menu is a selection of preset views. The first is "Front View" which is the default view of the model you will see when loading a model from file (or building it from within RDV, as seen later in the "Edit" section). The "Front View" of the model tries to give a good overview of the model from the front end, and so may tilt the model towards the camera if it is very deep (extends far away from the camera) instead of viewing the model directly from the front in all cases. The "Top View" will show the model from a birds eye view and the "Corner View" shows a slightly isometric view of the model from the front-right corner. Should the model ever become "lost" and not be visible onscreen due to mouse control or other reasons, these preset options should bring the model back into view.
+
+[http://www.nees.lehigh.edu/wiki/images/3/36/Viewmenu.png]
+
+The "View" menu also provides a way to deselect any selected element of the model, which can also be accomplished by clicking on a blank area in the viewing area.
+The final section is a set of view controls. You will also notice that these menu entries have a keystroke listed next to them in the menu, which are the hot-key shortcuts for each options. These shortcut keys will allow you to quickly control the view of the model from the keyboard without needing to access the menu. These controls are also available in the bottom right corner of the 3D Model Panel as buttons.
+
+===Edit Menu===
+[http://www.nees.lehigh.edu/wiki/images/a/a7/Editmenu.png]
+
+The "Edit" menu allows you to edit or create new models from within RDV without the need to edit the model file directly. This can be used to create completely new models or edit existing models. To begin editing, select one of the "Edit ..." options from the "Edit" menu. This will change the bottom of the 3D Model Panel interface to the editing mode for the selected type of element. These are detailed individually below. Once you are done editing, select "Leave Edit Mode" from the "Edit" menu and you will be prompted to save your edited model. See [[#Editing Modes]]
+
+===View Controls===
+The bottom right corner of the 3D Model Panel contains a set of six buttons for controlling the view. the "+" and "-" buttons zoom the model in and out respectively. The next two rows of buttons rotate the model about its center in increments of 15 degrees or 90 degrees either clockwise or counterclockwise. These options are also available in the "View" menu and as shortcut keys (listed in the "View" menu).
+
+==Mouse Controls==
+By using the mouse in the viewing area, you can manipulate the view of the model. Clicking and dragging with the left mouse button will rotate the model around its center. Clicking and dragging with the right mouse button will translate the model and clicking and dragging with the middle mouse button (wheel button) will zoom the model in and out.
+
+
+==Editing Modes==
+Each editing mode provides a slightly different set of features for editing the selected element type. All the editing modes will take over the lower section of the 3D Model Panel and use it for input for the creation of new elements. By filling out the fields and clicking the "Add" button, you will add a new element to the model based on the current field values. Naming is done automatically according to a simple incremental scheme that will not overwrite existing elements, there are also restrictions on duplicity of elements (elements with the same name or in the same place are disallowed). If you specify an inappropriate value for any of the fields, the program should pop up a dialog window to inform you how to correct the values. The modes in detail follow.
+
+===Edit Channel Links===
+The default editing mode for the 3D Model Panel is channel linking. This allows you to link channels from an archive file, or a live server, to nodes which will dictate their displacement. The lower portion of the screen will show a Node: field as well as an Axis: field. The buttons near each label will cycle through the available nodes in the current model or the available axes for the selected node respectively. 
+
+[http://www.nees.lehigh.edu/wiki/images/c/c1/Axiscontrols.png]
+
+The selected node will be highlighted (in orange) in the viewing area and if there is a channel linked to the selected axis, its name will appear next to the axis name in the lower portion of the screen. Nodes can also be selected via left-clicking in the viewing area in this mode, and their name will appear in the lower portion of the screen. Additionally, right clicking on a node in the viewing area will access a pop up menu that can be used to select the desired axis for that node directly. 
+
+[http://www.nees.lehigh.edu/wiki/images/f/f2/Axis-popupmenu.png]
+
+Once a node and an axis have been selected, dragging and dropping a channel from the channel list on the left into the viewing area will link the channel with the selected node and axis. Finally, the "Unlink" button in the lower right corner will remove any channel linked to the currently selected node and axis pair. (To unlink all the channels in the model, use the buttons in the title bar to remove all the channels, which will remove all links.)
+
+===Edit Nodes===
+[http://www.nees.lehigh.edu/wiki/images/e/ed/Nodecontrols.png]
+
+The node editing screen provides fields for creating new nodes by filling in position information and choosing a color. By right clicking on nodes in the viewing area, you will be presented with a menu allowing the removal of nodes. 
+
+[http://www.nees.lehigh.edu/wiki/images/6/63/Node-popupmenu.png]
+
+Removing a node will also remove any members that are connected to the node. Not all the spheres in the model viewing area may be nodes, if you cannot select a node for removal while in this mode, it is likely a stress/strain mode, and you must use that mode to select it for removal.
+
+===Edit Members===
+[http://www.nees.lehigh.edu/wiki/images/8/83/Membercontrols.png]
+
+This mode provides a panel where two nodes may be selected via pull down menu, a deformation type may be specified (cubic or linear) and a color may be chosen, then clicking "Add" will create the new member in the model. In the viewing area, click to select a member, or right click to access a popup menu to remove a member. 
+
+[http://www.nees.lehigh.edu/wiki/images/7/70/Member-popupmenu.png]
+
+Additionally, if the "Shift" key is held down, clicking will allow the selection of nodes, and Shift-right-clicking will access a popup menu that will provide a way to select a node as the No.1 or No.2 node in the member creation panel. 
+
+[http://www.nees.lehigh.edu/wiki/images/0/06/Alt-member-popupmenu.png]
+
+By selecting different nodes in this way for node No.1 and No.2, you can select the endpoints of a new member via mouse. Then click "Add" to create the member.
+
+===Edit Stress/Strain Nodes===
+[http://www.nees.lehigh.edu/wiki/images/0/09/Snodecontrols.png]
+
+This editing mode is very similar to the Node editing mode. The creation panel has further options for stress/strain nodes which include the threshold values (lower limit, zero reference point and upper limit, from left to right) and corresponding colors below the value fields. Once the node's stress/strain axis is linked to a channel, as the channel approaches each limit, the node will change color between the zero point reference color and the corresponding limit color. The final color will be used if the channel data exceeds the limits on either end. The mouse behaves in a similar way to the Edit Nodes mode, and will allow removal only of stress/strain nodes.
+
+==The Model Definition File==
+
+Below is a detailed example model definition file as well as an explanation of how the model definition file should be created.
+
+{{{
+todo: insert model file and RDV input to use
+}}}
+
+==Special: Installing Java3D==
+The WebStart version of RDV will download the needed Java3D binaries automatically. To run the 3D Model Panel from your own compiled version, you will need the Java3D libraries installed for compilation and use:
+
+Java3D is available from the Java 3D Project at:
+[https://java3d.dev.java.net/ Java 3D]
+and installation instructions can be found [https://java3d.dev.java.net/#Documentation here].
+
+(Java3D requires a Java Runtime Environment to be installed.)
