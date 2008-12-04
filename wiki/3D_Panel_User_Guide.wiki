@@ -85,8 +85,393 @@ This editing mode is very similar to the Node editing mode. The creation panel h
 
 Below is a detailed example model definition file as well as an explanation of how the model definition file should be created.
 
+To use this example, perform the following:
+  # Copy and paste the example model into a text editor and save as ExampleModel.txt
+  # Copy and paste the example input into a text editor and save as Example.txt
+  # Open RDV and work offline by going to File -> Work Offline
+  # Import the Example.txt file by going to File -> Import -> Import data file
+  # Open a 3D Model Panel using Window -> Add 3D Model Panel
+  # In the 3D Model Panel, select Model -> Open model and choose the ExampleModel.txt
+  # Click Model again and choose Load Channels.  Since the Model file has channels assigned to nodes already, this will load the channels automatically
+  # Rewind the RDV's player and click Play
+  * 0-4   seconds: Motion in the +X direction
+  * 4-8  seconds: Motion in the +Y direction
+  * 8-12 seconds: Motion in the +Z direction
+  * 12-16 seconds: Motion in -X-Y-Z directions back to center
+  * 16-40 seconds: Positive strain to limit, returns to 0, Negative strain to limit, returns to 0.
+  * 40-48 seconds: Rotation in the ±X direction at Node4 on the 1st floor
+
+*Example Model File*
 {{{
-todo: insert model file and RDV input to use
+# This is an example file for the 3D Model Panel model definition file
+#  to be used with the 3D Model Panel in RDV
+# It should explain the layout and options available in the model definition
+#  syntax.
+#
+# Comments are lines preceded by the # symbol and are ignored by the parser
+#  It is recommended to make use of them to make notes about the model file
+#  as the current format is rather verbose.
+#  blanks lines are also ignored by the compiler, so feel free to seperate 
+#  sections for clarity
+
+
+# The model file definition currently consists of four sections:
+# Nodes, Members, ScaleNodes (for Stress, Strain, Load) and Options
+
+
+# The Node section defines the name, position and color of a node in the
+# structure, as well as any channel connections.
+# Only the name and position are required, all other sections are optional,
+# however they must appear in the correct order:
+# Examples (in the order they must appear on a line):
+#	Name: 			alphanumeric and underscore allowed
+#	Position:		( 1.03,  3 ,  -5.88)
+#	Displacement Channels:	[ x channel, y channel, z channel ]
+#	Rotation Channels:	{ x channel, y channel, z channel }
+#	Color:			Colorname or Hex color as '#FFFFFF'
+#
+# If a channel group is used, all three channels must be listed,
+# use '--' mark an axis as having no connection. 
+#	IE for only X axis displacement:
+#		[ x_channel_name, -- , -- ]
+# Colors supported are:
+#	red,orange,yellow,green,blue,cyan,pink,magenta,white,gray,black
+# or hexadecimal colors in #XXXXXX format.
+# See http://www.drewfoster.com/rgbhex/rgbhex.php for a quick
+# explanation of hex color if you need/want.
+#	Also, note that the interface uses orange to highlight selected nodes,
+#	so it may be prudent to avoid orange for other things.
+# Finally, an example:
+
+# Node Section:
+#ground floor
+node_gnd_1	(  2,  2, 0)
+node_gnd_2	( -2,  2, 0)	blue
+node_gnd_3	( -2, -2, 0)	#0000FF
+node_gnd_4	(  2, -2, 0)	green
+
+#first floor
+node_1st_1	(  2,  2, 3)	[Example/X_disp, Example/Y_disp, Example/Z_disp]  magenta
+node_1st_2	( -2,  2, 3)	[Example/X_disp, Example/Y_disp, Example/Z_disp]  magenta
+node_1st_3	( -2, -2, 3)	[Example/X_disp, Example/Y_disp, Example/Z_disp]  magenta
+node_1st_4	(  2, -2, 3)	[Example/X_disp, Example/Y_disp, Example/Z_disp] {Example/X_rot,--,--} cyan
+
+# Each section must be ended by a line containing only ===
+# which delimits the sections for the program. 
+#	Don't Forget Them!
+#End the nodes section
+===
+
+
+# The next section defines members, connections between nodes.
+# The format here is:
+# 	Name of first node:	alphanumeric and underscore
+#	Name of second node:	(the nodes need to exist in the Nodes section)
+#	Type of member:		[cubic] or nothing (defaults to linear)
+#	Color:			Same as for Nodes
+
+# The type defines how the member will be drawn. A cubic member will use
+# Bezier curves to approximate how a member would deform under the
+# connected nodes' motion. If no type is specified, linear is assumed,
+# a straight line is drawn between the nodes at all times.
+
+# Member Section:
+# connect the stories, some cubic:
+node_gnd_1 node_1st_1 green
+node_gnd_2 node_1st_2 green
+node_gnd_3 node_1st_3 [cubic] yellow
+node_gnd_4 node_1st_4 [cubic] yellow
+
+# connect the floor
+node_1st_1 node_1st_2 blue
+node_1st_2 node_1st_3 #0000FF
+node_1st_3 node_1st_4 blue
+node_1st_4 node_1st_1 blue
+
+#End the members section
+===
+
+# The next section defines stress/strain/load nodes. These node change color based
+# on the channel data and determined limit values. They have many options on 
+# the line, as follows:
+#	Name: 		Same as with Nodes
+#	Position: 	Same as with Nodes
+#	Value Limits:	< lower limit, middle value, upper limit >
+#	Limit Color:	< lower color, middle color, upper color, fail color >
+#	Stress/Strain Channel:	{ Channel Name }
+#	Displacement Channels:	Same as Nodes
+# These nodes will change their color gradually between the middle and upper
+# or lower limit colors based on the value of the data in the Stress/Strain
+# channel. If the value goes beyond either limit, they will display the 
+# 'fail color'. The upper and lower limits need not be symmetric around the 
+# middle value.
+
+node_str ( 0.1, -2, 2 )	< -2.9, 0, 2.8 > <green, white, yellow, red> { Example/strain } [Example/X_disp, Example/Y_disp, Example/Z_disp]
+
+#End the strain/load section
+===
+
+# The final section defines other options, of which only 'center' is currently
+# supported. This line will change the center of the model to the new value,
+# and overrides the center computed by calculating the average of the model's
+# extreme nodes.
+# Note that the the current viewing tools do not account for dramatic changes
+# made here, so shifting the center of the model dramatically from its computed
+# center may necessitate some zooming and panning in the view window.
+# The line takes the form:
+#
+#center (0,1,1)
+#
+}}}
+
+*Example Input File*
+{{{
+"Active channels: X_disp, Y_disp, Z_disp, strain, X_rot"					
+"Channel units: in, in, in, ustrain, rad"					
+Start time: 2008-01-01T00:00:00.000Z					
+
+Time	X_disp	Y_disp	Z_disp	strain	X_rot
+0	0	0	0	0	0
+0.2	0.1	0	0	0	0
+0.4	0.2	0	0	0	0
+0.6	0.3	0	0	0	0
+0.8	0.4	0	0	0	0
+1	0.5	0	0	0	0
+1.2	0.6	0	0	0	0
+1.4	0.7	0	0	0	0
+1.6	0.8	0	0	0	0
+1.8	0.9	0	0	0	0
+2	1	0	0	0	0
+2.2	1.1	0	0	0	0
+2.4	1.2	0	0	0	0
+2.6	1.3	0	0	0	0
+2.8	1.4	0	0	0	0
+3	1.5	0	0	0	0
+3.2	1.6	0	0	0	0
+3.4	1.7	0	0	0	0
+3.6	1.8	0	0	0	0
+3.8	1.9	0	0	0	0
+4	2	0	0	0	0
+4.2	2	0.1	0	0	0
+4.4	2	0.2	0	0	0
+4.6	2	0.3	0	0	0
+4.8	2	0.4	0	0	0
+5	2	0.5	0	0	0
+5.2	2	0.6	0	0	0
+5.4	2	0.7	0	0	0
+5.6	2	0.8	0	0	0
+5.8	2	0.9	0	0	0
+6	2	1	0	0	0
+6.2	2	1.1	0	0	0
+6.4	2	1.2	0	0	0
+6.6	2	1.3	0	0	0
+6.8	2	1.4	0	0	0
+7	2	1.5	0	0	0
+7.2	2	1.6	0	0	0
+7.4	2	1.7	0	0	0
+7.6	2	1.8	0	0	0
+7.8	2	1.9	0	0	0
+8	2	2	0	0	0
+8.2	2	2	0.1	0	0
+8.4	2	2	0.2	0	0
+8.6	2	2	0.3	0	0
+8.8	2	2	0.4	0	0
+9	2	2	0.5	0	0
+9.2	2	2	0.6	0	0
+9.4	2	2	0.7	0	0
+9.6	2	2	0.8	0	0
+9.8	2	2	0.9	0	0
+10	2	2	1	0	0
+10.2	2	2	1.1	0	0
+10.4	2	2	1.2	0	0
+10.6	2	2	1.3	0	0
+10.8	2	2	1.4	0	0
+11	2	2	1.5	0	0
+11.2	2	2	1.6	0	0
+11.4	2	2	1.7	0	0
+11.6	2	2	1.8	0	0
+11.8	2	2	1.9	0	0
+12	2	2	2	0	0
+12.2	1.9	1.9	1.9	0	0
+12.4	1.8	1.8	1.8	0	0
+12.6	1.7	1.7	1.7	0	0
+12.8	1.6	1.6	1.6	0	0
+13	1.5	1.5	1.5	0	0
+13.2	1.4	1.4	1.4	0	0
+13.4	1.3	1.3	1.3	0	0
+13.6	1.2	1.2	1.2	0	0
+13.8	1.1	1.1	1.1	0	0
+14	1	1	1	0	0
+14.2	0.9	0.9	0.9	0	0
+14.4	0.8	0.8	0.8	0	0
+14.6	0.7	0.7	0.7	0	0
+14.8	0.6	0.6	0.6	0	0
+15	0.5	0.5	0.5	0	0
+15.2	0.4	0.4	0.4	0	0
+15.4	0.3	0.3	0.3	0	0
+15.6	0.2	0.2	0.2	0	0
+15.8	0.1	0.1	0.1	0	0
+16	0	0	0	0	0
+16.2	0	0	0	0.1	0
+16.4	0	0	0	0.2	0
+16.6	0	0	0	0.3	0
+16.8	0	0	0	0.4	0
+17	0	0	0	0.5	0
+17.2	0	0	0	0.6	0
+17.4	0	0	0	0.7	0
+17.6	0	0	0	0.8	0
+17.8	0	0	0	0.9	0
+18	0	0	0	1	0
+18.2	0	0	0	1.1	0
+18.4	0	0	0	1.2	0
+18.6	0	0	0	1.3	0
+18.8	0	0	0	1.4	0
+19	0	0	0	1.5	0
+19.2	0	0	0	1.6	0
+19.4	0	0	0	1.7	0
+19.6	0	0	0	1.8	0
+19.8	0	0	0	1.9	0
+20	0	0	0	2	0
+20.2	0	0	0	2.1	0
+20.4	0	0	0	2.2	0
+20.6	0	0	0	2.3	0
+20.8	0	0	0	2.4	0
+21	0	0	0	2.5	0
+21.2	0	0	0	2.6	0
+21.4	0	0	0	2.7	0
+21.6	0	0	0	2.8	0
+21.8	0	0	0	2.9	0
+22	0	0	0	3	0
+22.2	0	0	0	2.9	0
+22.4	0	0	0	2.8	0
+22.6	0	0	0	2.7	0
+22.8	0	0	0	2.6	0
+23	0	0	0	2.5	0
+23.2	0	0	0	2.4	0
+23.4	0	0	0	2.3	0
+23.6	0	0	0	2.2	0
+23.8	0	0	0	2.1	0
+24	0	0	0	2	0
+24.2	0	0	0	1.9	0
+24.4	0	0	0	1.8	0
+24.6	0	0	0	1.7	0
+24.8	0	0	0	1.6	0
+25	0	0	0	1.5	0
+25.2	0	0	0	1.4	0
+25.4	0	0	0	1.3	0
+25.6	0	0	0	1.2	0
+25.8	0	0	0	1.1	0
+26	0	0	0	1	0
+26.2	0	0	0	0.9	0
+26.4	0	0	0	0.8	0
+26.6	0	0	0	0.7	0
+26.8	0	0	0	0.6	0
+27	0	0	0	0.5	0
+27.2	0	0	0	0.4	0
+27.4	0	0	0	0.3	0
+27.6	0	0	0	0.2	0
+27.8	0	0	0	0.1	0
+28	0	0	0	0	0
+28.2	0	0	0	-0.1	0
+28.4	0	0	0	-0.2	0
+28.6	0	0	0	-0.3	0
+28.8	0	0	0	-0.4	0
+29	0	0	0	-0.5	0
+29.2	0	0	0	-0.6	0
+29.4	0	0	0	-0.7	0
+29.6	0	0	0	-0.8	0
+29.8	0	0	0	-0.9	0
+30	0	0	0	-1	0
+30.2	0	0	0	-1.1	0
+30.4	0	0	0	-1.2	0
+30.6	0	0	0	-1.3	0
+30.8	0	0	0	-1.4	0
+31	0	0	0	-1.5	0
+31.2	0	0	0	-1.6	0
+31.4	0	0	0	-1.7	0
+31.6	0	0	0	-1.8	0
+31.8	0	0	0	-1.9	0
+32	0	0	0	-2	0
+32.2	0	0	0	-2.1	0
+32.4	0	0	0	-2.2	0
+32.6	0	0	0	-2.3	0
+32.8	0	0	0	-2.4	0
+33	0	0	0	-2.5	0
+33.2	0	0	0	-2.6	0
+33.4	0	0	0	-2.7	0
+33.6	0	0	0	-2.8	0
+33.8	0	0	0	-2.9	0
+34	0	0	0	-3	0
+34.2	0	0	0	-2.9	0
+34.4	0	0	0	-2.8	0
+34.6	0	0	0	-2.7	0
+34.8	0	0	0	-2.6	0
+35	0	0	0	-2.5	0
+35.2	0	0	0	-2.4	0
+35.4	0	0	0	-2.3	0
+35.6	0	0	0	-2.2	0
+35.8	0	0	0	-2.1	0
+36	0	0	0	-2	0
+36.2	0	0	0	-1.9	0
+36.4	0	0	0	-1.8	0
+36.6	0	0	0	-1.7	0
+36.8	0	0	0	-1.6	0
+37	0	0	0	-1.5	0
+37.2	0	0	0	-1.4	0
+37.4	0	0	0	-1.3	0
+37.6	0	0	0	-1.2	0
+37.8	0	0	0	-1.1	0
+38	0	0	0	-1	0
+38.2	0	0	0	-0.9	0
+38.4	0	0	0	-0.8	0
+38.6	0	0	0	-0.7	0
+38.8	0	0	0	-0.6	0
+39	0	0	0	-0.5	0
+39.2	0	0	0	-0.4	0
+39.4	0	0	0	-0.3	0
+39.6	0	0	0	-0.2	0
+39.8	0	0	0	-0.1	0
+40	0	0	0	0	0
+40.2	0	0	0	0	0.2
+40.4	0	0	0	0	0.4
+40.6	0	0	0	0	0.6
+40.8	0	0	0	0	0.8
+41	0	0	0	0	1
+41.2	0	0	0	0	0.8
+41.4	0	0	0	0	0.6
+41.6	0	0	0	0	0.4
+41.8	0	0	0	0	0.2
+42	0	0	0	0	0
+42.2	0	0	0	0	-0.2
+42.4	0	0	0	0	-0.4
+42.6	0	0	0	0	-0.6
+42.8	0	0	0	0	-0.8
+43	0	0	0	0	-1
+43.2	0	0	0	0	-0.8
+43.4	0	0	0	0	-0.6
+43.6	0	0	0	0	-0.4
+43.8	0	0	0	0	-0.2
+44	0	0	0	0	0
+44.2	0	0	0	0	0.2
+44.4	0	0	0	0	0.4
+44.6	0	0	0	0	0.6
+44.8	0	0	0	0	0.8
+45	0	0	0	0	1
+45.2	0	0	0	0	0.8
+45.4	0	0	0	0	0.6
+45.6	0	0	0	0	0.4
+45.8	0	0	0	0	0.2
+46	0	0	0	0	0
+46.2	0	0	0	0	-0.2
+46.4	0	0	0	0	-0.4
+46.6	0	0	0	0	-0.6
+46.8	0	0	0	0	-0.8
+47	0	0	0	0	-1
+47.2	0	0	0	0	-0.8
+47.4	0	0	0	0	-0.6
+47.6	0	0	0	0	-0.4
+47.8	0	0	0	0	-0.2
+48	0	0	0	0	0
 }}}
 
 ==Special: Installing Java3D==
