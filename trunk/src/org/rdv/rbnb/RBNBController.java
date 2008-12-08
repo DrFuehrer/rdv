@@ -38,7 +38,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -60,7 +59,7 @@ import com.rbnb.sapi.Sink;
  * 
  * @author Jason P. Hanley
  */
-public class RBNBController implements Player, MetadataListener {
+public class RBNBController implements Player {
 
 	static Log log = LogFactory.getLog(RBNBController.class.getName());
   
@@ -84,7 +83,6 @@ public class RBNBController implements Player, MetadataListener {
 	private boolean requestIsMonitor;	
 	
 	private ChannelMap requestedChannels;
-  private ChannelTree metaDataChannelTree;
 
 	private ChannelManager channelManager;
   private MetadataManager metadataManager;
@@ -146,7 +144,6 @@ public class RBNBController implements Player, MetadataListener {
 		timeScale = 1;
 
     requestedChannels = new ChannelMap();
-    metaDataChannelTree = ChannelTree.EMPTY_TREE;
 
 		channelManager = new ChannelManager();
     metadataManager = new MetadataManager(this);
@@ -611,7 +608,7 @@ public class RBNBController implements Player, MetadataListener {
 		
 		for (String channelName : channelNames) {
 			try {
-				if (isVideo(metaDataChannelTree, channelName)) {
+				if (isVideo(channelName)) {
 					imageChannels.Add(channelName);
         } else if (channelManager.isChannelTabularOnly(channelName)) {
           tabularChannels.Add(channelName);
@@ -730,7 +727,7 @@ public class RBNBController implements Player, MetadataListener {
 		}
 		
 		//stop if no data in fetch and past end time, most likely end of data
- 		if (getmap.NumberOfChannels() == 0 && !moreData(requestedChannels.GetChannelList(), metaDataChannelTree, location)) {
+ 		if (getmap.NumberOfChannels() == 0 && !moreData(requestedChannels.GetChannelList(), location)) {
 			log.warn("Received no data. Assuming end of channel.");
 			changeStateSafe(STATE_STOPPED);
 			return;
@@ -975,52 +972,38 @@ public class RBNBController implements Player, MetadataListener {
 	}
 
 	
-	// Utility (Static) Methods
+	// Utility Methods
 	
-	private static boolean moreData(String[] channels, ChannelTree ctree, double time) {
-		double endTime = -1;
-		
-        Iterator<?> it = ctree.iterator();
-		while (it.hasNext()) {
-            ChannelTree.Node node = (ChannelTree.Node)it.next();
-			double channelEndTime = node.getStart() + node.getDuration();
-			if (channelEndTime != -1) {
-				endTime = Math.max(endTime, channelEndTime);
-			}
-		}
-		
-		if (endTime == -1 || time >= endTime) {
-			return false;
-		} else {
-			return true;
-		}
-	}
+  private boolean moreData(String[] channels, double time) {
+    double endTime = 0;
 
-	private static boolean isVideo(ChannelTree channelTree, String channelName) {
-		if (channelName == null) {
-			log.error("Channel name is null for. Can't determine if is video.");
-			return false;
-		} else if (channelTree == null) {
-			log.warn("Haven't received metadata yet, can't determine channel type.");
-			return false;
-		}
-		
-		ChannelTree.Node node = channelTree.findNode(channelName);
-		if (node == null) {
-			log.error("Unable to find channel in metadata.");
-			return false;
-		} else {
-			String mime = node.getMime();
-			if (mime != null && mime.equals("image/jpeg")) {
-				return true;
-			} else if (channelName.endsWith(".jpg")){
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}	
-	
+    for (String channelName : channels) {
+      Channel channel = getChannel(channelName);
+      if (channel == null) {
+        continue;
+      }
+      
+      double channelEndTime = channel.getStart() + channel.getDuration();
+      endTime = Math.max(endTime, channelEndTime);
+    }
+
+    return time < endTime;
+  }
+
+  private boolean isVideo(String channelName) {
+    Channel channel = getChannel(channelName);
+    if (channel == null) {
+      return false;
+    }
+
+    String mime = channel.getMetadata("mime");
+    if (mime != null && mime.equals("image/jpeg")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
 	private static double getLastTime(ChannelMap channelMap) {
 		double lastTime = -1;
 		
@@ -1509,10 +1492,6 @@ public class RBNBController implements Player, MetadataListener {
    */
   public void updateMetadata() {
     metadataManager.updateMetadataBackground(); 
-  }
-  
-  public void channelTreeUpdated(ChannelTree ctree) {
-    metaDataChannelTree = ctree;
   }
   
   

@@ -186,10 +186,6 @@ public class LocalChannel extends Channel {
     // set the size of the data
     setMetadata("size", "8");
     
-    // set start and duration metadata to default values
-    setMetadata("start", "0");
-    setMetadata("duration", "0");
-    
     // a key to signify that this is a local channel
     setMetadata("local");
 
@@ -242,7 +238,7 @@ public class LocalChannel extends Channel {
   public void updateMetadata(ChannelMap channelMap, ChannelTree serverChannelTree) throws SAPIException {
     // see if the first server channel exists
     Node serverNode = serverChannelTree.findNode(variableChannels[0]);
-    if (node == null) {
+    if (serverNode == null) {
       return;
     }
     
@@ -253,8 +249,8 @@ public class LocalChannel extends Channel {
     channelMap.PutMime(index, metadataXMLType);
     
     // update start and duration metadata
-    setMetadata("start", Double.toString(serverNode.getStart()));
-    setMetadata("duration", Double.toString(serverNode.getDuration()));
+    setStart(serverNode.getStart());
+    setDuration(serverNode.getDuration());
   }
   
   /**

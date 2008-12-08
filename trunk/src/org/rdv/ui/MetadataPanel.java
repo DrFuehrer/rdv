@@ -126,8 +126,8 @@ public class MetadataPanel extends JPanel implements MetadataListener, ChannelSe
         String unit = channelMetadata.getUnit();
         String mime = channelMetadata.getMetadata("mime");
         String description = channelMetadata.getMetadata("description");
-        double start = Double.parseDouble(channelMetadata.getMetadata("start"));
-        double duration = Double.parseDouble(channelMetadata.getMetadata("duration"));
+        double start = channelMetadata.getStart();
+        double duration = channelMetadata.getDuration();
         int size = Integer.parseInt(channelMetadata.getMetadata("size"));
         String formula = channelMetadata.getMetadata("formula");
 

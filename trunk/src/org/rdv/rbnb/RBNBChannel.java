@@ -79,8 +79,8 @@ public class RBNBChannel extends Channel {
     setMime(node);
 
     // set other properties read from the node
-    setMetadata("start", Double.toString(node.getStart()));
-    setMetadata("duration", Double.toString(node.getDuration()));
+    setStart(node.getStart());
+    setDuration(node.getDuration());
     setMetadata("size", Integer.toString(node.getSize()));
   }
   

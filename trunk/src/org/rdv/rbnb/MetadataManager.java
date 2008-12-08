@@ -137,7 +137,6 @@ public class MetadataManager {
     } catch (UnknownHostException e) {}
 
     metadataListeners =  new ArrayList<MetadataListener>();
-    addMetadataListener(rbnbController);
         
     channels = new HashMap<String,Channel>();
 		
