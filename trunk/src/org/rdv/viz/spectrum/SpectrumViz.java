@@ -440,25 +440,20 @@ public class SpectrumViz extends AbstractDataPanel {
         postTime(channelName, channelIndex);
       }
     }
-	}
+  }
 
-	/**
-	 * Looks through the data for the current time range and post it if any is
-	 * dound.
-	 * 
-	 * @param channelName   the name for the channel
-	 * @param channelIndex  the index for the channel
-	 */
-	private void postTime(String channelName, int channelIndex) {
-	  // FIXME handle all data types
-	  if (channelMap.GetType(channelIndex) != ChannelMap.TYPE_FLOAT64) {
-	    return;
-	  }
-	  
-		double[] times = channelMap.GetTimes(channelIndex);
+  /**
+   * Looks through the data for the current time range and post it if any is
+   * dound.
+   * 
+   * @param channelName   the name for the channel
+   * @param channelIndex  the index for the channel
+   */
+  private void postTime(String channelName, int channelIndex) {
+    double[] times = channelMap.GetTimes(channelIndex);
 
-		int startIndex = -1;
-		
+    int startIndex = -1;
+
     // determine what time we should load data from
     double dataStartTime;
     if (lastTimeDisplayed == time) {
@@ -468,63 +463,101 @@ public class SpectrumViz extends AbstractDataPanel {
     }
 
     for (int i=0; i<times.length; i++) {
-        if (times[i] > dataStartTime && times[i] <= time) {
-            startIndex = i;
-            break;
-        }
+      if (times[i] > dataStartTime && times[i] <= time) {
+        startIndex = i;
+        break;
+      }
     }
     
     //see if there is no data in the time range we are looking at
     if (startIndex == -1) {
-        return;
+      return;
     }       
     
     int endIndex = startIndex;
     
     for (int i=times.length-1; i>startIndex; i--) {
-        if (times[i] <= time) {
-            endIndex = i;
-            break;
-        }
+      if (times[i] <= time) {
+        endIndex = i;
+        break;
+      }
     }
 
-    double[] data = channelMap.GetDataAsFloat64(channelIndex);
-    postData(data, startIndex, endIndex);
-				
-		lastTimeDisplayed = times[endIndex];
-	}
-	
-	/**
-	 * Post the data to the spectrum analyzer. This will method will queue the
-	 * post on the EDT thread and return immediately.
-	 * 
-	 * @param data        the data to post
-	 * @param startIndex  the start index of the data
-	 * @param endIndex    the end index of the data
-	 */
-	private void postData(final double[] data, final int startIndex, final int endIndex) {
+    postData(channelMap, channelIndex, startIndex, endIndex);
+
+    lastTimeDisplayed = times[endIndex];
+  }
+
+  /**
+   * Post the data to the spectrum analyzer. This will method will queue the
+   * post on the EDT thread and return immediately.
+   * 
+   * @param channelMap    the channel map with the data
+   * @param channelIndex  the index to the channel
+   * @param startIndex    the start index of the data
+   * @param endIndex      the end index of the data
+   */
+  private void postData(final ChannelMap channelMap, final int channelIndex, final int startIndex, final int endIndex) {
     SwingUtilities.invokeLater(new Runnable() {
       public void run() {
-        spectrumAnalyzerPanel.addData(data, startIndex, endIndex);
+        int typeID = channelMap.GetType(channelIndex);
+
+        switch (typeID) {
+        case ChannelMap.TYPE_FLOAT64:
+          double[] doubleData = channelMap.GetDataAsFloat64(channelIndex);
+          spectrumAnalyzerPanel.addData(doubleData, startIndex, endIndex);
+          break;
+        case ChannelMap.TYPE_FLOAT32:
+          float[] floatData = channelMap.GetDataAsFloat32(channelIndex);
+          spectrumAnalyzerPanel.addData(floatData, startIndex, endIndex);
+          break;
+        case ChannelMap.TYPE_INT64:
+          long[] longData = channelMap.GetDataAsInt64(channelIndex);
+          for (int i = startIndex; i <= endIndex; i++) {
+            spectrumAnalyzerPanel.addData(longData[i]);
+          }
+          spectrumAnalyzerPanel.finishedAddingData();
+          break;
+        case ChannelMap.TYPE_INT32:
+          int[] intData = channelMap.GetDataAsInt32(channelIndex);
+          for (int i = startIndex; i <= endIndex; i++) {
+            spectrumAnalyzerPanel.addData(intData[i]);
+          }
+          spectrumAnalyzerPanel.finishedAddingData();
+          break;
+        case ChannelMap.TYPE_INT16:
+          short[] shortData = channelMap.GetDataAsInt16(channelIndex);
+          for (int i = startIndex; i <= endIndex; i++) {
+            spectrumAnalyzerPanel.addData(shortData[i]);
+          }
+          spectrumAnalyzerPanel.finishedAddingData();
+          break;
+        case ChannelMap.TYPE_INT8:
+          byte[] byteData = channelMap.GetDataAsInt8(channelIndex);
+          for (int i = startIndex; i <= endIndex; i++) {
+            spectrumAnalyzerPanel.addData(byteData[i]);
+          }
+          spectrumAnalyzerPanel.finishedAddingData();
+          break;
+        }
       }
-      
     });
-	}
-	
-	/**
-	 * Clear the current stored data. This will queue a call on the EDT to clear
-	 * the data in the spectrum analyzer and return immediatly.
-	 */
-	private void clearData() {
-	  SwingUtilities.invokeLater(new Runnable() {
-	    public void run() {
-	      spectrumAnalyzerPanel.clearData();
-	    }
-	  });
+  }
+
+  /**
+   * Clear the current stored data. This will queue a call on the EDT to clear
+   * the data in the spectrum analyzer and return immediatly.
+   */
+  private void clearData() {
+    SwingUtilities.invokeLater(new Runnable() {
+      public void run() {
+        spectrumAnalyzerPanel.clearData();
+      }
+    });
 	  
-		lastTimeDisplayed = -1;
-	}
-	
+    lastTimeDisplayed = -1;
+  }
+
   @Override
   public void setProperty(String key, String value) {
     super.setProperty(key, value);
@@ -575,9 +608,9 @@ public class SpectrumViz extends AbstractDataPanel {
     }
   }
 
-	@Override
-	public String toString() {
-		return "Spectrum Analyzer";
-	}
-	
+  @Override
+  public String toString() {
+    return "Spectrum Analyzer";
+  }
+
 }
