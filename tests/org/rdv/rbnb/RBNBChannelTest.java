@@ -66,6 +66,12 @@ public class RBNBChannelTest extends TestCase {
   /** the channel unit */
   private static final String unit = "in";
   
+  /** the start time of the data */
+  private static final double start = System.currentTimeMillis()/1000d;
+  
+  /** the duartion of the data */
+  private static final double duration = 12;
+  
   /**
    * Create the channel and give it metadata. This starts up a local RBNB
    * server, registers a channel with the server, and then creates the channel
@@ -85,6 +91,11 @@ public class RBNBChannelTest extends TestCase {
     channelMap.PutUserInfo(channelIndex, metadata);
     
     source.Register(channelMap);
+    
+    channelIndex = channelMap.Add(channelName);
+    channelMap.PutTime(start, duration);
+    channelMap.PutDataAsFloat64(channelIndex, new double[] { 0 });
+    source.Flush(channelMap);
     
     Sink sink = new Sink();
     sink.OpenRBNBConnection();
@@ -116,13 +127,26 @@ public class RBNBChannelTest extends TestCase {
   public void testGetUnit() {
     assertEquals(unit, channel.getUnit());
   }
+  
+  /**
+   * Tests getting the start of the data for the channel.
+   */
+  public void testGetStart() {
+    assertEquals(start, channel.getStart());
+  }
+  
+  /**
+   * Tests getting the duration of the data for the channel.
+   */
+  public void testGetDuration() {
+    assertEquals(duration, channel.getDuration());    
+  }
 
   /**
    * Test getting the metadata for the channel. This tests the unit of the
    * channel.
    */
   public void testGetMetadata() {
-    assertEquals("0.0", channel.getMetadata("duration"));
     assertEquals("", channel.getMetadata("server"));
     assertEquals("application/octet-stream", channel.getMetadata("mime"));
     assertEquals(unit, channel.getMetadata("units"));

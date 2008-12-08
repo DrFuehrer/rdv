@@ -51,6 +51,12 @@ public class Channel {
   /** The unit of the channel */
   private String unit;
   
+  /** the start time for the data */
+  private double start;
+  
+  /** the duration of the data */
+  private double duration;
+  
   /** the metadata map for this channel */
   private final Map<String, String> metadata;
 
@@ -105,6 +111,42 @@ public class Channel {
    */
   protected void setUnit(String unit) {
     this.unit = unit;
+  }
+  
+  /**
+   * Gets the start time for the data.
+   * 
+   * @return  the start time
+   */
+  public double getStart() {
+    return start;
+  }
+  
+  /**
+   * Sets the start time for the data.
+   * 
+   * @param start  the new start time
+   */
+  protected void setStart(double start) {
+    this.start = start;
+  }
+  
+  /**
+   * Gets the duration of the data.
+   * 
+   * @return  the duration
+   */
+  public double getDuration() {
+    return duration;
+  }
+  
+  /**
+   * Sets the duration of the data.
+   * 
+   * @param duration  the new duration
+   */
+  protected void setDuration(double duration) {
+    this.duration = duration;
   }
   
   /**
@@ -190,6 +232,5 @@ public class Channel {
     
     return string.toString();
   }
- 
   
 }

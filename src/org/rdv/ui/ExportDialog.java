@@ -431,8 +431,8 @@ public class ExportDialog extends JDialog {
         continue;
       }
       
-      double channelStart = Double.parseDouble(channel.getMetadata("start"));
-      double channelDuration = Double.parseDouble(channel.getMetadata("duration"));
+      double channelStart = channel.getStart();
+      double channelDuration = channel.getDuration();
       double channelEnd = channelStart+channelDuration;
       
       if (channelStart < minimum) {
