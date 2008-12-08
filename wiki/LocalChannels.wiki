@@ -1,0 +1,95 @@
+#summary How to use channels calculated from other channels
+#labels Documentation-User
+
+= Introduction =
+
+A local channel is a channel calculated from other channels. The channel is given by a name and optionally a unit and is defined by a formula. This [#Formulas formula] can contain variables representing other channels along with the constants and functions described below.
+
+= Adding a channel =
+
+ # To create a local channel, go to the `File -> Add channel` menu.
+ #* Fill in the channel name and optionally the unit. The channel name must be unique and not already taken by another channel. The channel name can contain letters, numbers, spaces, parentheses, the dash, the dot, and the forward slash. To put a channel into a folder, separate the folder name and channel name with a forward slash, like `folder1/channel1`.
+ # Choose the variables you would like to use in the channel formula. For each variable click the `Add` button, and select the desired channel. The name of the variables will be automatically filled in, but it can be changed by double clicking on it and typing in the new name. The variable name can contain letters and numbers, but must start with a letter.
+ # Define the formula using the variables you defined before. See the [#Formulas formula reference] for more information about the syntax and functions that can be used in a formula.
+ # Click `Add Channel` to add the channel.
+
+_Note: The `Add Channel` button won't be enabled until a valid name, list of variables and formula are entered. Also, the formula must contain all the variables that have been defined._
+
+http://rdv.googlecode.com/svn/wiki/add-local-channel.png
+
+The new channel will be displayed in the channel list. This channel can be used just like any other channel in RDV and can be viewed with any of the panels.
+
+http://rdv.googlecode.com/svn/wiki/add-local-channel2.png
+
+= Removing a channel =
+
+To remove a channel, right-click on the channel in the channe list and select the `Remove channel` menu item.
+
+http://rdv.googlecode.com/svn/wiki/add-local-channel3.png
+
+= Formulas =
+
+The formula language is based on [http://reference.wolfram.com/mathematica/guide/LanguageOverview.html Mathematica] and supports most of its [http://reference.wolfram.com/mathematica/guide/MathematicalConstants.html constants], [http://reference.wolfram.com/mathematica/guide/ArithmeticFunctions.html arithmetic functions], [http://reference.wolfram.com/mathematica/guide/NumericalFunctions.html numerical functions], and [http://reference.wolfram.com/mathematica/guide/ElementaryFunctions.html elementary functions].
+
+For example, the following will divide the sum of _x_ and _y_ by _z_:
+{{{
+(x + y) / z
+}}}
+
+To call a function, such as sine:
+{{{
+Sin[x]
+}}}
+
+Notice that function names are capitalized and brackets are surrounding the arguments.
+
+A more advanced formula:
+{{{
+Max[x,y] + (Log[c1,c2] + z^3) 
+}}}
+
+See below for a reference of all supported constants and functions.
+
+== Constants ==
+
+|| *Name * || *Value* ||
+|| Pi || _pi_ = 3.14159... ||
+|| E || _e_ = 2.71828... ||
+|| Degree || _pi_ / 180 = 1.01745... ||
+
+== Arithmetic Functions ==
+
+|| *Operator*  || *Name* || *Description* ||
+|| + || Plus[_x,,1,,_, _x,,2,,_, ...] || addition (sum of _x,,i,,_) ||
+|| - ||  || subtraction ||
+|| `*` || Times[_x,,1,,_, _x,,2,,_, ...] || multiplication (product of _x,,i,,_) ||
+|| / ||  || division ||
+|| ^ || Power[_x_, _y_] || _x_ to the power _y_ ||
+||   || Sqrt[_x_] || square root of _x_ (_x_^1/2^) ||
+
+== Numerical Functions ==
+
+|| *Name* || *Description* ||
+|| Round[_x_] || integer closest to _x_ ||
+|| Floor[_x_] || greatest integer less than or equal to _x_ ||
+|| Ceil[_x_] || smallest integer greater than or equal to _x_ ||
+|| Min[_x,,1,,_, _x,,2,,_, ...] || numerically smallest of the _x,,i,,_ ||
+|| Max[_x,,1,,_, _x,,2,,_, ...] || numerically largest of the _x,,i,,_ ||
+|| Sign[_x_] || sign of _x_ (-1, 0, 1) ||
+|| Random[] || random number ||
+
+== Elementary Functions ==
+
+|| *Name* ||  || *Description* ||
+|| Exp[_x_] || _e__^x^_ ||  exponential of _x_ ||
+|| Log[_x_] || ln _x_|| natural logarithm of _x_ ||
+|| Log[_b_, _x_] || log_,,b,,__x_ || logarithm of _x_ to base _b_ ||
+|| Sin[_x_] || sin _x_ || sine of _x_ ||
+|| Cos[_x_] || cos _x_ || cosine of _x_ ||
+|| Tan[_x_] || tan _x_ || tangent of _x_ ||
+|| !ArcSin[_x_] || sin^-1^ _x_ || arc sine of _x_ ||
+|| !ArcCos[_x_] || cos^-1^ _x_ || arc cosine of _x_ ||
+|| !ArcTan[_x_] || tan^-1^ _x_ || arc tangent of _x_ ||
+|| Sinh[_x_] || sinh _x_ || hyperbolic sine of _x_ ||
+|| Cosh[_x_] || cosh _x_ || hyperbolic cosine of _x_ ||
+|| Tanh[_x_] || tanh _x_ || hyperbolic tangent of _x_ ||
