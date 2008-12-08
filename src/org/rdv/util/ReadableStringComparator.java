@@ -1,71 +1,118 @@
 /*
- * RDV
- * Real-time Data Viewer
- * http://rdv.googlecode.com/
- * 
- * Copyright (c) 2008 Palta Software
+ * The Alphanum Algorithm is an improved sorting algorithm for strings
+ * containing numbers.  Instead of sorting numbers in ASCII order like
+ * a standard sort, this algorithm sorts numbers in numeric order.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * The Alphanum Algorithm is discussed at http://www.DaveKoelle.com
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- * 
- * $URL$
- * $Revision$
- * $Date$
- * $Author$
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 package org.rdv.util;
 
 import java.util.Comparator;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
- * A class to compare strings in a human readable way. This will look for
- * numbers embedded in strings and take then into consideration when comparing.
- * 
- * @author Jason P. Hanley
+ * This is an updated version with enhancements made by Daniel Migowski,
+ * Andre Bogus, and David Koelle
+ *
+ * To use this class:
+ *   Use the static "sort" method from the java.util.Collections class:
+ *   Collections.sort(your list, new AlphanumComparator());
  */
-public class ReadableStringComparator implements Comparator<String> {
-  
-  /** a pattern to match a number in the string */
-  private static Pattern p = Pattern.compile("(\\D*)(\\d+)(\\D*)");
-  
-  public int compare(String s1, String s2) {
-    s1 = s1.toLowerCase();
-    s2 = s2.toLowerCase();
-    
-    if (s1.equals(s2)) {
-      return 0;  
+public class ReadableStringComparator implements Comparator<String>
+{
+    private final boolean isDigit(char ch)
+    {
+        return ch >= 48 && ch <= 57;
     }
-    
-    Matcher m1 = p.matcher(s1);
-    Matcher m2 = p.matcher(s2);
-    
-    if (m1.matches() && m2.matches() &&
-        m1.group(1).equals(m2.group(1)) &&
-        m1.group(3).equals(m2.group(3))) {
-      long l1 = Long.parseLong(m1.group(2));
-      long l2 = Long.parseLong(m2.group(2));
-      return l1<l2?-1:1;
-    } else {
-      return s1.compareTo(s2);
+
+    /** Length of string is passed in for improved efficiency (only need to calculate it once) **/
+    private final String getChunk(String s, int slength, int marker)
+    {
+        StringBuilder chunk = new StringBuilder();
+        char c = s.charAt(marker);
+        chunk.append(c);
+        marker++;
+        if (isDigit(c))
+        {
+            while (marker < slength)
+            {
+                c = s.charAt(marker);
+                if (!isDigit(c))
+                    break;
+                chunk.append(c);
+                marker++;
+            }
+        } else
+        {
+            while (marker < slength)
+            {
+                c = s.charAt(marker);
+                if (isDigit(c))
+                    break;
+                chunk.append(c);
+                marker++;
+            }
+        }
+        return chunk.toString();
     }
-  }
-  
+
+    public int compare(String s1, String s2)
+    {
+        int thisMarker = 0;
+        int thatMarker = 0;
+        int s1Length = s1.length();
+        int s2Length = s2.length();
+
+        while (thisMarker < s1Length && thatMarker < s2Length)
+        {
+            String thisChunk = getChunk(s1, s1Length, thisMarker);
+            thisMarker += thisChunk.length();
+
+            String thatChunk = getChunk(s2, s2Length, thatMarker);
+            thatMarker += thatChunk.length();
+
+            // If both chunks contain numeric characters, sort them numerically
+            int result = 0;
+            if (isDigit(thisChunk.charAt(0)) && isDigit(thatChunk.charAt(0)))
+            {
+                // Simple chunk comparison by length.
+                int thisChunkLength = thisChunk.length();
+                result = thisChunkLength - thatChunk.length();
+                // If equal, the first different number counts
+                if (result == 0)
+                {
+                    for (int i = 0; i < thisChunkLength; i++)
+                    {
+                        result = thisChunk.charAt(i) - thatChunk.charAt(i);
+                        if (result != 0)
+                        {
+                            return result;
+                        }
+                    }
+                }
+            } else
+            {
+                result = thisChunk.compareTo(thatChunk);
+            }
+
+            if (result != 0)
+                return result;
+        }
+
+        return s1Length - s2Length;
+    }
 }
