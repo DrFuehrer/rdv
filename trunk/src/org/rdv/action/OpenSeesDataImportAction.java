@@ -105,7 +105,13 @@ public class OpenSeesDataImportAction extends DataViewerAction {
       return;
     }
     
-    ActionFactory.getInstance().getDataImportAction().importData(openSeesDataFile);
+    String sourceName = inputDataFile.getName();
+    int dotIndex = sourceName.lastIndexOf('.');
+    if (dotIndex != -1) {
+      sourceName = sourceName.substring(0, dotIndex);
+    }
+    
+    ActionFactory.getInstance().getDataImportAction().importData(openSeesDataFile, sourceName, true);
   }
   
   /**
@@ -179,7 +185,7 @@ public class OpenSeesDataImportAction extends DataViewerAction {
     // parse header string from XML file
     String header = getHeaderString(inputFile);
     if (header != null) {
-      writeLine(header, buffWriter);
+      writeLine(header.trim(), buffWriter);
     }
   }
   
