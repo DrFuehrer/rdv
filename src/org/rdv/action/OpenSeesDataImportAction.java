@@ -42,7 +42,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URL;
-import java.net.URLDecoder;
 
 import javax.swing.JOptionPane;
 import javax.xml.transform.Result;
@@ -199,16 +198,13 @@ public class OpenSeesDataImportAction extends DataViewerAction {
       
       Source xmlSource = new StreamSource(input);
 
-      URL stylesheetUrl = getClass().getClassLoader().getResource("xslt/header.xslt");
+      String styleSheet = "org/rdv/action/resources/OpenSeesHeader.xslt";
+      URL stylesheetUrl = getClass().getClassLoader().getResource(styleSheet);
       
       if (stylesheetUrl == null) 
         return null;
       
-      String stylesheetLocation = URLDecoder.decode(stylesheetUrl.getFile(), "UTF-8");
-
-      File stylesheet = new File(stylesheetLocation); 
-
-      Source xsltSource = new StreamSource(stylesheet);
+      Source xsltSource = new StreamSource(stylesheetUrl.openStream());
     
       StringWriter writer = new StringWriter();
       Result result = new StreamResult(writer);
