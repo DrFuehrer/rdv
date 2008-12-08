@@ -379,7 +379,54 @@ public class SpectrumAnalyzerPanel extends ChartPanel {
 
     plotSpectrum();
   }
+  
+  /**
+   * Adds data. This will not trigger a replot. Call
+   * {@link #finishedAddingData()} when finished adding data.
+   * 
+   * @param data  the data point to add
+   * @see         #finishedAddingData()
+   */
+  public void addData(double data) {
+    inputData[oldestDataIndex++] = data;
+    if (oldestDataIndex == numberOfSamples) {
+      oldestDataIndex = 0;
+    }
+  }
+  
+  /**
+   * Called when finished adding data and replots the chart.
+   * 
+   * @see  #addData(double)
+   */
+  public void finishedAddingData() {
+    plotSpectrum();
+  }
 
+  /**
+   * Adds data and replots the chart.
+   * 
+   * @param data        the new data
+   * @param startIndex  the start index for the data
+   * @param endIndex    the end index for the data
+   */
+  public void addData(float[] data, int startIndex, int endIndex) {
+    // if there is too much data, only add the most recent
+    if (endIndex - startIndex > numberOfSamples) {
+      startIndex = endIndex - numberOfSamples;
+    }
+
+    // add the data overwritting the oldest data
+    for (int i = startIndex; i <= endIndex; i++) {
+      inputData[oldestDataIndex++] = data[i];
+      if (oldestDataIndex == numberOfSamples) {
+        oldestDataIndex = 0;
+      }
+    }
+
+    plotSpectrum();
+  }
+  
   /**
    * Adds data and replots the chart.
    * 
