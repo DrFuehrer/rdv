@@ -20,12 +20,15 @@ IMPROVEMENTS
 
  - File dialog's will now remember the directory they previously were browsing.
    [40]
+ - Added an option to specify the time on the command line. [32]
 
 BUG FIXES
 
- - Fixed an issue where some channels would not update in real-time mode. [8]
  - Fixed an error that occurred when importing JPEG's contained in a zip file
    with certain filenames. [37]
+ - Offline mode will no longer trigger Windows firewall protection. [44]
+ - Fixed an issue where OpenSees data files were imported with incorrect
+   timestamp's and channel names. [46] 
 
 CHANGES
 
