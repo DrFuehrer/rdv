@@ -35,9 +35,13 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
+import org.rdv.data.Channel;
+import org.rdv.data.LocalChannel;
+import org.rdv.data.LocalChannelException;
 import org.rdv.data.NumericDataSample;
 
 import com.rbnb.sapi.ChannelMap;
+import com.rbnb.sapi.LocalChannelMap;
 import com.rbnb.sapi.SAPIException;
 import com.rbnb.sapi.Sink;
 
@@ -52,7 +56,7 @@ public class RBNBReader {
   private final Sink sink;
 
   /** the list of channels to get data from */
-  private List<String> channels;
+  private List<Channel> channels;
 
   /** the start and end times to get data */
   private double startTime, endTime;
@@ -75,7 +79,7 @@ public class RBNBReader {
    * @param endTime         the end time of the data
    * @throws SAPIException  if there is an error connecting to the server
    */
-  public RBNBReader(String rbnbServer, List<String> channels, double startTime, double endTime)
+  public RBNBReader(String rbnbServer, List<Channel> channels, double startTime, double endTime)
       throws SAPIException {
     this.channels = channels;
     this.startTime = startTime;
@@ -85,8 +89,15 @@ public class RBNBReader {
     sink.OpenRBNBConnection(rbnbServer, "RDVExport");
 
     cmap = new ChannelMap();
-    for (String channel : channels) {
-      cmap.Add(channel);
+    for (Channel channel : channels) {
+      if (channel instanceof LocalChannel) {
+        LocalChannel localChannel = (LocalChannel) channel;
+        for (String serverChannelName : localChannel.getServerChannels()) {
+          cmap.Add(serverChannelName);
+        }
+      } else {
+        cmap.Add(channel.getName());
+      }
     }
     
     time = startTime;
@@ -123,7 +134,9 @@ public class RBNBReader {
     while (!samples.isEmpty() && t == samples.peek().getTime()) {
       Sample sample = samples.remove();
       int channelIndex = channels.indexOf(sample.getChannel());
-      data[channelIndex] = sample.getData();
+      if (channelIndex != -1) {
+        data[channelIndex] = sample.getData();
+      }
     }
 
     NumericDataSample dataSample = new NumericDataSample(t, data);
@@ -142,11 +155,37 @@ public class RBNBReader {
     }
 
     sink.Request(cmap, time, duration, "absolute");
-    ChannelMap dmap = sink.Fetch(-1);
-
-    for (int i = 0; i < channels.size(); i++) {
-      String channel = channels.get(i);
-      int index = dmap.GetIndex(channel);
+    
+    LocalChannelMap dmap = new LocalChannelMap();
+    sink.Fetch(-1, dmap);
+    
+    boolean hasLocalChannel = false;
+    
+    for (Channel channel : channels) {
+      if (channel instanceof LocalChannel) {
+        LocalChannel localChannel = (LocalChannel) channel;
+        try {
+          localChannel.updateData(dmap);
+        } catch (LocalChannelException e) {
+          e.printStackTrace();
+          continue;
+        }
+        
+        hasLocalChannel = true;
+      }
+    }
+    
+    if (hasLocalChannel) {
+      try {
+        dmap.mergeLocalData();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    
+    for (Channel channel : channels) {
+      String channelName = channel.getName();
+      int index = dmap.GetIndex(channelName);
       if (index != -1) {
         int type = dmap.GetType(index);
         double[] times = dmap.GetTimes(index);
@@ -200,19 +239,19 @@ public class RBNBReader {
    * A class to hold a data sample with its name, sample time, and value.
    */
   class Sample implements Comparable<Sample> {
-    String channel;
+    Channel channel;
 
     Number data;
 
     double time;
 
-    public Sample(String channel, Number data, double time) {
+    public Sample(Channel channel, Number data, double time) {
       this.channel = channel;
       this.data = data;
       this.time = time;
     }
 
-    public String getChannel() {
+    public Channel getChannel() {
       return channel;
     }
 
