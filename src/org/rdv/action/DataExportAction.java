@@ -222,11 +222,11 @@ public class DataExportAction extends DataViewerAction {
     RBNBReader reader = null;
 
     try {
-      reader = new RBNBReader(rbnbServer, channels, startTime, endTime);
-
       RBNBController rbnb = RBNBController.getInstance();
       List<Channel> channelMetadata = rbnb.getChannels(channels);
 
+      reader = new RBNBReader(rbnbServer, channelMetadata, startTime, endTime);
+      
       writer.init(channelMetadata, startTime, endTime, file);
 
       progressWindow.setProgress(0);
