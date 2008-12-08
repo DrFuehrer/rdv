@@ -18,8 +18,7 @@
 
   <xsl:template match="NodeOutput">
     <xsl:for-each select="./ResponseType">
-      <xsl:value-of select="$tab"/> 
-      <xsl:value-of select="parent::NodeOutput/@nodeTag" /><xsl:value-of select="."/>
+      <xsl:value-of select="$tab"/>Node<xsl:value-of select="parent::NodeOutput/@nodeTag" />-<xsl:value-of select="."/>
     </xsl:for-each>
   </xsl:template>
 
