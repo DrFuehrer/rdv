@@ -1,0 +1,82 @@
+RDV 2.0.0 Release Candidate 1 Release Notes
+
+RDV is a visualization environment for scientific and engineering data. Built on
+top of the RBNB dynamic data server, it supports local and remote data sources
+and can visualize numeric, video, image, and audio data in a number of different
+ways.
+
+See http://rdv.googlecode.com/ for information on RDV.
+
+This release contains a new Spectrum Analyzer panel visualizing data in the
+frequency domain. And the ability to add local channels that are functions of
+other channels.
+
+NEW FEATURES
+
+ - Spectrum Analyzer; a panel to display the power spectrum of a channel. [17]
+ - The ability to add local channels that are functions of other channels. [18]
+ 
+IMPROVEMENTS
+
+ - File dialog's will now remember the directory they previously were browsing.
+   [40]
+ - Added an option to specify the time on the command line. [32]
+
+BUG FIXES
+
+ - Fixed an error that occurred when importing JPEG's contained in a zip file
+   with certain filenames. [37]
+ - Offline mode will no longer trigger Windows firewall protection. [44]
+ - Fixed an issue where OpenSees data files were imported with incorrect
+   timestamp's and channel names. [46] 
+
+CHANGES
+
+ - The local time zone will be assumed if none is specified when importing data
+   or JPEG files. GMT was previously assumed. [36]
+ - Drop data is now disabled by default and should only be enabled if needed.
+   [39]
+ - The ability to import data from NEEScentral has been disabled. [38]
+
+
+-----------------------
+
+
+RDV 1.9.0 Release Notes
+
+This release contains significant new features for viewing images and video, a
+new dial visualization, and support for exporting MATLAB files. A number of
+smaller improvements for plotting have been added in addition to a few bug
+fixes.
+
+NEW FEATURES
+
+  - Support for zooming and panning of an image. A clickable navigation image
+    can be used to jump around parts of an image when zoomed in. [2]
+  - Filmstrip interface to view images sequentially. [3]
+  - Support for viewing a thumbnail of an image to conserve bandwidth. [3]
+  - DialViz, a visualization extension to view a numeric data channel on a dial.
+    [22]
+  - Export of data to the MATLAB MAT-file format. [23]
+  - Support for port knocking authentication. [11]
+
+IMPROVEMENTS
+
+  - Cursors on an XY plot to indicate the current data point in a series. [1]
+  - Zooming out of a plot via the mouse will remember previous zoom levels. [15]
+  - Support for PNG and GIF images. [24]
+  - Ability to hide the legend in a plot. [13]
+
+BUG FIXES
+
+  - Can't connect to RBNB server with circular references. [4]
+  - Children of shortcut servers aren't shown in channel list. [5]
+  - Auto adjusting the domain axis in a time series plot does not work
+    correctly. [16]
+
+CHANGES
+
+  - Plots set to auto range, don't always include zero anymore. [25]
+  - The system look & feel is used now, so RDV should look more native to the
+    platform it is running on. [27]
+  - All RDV class were moved to the "org.rdv" package. [26]
