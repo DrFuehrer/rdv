@@ -1,0 +1,73 @@
+<extensions>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.JPEGDataPanel</id>
+		<name>Video/Photo Data Panel</name>
+		<mimeTypes>
+			<mimeType>image/jpeg</mimeType>
+			<mimeType>video/jpeg</mimeType>
+		</mimeTypes>
+	</extension>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.TimeSeriesDataPanel</id>
+		<name>Time Series Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>
+	</extension>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.XYDataPanel</id>
+		<name>XY Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>
+	</extension>	
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.DigitalTabularDataPanel</id>
+		<name>Tabular Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>		
+	</extension>
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.StringDataPanel</id>
+		<name>Text Data Panel</name>
+		<mimeTypes>
+			<mimeType>text/plain</mimeType>
+		</mimeTypes>
+	</extension>
+<!--	
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.SpectrumAnalyzerDataPanel</id>
+		<name>Spectrum Analyzer Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>
+	</extension>
+-->	
+	<!--extension>
+		<id>org.nees.buffalo.rdv.datapanel.AudioDataPanel</id>
+		<name>Audio Data Panel</name>
+		<mimeTypes>
+			<mimeType>audio/basic</mimeType>
+			<mimeType>audio/L8</mimeType>
+			<mimeType>audio/L16</mimeType>
+		</mimeTypes>
+	</extension-->
+ 	<extension>
+ 		<id>org.nees.buffalo.rdv.datapanel.WebDataPanel</id>
+ 		<name>Web Data Panel</name>
+ 	</extension>
+	<!--extension>
+		<id>org.nees.buffalo.rdv.datapanel.RendererDataPanel</id>
+		<name>3D Renderer Data Panel</name>
+		<mimeTypes>
+			<mimeType>application/octet-stream</mimeType>
+		</mimeTypes>
+	</extension-->	
+	<!--
+	<extension>
+		<id>org.nees.buffalo.rdv.datapanel.HelloWorldDataPanel</id>
+		<name>Hello World Data Panel</name>
+	</extension>
+	-->
+</extensions>
