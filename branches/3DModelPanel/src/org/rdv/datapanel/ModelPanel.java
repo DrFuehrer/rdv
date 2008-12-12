@@ -163,7 +163,7 @@ public class ModelPanel extends AbstractDataPanel
 		{ // no model to link against, shouldn't happen
 			return false;
 		}
-		else if (channel == null || node.isEmpty() || axis < 0)
+		else if (channel == null || node.length() == 0 || axis < 0)
 		{ // some param is invalid, also shouldn't happen
 			return false;
 		}
