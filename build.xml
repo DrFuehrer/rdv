@@ -52,6 +52,8 @@
 			<include name="AppFramework.jar"/>
 			<include name="commons-cli.jar"/>
 			<include name="commons-logging.jar"/>
+			<include name="j3dcore.jar"/>
+			<include name="j3dutils.jar"/>
 			<include name="jcommon.jar"/>
 			<include name="jfreechart.jar"/>
 			<include name="jtransforms.jar"/>
@@ -59,6 +61,7 @@
 			<include name="rbnb.jar"/>
 			<include name="swing-worker.jar"/>
 			<include name="tritonus_share.jar"/>
+			<include name="vecmath.jar"/>
 		</fileset>
 	</path>
 

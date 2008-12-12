@@ -6,6 +6,8 @@
 	<classpathentry kind="lib" path="lib/AppFramework.jar"/>
 	<classpathentry kind="lib" path="lib/commons-cli.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/j3dcore.jar"/>
+	<classpathentry kind="lib" path="lib/j3dutils.jar"/>
 	<classpathentry kind="lib" path="lib/jcommon.jar"/>
 	<classpathentry kind="lib" path="lib/jfreechart.jar"/>
 	<classpathentry kind="lib" path="lib/jtransforms.jar"/>
@@ -14,5 +16,6 @@
 	<classpathentry kind="lib" path="lib/rbnb.jar"/>
 	<classpathentry kind="lib" path="lib/swing-worker.jar"/>
 	<classpathentry kind="lib" path="lib/tritonus_share.jar"/>
+	<classpathentry kind="lib" path="lib/vecmath.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
