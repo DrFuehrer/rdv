@@ -1,5 +1,5 @@
 #labels Featured
-== [http://it.nees.org/library/telepresence/rdv-users-guide.php User's Guide] ==
+== [http://www.nees.org/research/dl_detail/rdv_1.9_users_guide/ User's Guide] ==
 Information about the features and functionality of RDV.
 
 == [ReleaseNotes Release Notes] ==
@@ -9,7 +9,7 @@ Notes on new features, bugs fixed, and changes in RDV releases.
 Guides for using features of RDV.
 
 == For Administrators ==
- * === [http://it.nees.org/library/telepresence/rdv-admin-guide.php Administration Guide] ===
+ * === [http://www.nees.org/research/dl_detail/rdv_1.9_admin_guide/ Administration Guide] ===
  * [JavaWebStart Deploying with Java Web Start]
  * [CommandLineOptions The command line options RDV accepts]
  * [ThumbnailImages Enabling thumbnail images]
