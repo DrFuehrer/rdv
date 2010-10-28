@@ -16,7 +16,7 @@ If you have found a bug, please report it using the bug tracker. Before you repo
 
 == Paid Support ==
 
-Commercial support contracts are available from [http://paltasoftware.com/ Palta Software].
+Commercial support contracts are available from [http://paltasoftware.com/rdv/ Palta Software].
 
 == For [http://www.nees.org/ NEES] Users ==
 
