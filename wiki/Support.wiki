@@ -20,4 +20,4 @@ Commercial support contracts are available from [http://paltasoftware.com/ Palta
 
 == For [http://www.nees.org/ NEES] Users ==
 
-NEESit [http://it.nees.org/support/index.php provides support] for NEES projects using RDV for telepresence and visualization.
+NEES [http://nees.org/support provides support] for projects using RDV for telepresence and visualization.
