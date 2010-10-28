@@ -6,7 +6,7 @@ The George E. Brown, Jr. Network for Earthquake Engineering Simulation ([http://
 
 NEES uses RDV to remotely observe and participate in experiments through the use of synchronized real-time data and video.
 
- * [http://it.nees.org/software/rdv/ NEESit's RDV distribution]
+ * [http://nees.org/resources/rdv NEESit's RDV distribution]
 
 == [http://gleon.org/ GLEON] and [http://www.coralreefeon.org/ CREON] ==
 
