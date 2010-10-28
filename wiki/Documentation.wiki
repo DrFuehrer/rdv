@@ -1,5 +1,5 @@
 #labels Featured
-== [http://www.nees.org/research/dl_detail/rdv_1.9_users_guide/ User's Guide] ==
+== [http://nees.org/resources/1002/download/rdv2.0users_guide.pdf User's Guide] ==
 Information about the features and functionality of RDV.
 
 == [ReleaseNotes Release Notes] ==
@@ -9,7 +9,7 @@ Notes on new features, bugs fixed, and changes in RDV releases.
 Guides for using features of RDV.
 
 == For Administrators ==
- * === [http://www.nees.org/research/dl_detail/rdv_1.9_admin_guide/ Administration Guide] ===
+ * === [http://nees.org/resources/1003/download/rdv2.0admin_guide.pdf Administration Guide] ===
  * [JavaWebStart Deploying with Java Web Start]
  * [CommandLineOptions The command line options RDV accepts]
  * [ThumbnailImages Enabling thumbnail images]
