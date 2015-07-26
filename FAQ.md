@@ -1,0 +1,2 @@
+## Why do video images flicker sometimes? ##
+> This occurs when the frame rate of the video is too slow for the current timescale. To fix this increase the timescale so it is greater or equal to the video sample period (1 / frame rate).
